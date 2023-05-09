@@ -1,0 +1,56 @@
+#debug{
+    border:1px solid white;
+    padding:5px;
+    background-color: rgb(255 255 255 / 25%);
+}
+
+.debug_title{
+    display:block;
+    text-align:center;
+    text-decoration:underline;
+}
+.debug_border{
+    border: 1px solid black;
+    padding:2px;
+    margin-bottom: 2px;
+}
+
+#debug_colorFinder{
+}
+/* #debug_colorFinder canvas{
+    border: 1px solid white;
+} */
+#debug_colorFinder_canvases{
+    /* display:flex; */
+    /* align-items: center; */
+    /* width: 100%; */
+    /* justify-content: space-evenly; */
+}
+#debug_colorFinder_src{
+    /* background-color: #181818; */
+    width: 96%;
+    border:1px solid white;
+}
+#debug_colorFinder_zoom{
+    width: 48px;
+    height: 48px;
+    border: 1px solid white;
+    /* width: 20%; */
+}
+#debug_colorFinder_pixelRGBA{
+    /* border:1px solid white; */
+    font-family: monospace;
+    white-space: pre;
+    display:inline-block;
+    min-width: 264px;
+    max-width: 264px;
+    width: 100%;
+    min-height: 48px;
+    max-height: 48px;
+    vertical-align: top;
+    font-size: 12px;
+    overflow: scroll;
+    overflow-x: auto;
+    overflow-y: auto;
+    background-color: antiquewhite;
+}

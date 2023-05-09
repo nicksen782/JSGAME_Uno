@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNO v2</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/uno.css">
+
+    <!-- JavaScript -->
+    <script defer src="js/webv.js"></script>
+    <script defer src="js/gfx.js"></script>
+    <script defer src="js/gfxClasses.js"></script>
+    <script defer src="js/uno.js"></script>
+    <script defer src="js/debug.js"></script>
+
+    <!-- GAMESTATES -->
+    <script defer src="js/gs_JSG.js"></script>
+    <script defer src="js/gs_N782.js"></script>
+    <script defer src="js/gs_TITLE.js"></script>
+    <script defer src="js/gs_OPTIONS.js"></script>
+    <script defer src="js/gs_RULES.js"></script>
+    <script defer src="js/gs_PLAYING.js"></script>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div id="main">
+            <div id="aux">
+                <div id="controls">
+                    <!-- OUTPUT SCALING -->
+                    <div class="controls_border">
+                        <label class="controls_title">SCALE</label>
+                        <input type="range" id="scaleSlider" min="1" max="4" step="0.25" value="3.25">
+                        <input type="text" id="scaleSliderText">
+                    </div>
+                </div>
+                <div id="debug" class="displayNone">
+                </div>
+            </div>
+            <div id="output"></div>
+        </div>
+    </div>
+</body>
+
+</html>

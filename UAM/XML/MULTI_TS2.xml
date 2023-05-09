@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<gfx-xform version="MULTI_TS2">
+  <xml_files>
+    <xml_file xml="/JSG_GAMES/JSGAME_Uno/UAM/XML/bg_tiles2.xml" />
+    <xml_file xml="/JSG_GAMES/JSGAME_Uno/UAM/XML/bg_tiles.xml" />
+    <xml_file xml="/JSG_GAMES/JSGAME_Uno/UAM/XML/font_tiles.xml" />
+    <xml_file xml="/JSG_GAMES/JSGAME_Uno/UAM/XML/sprite_tiles.xml" />
+  </xml_files>
+</gfx-xform>
