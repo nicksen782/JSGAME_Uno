@@ -29,7 +29,7 @@ var _DEBUG = {
             x: 10*8, y: 24*8, 
             settings : {
                 xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardYellow ]
+                    [ Card.colors.cardOrange, Card.colors.cardYellow ]
                 ]
             }
         });
@@ -40,7 +40,7 @@ var _DEBUG = {
             x: 13*8, y: 24*8,  
             settings : {
                 xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardBlue ]
+                    [ Card.colors.cardOrange, Card.colors.cardBlue ]
                 ]
             }
         });
@@ -51,7 +51,7 @@ var _DEBUG = {
             x: 16*8, y: 24*8, 
             settings : {
                 xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardRed ]
+                    [ Card.colors.cardOrange, Card.colors.cardRed ]
                 ]
             }
         });
@@ -62,7 +62,7 @@ var _DEBUG = {
             x: 19*8, y: 24*8, 
             settings : {
                 xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardGreen ]
+                    [ Card.colors.cardOrange, Card.colors.cardGreen ]
                 ]
             }
         });
@@ -84,7 +84,7 @@ var _DEBUG = {
             x: 1*8, y: 10*8, 
             settings : {
                 xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardYellow ]
+                    [ Card.colors.cardOrange, Card.colors.cardYellow ]
                 ]
             }
         });
@@ -95,7 +95,7 @@ var _DEBUG = {
             x: 1*8, y: 13*8,  
             settings : {
                 xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardBlue ]
+                    [ Card.colors.cardOrange, Card.colors.cardBlue ]
                 ]
             }
         });
@@ -106,7 +106,7 @@ var _DEBUG = {
             x: 1*8, y: 16*8, 
             settings : {
                 xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardRed ]
+                    [ Card.colors.cardOrange, Card.colors.cardRed ]
                 ]
             }
         });
@@ -117,7 +117,7 @@ var _DEBUG = {
             x: 1*8, y: 19*8, 
             settings : {
                 xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardGreen ]
+                    [ Card.colors.cardOrange, Card.colors.cardGreen ]
                 ]
             }
         });
@@ -139,7 +139,7 @@ var _DEBUG = {
             x: 10*8, y: 1*8, 
             settings : {
                 xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardYellow ]
+                    [ Card.colors.cardOrange, Card.colors.cardYellow ]
                 ]
             }
         });
@@ -150,7 +150,7 @@ var _DEBUG = {
             x: 13*8, y: 1*8,  
             settings : {
                 xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardBlue ]
+                    [ Card.colors.cardOrange, Card.colors.cardBlue ]
                 ]
             }
         });
@@ -161,7 +161,7 @@ var _DEBUG = {
             x: 16*8, y: 1*8,  
             settings : {
                 xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardRed ]
+                    [ Card.colors.cardOrange, Card.colors.cardRed ]
                 ]
             }
         });
@@ -172,7 +172,7 @@ var _DEBUG = {
             x: 19*8, y: 1*8,  
             settings : {
                 xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardGreen ]
+                    [ Card.colors.cardOrange, Card.colors.cardGreen ]
                 ]
             }
         });
@@ -195,7 +195,7 @@ var _DEBUG = {
             x: 24*8, y: 10*8, 
             settings : {
                 xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardYellow ]
+                    [ Card.colors.cardOrange, Card.colors.cardYellow ]
                 ]
             }
         });
@@ -206,7 +206,7 @@ var _DEBUG = {
             x: 24*8, y: 13*8,  
             settings : {
                 xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardBlue ]
+                    [ Card.colors.cardOrange, Card.colors.cardBlue ]
                 ]
             }
         });
@@ -217,7 +217,7 @@ var _DEBUG = {
             x: 24*8, y: 16*8, 
             settings : {
                 xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardRed ]
+                    [ Card.colors.cardOrange, Card.colors.cardRed ]
                 ]
             }
         });
@@ -228,7 +228,7 @@ var _DEBUG = {
             x: 24*8, y: 19*8, 
             settings : {
                 xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ LayerObject.colors.cardOrange, LayerObject.colors.cardGreen ]
+                    [ Card.colors.cardOrange, Card.colors.cardGreen ]
                 ]
             }
         });
@@ -321,6 +321,94 @@ var _DEBUG = {
         this.gridCanvas.classList.toggle("displayNone");
     },
 
+    fadeHandler: function(){
+        let fadeSlider     = document.getElementById("fadeSlider");
+        let fadeSliderText = document.getElementById("fadeSliderText");
+
+        function changeFade() {
+            let level;
+            level = parseFloat(fadeSlider.value);
+
+            if(level==0){ 
+                _GFX.funcs.setFade("ALL", null);
+                level = "null";
+            }
+            else{
+                _GFX.funcs.setFade("ALL", level-1);
+                level = (level-1).toString();
+            }
+
+            fadeSlider.title = `FADE: ${level}`;
+            fadeSliderText.value = fadeSlider.title;
+        }
+        changeFade();
+
+        fadeSlider.addEventListener("input", changeFade, false);
+
+        document.getElementById("debug_test_fade_null").addEventListener("click", ()=>{ fadeSlider.value = (0);    changeFade(); }, false);
+        document.getElementById("debug_test_fade_0")   .addEventListener("click", ()=>{ fadeSlider.value = (0+1);  changeFade(); }, false);
+        document.getElementById("debug_test_fade_1")   .addEventListener("click", ()=>{ fadeSlider.value = (1+1);  changeFade(); }, false);
+        document.getElementById("debug_test_fade_2")   .addEventListener("click", ()=>{ fadeSlider.value = (2+1);  changeFade(); }, false);
+        document.getElementById("debug_test_fade_3")   .addEventListener("click", ()=>{ fadeSlider.value = (3+1);  changeFade(); }, false);
+        document.getElementById("debug_test_fade_4")   .addEventListener("click", ()=>{ fadeSlider.value = (4+1);  changeFade(); }, false);
+        document.getElementById("debug_test_fade_5")   .addEventListener("click", ()=>{ fadeSlider.value = (5+1);  changeFade(); }, false);
+        document.getElementById("debug_test_fade_6")   .addEventListener("click", ()=>{ fadeSlider.value = (6+1);  changeFade(); }, false);
+        document.getElementById("debug_test_fade_7")   .addEventListener("click", ()=>{ fadeSlider.value = (7+1);  changeFade(); }, false);
+        document.getElementById("debug_test_fade_8")   .addEventListener("click", ()=>{ fadeSlider.value = (8+1);  changeFade(); }, false);
+        document.getElementById("debug_test_fade_9")   .addEventListener("click", ()=>{ fadeSlider.value = (9+1);  changeFade(); }, false);
+        document.getElementById("debug_test_fade_10")  .addEventListener("click", ()=>{ fadeSlider.value = (10+1); changeFade(); }, false);
+
+
+    },
+
+    countHandler: function(){
+        let frameCounter     = document.getElementById("debug_frameCounter");
+        let frameDrawCounter = document.getElementById("debug_frameDrawCounter");
+
+        // let BG1_changes = document.getElementById("debug_BG1_changes");
+        // let SP1_changes = document.getElementById("debug_SP1_changes");
+        // let BG2_changes = document.getElementById("debug_BG2_changes");
+        // let TX1_changes = document.getElementById("debug_TX1_changes");
+
+        let BG1_fade_fade = document.getElementById("debug_BG1_fade_fade");
+        let BG1_fade_curr = document.getElementById("debug_BG1_fade_curr");
+        // let BG1_fade_prev = document.getElementById("debug_BG1_fade_prev");
+        
+        let BG2_fade_fade = document.getElementById("debug_BG2_fade_fade");
+        let BG2_fade_curr = document.getElementById("debug_BG2_fade_curr");
+        // let BG2_fade_prev = document.getElementById("debug_BG2_fade_prev");
+        
+        let SP1_fade_fade = document.getElementById("debug_SP1_fade_fade");
+        let SP1_fade_curr = document.getElementById("debug_SP1_fade_curr");
+        // let SP1_fade_prev = document.getElementById("debug_SP1_fade_prev");
+        
+        let TX1_fade_fade = document.getElementById("debug_TX1_fade_fade");
+        let TX1_fade_curr = document.getElementById("debug_TX1_fade_curr");
+        // let TX1_fade_prev = document.getElementById("debug_TX1_fade_prev");
+
+        setInterval(()=>{
+            frameCounter    .innerText = _APP.gameLoop.frameCounter;
+            frameDrawCounter.innerText = _APP.gameLoop.frameDrawCounter;
+
+            // BG1_changes.innerText = _GFX.currentData["BG1"].changes;
+            // SP1_changes.innerText = _GFX.currentData["SP1"].changes;
+            // BG2_changes.innerText = _GFX.currentData["BG2"].changes;
+            // TX1_changes.innerText = _GFX.currentData["TX1"].changes;
+
+            BG1_fade_fade.innerText = _GFX.currentData["BG1"].fade.fade     ?? "null";
+            BG2_fade_fade.innerText = _GFX.currentData["BG2"].fade.fade     ?? "null";
+            SP1_fade_fade.innerText = _GFX.currentData["SP1"].fade.fade     ?? "null";
+            TX1_fade_fade.innerText = _GFX.currentData["TX1"].fade.fade     ?? "null";
+            BG1_fade_curr.innerText = _GFX.currentData["BG1"].fade.currFade ?? "null";
+            BG2_fade_curr.innerText = _GFX.currentData["BG2"].fade.currFade ?? "null";
+            SP1_fade_curr.innerText = _GFX.currentData["SP1"].fade.currFade ?? "null";
+            TX1_fade_curr.innerText = _GFX.currentData["TX1"].fade.currFade ?? "null";
+            // BG1_fade_prev.innerText = _GFX.currentData["BG1"].fade.prevFade ?? "null";
+            // BG2_fade_prev.innerText = _GFX.currentData["BG2"].fade.prevFade ?? "null";
+            // SP1_fade_prev.innerText = _GFX.currentData["SP1"].fade.prevFade ?? "null";
+            // TX1_fade_prev.innerText = _GFX.currentData["TX1"].fade.prevFade ?? "null";
+        }, 100);
+    },
 };
 
 _DEBUG.init = async function(){
@@ -489,12 +577,24 @@ _DEBUG.init = async function(){
         this.createGridCanvas();
         ts_createGridCanvas = performance.now() - ts_createGridCanvas;
 
+        // Init fadeHandler.
+        let ts_fadeHandler = performance.now(); 
+        this.fadeHandler();
+        ts_fadeHandler = performance.now() - ts_fadeHandler;
+
+        // Init countHandler.
+        let ts_countHandler = performance.now(); 
+        this.countHandler();
+        ts_countHandler = performance.now() - ts_countHandler;
+
         // Output some timing info.
         // console.log("DEBUG: init:");
         // console.log("  tsLoadFiles                 :", tsLoadFiles.toFixed(3));
         // console.log("  tsLoadColorFinder           :", tsLoadColorFinder.toFixed(3));
         // console.log("  ts_drawColorPalette         :", ts_drawColorPalette.toFixed(3));
         // console.log("  ts_createGridCanvas         :", ts_createGridCanvas.toFixed(3));
+        // console.log("  ts_fadeHandler              :", ts_fadeHandler.toFixed(3));
+        // console.log("  ts_countHandler             :", ts_countHandler.toFixed(3));
         
         // Init init2.
         let ts_init2 = performance.now(); 

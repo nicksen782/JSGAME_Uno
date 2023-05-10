@@ -6,20 +6,45 @@ var _GFX = {
     currentData : {
         "BG1":{
             bgColorRgba: [0,64,92,255],
+            bgColorRgbaChanged: false,
             tilemaps   : {},
             changes    : false,
+            // FADE
+            fade:{
+                fade      : false,
+                // prevFade   : null,
+                currFade   : null,
+            }
         },
         "BG2":{
-            tilemaps   : {},
-            changes    : false,
+            tilemaps  : {},
+            changes   : false,
+            // FADE
+            fade:{
+                fade      : false,
+                // prevFade   : null,
+                currFade   : null,
+            }
         },
         "SP1":{
-            tilemaps   : {},
-            changes    : false,
+            tilemaps  : {},
+            changes   : false,
+            // FADE
+            fade:{
+                fade      : false,
+                // prevFade   : null,
+                currFade   : null,
+            }
         },
         "TX1":{
-            tilemaps   : {},
-            changes    : false,
+            tilemaps  : {},
+            changes   : false,
+            // FADE
+            fade:{
+                fade      : false,
+                // prevFade   : null,
+                currFade   : null,
+            }
         },
     },
 
@@ -59,10 +84,28 @@ var _GFX = {
             }, true);
         },
 
+        // Updates the background color for BG1.
+        updateBG1BgColorRgba: function(bgColorRgba=[0,0,0,255]){
+            // _GFX.funcs.updateBG1BgColorRgba([0,0,255,255]);
+            let layer = "BG1";
+
+            if(bgColorRgba){
+                _GFX.currentData[layer].bgColorRgba = bgColorRgba;
+            }
+            else{
+                _GFX.currentData[layer].bgColorRgba = [0,0,0,0];
+            }
+
+            //
+            _GFX.currentData[layer].bgColorRgbaChanged = true;
+            _GFX.currentData[layer].changes = true;
+        },
+
         // Updates the specified layer (locally.) Can accept multiple tilemaps.
-        updateLayer: function(layer, tilemaps={}, bgColorRgba=[0,0,0,255]){
+        updateLayer: function(layer, tilemaps={}){
             // 
-            if(layer == "BG2" || layer == "SP1" || layer == "TX1"){
+            if(layer == "BG1" || layer == "BG2" || layer == "SP1" || layer == "TX1"){
+                let fade = _GFX.currentData[layer].fade;
                 let tilemap, exists, oldHash, newHash;
                 for(let tilemapKey in tilemaps){
                     // Get the tilemap from the provided list.
@@ -75,7 +118,7 @@ var _GFX = {
                     if(exists){ oldHash = _GFX.currentData[layer].tilemaps[tilemapKey].hash ?? 0; }
 
                     // Generate a new hash. 
-                    newHash = _GFX.utilities.xxHash32_min( JSON.stringify(tilemap) );
+                    newHash = _GFX.utilities.xxHash32_min( JSON.stringify({tilemap, fade}) );
                     
                     // Is this a changed object? (TEST: Hashes don't match.)
                     if(oldHash != newHash){
@@ -97,12 +140,75 @@ var _GFX = {
                     }
                 }
             }
+        },
 
-            // BG1 is always a total replacement.
-            else if(layer == "BG1"){
-                _GFX.currentData[layer].bgColorRgba = bgColorRgba;
-                _GFX.currentData[layer].tilemaps    = tilemaps;
-                _GFX.currentData[layer].changes     = true;
+        // Sets the fade over-ride values for all or any layers.
+        // NOTE: Fade uses preGenerated fadeTiles so color replacements will be skipped.
+        setFade: function(layer="ALL", level=0){
+            // _GFX.funcs.setFade("ALL", 5);
+            // layer can be one of: [ "BG1", "BG2", "SP1", "TXT1", "ALL" ].
+            // level can be one of: [ null, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
+
+            // Affect all layers?
+            if(layer=="ALL"){
+                // If the fade level is off then reset the fade settings for each layer.
+                for(let layerKey in _GFX.currentData){
+                    if(level==null){
+                        for(let layerKey in _GFX.currentData){ 
+                            // Set fade false.
+                            _GFX.currentData[layerKey].fade.fade = false;
+                        
+                            // Set prevFade to null.
+                            // _GFX.currentData[layerKey].fade.prevFade = null;
+                        
+                            // Set currFade to null.
+                            _GFX.currentData[layerKey].fade.currFade = null;
+                        }
+                    }
+                    // No, set the fade level for each layer. 
+                    else{
+                        for(let layerKey in _GFX.currentData){ 
+                            // Set fade true.
+                            _GFX.currentData[layerKey].fade.fade = true;
+                        
+                            // Set prevFade to currFade.
+                            // _GFX.currentData[layerKey].fade.prevFade = _GFX.currentData[layerKey].fade.currFade;
+                        
+                            // Set currFade to level.
+                            _GFX.currentData[layerKey].fade.currFade = level;
+                        }
+                    }
+
+                    // Set changes to true.
+                    _GFX.currentData[layerKey].changes = true;
+                }
+            }
+            else{
+                // If the fade level is off then reset the fade settings for the layer.
+                if(level==null){
+                    // Set fade false.
+                    _GFX.currentData[layer].fade.fade = false;
+                     
+                    // Set prevFade to null.
+                    // _GFX.currentData[layer].fade.prevFade = null;
+                 
+                    // Set currFade to null.
+                    _GFX.currentData[layer].fade.currFade = null;
+                }
+                // No, set the fade level for the layer. 
+                else{
+                    // Set fade true.
+                    _GFX.currentData[layer].fade.fade = true;
+                                        
+                    // Set prevFade to currFade.
+                    // _GFX.currentData[layer].fade.prevFade = _GFX.currentData[layer].fade.currFade;
+
+                    // Set currFade to level.
+                    _GFX.currentData[layer].fade.currFade = level;
+                }
+
+                // Set changes to true.
+                _GFX.currentData[layer].changes = true;
             }
         },
 
@@ -152,6 +258,8 @@ var _GFX = {
             _GFX.currentData["BG2"].changes = false;
             _GFX.currentData["SP1"].changes = false;
             _GFX.currentData["TX1"].changes = false;
+            _GFX.currentData["BG1"].bgColorRgbaChanged = false;
+            
         },
 
         // Returns a copy of a tilemap.

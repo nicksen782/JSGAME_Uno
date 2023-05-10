@@ -29,33 +29,49 @@ class LayerObject {
         // Settings.
         this.settings = config.settings ?? {};
 
+        // Hidden.
+        this.hidden = false; 
+
         // Add to _GFX.currentData.
         if(config.immediateAdd){
             this.firstRender();
         }
     };
+    
+    // Remove the LayerObject from _GFX.currentData, set the hidden flag, return the orgConfig
+    hideLayerObject(){
+        // Remove from _GFX.currentData and return the original config. (Helpful when changing layers.)
+        return this.removeLayerObject();
+    }
+    // Removes the LayerObject data from _GFX.currentData. (Causing the drawing to be removed.)
+    // Unsets the hidden flag to enable the render functions for this LayerObject. (So that drawing will work.)
+    unhideLayerObject(){
+        // Allow rendering by unsetting the hidden flag.
+        this.hidden = false; 
 
+        // Render the LayerObject.
+        // this.render();
+    }
+    
     removeLayerObject(){
         // Remove the layer object from the cache.
         _GFX.funcs.removeLayerObj(this.layerKey, this.layerObjKey);
-
-        // Prevent further rendering by overwriting this instance's render functions. 
-        this.firstRender = ()=>{};
-        this.render = ()=>{};
-
-        // Remove this instance from where it is stored.
-        _GFX.funcs.removeLayerObj(this.layerKey, this.layerObjKey);
-
+        
+        // Prevent further rendering by settings the hidden flag.
+        this.hidden = true; 
+        
         // Return the original config. (Helpful when changing layers.)
         return this.orgConfig;
     };
 
     // Render functions.
     firstRender(){
+        if(this.hidden){ return; }
         this.render();
     };
 
     render(){
+        if(this.hidden){ return; }
         _GFX.funcs.updateLayer(this.layerKey, 
             {
                 ..._GFX.funcs.createLayerObjData({ 

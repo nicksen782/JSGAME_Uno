@@ -15,18 +15,60 @@
     const fadeMasks = [
         //    // INDEX // DEC // B G R // BB GGG RRR // B%  G%  R%  
         // 0x00, //     0 // 0   // 0 0 0 // 00 000 000 // 0   0   0   
-        0x40, //     1 // 64  // 1 0 0 // 01 000 000 // 33  0   0   
-        0x88, //     2 // 136 // 2 1 0 // 10 001 000 // 66  14  0   
-        0x91, //     3 // 145 // 2 2 1 // 10 010 001 // 66  28  14  
-        0xD2, //     4 // 210 // 3 2 2 // 11 010 010 // 100 28  28  
-        0xE4, //     5 // 228 // 3 4 4 // 11 100 100 // 100 57  57  
-        0xAD, //     6 // 173 // 2 5 5 // 10 101 101 // 66  71  71  
-        0xB5, //     7 // 181 // 2 6 5 // 10 110 101 // 66  85  71  
-        0xB6, //     8 // 182 // 2 6 6 // 10 110 110 // 66  85  85  
-        0xBE, //     9 // 190 // 2 7 6 // 10 111 110 // 66  100 85  
-        0xBF, //    10 // 191 // 2 7 7 // 10 111 111 // 66  100 100 
+        0x40, //     1 // 64  // 1 0 0 // 01 000 000 // 33  0   0    // 0
+        0x88, //     2 // 136 // 2 1 0 // 10 001 000 // 66  14  0    // 1
+        0x91, //     3 // 145 // 2 2 1 // 10 010 001 // 66  28  14   // 2
+        0xD2, //     4 // 210 // 3 2 2 // 11 010 010 // 100 28  28   // 3
+        0xE4, //     5 // 228 // 3 4 4 // 11 100 100 // 100 57  57   // 4
+        0xAD, //     6 // 173 // 2 5 5 // 10 101 101 // 66  71  71   // 5
+        0xB5, //     7 // 181 // 2 6 5 // 10 110 101 // 66  85  71   // 6
+        0xB6, //     8 // 182 // 2 6 6 // 10 110 110 // 66  85  85   // 7
+        0xBE, //     9 // 190 // 2 7 6 // 10 111 110 // 66  100 85   // 8
+        0xBF, //    10 // 191 // 2 7 7 // 10 111 111 // 66  100 100  // 9
         // 0xFF, //    11 // 255 // 3 7 7 // 11 111 111 // 100 100 100 
     ].reverse();
+
+    const fadeMasksRGBA = [];
+    function createRgbaFadeValues(){
+        let src = fadeMasks;
+        let b,g,r;
+
+        for(let i=0, l=src.length; i<l; i+=1){
+            // console.log( {
+            //     "index:"      : i,
+            //     "hex_string"  : "0x"+src[i].toString(16).toUpperCase().padStart(2, "0"), 
+            //     "dec"         : src[i], 
+            //     "bin_string_b": ( (src[i] & 0b11000000) >> 6 ).toString(2).padStart(2, "0"), 
+            //     "bin_string_g": ( (src[i] & 0b00111000) >> 3 ).toString(2).padStart(3, "0"), 
+            //     "bin_string_r": ( (src[i] & 0b00000111) >> 0 ).toString(2).padStart(3, "0"),
+            // } );
+
+            // Add the values in reverse order (round down to the nearest whole integer).
+            b = ( ( ( ( src[i] & 0b11000000 ) >> 6) / 3 ) * 100 ) << 0;
+            g = ( ( ( ( src[i] & 0b00111000 ) >> 3) / 7 ) * 100 ) << 0;
+            r = ( ( ( ( src[i] & 0b00000111 ) >> 0) / 7 ) * 100 ) << 0;
+            fadeMasksRGBA.unshift( new Uint8ClampedArray([ b, g, r ]) ); 
+        }
+        fadeMasksRGBA.reverse();
+    };
+    // Modifies the supplied rgb332 tile and applies a fade to it..
+    function rgba32TileToFadedRgba32Tile(imageDataTile, fadeLevel){
+        // Need the max values.
+        let fadeColorObj = fadeMasksRGBA[fadeLevel];
+        let maxRed   = fadeColorObj[2] / 100; 
+        let maxGreen = fadeColorObj[1] / 100; 
+        let maxBlue  = fadeColorObj[0] / 100; 
+
+        // Restrict each pixel r,g,b color to a max value.
+        let data = imageDataTile.data;
+        let len = data.length;
+        for(let i=0; i<len; i+=4){
+            data[i+0] =  (data[i+0] * maxRed)   | 0;
+            data[i+1] =  (data[i+1] * maxGreen) | 0;
+            data[i+2] =  (data[i+2] * maxBlue)  | 0;
+            data[i+3] =  (data[i+3])            | 0;
+        }
+    };
     
     // Returns a copy of a rgb332 tile that has had the specified fade applied to it.
     function rgb332TileToFadedRgb332Tile(tileData, config, fadeLevel){
@@ -390,12 +432,18 @@
         let ts2 = performance.now();
         let finishedTilesets = await createGraphicsAssets(rgb332_tilesets, createFadeTilesets);
         let ts2e = performance.now() - ts2;
+        
+        // Create the RGBA fade values.
+        let ts3 = performance.now();
+        createRgbaFadeValues();
+        let ts3e = performance.now() - ts3;
 
         return {
             finishedTilesets: finishedTilesets,
             timings: {
                 getAndParseGraphicsData: ts1e,
                 createGraphicsAssets   : ts2e,
+                createRgbaFadeValues   : ts3e,
             },
 
         }
@@ -407,5 +455,6 @@
         updateRegion    : updateRegion,
         copyRegion      : copyRegion,
         updateRegionBlit: updateRegionBlit,
+        rgba32TileToFadedRgba32Tile: rgba32TileToFadedRgba32Tile,
     };
 }));

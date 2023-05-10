@@ -1,6 +1,35 @@
 _APP.gamestates["gs_N782"] = {
     // Holds the LayerObjects object.
-    layerObjs: {},
+    layerObjs: {
+        "p1_card_0": {},
+        "p1_card_1": {},
+        "p1_card_2": {},
+        "p1_card_3": {},
+        "p1_card_4": {},
+        
+        "p2_card_0": {},
+        "p2_card_1": {},
+        "p2_card_2": {},
+        "p2_card_3": {},
+        "p2_card_4": {},
+        
+        "p3_card_0": {},
+        "p3_card_1": {},
+        "p3_card_2": {},
+        "p3_card_3": {},
+        "p3_card_4": {},
+        
+        "p4_card_0": {},
+        "p4_card_1": {},
+        "p4_card_2": {},
+        "p4_card_3": {},
+        "p4_card_4": {},
+
+        "discardPileHeight": {},
+        "discardPileFaceUpCard": {},
+        "drawPileHeight": {},
+        "drawPileFaceDownCard": {},
+    },
 
     // Holds static config for this game state.
     staticConfig: {
@@ -100,6 +129,10 @@ _APP.gamestates["gs_N782"] = {
         // Clear the screen and the graphics caches.
         _GFX.funcs.clearAllLayers(true);
 
+        // _GFX.funcs.setFade("ALL", null);
+        // _GFX.funcs.setFade("ALL", 0);
+        // _GFX.funcs.setFade("ALL", 5);
+
         // Draw the board to BG1.
         this.layerObjs["board"] = new LayerObject({
             immediateAdd: false,
@@ -117,10 +150,10 @@ _APP.gamestates["gs_N782"] = {
         // this.updateUnderPiles();
 
         // DEBUG. 
-        // this.debug_cardTest1();
-        // this.debug_cardTest2();
-        this.debug_cardTest3();
-        this.debug_cardTest4();
+        // this.debug_cardTest1(); // Small cards.
+        // this.debug_cardTest2(); // Large cards.
+        this.debug_cardTest3(); // Player cards face down.
+        this.debug_cardTest4(); // Draw and discard piles.
 
         // Set the inited flag.
         this.inited = true;
@@ -255,9 +288,14 @@ _APP.gamestates["gs_N782"] = {
     },
 
     render: function(){
+        // this.invalidObjKeys = [];
         for(let key in this.layerObjs){
-            this.layerObjs[key].render();
+            if(this.layerObjs[key].render){ this.layerObjs[key].render() }
+            // else{ this.invalidObjKeys.push(key); }
         }
+        // if(this.invalidObjKeys.length){ 
+            // console.log("gs_N782: render: this.invalidObjKeys:", this.invalidObjKeys); 
+        // }
     },
     // Main function of this game state. Calls other functions/handles logic, etc.
     main: function(){
@@ -272,9 +310,9 @@ _APP.gamestates["gs_N782"] = {
     drawCardOnDiscardPile: function(value, color){
         let x4 = this.staticConfig.discardPos[0]; 
         let y4 = this.staticConfig.discardPos[1]; 
-        this.layerObjs[`faceUpDiscardCard`] = new Card({
+        this.layerObjs[`discardPileFaceUpCard`] = new Card({
             immediateAdd: false,
-            layerObjKey: `faceUpDiscardCard`, layerKey: "BG2", tilesetKey: "bg_tiles",
+            layerObjKey: `discardPileFaceUpCard`, layerKey: "BG2", tilesetKey: "bg_tiles",
             x: x4*8, y: y4*8, 
             settings : { xFlip: false, yFlip: false, rotation: 0, colorData:[] },
             card: { size: "large", value: value, color: color }
@@ -360,10 +398,10 @@ _APP.gamestates["gs_N782"] = {
             }
         }
 
-        // Draw.
-        this.layerObjs["faceDownDrawCard"] = new LayerObject({
+        // Draw. 
+        this.layerObjs["drawPileFaceDownCard"] = new LayerObject({
             immediateAdd: false,
-            layerObjKey: "faceDownDrawCard", layerKey: "BG2", tilesetKey: "bg_tiles",
+            layerObjKey: "drawPileFaceDownCard", layerKey: "BG2", tilesetKey: "bg_tiles",
             tmap: tmap_draw,
             x: x*8, y: y*8, 
             settings : {
@@ -552,9 +590,9 @@ _APP.gamestates["gs_N782"] = {
                 else if(playerKey=="p3"){ rotation = 180; }
                 else if(playerKey=="p4"){ rotation = -90; }
 
-                this.layerObjs[`debug_${playerKey}_${p}`] = new Card({
+                this.layerObjs[`${playerKey}_card_${p}`] = new Card({
                     immediateAdd: false,
-                    layerObjKey: `debug_${playerKey}_${p}`, layerKey: "BG2", tilesetKey: "bg_tiles",
+                    layerObjKey: `${playerKey}_card_${p}`, layerKey: "BG2", tilesetKey: "bg_tiles",
                     x: x*8, y: y*8, 
                     settings : { xFlip: false, yFlip: false, rotation: rotation, colorData:[] },
                     card: { size: "small", value: "card_back_sm_0deg", color: "CARD_BACK" }

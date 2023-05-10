@@ -33,6 +33,53 @@
         <label class="debug_title">BUTTONS!</label>
         <button id="debug_test_drawColorPalette">drawColorPalette (TX1)</button>
         <button id="debug_test_toggleGridCanvas">toggleGridCanvas</button>
+        <br>
+        
+        <label class="debug_title">FADE!</label>
+        <button id="debug_test_fade_null">FN</button>
+        <button id="debug_test_fade_0"> F0</button>
+        <button id="debug_test_fade_1"> F1</button>
+        <button id="debug_test_fade_2"> F2</button>
+        <button id="debug_test_fade_3"> F3</button>
+        <button id="debug_test_fade_4"> F4</button>
+        <button id="debug_test_fade_5"> F5</button>
+        <button id="debug_test_fade_6"> F6</button>
+        <button id="debug_test_fade_7"> F7</button>
+        <button id="debug_test_fade_8"> F8</button>
+        <button id="debug_test_fade_9"> F9</button>
+        <button id="debug_test_fade_10"> F10</button>
+        <br>
+        <label class="debug_title">FADE!</label>
+        <input type="range" id="fadeSlider" min="0" max="11" step="1" value="0">
+        <input type="text" id="fadeSliderText">
+        <br>
+        <label class="debug_title">COUNTS!</label>
+        <table>
+            <tr> <td>frameCounter    </td> <td> <div id="debug_frameCounter"></div>     </td> </tr>
+            <tr> <td>frameDrawCounter</td> <td> <div id="debug_frameDrawCounter"></div> </td> </tr>
+            
+            <!-- <tr> <td>CHANGES: BG1: </td> <td> <div id="debug_BG1_changes"></div> </td> </tr> -->
+            <!-- <tr> <td>CHANGES: BG2: </td> <td> <div id="debug_BG2_changes"></div> </td> </tr> -->
+            <!-- <tr> <td>CHANGES: SP1: </td> <td> <div id="debug_SP1_changes"></div> </td> </tr> -->
+            <!-- <tr> <td>CHANGES: TX1: </td> <td> <div id="debug_TX1_changes"></div> </td> </tr> -->
+
+            <tr> <td>FADE: BG1: active</td> <td> <div id="debug_BG1_fade_fade"></div> </td> </tr>
+            <tr> <td>FADE: BG2: active</td> <td> <div id="debug_BG2_fade_fade"></div> </td> </tr>
+            <tr> <td>FADE: SP1: active</td> <td> <div id="debug_SP1_fade_fade"></div> </td> </tr>
+            <tr> <td>FADE: TX1: active</td> <td> <div id="debug_TX1_fade_fade"></div> </td> </tr>
+            <tr> <td>FADE: BG1: curr  </td> <td> <div id="debug_BG1_fade_curr"></div> </td> </tr>
+            <tr> <td>FADE: BG2: curr  </td> <td> <div id="debug_BG2_fade_curr"></div> </td> </tr>
+            <tr> <td>FADE: SP1: curr  </td> <td> <div id="debug_SP1_fade_curr"></div> </td> </tr>
+            <tr> <td>FADE: TX1: curr  </td> <td> <div id="debug_TX1_fade_curr"></div> </td> </tr>
+            <!-- <tr> <td>FADE: BG1: prev  </td> <td> <div id="debug_BG1_fade_prev"></div> </td> </tr> -->
+            <!-- <tr> <td>FADE: BG2: prev  </td> <td> <div id="debug_BG2_fade_prev"></div> </td> </tr> -->
+            <!-- <tr> <td>FADE: SP1: prev  </td> <td> <div id="debug_SP1_fade_prev"></div> </td> </tr> -->
+            <!-- <tr> <td>FADE: TX1: prev  </td> <td> <div id="debug_TX1_fade_prev"></div> </td> </tr> -->
+        </table>
+        <!-- _APP.gameLoop.frameCounter
+        _APP.gameLoop.frameDrawCounter -->
+        <br>
+
         <!-- <button id="debug_drawTest1">drawTest1</button> -->
         <!-- <button id="debug_animTest1">animTest1</button> -->
         <!-- <button id="debug_classTest1">classTest1</button> -->

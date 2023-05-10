@@ -168,6 +168,7 @@ const _APP = {
                 // Calculate the time difference between the thisLoopStart and the last loop run. 
                 this.thisLoopStart = timestamp;
                 this.delta = timestamp - this.lastLoopRun;
+                this.frameCounter += 1;
 
                 // Is it time to run the next loop?
                 if( (this.delta >= this.msFrame) ){
@@ -187,10 +188,27 @@ const _APP = {
 
                     // LOGIC
                     await _APP.gamestates[_APP.gamestate.gs1].main();
+                    
+                    // DRAW
                     if(_APP.gamestates[_APP.gamestate.gs1].render){ _APP.gamestates[_APP.gamestate.gs1].render(); };
 
-                    // DRAW
-                    _GFX.funcs.sendGfxUpdates();
+                    if(
+                        (
+                            _GFX.currentData["BG1"].changes ||
+                            _GFX.currentData["BG2"].changes ||
+                            _GFX.currentData["SP1"].changes ||
+                            _GFX.currentData["TX1"].changes
+                        )
+                    ){
+                        // if(_GFX.currentData["BG1"].changes) { 
+                        //     console.log(`_GFX.currentData["BG1"].changes:`, _GFX.currentData["BG1"].changes); 
+                        // }
+                        // if(_GFX.currentData["BG2"].changes) { console.log(`_GFX.currentData["BG2"].changes:`, _GFX.currentData["BG2"].changes); }
+                        // if(_GFX.currentData["SP1"].changes) { console.log(`_GFX.currentData["SP1"].changes:`, _GFX.currentData["SP1"].changes); }
+                        // if(_GFX.currentData["TX1"].changes) { console.log(`_GFX.currentData["TX1"].changes:`, _GFX.currentData["TX1"].changes); }
+                        _GFX.funcs.sendGfxUpdates();
+                        this.frameDrawCounter += 1;
+                    }
 
                     // DEBUG
                     // console.log(this.frameCounter, _APP.gameLoop.loopType, this.fpsCalc.average.toFixed(2), this.fpsCalc.avgMsPerFrame.toFixed(2));

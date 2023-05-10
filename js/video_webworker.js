@@ -26,7 +26,7 @@ const _GFX = {
     },
     utilities: {
         // Converts a tilemap to new ImageData (respects the settings provided.)
-        tilemapToImageData: function(tilesetName, tilemap, settings){
+        tilemapToImageData: function(tilesetName, tilemap, settings, fade=null){
             // Get the tileset and the dimensions for the tileset. 
             let tileset = _GFX.tilesets[tilesetName].tileset;
             let tw = _GFX.tilesets["bg_tiles2"].config.tileWidth;
@@ -44,15 +44,30 @@ const _GFX = {
             let imageDataTile = new ImageData(tw, th);
             
             let tile;
+            
             for(let y=0; y<mapH; y+=1){
                 for(let x=0; x<mapW; x+=1){
-                    // Get a handle to the tile. 
-                    tile = (settings.fade == undefined)
-                        ? tileset[ tilemap[index] ] 
-                        : tileset[ tilemap[index] ].fadeTiles[settings.fade];
-                    
-                    // Copy the tile data to the imageDataTile. 
-                    imageDataTile.data.set(tile.imgData.data.slice());
+                    // Get the tile.
+                    tile = tileset[ tilemap[index] ];
+
+                    // If global fade...
+                    if( (fade && fade.fade && fade.currFade != null)){
+                        imageDataTile = _GFX.utilities.fadeImageData(tile, fade.currFade, settings);
+                    }
+                    // If per tilemap fade...
+                    else if( settings.fade != null){
+                        imageDataTile = _GFX.utilities.fadeImageData(tile, settings.fade, settings);
+                    }
+                    // No fade...
+                    else{
+                        // Copy the tile data to the imageDataTile. 
+                        imageDataTile.data.set(tile.imgData.data.slice());
+
+                        // Apply color replacements (RGBA).
+                        if(settings.colorData && settings.colorData.length){ 
+                            _GFX.utilities.replaceColors(imageDataTile, settings.colorData); 
+                        }
+                    }
 
                     // Rotate tile?
                     if(settings.rotation) { _GFX.utilities.rotateImageData(imageDataTile, settings.rotation); }
@@ -78,11 +93,6 @@ const _GFX = {
                     // Increment the tile index in the tilemap.
                     index++;
                 }
-            }
-
-            // Replace colors of the resulting imageData?
-            if(settings.colorData && settings.colorData.length){ 
-                _GFX.utilities.replaceColors(imageData, settings.colorData); 
             }
 
             return {
@@ -195,9 +205,32 @@ const _GFX = {
                 }
             }
         },
+
+        // Takes a tile, copies it, and applies color changes THEN fades the tile.
+        fadeImageData: function(tileData, fadeLevel, settings){
+            // Create a transparent tile.
+            let imageDataTile = new ImageData(tileData.imgData.width, tileData.imgData.width);
+
+            // If the currFade is 10 then set tile to a new transparent tile.
+            if(fadeLevel == 10){ return imageDataTile; }
+            else{
+                // Copy the tile data to the imageDataTile. 
+                imageDataTile.data.set(tileData.imgData.data.slice());
+                
+                // Apply color replacements (RGBA).
+                if(settings.colorData && settings.colorData.length){ _GFX.utilities.replaceColors(imageDataTile, settings.colorData); }
+
+                // Fade the tile (RGBA version of the fade table.)
+                createGraphicsAssets.rgba32TileToFadedRgba32Tile(imageDataTile, fadeLevel);
+            }
+            
+            // Return the completed data.
+            return imageDataTile;
+        },
     },
 };
 const _DEBUG = {
+    // TODO: Should this be done with a debug canvas layer on the main thread instead?
     // Draw 256 tiles displaying all colors in the color palette. (16 rows of 16 at twice the tile dimensions.) 
     // Expects a 256x256 pixel container.
     drawColorPalette: function(){
@@ -450,7 +483,7 @@ const messageFuncs = {
             _GFX.layers[layer].imgDataCache.data.fill(0);
         },
         // Converts a tilemap to ImageData and draws to the imgDataCache. Can also recolor and save tilemap rect and hash data.
-        drawTilemapsToImgDataLayer : function(layer, tilemaps, save=false){
+        drawTilemapsToImgDataLayer : function(layer, tilemaps, save=false, fade=null){
             // This prevents a sprite from always being on top of other sprites. 
             // By reversing the draw order each is on top 50% of the time.
             let mapKeys = Object.keys(tilemaps);
@@ -460,7 +493,7 @@ const messageFuncs = {
             for(let i=0; i<mapKeys.length; i+=1){
                 let mapKey = mapKeys[i];
                 let tmap = tilemaps[mapKey];
-                let obj = _GFX.utilities.tilemapToImageData(tmap.ts, tmap.tmap, tmap.settings);
+                let obj = _GFX.utilities.tilemapToImageData(tmap.ts, tmap.tmap, tmap.settings, fade);
 
                 if(tmap.settings.bgColorRgba){
                     let [r, g, b, a] = tmap.settings.bgColorRgba;
@@ -513,7 +546,7 @@ const messageFuncs = {
         // Layer updaters
         // **************
 
-        // Updates the BG1 layer.
+        // Updates the BG1 layer. (Any update to this layer causes a complete redraw.)
         updateBG1 : function(data){
             let ts_TOTAL = performance.now();
 
@@ -521,17 +554,19 @@ const messageFuncs = {
             
             // Clear the Image Data (transparent).
             let ts_clearLayer = performance.now();
-            this.clearLayer(layer);
+            // if(data.bgColorRgba && data.bgColorRgbaChanged){
+                this.clearLayer(layer);
+            // }
             ts_clearLayer = performance.now() - ts_clearLayer;
             
             // Draw the tilemaps to the Image Data.
             let ts_drawTilemapsToImgDataLayer = performance.now();
-            this.drawTilemapsToImgDataLayer(layer, data.tilemaps, false);
+            this.drawTilemapsToImgDataLayer(layer, data.tilemaps, false, data.fade);
             ts_drawTilemapsToImgDataLayer = performance.now() - ts_drawTilemapsToImgDataLayer;
             
             // Set the transparent pixels to the background color.
             let ts_setBackgroundcolor = performance.now();
-            if(data.bgColorRgba){
+            if(data.bgColorRgba && data.bgColorRgbaChanged){
                 this.setBackgroundcolor(layer, data.bgColorRgba);
             }
             ts_setBackgroundcolor = performance.now() - ts_setBackgroundcolor;
@@ -567,7 +602,7 @@ const messageFuncs = {
             
             // Draw the tilemaps to the Image Data.
             let ts_drawTilemapsToImgDataLayer = performance.now();
-            this.drawTilemapsToImgDataLayer(layer, data.tilemaps, true);
+            this.drawTilemapsToImgDataLayer(layer, data.tilemaps, true, data.fade);
             ts_drawTilemapsToImgDataLayer = performance.now() - ts_drawTilemapsToImgDataLayer;
 
             // Draw the entire Image Data. 
@@ -606,7 +641,7 @@ const messageFuncs = {
 
             // Draw the tilemaps to the Image Data.
             let ts_drawTilemapsToImgDataLayer = performance.now();
-            this.drawTilemapsToImgDataLayer(layer, data.tilemaps, true);
+            this.drawTilemapsToImgDataLayer(layer, data.tilemaps, true, data.fade);
             ts_drawTilemapsToImgDataLayer = performance.now() - ts_drawTilemapsToImgDataLayer;
     
             // Draw the entire Image Data. 
@@ -641,7 +676,7 @@ const messageFuncs = {
 
             // Draw the tilemaps to the Image Data.
             let ts_drawTilemapsToImgDataLayer = performance.now();
-            this.drawTilemapsToImgDataLayer(layer, data.tilemaps, true);
+            this.drawTilemapsToImgDataLayer(layer, data.tilemaps, true, data.fade);
             ts_drawTilemapsToImgDataLayer = performance.now() - ts_drawTilemapsToImgDataLayer;
     
             // Draw the entire Image Data. 
@@ -666,14 +701,16 @@ const messageFuncs = {
         // Runs the graphics updates.
         run: function(messageData){
             let sendGfxUpdates = performance.now();
+            
             if( messageData["BG1"] ){ this.updateBG1(messageData["BG1"]); }
             if( messageData["BG2"] ){ this.updateBG2(messageData["BG2"]); }
             if( messageData["SP1"] ){ this.updateSP1(messageData["SP1"]); }
             if( messageData["TX1"] ){ this.updateTX1(messageData["TX1"]); }
 
             this.flickerFlag = ! this.flickerFlag;
+
             sendGfxUpdates = performance.now() - sendGfxUpdates;
-            
+
             // Save the timings.
             messageFuncs.timings["sendGfxUpdates"]["sendGfxUpdates"] = sendGfxUpdates.toFixed(3);
         },
