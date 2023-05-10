@@ -5,8 +5,7 @@ var _GFX = {
     // Holds the graphics data that will be sent to the WebWorker.
     currentData : {
         "BG1":{
-            bgColorRgba: [0,64,92,255],
-            bgColorRgbaChanged: false,
+            bgColorRgba: [0,0,0,255],
             tilemaps   : {},
             changes    : false,
             // FADE
@@ -97,7 +96,6 @@ var _GFX = {
             }
 
             //
-            _GFX.currentData[layer].bgColorRgbaChanged = true;
             _GFX.currentData[layer].changes = true;
         },
 
@@ -111,6 +109,9 @@ var _GFX = {
                     // Get the tilemap from the provided list.
                     tilemap = tilemaps[tilemapKey];
 
+                    // Make sure that settings is an object.
+                    tilemap.settings = this.correctSettings(tilemap.settings);
+
                     // Does this tilemapKey already exist?
                     exists = _GFX.currentData[layer].tilemaps[tilemapKey] ? true : false;
 
@@ -118,16 +119,14 @@ var _GFX = {
                     if(exists){ oldHash = _GFX.currentData[layer].tilemaps[tilemapKey].hash ?? 0; }
 
                     // Generate a new hash. 
-                    newHash = _GFX.utilities.xxHash32_min( JSON.stringify({tilemap, fade}) );
-                    
+                    newHash = _GFX.utilities.djb2Hash( JSON.stringify({tilemap, fade}) );
+
                     // Is this a changed object? (TEST: Hashes don't match.)
                     if(oldHash != newHash){
-                        // Make sure that settings is an object.
-                        tilemap.settings = this.correctSettings(tilemap.settings);
-
                         // Update the layerObject.
                         _GFX.currentData[layer].tilemaps[tilemapKey] = {
                             hash: newHash,
+                            // hash: newHash + parseInt((Math.random()*100000).toFixed(0)),
                             ts       : tilemap.ts,
                             tmap     : tilemap.tmap,
                             x        : tilemap.x,
@@ -213,7 +212,7 @@ var _GFX = {
         },
 
         // This gathers the data created by the other update functions and sends the values.
-        sendGfxUpdates: function(){
+        sendGfxUpdates: async function(waitForResp=false){
             // Do not continue if there are not any changes. 
             if(
                 ! (
@@ -222,44 +221,35 @@ var _GFX = {
                     _GFX.currentData["SP1"].changes ||
                     _GFX.currentData["TX1"].changes
                 )
-            ){
-                // console.log(
-                //     "Skipping: sendGfxUpdates" +
-                //     `\nBG1 changes:${_GFX.currentData["BG1"].changes}` +
-                //     `\nBG2 changes:${_GFX.currentData["BG2"].changes}` +
-                //     `\nSP1 changes:${_GFX.currentData["SP1"].changes}` +
-                //     `\nTX1 changes:${_GFX.currentData["TX1"].changes}` +
-                //     ""
-                // );
-                return;
+            ){ return; }
+
+            let data = {
+                BG1: _GFX.currentData["BG1"].changes ?_GFX.currentData["BG1"] : 0,
+                BG2: _GFX.currentData["BG2"].changes ?_GFX.currentData["BG2"] : 0,
+                SP1: _GFX.currentData["SP1"].changes ?_GFX.currentData["SP1"] : 0,
+                TX1: _GFX.currentData["TX1"].changes ?_GFX.currentData["TX1"] : 0,
+            };
+
+            // Send ASYNC
+            if(!waitForResp){
+                _WEBW_V.SEND("sendGfxUpdates", { 
+                    data: data, 
+                    refs:[]
+                }, false);
             }
-            // else{
-            //     console.log(
-            //         "UPDATING: sendGfxUpdates" +
-            //         `\nBG1 changes:${_GFX.currentData["BG1"].changes} ${JSON.stringify(Object.keys(_GFX.currentData["BG1"].tilemaps))}` +
-            //         `\nBG2 changes:${_GFX.currentData["BG2"].changes} ${JSON.stringify(Object.keys(_GFX.currentData["BG2"].tilemaps))}` +
-            //         `\nSP1 changes:${_GFX.currentData["SP1"].changes} ${JSON.stringify(Object.keys(_GFX.currentData["SP1"].tilemaps))}` +
-            //         `\nTX1 changes:${_GFX.currentData["TX1"].changes} ${JSON.stringify(Object.keys(_GFX.currentData["TX1"].tilemaps))}` +
-            //         ""
-            //     );
-            // }
+            // Await for the graphics update to finish.
+            else{
+                await _WEBW_V.SEND("sendGfxUpdates", { 
+                    data: data, 
+                    refs:[]
+                }, true);
+            }
 
-            _WEBW_V.SEND("sendGfxUpdates", { 
-                data:{
-                    BG1: _GFX.currentData["BG1"].changes ?_GFX.currentData["BG1"] : 0,
-                    BG2: _GFX.currentData["BG2"].changes ?_GFX.currentData["BG2"] : 0,
-                    SP1: _GFX.currentData["SP1"].changes ?_GFX.currentData["SP1"] : 0,
-                    TX1: _GFX.currentData["TX1"].changes ?_GFX.currentData["TX1"] : 0,
-                }, 
-                refs:[]
-            }, false);
-
+            // Clear the changes flags.
             _GFX.currentData["BG1"].changes = false;
             _GFX.currentData["BG2"].changes = false;
             _GFX.currentData["SP1"].changes = false;
             _GFX.currentData["TX1"].changes = false;
-            _GFX.currentData["BG1"].bgColorRgbaChanged = false;
-            
         },
 
         // Returns a copy of a tilemap.
@@ -393,9 +383,14 @@ var _GFX = {
 
     // Transformation utilities.
     utilities:{
-        // Returns a hash for the specified data. (xxHash32 algorithm variant, minified.)
-        xxHash32_min : function(a){
-            for(var t=function(a,t){return a<<t|a>>>32-t},u=a.length,h=u,i=0,r=2654435769,e=0;h>=4;)e=a[i]|a[i+1]<<8|a[i+2]<<16|a[i+3]<<24,e=t(e=Math.imul(e,2246822507),13),r=t(r^=e=Math.imul(e,3266489909),17),r=Math.imul(r,461845907),i+=4,h-=4;switch(e=0,h){case 3:e^=a[i+2]<<16;break;case 2:e^=a[i+1]<<8;break;case 1:e^=a[i],e=t(e=Math.imul(e,2246822507),13),r^=e=Math.imul(e,3266489909)}return r^=u,r^=r>>>16,r=Math.imul(r,2246822507),r^=r>>>13,r=Math.imul(r,3266489909),(r^=r>>>16)>>>0
+        // Returns a hash for the specified string. (Variation of Dan Bernstein's djb2 hash.)
+        djb2Hash: function(str) {
+            str = str.toString();
+            var hash = 5381;
+            for (var i = 0; i < str.length; i++) {
+                hash = ((hash << 5) + hash) + str.charCodeAt(i); /* hash * 33 + c */
+            }
+            return hash;
         },
 
         // ******************
@@ -519,7 +514,7 @@ var _GFX = {
             }
 
             // Swap the width and the height if needed.
-            if(degrees == 90 || degrees == -90 || degrees == 270){
+            if(degrees == 90 || degrees == -90 || degrees == 270 || degrees == -270){
                 [width, height] = [height, width];
             }
 

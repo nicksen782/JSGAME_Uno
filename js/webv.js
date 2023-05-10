@@ -45,6 +45,14 @@ var _WEBW_V = {
                     break;
                 }
 
+                case "sendGfxUpdates"     : {
+                    if(this.differedProms[e.data.mode]){ 
+                        console.log("sendGfxUpdates:", e.data.data);
+                        this.differedProms[e.data.mode].resolve(); 
+                    }
+                    break;
+                }
+
                 // Unmatched function.
                 default     : { 
                     // 

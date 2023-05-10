@@ -148,8 +148,8 @@ const _APP = {
             // Cancel the current animation frame. 
             if     (_APP.gameLoop.loopType == "raf"){ window.cancelAnimationFrame(_APP.gameLoop.raf_id);  }
             else if(_APP.gameLoop.loopType == "to") { window.clearTimeout(_APP.gameLoop.raf_id); }
-            
-    
+            else{ console.error("Invalid loopType:", _APP.gameLoop.loopType); }
+
             // Set the gameLoop.running to false. 
             _APP.gameLoop.running = false;
         },
@@ -192,6 +192,7 @@ const _APP = {
                     // DRAW
                     if(_APP.gamestates[_APP.gamestate.gs1].render){ _APP.gamestates[_APP.gamestate.gs1].render(); };
 
+                    // Send a draw request if there are changes for any layer.
                     if(
                         (
                             _GFX.currentData["BG1"].changes ||
@@ -200,13 +201,8 @@ const _APP = {
                             _GFX.currentData["TX1"].changes
                         )
                     ){
-                        // if(_GFX.currentData["BG1"].changes) { 
-                        //     console.log(`_GFX.currentData["BG1"].changes:`, _GFX.currentData["BG1"].changes); 
-                        // }
-                        // if(_GFX.currentData["BG2"].changes) { console.log(`_GFX.currentData["BG2"].changes:`, _GFX.currentData["BG2"].changes); }
-                        // if(_GFX.currentData["SP1"].changes) { console.log(`_GFX.currentData["SP1"].changes:`, _GFX.currentData["SP1"].changes); }
-                        // if(_GFX.currentData["TX1"].changes) { console.log(`_GFX.currentData["TX1"].changes:`, _GFX.currentData["TX1"].changes); }
-                        _GFX.funcs.sendGfxUpdates();
+                        // await _GFX.funcs.sendGfxUpdates(true);
+                        _GFX.funcs.sendGfxUpdates(false);
                         this.frameDrawCounter += 1;
                     }
 

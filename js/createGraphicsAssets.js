@@ -44,10 +44,10 @@
             // } );
 
             // Add the values in reverse order (round down to the nearest whole integer).
-            b = ( ( ( ( src[i] & 0b11000000 ) >> 6) / 3 ) * 100 ) << 0;
-            g = ( ( ( ( src[i] & 0b00111000 ) >> 3) / 7 ) * 100 ) << 0;
             r = ( ( ( ( src[i] & 0b00000111 ) >> 0) / 7 ) * 100 ) << 0;
-            fadeMasksRGBA.unshift( new Uint8ClampedArray([ b, g, r ]) ); 
+            g = ( ( ( ( src[i] & 0b00111000 ) >> 3) / 7 ) * 100 ) << 0;
+            b = ( ( ( ( src[i] & 0b11000000 ) >> 6) / 3 ) * 100 ) << 0;
+            fadeMasksRGBA.unshift( new Uint8ClampedArray([ r, g, b ]) ); 
         }
         fadeMasksRGBA.reverse();
     };
@@ -55,9 +55,9 @@
     function rgba32TileToFadedRgba32Tile(imageDataTile, fadeLevel){
         // Need the max values.
         let fadeColorObj = fadeMasksRGBA[fadeLevel];
-        let maxRed   = fadeColorObj[2] / 100; 
+        let maxRed   = fadeColorObj[0] / 100; 
         let maxGreen = fadeColorObj[1] / 100; 
-        let maxBlue  = fadeColorObj[0] / 100; 
+        let maxBlue  = fadeColorObj[2] / 100; 
 
         // Restrict each pixel r,g,b color to a max value.
         let data = imageDataTile.data;
@@ -70,6 +70,7 @@
         }
     };
     
+    // UNUSED.
     // Returns a copy of a rgb332 tile that has had the specified fade applied to it.
     function rgb332TileToFadedRgb332Tile(tileData, config, fadeLevel){
         let tileHeight        = config.tileHeight;
@@ -216,7 +217,7 @@
     }
 
     // Creates the graphical assets and faded graphical assets.
-    async function createGraphicsAssets(rgb332_tilesets, createFadeTilesets){
+    async function createGraphicsAssets(rgb332_tilesets){
         let finishedTilesets = {};
 
         // Create the tileset.
@@ -242,87 +243,24 @@
 
                     let tileIndex = 0;
                     for(let tileId in rgb332_tilesets[tsKey].tileset){
-                        // Two copies of canvas and ctx each.
-                        // let canvasSrc = new OffscreenCanvas(tileWidth, tileHeight);
-                        // let canvas    = new OffscreenCanvas(tileWidth, tileHeight);
-                        // let ctxSrc = canvasSrc.getContext("2d", { willReadFrequently: true });
-                        // let ctx    = canvas.getContext("2d", { willReadFrequently: true });
+                        // Copy of the original rgb332 tile.
+                        let rgb332Src = new Uint8ClampedArray( rgb332_tilesets[tsKey].tileset[tileId].org_rgb332.slice() );
 
                         // Start the object for this tile.
                         let newTile = {
-                            // Copy (not referrence) of the original rgb332 data.
-                            rgb332Src: new Uint8ClampedArray( rgb332_tilesets[tsKey].tileset[tileId].org_rgb332.slice() ),
-        
-                            // Not-changing copy of the Image Data (can be copied.)
-                            // imgDataSrc: ctx.createImageData(tileWidth, tileHeight),
-                            
-                            // Image Data (for use.)
+                            // Image Data
                             imgData: new ImageData(tileWidth, tileHeight),
                             
-                            // Canvas/ctx (Source versions)
-                            // canvasSrc: canvasSrc,
-                            // ctxSrc: ctxSrc,
-        
-                            // Canvas/ctx (for use.)
-                            // canvas: canvas,
-                            // ctx: ctx,
-        
-                            // Faded tiles.
-                            fadeTiles: [],
-        
                             // Flags.
                             hasTransparency   : false, 
                             isFullyTransparent: false, 
                         };
 
                         // Generate rgba32 tile data from rgb332 data and save.
-                        let tileDataRgba = rgb332TileDataToRgba32(newTile.rgb332Src, rgb332_tilesets[tsKey].config);
-                        // newTile.imgDataSrc.data.set(tileDataRgba.tileDataRgb32);
+                        let tileDataRgba = rgb332TileDataToRgba32(rgb332Src, rgb332_tilesets[tsKey].config);
                         newTile.imgData.data.set(tileDataRgba.tileDataRgb32);
                         newTile.hasTransparency    = tileDataRgba.hasTransparency;
                         newTile.isFullyTransparent = tileDataRgba.isFullyTransparent;
-        
-                        // Draw the image to the canvas.
-                        // ctxSrc.putImageData(newTile.imgData, 0, 0);
-                        // ctx.putImageData(newTile.imgData, 0, 0);
-
-                        // FADE?
-                        if(createFadeTilesets){
-                            for(let level = 0; level<fadeMasks.length; level+=1){
-                                // let canvasSrc2 = new OffscreenCanvas(tileWidth, tileHeight);
-                                // let canvas2    = new OffscreenCanvas(tileWidth, tileHeight);
-                                // let ctxSrc2 = canvasSrc2.getContext("2d", { willReadFrequently: true });
-                                // let ctx2    = canvas2.getContext("2d", { willReadFrequently: true });
-        
-                                let tileDataRgb = rgb332TileToFadedRgb332Tile(newTile.rgb332Src, rgb332_tilesets[tsKey].config, level);
-        
-                                let newFadeTile = {
-                                    rgb332Src :tileDataRgb.tileDataRgb332,
-                                    // imgDataSrc: ctx2.createImageData(tileWidth, tileHeight),
-                                    imgData   : new ImageData(tileWidth, tileHeight),
-                                    // canvasSrc : canvasSrc2,
-                                    // ctxSrc    : ctxSrc2,
-                                    // canvas    : canvas2,
-                                    // ctx       : ctx2,
-                                    hasTransparency   : false, // tileDataRgb.hasTransparency, 
-                                    isFullyTransparent: false, // tileDataRgb.isFullyTransparent, 
-                                };
-        
-                                // Generate rgba32 tile data from rgb332 data and save.
-                                let tileDataRgba2 = rgb332TileDataToRgba32(newFadeTile.rgb332Src, rgb332_tilesets[tsKey].config);
-                                // newFadeTile.imgDataSrc.data.set(tileDataRgba2.tileDataRgb32);
-                                newFadeTile.imgData.data.set(tileDataRgba2.tileDataRgb32);
-                                newFadeTile.hasTransparency    = tileDataRgba2.hasTransparency;
-                                newFadeTile.isFullyTransparent = tileDataRgba2.isFullyTransparent;
-        
-                                // Draw the image to the canvas.
-                                // ctxSrc.putImageData(newFadeTile.imgData, 0, 0);
-                                // ctx2.putImageData(newFadeTile.imgData, 0, 0);
-        
-                                newTile.fadeTiles[level] = newFadeTile;
-                            }
-                        }
-                        else{}
 
                         // Save this tile.
                         finishedTilesets[ tilesetName ].tileset[tileIndex] = newTile;
@@ -338,28 +276,6 @@
             );
         }
         await Promise.all(proms1);
-        
-        // let proms2 = [];
-        // for(let tsKey in rgb332_tilesets){
-        //     proms.push(
-        //         new Promise(async(res,rej)=>{
-        //             // Is a tileset key defined?
-        //             if(!rgb332_tilesets[tsKey].tileset){ res(); return; }
-
-        //             // Break-out some values. 
-        //             let tilesetName       = rgb332_tilesets[tsKey].tilesetName; // Also equal to ts.
-        //             let tileHeight        = rgb332_tilesets[tsKey].config.tileHeight;
-        //             let tileWidth         = rgb332_tilesets[tsKey].config.tileWidth;
-
-        //             // The tileset entry should already exist.
-
-        //             // Go through each tilemap key and store the tilemap data.
-        //             for(let tileId in rgb332_tilesets[tsKey].tilemaps){
-        //             }
-        //         })
-        //     );
-        // }
-        // await Promise.all(proms2);
 
         // Return the completed tilesets.
         return finishedTilesets;
@@ -424,13 +340,14 @@
     }
 
     // Performs the graphics processing functions. 
-    async function process(tilesetFiles, createFadeTilesets){
+    async function process(tilesetFiles){
         let ts1 = performance.now();
         let rgb332_tilesets = await getAndParseGraphicsData(tilesetFiles);
         let ts1e = performance.now() - ts1;
         
         let ts2 = performance.now();
-        let finishedTilesets = await createGraphicsAssets(rgb332_tilesets, createFadeTilesets);
+        let finishedTilesets = await createGraphicsAssets(rgb332_tilesets);
+        console.log(finishedTilesets);
         let ts2e = performance.now() - ts2;
         
         // Create the RGBA fade values.

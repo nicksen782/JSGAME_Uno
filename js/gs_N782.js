@@ -133,6 +133,10 @@ _APP.gamestates["gs_N782"] = {
         // _GFX.funcs.setFade("ALL", 0);
         // _GFX.funcs.setFade("ALL", 5);
 
+        _GFX.funcs.updateBG1BgColorRgba([0,0,84,255]);
+        // _GFX.funcs.updateBG1BgColorRgba( [64,64,64,255] );
+        // _GFX.funcs.updateBG1BgColorRgba( [8,8,8,255] );
+
         // Draw the board to BG1.
         this.layerObjs["board"] = new LayerObject({
             immediateAdd: false,
@@ -321,7 +325,7 @@ _APP.gamestates["gs_N782"] = {
     // Sends a card to the discard pile (does not move the card.)
     discardCard: function(cardIndex){
         // Set the card's location to the discard pile. 
-        console.log(cardIndex, this.config.deck[cardIndex]);
+        // console.log(cardIndex, this.config.deck[cardIndex]);
         this.config.deck[cardIndex].location = "CARD_LOCATION_DISCARD";
 
         // Update the displayed heights of the draw and discard piles.
@@ -374,8 +378,8 @@ _APP.gamestates["gs_N782"] = {
         // Update top card on the draw pile. (Only draws the card.)
         this.updateDrawPileTopCard(drawPileCount);
 
-        console.log("drawPileCount   :", drawPileCount);
-        console.log("discardPileCount:", discardPileCount);
+        // console.log("drawPileCount   :", drawPileCount);
+        // console.log("discardPileCount:", discardPileCount);
     },
     // Either draws or removes the displayed card based on drawPileCount.
     updateDrawPileTopCard: function(drawPileCount=null){
@@ -384,7 +388,7 @@ _APP.gamestates["gs_N782"] = {
 
         // If a count was not provided then get a count here.
         if(drawPileCount === null){ drawPileCount = this.config.deck.filter(d=>d.location=="CARD_LOCATION_DRAW").length; }
-        console.log("updateDrawPileTopCard: drawPileCount   :", drawPileCount);
+        // console.log("updateDrawPileTopCard: drawPileCount   :", drawPileCount);
 
         let offBlackTile = _GFX.funcs.getTilemap("bg_tiles", "offBlackTile")[2];
         let tmap_draw;

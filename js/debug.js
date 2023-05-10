@@ -317,48 +317,63 @@ var _DEBUG = {
         document.getElementById("debug_test_toggleGridCanvas").addEventListener("click", ()=>_DEBUG.toggleGridCanvas(), false);
     },
     toggleGridCanvas: function(){
-        console.log(this);
         this.gridCanvas.classList.toggle("displayNone");
     },
 
+    gameLoopControl: function(){
+        let stopGameLoop  = document.getElementById("debug_test_stopGameLoop");
+        let startGameLoop = document.getElementById("debug_test_startGameLoop");
+
+        stopGameLoop .addEventListener("click", ()=>{ _APP.gameLoop.loop_stop(); }, false);
+        startGameLoop.addEventListener("click", ()=>{ _APP.gameLoop.loop_start(); }, false);
+    },
+
     fadeHandler: function(){
-        let fadeSlider     = document.getElementById("fadeSlider");
-        let fadeSliderText = document.getElementById("fadeSliderText");
+        let fadeSliderALL     = document.getElementById("fadeSliderALL");
+        let fadeSliderBG1     = document.getElementById("fadeSliderBG1");
+        let fadeSliderBG2     = document.getElementById("fadeSliderBG2");
+        let fadeSliderSP1     = document.getElementById("fadeSliderSP1");
+        let fadeSliderTX1     = document.getElementById("fadeSliderTX1");
+        let fadeSliderALLText = document.getElementById("fadeSliderALLText");
+        let fadeSliderBG1Text = document.getElementById("fadeSliderBG1Text");
+        let fadeSliderBG2Text = document.getElementById("fadeSliderBG2Text");
+        let fadeSliderSP1Text = document.getElementById("fadeSliderSP1Text");
+        let fadeSliderTX1Text = document.getElementById("fadeSliderTX1Text");
 
-        function changeFade() {
+        function changeFade(layer, sliderElem, sliderTextElem) {
             let level;
-            level = parseFloat(fadeSlider.value);
+            level = parseFloat(sliderElem.value);
 
-            if(level==0){ 
-                _GFX.funcs.setFade("ALL", null);
-                level = "null";
-            }
-            else{
-                _GFX.funcs.setFade("ALL", level-1);
-                level = (level-1).toString();
-            }
+            if(level==0){ _GFX.funcs.setFade(layer, null);    level = "null"; }
+            else        { _GFX.funcs.setFade(layer, level-1); level = (level-1).toString(); }
 
-            fadeSlider.title = `FADE: ${level}`;
-            fadeSliderText.value = fadeSlider.title;
+            sliderElem.title = `${layer}: FADE: ${level}`;
+            sliderTextElem.value = sliderElem.title;
         }
-        changeFade();
+        changeFade("ALL", fadeSliderALL, fadeSliderALLText);
+        changeFade("BG1", fadeSliderBG1, fadeSliderBG1Text);
+        changeFade("BG2", fadeSliderBG2, fadeSliderBG2Text);
+        changeFade("SP1", fadeSliderSP1, fadeSliderSP1Text);
+        changeFade("TX1", fadeSliderTX1, fadeSliderTX1Text);
 
-        fadeSlider.addEventListener("input", changeFade, false);
+        fadeSliderALL.addEventListener("input", ()=>{ changeFade("ALL", fadeSliderALL, fadeSliderALLText); }, false);
+        fadeSliderBG1.addEventListener("input", ()=>{ changeFade("BG1", fadeSliderBG1, fadeSliderBG1Text); }, false);
+        fadeSliderBG2.addEventListener("input", ()=>{ changeFade("BG2", fadeSliderBG2, fadeSliderBG2Text); }, false);
+        fadeSliderSP1.addEventListener("input", ()=>{ changeFade("SP1", fadeSliderSP1, fadeSliderSP1Text); }, false);
+        fadeSliderTX1.addEventListener("input", ()=>{ changeFade("TX1", fadeSliderTX1, fadeSliderTX1Text); }, false);
 
-        document.getElementById("debug_test_fade_null").addEventListener("click", ()=>{ fadeSlider.value = (0);    changeFade(); }, false);
-        document.getElementById("debug_test_fade_0")   .addEventListener("click", ()=>{ fadeSlider.value = (0+1);  changeFade(); }, false);
-        document.getElementById("debug_test_fade_1")   .addEventListener("click", ()=>{ fadeSlider.value = (1+1);  changeFade(); }, false);
-        document.getElementById("debug_test_fade_2")   .addEventListener("click", ()=>{ fadeSlider.value = (2+1);  changeFade(); }, false);
-        document.getElementById("debug_test_fade_3")   .addEventListener("click", ()=>{ fadeSlider.value = (3+1);  changeFade(); }, false);
-        document.getElementById("debug_test_fade_4")   .addEventListener("click", ()=>{ fadeSlider.value = (4+1);  changeFade(); }, false);
-        document.getElementById("debug_test_fade_5")   .addEventListener("click", ()=>{ fadeSlider.value = (5+1);  changeFade(); }, false);
-        document.getElementById("debug_test_fade_6")   .addEventListener("click", ()=>{ fadeSlider.value = (6+1);  changeFade(); }, false);
-        document.getElementById("debug_test_fade_7")   .addEventListener("click", ()=>{ fadeSlider.value = (7+1);  changeFade(); }, false);
-        document.getElementById("debug_test_fade_8")   .addEventListener("click", ()=>{ fadeSlider.value = (8+1);  changeFade(); }, false);
-        document.getElementById("debug_test_fade_9")   .addEventListener("click", ()=>{ fadeSlider.value = (9+1);  changeFade(); }, false);
-        document.getElementById("debug_test_fade_10")  .addEventListener("click", ()=>{ fadeSlider.value = (10+1); changeFade(); }, false);
-
-
+        // document.getElementById("debug_test_fade_null").addEventListener("click", ()=>{ fadeSlider.value = (0);    changeFade(); }, false);
+        // document.getElementById("debug_test_fade_0")   .addEventListener("click", ()=>{ fadeSlider.value = (0+1);  changeFade(); }, false);
+        // document.getElementById("debug_test_fade_1")   .addEventListener("click", ()=>{ fadeSlider.value = (1+1);  changeFade(); }, false);
+        // document.getElementById("debug_test_fade_2")   .addEventListener("click", ()=>{ fadeSlider.value = (2+1);  changeFade(); }, false);
+        // document.getElementById("debug_test_fade_3")   .addEventListener("click", ()=>{ fadeSlider.value = (3+1);  changeFade(); }, false);
+        // document.getElementById("debug_test_fade_4")   .addEventListener("click", ()=>{ fadeSlider.value = (4+1);  changeFade(); }, false);
+        // document.getElementById("debug_test_fade_5")   .addEventListener("click", ()=>{ fadeSlider.value = (5+1);  changeFade(); }, false);
+        // document.getElementById("debug_test_fade_6")   .addEventListener("click", ()=>{ fadeSlider.value = (6+1);  changeFade(); }, false);
+        // document.getElementById("debug_test_fade_7")   .addEventListener("click", ()=>{ fadeSlider.value = (7+1);  changeFade(); }, false);
+        // document.getElementById("debug_test_fade_8")   .addEventListener("click", ()=>{ fadeSlider.value = (8+1);  changeFade(); }, false);
+        // document.getElementById("debug_test_fade_9")   .addEventListener("click", ()=>{ fadeSlider.value = (9+1);  changeFade(); }, false);
+        // document.getElementById("debug_test_fade_10")  .addEventListener("click", ()=>{ fadeSlider.value = (10+1); changeFade(); }, false);
     },
 
     countHandler: function(){
@@ -370,20 +385,20 @@ var _DEBUG = {
         // let BG2_changes = document.getElementById("debug_BG2_changes");
         // let TX1_changes = document.getElementById("debug_TX1_changes");
 
-        let BG1_fade_fade = document.getElementById("debug_BG1_fade_fade");
-        let BG1_fade_curr = document.getElementById("debug_BG1_fade_curr");
+        // let BG1_fade_fade = document.getElementById("debug_BG1_fade_fade");
+        // let BG1_fade_curr = document.getElementById("debug_BG1_fade_curr");
         // let BG1_fade_prev = document.getElementById("debug_BG1_fade_prev");
         
-        let BG2_fade_fade = document.getElementById("debug_BG2_fade_fade");
-        let BG2_fade_curr = document.getElementById("debug_BG2_fade_curr");
+        // let BG2_fade_fade = document.getElementById("debug_BG2_fade_fade");
+        // let BG2_fade_curr = document.getElementById("debug_BG2_fade_curr");
         // let BG2_fade_prev = document.getElementById("debug_BG2_fade_prev");
         
-        let SP1_fade_fade = document.getElementById("debug_SP1_fade_fade");
-        let SP1_fade_curr = document.getElementById("debug_SP1_fade_curr");
+        // let SP1_fade_fade = document.getElementById("debug_SP1_fade_fade");
+        // let SP1_fade_curr = document.getElementById("debug_SP1_fade_curr");
         // let SP1_fade_prev = document.getElementById("debug_SP1_fade_prev");
         
-        let TX1_fade_fade = document.getElementById("debug_TX1_fade_fade");
-        let TX1_fade_curr = document.getElementById("debug_TX1_fade_curr");
+        // let TX1_fade_fade = document.getElementById("debug_TX1_fade_fade");
+        // let TX1_fade_curr = document.getElementById("debug_TX1_fade_curr");
         // let TX1_fade_prev = document.getElementById("debug_TX1_fade_prev");
 
         setInterval(()=>{
@@ -395,14 +410,14 @@ var _DEBUG = {
             // BG2_changes.innerText = _GFX.currentData["BG2"].changes;
             // TX1_changes.innerText = _GFX.currentData["TX1"].changes;
 
-            BG1_fade_fade.innerText = _GFX.currentData["BG1"].fade.fade     ?? "null";
-            BG2_fade_fade.innerText = _GFX.currentData["BG2"].fade.fade     ?? "null";
-            SP1_fade_fade.innerText = _GFX.currentData["SP1"].fade.fade     ?? "null";
-            TX1_fade_fade.innerText = _GFX.currentData["TX1"].fade.fade     ?? "null";
-            BG1_fade_curr.innerText = _GFX.currentData["BG1"].fade.currFade ?? "null";
-            BG2_fade_curr.innerText = _GFX.currentData["BG2"].fade.currFade ?? "null";
-            SP1_fade_curr.innerText = _GFX.currentData["SP1"].fade.currFade ?? "null";
-            TX1_fade_curr.innerText = _GFX.currentData["TX1"].fade.currFade ?? "null";
+            // BG1_fade_fade.innerText = _GFX.currentData["BG1"].fade.fade     ?? "null";
+            // BG2_fade_fade.innerText = _GFX.currentData["BG2"].fade.fade     ?? "null";
+            // SP1_fade_fade.innerText = _GFX.currentData["SP1"].fade.fade     ?? "null";
+            // TX1_fade_fade.innerText = _GFX.currentData["TX1"].fade.fade     ?? "null";
+            // BG1_fade_curr.innerText = _GFX.currentData["BG1"].fade.currFade ?? "null";
+            // BG2_fade_curr.innerText = _GFX.currentData["BG2"].fade.currFade ?? "null";
+            // SP1_fade_curr.innerText = _GFX.currentData["SP1"].fade.currFade ?? "null";
+            // TX1_fade_curr.innerText = _GFX.currentData["TX1"].fade.currFade ?? "null";
             // BG1_fade_prev.innerText = _GFX.currentData["BG1"].fade.prevFade ?? "null";
             // BG2_fade_prev.innerText = _GFX.currentData["BG2"].fade.prevFade ?? "null";
             // SP1_fade_prev.innerText = _GFX.currentData["SP1"].fade.prevFade ?? "null";
@@ -587,6 +602,11 @@ _DEBUG.init = async function(){
         this.countHandler();
         ts_countHandler = performance.now() - ts_countHandler;
 
+        // Init gameLoopControl.
+        let ts_gameLoopControl = performance.now(); 
+        this.gameLoopControl();
+        ts_gameLoopControl = performance.now() - ts_gameLoopControl;
+
         // Output some timing info.
         // console.log("DEBUG: init:");
         // console.log("  tsLoadFiles                 :", tsLoadFiles.toFixed(3));
@@ -595,6 +615,7 @@ _DEBUG.init = async function(){
         // console.log("  ts_createGridCanvas         :", ts_createGridCanvas.toFixed(3));
         // console.log("  ts_fadeHandler              :", ts_fadeHandler.toFixed(3));
         // console.log("  ts_countHandler             :", ts_countHandler.toFixed(3));
+        // console.log("  ts_gameLoopControl          :", ts_gameLoopControl.toFixed(3));
         
         // Init init2.
         let ts_init2 = performance.now(); 

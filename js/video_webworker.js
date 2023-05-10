@@ -40,61 +40,93 @@ const _GFX = {
             let index=2;
             
             // Create new ImageData. (The final copy and the reusable tile copy.)
-            let imageData = new ImageData(mapW*tw, mapH*th);
+            let imageData = new ImageData(mapW*tw, mapH*th); // The width and height come from the tilemap and should be correct.
             let imageDataTile = new ImageData(tw, th);
-            
-            let tile;
-            
-            for(let y=0; y<mapH; y+=1){
-                for(let x=0; x<mapW; x+=1){
-                    // Get the tile.
-                    tile = tileset[ tilemap[index] ];
+            let mapWidth  = 1 * tw;
+            let mapHeight = 1 * th;
 
-                    // If global fade...
-                    if( (fade && fade.fade && fade.currFade != null)){
-                        imageDataTile = _GFX.utilities.fadeImageData(tile, fade.currFade, settings);
-                    }
-                    // If per tilemap fade...
-                    else if( settings.fade != null){
-                        imageDataTile = _GFX.utilities.fadeImageData(tile, settings.fade, settings);
-                    }
-                    // No fade...
-                    else{
+            // Break-out settings.
+            let rotation  = settings.rotation;
+            let xFlip     = settings.xFlip;
+            let yFlip     = settings.yFlip;
+            let colorData = settings.colorData;
+            let fadeLevel = null;
+            
+            if( (fade && fade.fade && fade.currFade != null) ){ fadeLevel = fade.currFade; }
+            else if( settings.fade != null){ fadeLevel = settings.fade; }
+
+            // If global fade is on but not 10 OR
+            // If settings.fade is set but not 10 OR
+            // If global fade is off and settings.fade is off
+            // if( 
+            //     (fade.fade     && fade.currFade != 10) || 
+            //     (settings.fade && settings.fade != 10) ||
+            //     (!fade.fade    && !settings.fade!= null)
+            // ){
+            if( fadeLevel != 10 ){
+                // Draw the tilemap.
+                for(let y=0; y<mapH; y+=1){
+                    for(let x=0; x<mapW; x+=1){
+                        // Reset the tile dims.
+                        mapWidth  = 1 * tw;
+                        mapHeight = 1 * th;
+    
                         // Copy the tile data to the imageDataTile. 
-                        imageDataTile.data.set(tile.imgData.data.slice());
-
-                        // Apply color replacements (RGBA).
-                        if(settings.colorData && settings.colorData.length){ 
-                            _GFX.utilities.replaceColors(imageDataTile, settings.colorData); 
+                        // imageDataTile.data.fill(0);
+                        imageDataTile.data.set(tileset[ tilemap[index] ].imgData.data.slice());
+    
+                        // Rotate tile?
+                        if(rotation) { 
+                            // NOTE: This part is here for completeness. Normally the tiles in a tileset are square (same width and height.)
+                            ({ width: mapWidth, height: mapHeight } = _GFX.utilities.rotateImageData(imageDataTile, rotation)); 
                         }
+    
+                        // Flip tile horizontally?
+                        if(xFlip)    { _GFX.utilities.flipImageDataHorizontally(imageDataTile); }
+    
+                        // Flip tile vertically?
+                        if(yFlip)    { _GFX.utilities.flipImageDataVertically(imageDataTile); }
+    
+                        // Update the imageData with this tile.
+                        createGraphicsAssets.updateRegion(
+                            imageDataTile.data,  // source
+                            // imageDataTile.width, // srcWidth
+                            mapWidth,           // srcWidth
+                            imageData.data,      // destination
+                            imageData.width,     // destWidth
+                            x*tw,                // x
+                            y*th,                // y
+                            tw,                  // w
+                            th                   // h
+                        );
+    
+                        // Increment the tile index in the tilemap.
+                        index++;
                     }
+                }
 
-                    // Rotate tile?
-                    if(settings.rotation) { _GFX.utilities.rotateImageData(imageDataTile, settings.rotation); }
-
-                    // Flip tile horizontally?
-                    if(settings.xFlip)    { _GFX.utilities.flipImageDataHorizontally(imageDataTile); }
-
-                    // Flip tile vertically?
-                    if(settings.yFlip)    { _GFX.utilities.flipImageDataVertically(imageDataTile); }
-
-                    // Update the imageData with this tile.
-                    createGraphicsAssets.updateRegion(
-                        imageDataTile.data,  // source
-                        imageDataTile.width, // srcWidth
-                        imageData.data,      // destination
-                        imageData.width,     // destWidth
-                        x*tw,                // x
-                        y*th,                // y
-                        tw,                  // w
-                        th                   // h
-                    );
-
-                    // Increment the tile index in the tilemap.
-                    index++;
+                // Apply color changes and/or fading to the imageData.
+    
+                // Fade?
+                if(fadeLevel != null){
+                    _GFX.utilities.fadeImageData(imageData, fadeLevel, colorData);
+                }
+                // No fade...
+                else{
+                    // Apply color replacements (RGBA).
+                    if(colorData && colorData.length){ 
+                        _GFX.utilities.replaceColors(imageData, colorData); 
+                    }
                 }
             }
 
+            // Fade level is 10. Set full black;
+            else{
+                // R,G,B is already 0. Need to set alpha.
+                for (let i = 3; i < imageData.data.length; i += 4) { imageData.data[i] = 255; }
+            }
+
+            // Return the completed data.
             return {
                 imgData: imageData,
                 tw     : tw,
@@ -182,7 +214,14 @@ const _GFX = {
             }
         
             // Update the imageData with the rotated data and dimensions
+            // NOTE: The source ImageData will have the width and height swapped on 90 degree rotations.
             data.set(rotatedData);
+
+            // Swap the width and the height if needed and return the dimensions.
+            return {
+                width : (degrees % 180 === 0) ? width : height,
+                height: (degrees % 180 === 0) ? height : width
+            }
         },
 
         // Replaces colors in ImageData. (By reference, changes source imageData.)
@@ -206,26 +245,23 @@ const _GFX = {
             }
         },
 
-        // Takes a tile, copies it, and applies color changes THEN fades the tile.
-        fadeImageData: function(tileData, fadeLevel, settings){
-            // Create a transparent tile.
-            let imageDataTile = new ImageData(tileData.imgData.width, tileData.imgData.width);
-
+        // Takes ImageData, copies it, and applies color changes THEN fades the tile.
+        fadeImageData: function(imageData, fadeLevel, colorData){
             // If the currFade is 10 then set tile to a new transparent tile.
-            if(fadeLevel == 10){ return imageDataTile; }
+            if(fadeLevel == 10){ 
+                // Return a transparent image.
+                // return new ImageData(imageData.width, imageData.height);
+                imageData.data.set(0);
+            }
             else{
-                // Copy the tile data to the imageDataTile. 
-                imageDataTile.data.set(tileData.imgData.data.slice());
-                
                 // Apply color replacements (RGBA).
-                if(settings.colorData && settings.colorData.length){ _GFX.utilities.replaceColors(imageDataTile, settings.colorData); }
+                if(colorData && colorData.length){ 
+                    _GFX.utilities.replaceColors(imageData, colorData); 
+                }
 
                 // Fade the tile (RGBA version of the fade table.)
-                createGraphicsAssets.rgba32TileToFadedRgba32Tile(imageDataTile, fadeLevel);
+                createGraphicsAssets.rgba32TileToFadedRgba32Tile(imageData, fadeLevel);
             }
-            
-            // Return the completed data.
-            return imageDataTile;
         },
     },
 };
@@ -554,9 +590,7 @@ const messageFuncs = {
             
             // Clear the Image Data (transparent).
             let ts_clearLayer = performance.now();
-            // if(data.bgColorRgba && data.bgColorRgbaChanged){
-                this.clearLayer(layer);
-            // }
+            this.clearLayer(layer);
             ts_clearLayer = performance.now() - ts_clearLayer;
             
             // Draw the tilemaps to the Image Data.
@@ -566,8 +600,23 @@ const messageFuncs = {
             
             // Set the transparent pixels to the background color.
             let ts_setBackgroundcolor = performance.now();
-            if(data.bgColorRgba && data.bgColorRgbaChanged){
+            if(data.bgColorRgba){
                 this.setBackgroundcolor(layer, data.bgColorRgba);
+
+                if( (data.fade && data.fade.fade && data.fade.currFade != null) ){ 
+                    let fadeLevel = data.fade.currFade;
+                    let imgDataCache = _GFX.layers[layer].imgDataCache;
+                    let imgDataCacheLength = imgDataCache.data.length;
+                    
+                    if(fadeLevel != 10){
+                        _GFX.utilities.fadeImageData(imgDataCache, fadeLevel, []);
+                    }
+                    else{
+                        imgDataCache.data.fill(0);
+                        // R,G,B is already 0. Need to set alpha.
+                        for (let i = 3; i < imgDataCacheLength; i += 4) { imgDataCache.data[i] = 255; }
+                    }
+                }
             }
             ts_setBackgroundcolor = performance.now() - ts_setBackgroundcolor;
             
@@ -713,6 +762,9 @@ const messageFuncs = {
 
             // Save the timings.
             messageFuncs.timings["sendGfxUpdates"]["sendGfxUpdates"] = sendGfxUpdates.toFixed(3);
+
+            // Return the timings.
+            return messageFuncs.timings["sendGfxUpdates"];
         },
     },
 };
@@ -735,7 +787,8 @@ self.onmessage = async function(event) {
         switch(messageMode){
             case "initConfigAndGraphics": { returnData = await messageFuncs.initConfigAndGraphics(messageData); break; }
             case "initLayers"           : { messageFuncs.initLayers(messageData); break; }
-            case "sendGfxUpdates"       : { messageFuncs.sendGfxUpdates.run(messageData); break; }
+            // case "sendGfxUpdates"       : { messageFuncs.sendGfxUpdates.run(messageData); break; }
+            case "sendGfxUpdates"       : { returnData = messageFuncs.sendGfxUpdates.run(messageData); break; }
             case "clearAllLayers"       : { messageFuncs.sendGfxUpdates.clearAllLayers(); break; }
 
             // DEBUG
