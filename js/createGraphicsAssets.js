@@ -61,8 +61,12 @@
 
         // Restrict each pixel r,g,b color to a max value.
         let data = imageDataTile.data;
-        let len = data.length;
+        let len  = data.length;
         for(let i=0; i<len; i+=4){
+            // Don't operate on transparent pixels.
+            if(data[i+3] != 255){ continue; } 
+
+            // Restrict r,g,b values and then round down.
             data[i+0] =  (data[i+0] * maxRed)   | 0;
             data[i+1] =  (data[i+1] * maxGreen) | 0;
             data[i+2] =  (data[i+2] * maxBlue)  | 0;
@@ -250,8 +254,12 @@
                         let newTile = {
                             // Image Data
                             imgData: new ImageData(tileWidth, tileHeight),
+
+                            //TODO: Is Uint8ClampedArray faster than ImageData considering I mostly do data changes to typed arrays?
+                            // imgData2: new Uint8ClampedArray(tileWidth * tileHeight * 4), // 
                             
                             // Flags.
+                            // TODO: These are not actually used anywhere.
                             hasTransparency   : false, 
                             isFullyTransparent: false, 
                         };

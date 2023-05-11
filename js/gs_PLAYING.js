@@ -1,2 +1,2 @@
-_APP.gamestates["gs_PLAYING"] = {
+_APP.game.gamestates["gs_PLAYING"] = {
 };

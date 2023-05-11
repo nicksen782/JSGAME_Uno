@@ -249,8 +249,7 @@ const _GFX = {
         fadeImageData: function(imageData, fadeLevel, colorData){
             // If the currFade is 10 then set tile to a new transparent tile.
             if(fadeLevel == 10){ 
-                // Return a transparent image.
-                // return new ImageData(imageData.width, imageData.height);
+                // Set the image data to fully transparent. 
                 imageData.data.set(0);
             }
             else{
@@ -498,8 +497,14 @@ const messageFuncs = {
             // Clear each output layer.
             let tsAllLayerClear = performance.now();
             for(let layer in _GFX.layers){
+                // Get the layer.
                 let rec = _GFX.layers[layer];
+
+                // Clear the output canvas.
                 rec.ctx.clearRect(0, 0, rec.canvas.width, rec.canvas.height);
+                
+                // Clear the imgDataCache.
+                this.clearLayer(layer);
             }
             tsAllLayerClear = performance.now() - tsAllLayerClear;
     
@@ -511,7 +516,7 @@ const messageFuncs = {
             tsAllObjectClear = performance.now() - tsAllObjectClear;
     
             // Save the timings.
-            messageFuncs.timings["clearAllLayers"]["AllLayerClear"] = tsAllLayerClear.toFixed(3);
+            messageFuncs.timings["clearAllLayers"]["AllLayerClear"]  = tsAllLayerClear.toFixed(3);
             messageFuncs.timings["clearAllLayers"]["AllObjectClear"] = tsAllObjectClear.toFixed(3);
         },
         // Fills the imgDataCache for a layer with 0 (fully transparent.)

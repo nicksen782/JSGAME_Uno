@@ -100,7 +100,9 @@ var _WEBW_V = {
 _WEBW_V.init = async function(){
     return new Promise(async (resolve,reject)=>{
         // Add the web worker and set the 'message' listener.
-        this.worker = new Worker( "js/video_webworker.js" );
+        let relPath = ".";
+        if(_APP.usingJSGAME){ relPath = "./games/JSGAME_Uno"; }
+        this.worker = new Worker( `${relPath}/js/video_webworker.js` );
         this.worker.addEventListener("message", (e)=>this.RECEIVE(e), false);
 
         resolve();

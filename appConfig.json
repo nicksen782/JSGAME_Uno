@@ -1,0 +1,14 @@
+{
+    "meta":{
+        "hideLobby": true,
+        "jsgame_shared_plugins":[
+        ],
+        
+        "jsgame_shared_plugins_config":{
+        }
+    },
+
+    "files":[
+        { "f":"js/uno.js"   , "t":"js"  , "n":"js/uno.js"}
+    ]
+}

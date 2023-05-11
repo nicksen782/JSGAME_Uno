@@ -6,25 +6,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UNO v2</title>
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="css/uno.css">
-
-    <!-- JavaScript -->
-    <script defer src="js/uno.js"></script>
-
-    <!-- GAMESTATES -->
-    <script defer src="js/gs_JSG.js"></script>
-    <script defer src="js/gs_N782.js"></script>
-    <script defer src="js/gs_TITLE.js"></script>
-    <script defer src="js/gs_OPTIONS.js"></script>
-    <script defer src="js/gs_RULES.js"></script>
-    <script defer src="js/gs_PLAYING.js"></script>
 </head>
 
-<body>
+<body style="background-color: #181818; padding: 5px;">
+    <!-- Stand-Alone loading indicator. -->
+    <div id="loading">
+        LOADING
+        <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+    </div>
+
+    <!-- The main HTML. -->
     <div id="wrapper">
-        <div id="main">
+        <div id="game_uno">
             <div id="aux">
                 <div id="controls">
                     <div id="controls_navBarTabs1">
@@ -41,27 +34,157 @@
                                 <input type="text" id="scaleSliderText">
                             </div>
                             
-                            <!-- GAMEPAD/INPUT DISPLAY  -->
-                            <!-- <div class="controls_border">
-                                <label class="controls_title">GAMEPADS</label>
-                                <div id="gamepadsLive_p1"></div>
-                                <div id="gamepadsLive_p2"></div>
-                            </div> -->
-
                         </div>
-
-                        <!-- INPUT -->
-
-                        <!-- DEBUG -->
-
                     </div>
-
-                    <!-- DEBUG "alwaysVisible" div -->
                 </div>
             </div>
             <div id="output" tabindex="0"></div>
         </div>
     </div>
+
+    <!-- JavaScript for loading the Stand-Alone version. -->
+    <script>
+        // If you already have _APP and _JSG then you are running through JSGAME.
+        // JSGAME should have used uno.js _APP.init (instead of _APP.init_standAlone.)
+        // JSGAME _APP.init only includes the #wrapper div. 
+        // Only the standAlone instance will see this script.
+        if( ! (
+            typeof _APP !== "undefined" &&
+            typeof _JSG !== "undefined" &&
+            typeof _JSG.appStart_timestamp !== "undefined" 
+        ) ){
+            // Running as stand-alone.
+            _JSG = {}; 
+            _APP = {
+                standAlone : true,
+                usingJSGAME: false,
+                usingJSGAME_INPUT: false,
+            }; 
+
+            let loading = document.getElementById("loading");
+            let wrapper = document.getElementById("wrapper");
+            wrapper.style.display = "none";
+
+            // Get the uno.js file and run it's init function.
+            let ts1S = performance.now();
+            new Promise(async (res,rej)=>{
+                let url = "js/uno.js";
+                let script = document.createElement('script');
+                script.setAttribute("name", url); 
+                script.defer=true;
+                script.onload = async function () { 
+                    script.onload = null; 
+                    await _APP.init_standAlone(); 
+                    loading.style.display = "none";
+                    wrapper.style.display = "";
+                    let ts1E = performance.now() - ts1S;
+                    console.log(`Uno (Stand-Alone version) load time: ${ts1E.toFixed(2)}ms`);
+                    // alert(`Uno (Stand-Alone version) load time: ${ts1E.toFixed(2)}ms`);
+                    res(); 
+                };
+                script.onerror = function (err) { 
+                    script.onload = null; 
+                    console.log("index addFile: js: FAILURE:", url);
+                    rej(err); 
+                };
+                document.head.appendChild(script);
+                script.src = url;
+            });
+        }
+    </script>
+
+    <!-- Styles for Stand-Alone loading indicator. -->
+    <style>
+        #loading{
+            border: 1px solid gold;
+            color: gold;
+            background-color: mediumblue;
+            display: inline-block;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 42px;
+        }
+        .lds-spinner {
+            /* color: black; */
+            display: inline-block;
+            position: relative;
+            top:5px;
+            width: 40px;
+            height: 40px;
+        }
+        .lds-spinner div {
+            transform-origin: 20px 20px; 
+            animation: lds-spinner 1.2s linear infinite;
+        }
+        .lds-spinner div:after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 3.5px; 
+            left: 18.5px; 
+            width: 3px; 
+            height: 9px; 
+            border-radius: 20%;
+            background: #fff;
+        }
+        .lds-spinner div:nth-child(1) {
+            transform: rotate(0deg);
+            animation-delay: -1.1s;
+        }
+        .lds-spinner div:nth-child(2) {
+            transform: rotate(30deg);
+            animation-delay: -1s;
+        }
+        .lds-spinner div:nth-child(3) {
+            transform: rotate(60deg);
+            animation-delay: -0.9s;
+        }
+        .lds-spinner div:nth-child(4) {
+            transform: rotate(90deg);
+            animation-delay: -0.8s;
+        }
+        .lds-spinner div:nth-child(5) {
+            transform: rotate(120deg);
+            animation-delay: -0.7s;
+        }
+        .lds-spinner div:nth-child(6) {
+            transform: rotate(150deg);
+            animation-delay: -0.6s;
+        }
+        .lds-spinner div:nth-child(7) {
+            transform: rotate(180deg);
+            animation-delay: -0.5s;
+        }
+        .lds-spinner div:nth-child(8) {
+            transform: rotate(210deg);
+            animation-delay: -0.4s;
+        }
+        .lds-spinner div:nth-child(9) {
+            transform: rotate(240deg);
+            animation-delay: -0.3s;
+        }
+        .lds-spinner div:nth-child(10) {
+            transform: rotate(270deg);
+            animation-delay: -0.2s;
+        }
+        .lds-spinner div:nth-child(11) {
+            transform: rotate(300deg);
+            animation-delay: -0.1s;
+        }
+        .lds-spinner div:nth-child(12) {
+            transform: rotate(330deg);
+            animation-delay: 0s;
+        }
+        @keyframes lds-spinner {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
 </body>
 
 </html>

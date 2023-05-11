@@ -10,12 +10,9 @@
     This file should still work when using JSGAME but the replacements won't be added. (code is in _INPUT.customized.init.)
 */
 
-// Add the _JSG global object if it is missing.
-if(typeof _JSG === "undefined"){ var _JSG = {}; }
-
 _INPUT.customized = {
     consoleMessage: function(str1, str2, noIndent=false){
-        // return;
+        return;
         // _INPUT.customized.consoleMessage("Replacing", "Thing you are replacing.");
         str1 = str1.trim();
         str2 = str2.trim();
@@ -55,16 +52,6 @@ _INPUT.customized = {
 
     // _JSG
     _JSG: {
-        DOM: {
-            "jsgame_menu_toggleApp"     : document.createElement("div"), // "dummyDiv",
-            "jsgame_menu_toggleLobby"   : document.createElement("div"), // "dummyDiv",
-            "js_game_header_menu"       : document.createElement("div"), // "dummyDiv",
-            "js_game_backgroundShade"   : document.createElement("div"), // "dummyDiv",
-            "js_game_header_menuBtn"    : document.createElement("div"), // "dummyDiv",
-            "gameDivCont"               : document.createElement("div"), // "dummyDiv",
-            "lobbyDivCont"              : document.createElement("div"), // "dummyDiv",
-            "js_game_header_menu_table1": document.createElement("table"), // "dummyTable",
-        },
         shared: {
             //
             TinySimpleHash:s=>{for(var i=0,h=9;i<s.length;)h=Math.imul(h^s.charCodeAt(i++),9**9);return h^h>>>9},
@@ -180,12 +167,16 @@ _INPUT.customized = {
 
                 // Get the support files. 
                 let html;
-                let proms = [
-                    new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/INPUT_A/inputModeA_user.js"        , t:"js"  }, "."); res(); } ),
-                    new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/INPUT_A/inputModeA_mappings.js"    , t:"js"  }, "."); res(); } ),
-                    new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/INPUT_A/inputModeA_web.js"         , t:"js"  }, "."); res(); } ),
-                    new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/INPUT_A/inputModeA_web.css"        , t:"css" }, "."); res(); } ),
-                    new Promise( async (res,rej) => { html = await _APP.utility.addFile({f:"js/INPUT_A/inputModeA_web.html", t:"html"}, "."); res(); } ),
+                let proms;
+                let relPath = ".";
+                if(_APP.usingJSGAME){ relPath = "./games/JSGAME_Uno"; }
+                
+                proms = [
+                    new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/INPUT_A/inputModeA_user.js"        , t:"js"  }, relPath); res(); } ),
+                    new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/INPUT_A/inputModeA_mappings.js"    , t:"js"  }, relPath); res(); } ),
+                    new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/INPUT_A/inputModeA_web.js"         , t:"js"  }, relPath); res(); } ),
+                    new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/INPUT_A/inputModeA_web.css"        , t:"css" }, relPath); res(); } ),
+                    new Promise( async (res,rej) => { html = await _APP.utility.addFile({f:"js/INPUT_A/inputModeA_web.html", t:"html"}, relPath); res(); } ),
                 ];
                 await Promise.all(proms);
 
@@ -348,7 +339,17 @@ _INPUT.customized = {
         // Add missing JSGAME functions?
         if(!_APP.usingJSGAME_INPUT){
             _INPUT.customized.consoleMessage("Adding"   , " _JSG object.");
-            _JSG = _INPUT.customized._JSG;
+
+            // NOT using JSGAME.
+            if(!_APP.usingJSGAME && !_APP.usingJSGAME_INPUT){
+                _JSG.DOM = {};
+                _JSG.DOM["js_game_header_menu_table1"] = document.createElement("table"); // "dummyTable",
+
+                _JSG.shared = {};
+                _JSG.shared.TinySimpleHash       = _INPUT.customized._JSG.shared.TinySimpleHash;
+                _JSG.shared.parseObjectStringDOM = _INPUT.customized._JSG.shared.parseObjectStringDOM;
+                _JSG.shared.setVisibility        = _INPUT.customized._JSG.shared.setVisibility;
+            }
         }
         
         // Init.

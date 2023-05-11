@@ -1,4 +1,4 @@
-_APP.gamestates["gs_N782"] = {
+_APP.game.gamestates["gs_N782"] = {
     // Holds the LayerObjects object.
     layerObjs: {
         "p1_card_0": {},
@@ -125,7 +125,7 @@ _APP.gamestates["gs_N782"] = {
 
     // Run once upon changing to this game state.
     init: function(){
-        console.log("INIT:", _APP.gamestate.gs1);
+        console.log("INIT:", _APP.game.gs1);
         // Clear the screen and the graphics caches.
         _GFX.funcs.clearAllLayers(true);
 
@@ -306,7 +306,7 @@ _APP.gamestates["gs_N782"] = {
         // Run init and return if this gamestate is not yet inited.
         if(!this.inited){ this.init(); return; }
 
-        // console.log("MAIN:", _APP.gamestate.gs1);
+        // console.log("MAIN:", _APP.game.gs1);
     },
 
 

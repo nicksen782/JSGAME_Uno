@@ -325,8 +325,8 @@ var _DEBUG = {
         let stopGameLoop  = document.getElementById("debug_test_stopGameLoop");
         let startGameLoop = document.getElementById("debug_test_startGameLoop");
 
-        stopGameLoop .addEventListener("click", ()=>{ _APP.gameLoop.loop_stop(); }, false);
-        startGameLoop.addEventListener("click", ()=>{ _APP.gameLoop.loop_start(); }, false);
+        stopGameLoop .addEventListener("click", ()=>{ _APP.game.gameLoop.loop_stop(); }, false);
+        startGameLoop.addEventListener("click", ()=>{ _APP.game.gameLoop.loop_start(); }, false);
     },
     
     waitForDrawControl: function(){
@@ -379,18 +379,18 @@ var _DEBUG = {
 
         setInterval(()=>{
             // Show the frameCounter.
-            if(frameCounter.innerText != _APP.gameLoop.frameCounter.toString()){
-                frameCounter    .innerText = _APP.gameLoop.frameCounter;
+            if(frameCounter.innerText != _APP.game.gameLoop.frameCounter.toString()){
+                frameCounter    .innerText = _APP.game.gameLoop.frameCounter;
             }
             // Show the frameDrawCounter.
-            if(frameDrawCounter.innerText != _APP.gameLoop.frameDrawCounter.toString()){
-                frameDrawCounter.innerText = _APP.gameLoop.frameDrawCounter;
+            if(frameDrawCounter.innerText != _APP.game.gameLoop.frameDrawCounter.toString()){
+                frameDrawCounter.innerText = _APP.game.gameLoop.frameDrawCounter;
             }
 
             // Show average FPS, average ms per frame, how much off is the average ms per frame.
-            let new_average       = _APP.gameLoop.fpsCalc.average.toFixed(0) ?? 0;
-            let new_avgMsPerFrame = _APP.gameLoop.fpsCalc.avgMsPerFrame.toFixed(1) ?? 0;
-            let msDiff            = (_APP.gameLoop.fpsCalc.avgMsPerFrame - _APP.gameLoop.msFrame).toFixed(1);
+            let new_average       = _APP.game.gameLoop.fpsCalc.average.toFixed(0) ?? 0;
+            let new_avgMsPerFrame = _APP.game.gameLoop.fpsCalc.avgMsPerFrame.toFixed(1) ?? 0;
+            let msDiff            = (_APP.game.gameLoop.fpsCalc.avgMsPerFrame - _APP.game.gameLoop.msFrame).toFixed(1);
             let fpsText           = `A: ${new_average} M: ${new_avgMsPerFrame} D: ${msDiff}`;
             if(fpsDisplay.innerText != fpsText){ fpsDisplay.innerText = fpsText; }
             
@@ -403,9 +403,12 @@ var _DEBUG = {
 };
 
 _DEBUG.init = async function(){
-    const loadFiles = async function(){
-        // await new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/debug2.js", t:"js"    }, "."); res(); } );
-        await new Promise( async (res,rej) => { await _APP.utility.addFile({f:"css/debug.css", t:"css"   }, "."); res(); } );
+    const loadFiles = async function(useJsgamePath){
+        let relPath = ".";
+        if(_APP.usingJSGAME){ relPath = "./games/JSGAME_Uno"; }
+
+        await new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/debug2.js" , t:"js"    }, relPath); res(); } );
+        await new Promise( async (res,rej) => { await _APP.utility.addFile({f:"css/debug.css", t:"css"   }, relPath); res(); } );
         await new Promise( async (res,rej) => { 
             // Create the debug nav tab and view.
             let navBar1Tabs  = document.getElementById("controls_navBarTabs1");
@@ -432,7 +435,7 @@ _DEBUG.init = async function(){
             navBar1Views.append(view);
 
             // Add the HTML to the inner debug div.
-            let data = await _APP.utility.addFile({f:"debug.html"  , t:"html"  }, "."); 
+            let data = await _APP.utility.addFile({f:"debug.html"  , t:"html"  }, relPath); 
             innerDebugDiv.innerHTML = data;
 
             // Move the alwaysVisible div to the bottom of controls.
