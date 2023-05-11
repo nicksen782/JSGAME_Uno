@@ -1,7 +1,8 @@
 #debug{
     border:1px solid white;
     padding:5px;
-    background-color: rgb(255 255 255 / 25%);
+    /* background-color: rgb(255 255 255 / 25%); */
+    background-color: rgb(113 143 233);
 }
 
 .debug_title{
@@ -53,4 +54,13 @@
     overflow-x: auto;
     overflow-y: auto;
     background-color: antiquewhite;
+}
+
+.debug_fadeSlider{ width: 180px; }
+.debug_fadeSliderText{ width: 120px; }
+
+div#debug_test_alwaysVisible {
+    /* border: 1px solid blue; */
+    background-color: rgba(255,255,255,0.5);
+    margin-top: 5px;
 }

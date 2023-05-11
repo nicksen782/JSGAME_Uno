@@ -11,11 +11,7 @@
     <link rel="stylesheet" href="css/uno.css">
 
     <!-- JavaScript -->
-    <script defer src="js/webv.js"></script>
-    <script defer src="js/gfx.js"></script>
-    <script defer src="js/gfxClasses.js"></script>
     <script defer src="js/uno.js"></script>
-    <script defer src="js/debug.js"></script>
 
     <!-- GAMESTATES -->
     <script defer src="js/gs_JSG.js"></script>
@@ -31,17 +27,39 @@
         <div id="main">
             <div id="aux">
                 <div id="controls">
-                    <!-- OUTPUT SCALING -->
-                    <div class="controls_border">
-                        <label class="controls_title">SCALE</label>
-                        <input type="range" id="scaleSlider" min="1" max="4" step="0.25" value="3.25">
-                        <input type="text" id="scaleSliderText">
+                    <div id="controls_navBarTabs1">
+                        <div id="controls_navBar1_tab_controls" class="controls_navBarTabs ">CONTROLS</div>
                     </div>
-                </div>
-                <div id="debug" class="displayNone">
+
+                    <div id="controls_navBarViews">
+                        <!-- CONTROLS -->
+                        <div id="controls_navBar1_view_controls" class="controls_navBarViews">
+                            <!-- OUTPUT SCALING -->
+                            <div class="controls_border">
+                                <label class="controls_title">SCALE</label>
+                                <input type="range" id="scaleSlider" min="1" max="4" step="0.25" value="2.75">
+                                <input type="text" id="scaleSliderText">
+                            </div>
+                            
+                            <!-- GAMEPAD/INPUT DISPLAY  -->
+                            <!-- <div class="controls_border">
+                                <label class="controls_title">GAMEPADS</label>
+                                <div id="gamepadsLive_p1"></div>
+                                <div id="gamepadsLive_p2"></div>
+                            </div> -->
+
+                        </div>
+
+                        <!-- INPUT -->
+
+                        <!-- DEBUG -->
+
+                    </div>
+
+                    <!-- DEBUG "alwaysVisible" div -->
                 </div>
             </div>
-            <div id="output"></div>
+            <div id="output" tabindex="0"></div>
         </div>
     </div>
 </body>

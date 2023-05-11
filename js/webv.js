@@ -47,7 +47,7 @@ var _WEBW_V = {
 
                 case "sendGfxUpdates"     : {
                     if(this.differedProms[e.data.mode]){ 
-                        console.log("sendGfxUpdates:", e.data.data);
+                        // console.log("sendGfxUpdates:", e.data.data);
                         this.differedProms[e.data.mode].resolve(); 
                     }
                     break;

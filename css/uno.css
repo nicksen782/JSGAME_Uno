@@ -22,7 +22,7 @@ canvas{
     max-height: 100%;
 }
 
-.displayNone{ display:none; }
+.displayNone{display: none !important;}
 body{ 
     background-color:#181818;
     padding:5px;
@@ -42,16 +42,21 @@ body{
     height: calc(100vh - 40px);
 }
 #aux{
-    /* min-width: 200px; */
+    min-width: 350px;
     width: 350px;
     max-width: 350px;
     display: flex;
     flex-direction: column;
     border: 1px solid white;
 }
+#aux.wide{
+    width: unset;
+    max-width: unset;
+}
 #controls{
     border:1px solid white;
     padding:5px;
+    background-color: rgb(113 143 233);
 }
 #output{
     position:relative;
@@ -60,7 +65,12 @@ body{
     /* min-width: 256px; */
     width: 100%;
     /* max-height: 100%; */
-    /* border: 1px solid white; */
+    border: 2px solid white;
+    margin-left: 2px;
+}
+#output:focus{
+    border-color: white;
+    border-style: dotted;
 }
 
 .controls_title{
@@ -72,4 +82,34 @@ body{
     border: 1px solid black;
     padding:2px;
     margin-bottom: 2px;
+}
+
+/* NAVBAR1 */
+#controls_navBarTabs1{
+    border-bottom: 1px solid black;
+    min-width: 335px;
+    background-color: #00d4ff36;
+}
+.controls_navBarTabs{
+    border: 1px solid black;
+    display: inline-block;
+    margin-bottom: 2px;
+    padding: 4px;
+    width: 100px;
+    text-align: center;
+    border-radius: 8px 8px 0px 0px;
+    cursor: pointer;
+}
+.controls_navBarTabs.active{
+    background-color: rgb(65 105 225);
+    text-decoration:underline;
+}
+.controls_navBarTabs:hover{
+    background-color: rgb(255 255 255 / 50%);
+}
+.controls_navBarViews{
+    display:none;
+}
+.controls_navBarViews.active{ 
+    display: block;
 }

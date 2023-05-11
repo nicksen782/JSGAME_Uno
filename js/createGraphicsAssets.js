@@ -347,7 +347,6 @@
         
         let ts2 = performance.now();
         let finishedTilesets = await createGraphicsAssets(rgb332_tilesets);
-        console.log(finishedTilesets);
         let ts2e = performance.now() - ts2;
         
         // Create the RGBA fade values.

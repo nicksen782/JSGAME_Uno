@@ -1,4 +1,5 @@
 var _DEBUG = {
+    // Testing card movement1.
     objs : [],
     test1: function(){
         // BOARD
@@ -327,6 +328,13 @@ var _DEBUG = {
         stopGameLoop .addEventListener("click", ()=>{ _APP.gameLoop.loop_stop(); }, false);
         startGameLoop.addEventListener("click", ()=>{ _APP.gameLoop.loop_start(); }, false);
     },
+    
+    waitForDrawControl: function(){
+        let waitForDraw = document.getElementById("debug_test_toggleWaitForDraw");
+        waitForDraw .addEventListener("click", ()=>{ 
+            _APP.configObj.waitUntilFrameDrawn = !_APP.configObj.waitUntilFrameDrawn;
+        }, false);
+    },
 
     fadeHandler: function(){
         let fadeSliderALL     = document.getElementById("fadeSliderALL");
@@ -361,117 +369,77 @@ var _DEBUG = {
         fadeSliderBG2.addEventListener("input", ()=>{ changeFade("BG2", fadeSliderBG2, fadeSliderBG2Text); }, false);
         fadeSliderSP1.addEventListener("input", ()=>{ changeFade("SP1", fadeSliderSP1, fadeSliderSP1Text); }, false);
         fadeSliderTX1.addEventListener("input", ()=>{ changeFade("TX1", fadeSliderTX1, fadeSliderTX1Text); }, false);
-
-        // document.getElementById("debug_test_fade_null").addEventListener("click", ()=>{ fadeSlider.value = (0);    changeFade(); }, false);
-        // document.getElementById("debug_test_fade_0")   .addEventListener("click", ()=>{ fadeSlider.value = (0+1);  changeFade(); }, false);
-        // document.getElementById("debug_test_fade_1")   .addEventListener("click", ()=>{ fadeSlider.value = (1+1);  changeFade(); }, false);
-        // document.getElementById("debug_test_fade_2")   .addEventListener("click", ()=>{ fadeSlider.value = (2+1);  changeFade(); }, false);
-        // document.getElementById("debug_test_fade_3")   .addEventListener("click", ()=>{ fadeSlider.value = (3+1);  changeFade(); }, false);
-        // document.getElementById("debug_test_fade_4")   .addEventListener("click", ()=>{ fadeSlider.value = (4+1);  changeFade(); }, false);
-        // document.getElementById("debug_test_fade_5")   .addEventListener("click", ()=>{ fadeSlider.value = (5+1);  changeFade(); }, false);
-        // document.getElementById("debug_test_fade_6")   .addEventListener("click", ()=>{ fadeSlider.value = (6+1);  changeFade(); }, false);
-        // document.getElementById("debug_test_fade_7")   .addEventListener("click", ()=>{ fadeSlider.value = (7+1);  changeFade(); }, false);
-        // document.getElementById("debug_test_fade_8")   .addEventListener("click", ()=>{ fadeSlider.value = (8+1);  changeFade(); }, false);
-        // document.getElementById("debug_test_fade_9")   .addEventListener("click", ()=>{ fadeSlider.value = (9+1);  changeFade(); }, false);
-        // document.getElementById("debug_test_fade_10")  .addEventListener("click", ()=>{ fadeSlider.value = (10+1); changeFade(); }, false);
     },
 
     countHandler: function(){
         let frameCounter     = document.getElementById("debug_frameCounter");
         let frameDrawCounter = document.getElementById("debug_frameDrawCounter");
-
-        // let BG1_changes = document.getElementById("debug_BG1_changes");
-        // let SP1_changes = document.getElementById("debug_SP1_changes");
-        // let BG2_changes = document.getElementById("debug_BG2_changes");
-        // let TX1_changes = document.getElementById("debug_TX1_changes");
-
-        // let BG1_fade_fade = document.getElementById("debug_BG1_fade_fade");
-        // let BG1_fade_curr = document.getElementById("debug_BG1_fade_curr");
-        // let BG1_fade_prev = document.getElementById("debug_BG1_fade_prev");
-        
-        // let BG2_fade_fade = document.getElementById("debug_BG2_fade_fade");
-        // let BG2_fade_curr = document.getElementById("debug_BG2_fade_curr");
-        // let BG2_fade_prev = document.getElementById("debug_BG2_fade_prev");
-        
-        // let SP1_fade_fade = document.getElementById("debug_SP1_fade_fade");
-        // let SP1_fade_curr = document.getElementById("debug_SP1_fade_curr");
-        // let SP1_fade_prev = document.getElementById("debug_SP1_fade_prev");
-        
-        // let TX1_fade_fade = document.getElementById("debug_TX1_fade_fade");
-        // let TX1_fade_curr = document.getElementById("debug_TX1_fade_curr");
-        // let TX1_fade_prev = document.getElementById("debug_TX1_fade_prev");
+        let fpsDisplay = document.getElementById("debug_fpsDisplay");
+        let waitUntilFrameDrawn = document.getElementById("debug_waitUntilFrameDrawn");
 
         setInterval(()=>{
-            frameCounter    .innerText = _APP.gameLoop.frameCounter;
-            frameDrawCounter.innerText = _APP.gameLoop.frameDrawCounter;
+            // Show the frameCounter.
+            if(frameCounter.innerText != _APP.gameLoop.frameCounter.toString()){
+                frameCounter    .innerText = _APP.gameLoop.frameCounter;
+            }
+            // Show the frameDrawCounter.
+            if(frameDrawCounter.innerText != _APP.gameLoop.frameDrawCounter.toString()){
+                frameDrawCounter.innerText = _APP.gameLoop.frameDrawCounter;
+            }
 
-            // BG1_changes.innerText = _GFX.currentData["BG1"].changes;
-            // SP1_changes.innerText = _GFX.currentData["SP1"].changes;
-            // BG2_changes.innerText = _GFX.currentData["BG2"].changes;
-            // TX1_changes.innerText = _GFX.currentData["TX1"].changes;
-
-            // BG1_fade_fade.innerText = _GFX.currentData["BG1"].fade.fade     ?? "null";
-            // BG2_fade_fade.innerText = _GFX.currentData["BG2"].fade.fade     ?? "null";
-            // SP1_fade_fade.innerText = _GFX.currentData["SP1"].fade.fade     ?? "null";
-            // TX1_fade_fade.innerText = _GFX.currentData["TX1"].fade.fade     ?? "null";
-            // BG1_fade_curr.innerText = _GFX.currentData["BG1"].fade.currFade ?? "null";
-            // BG2_fade_curr.innerText = _GFX.currentData["BG2"].fade.currFade ?? "null";
-            // SP1_fade_curr.innerText = _GFX.currentData["SP1"].fade.currFade ?? "null";
-            // TX1_fade_curr.innerText = _GFX.currentData["TX1"].fade.currFade ?? "null";
-            // BG1_fade_prev.innerText = _GFX.currentData["BG1"].fade.prevFade ?? "null";
-            // BG2_fade_prev.innerText = _GFX.currentData["BG2"].fade.prevFade ?? "null";
-            // SP1_fade_prev.innerText = _GFX.currentData["SP1"].fade.prevFade ?? "null";
-            // TX1_fade_prev.innerText = _GFX.currentData["TX1"].fade.prevFade ?? "null";
+            // Show average FPS, average ms per frame, how much off is the average ms per frame.
+            let new_average       = _APP.gameLoop.fpsCalc.average.toFixed(0) ?? 0;
+            let new_avgMsPerFrame = _APP.gameLoop.fpsCalc.avgMsPerFrame.toFixed(1) ?? 0;
+            let msDiff            = (_APP.gameLoop.fpsCalc.avgMsPerFrame - _APP.gameLoop.msFrame).toFixed(1);
+            let fpsText           = `A: ${new_average} M: ${new_avgMsPerFrame} D: ${msDiff}`;
+            if(fpsDisplay.innerText != fpsText){ fpsDisplay.innerText = fpsText; }
+            
+            // Show the waitUntilFrameDrawn flag.
+            if(waitUntilFrameDrawn.innerText != (_APP.configObj.waitUntilFrameDrawn ? "true" : "false")){
+                waitUntilFrameDrawn.innerText = _APP.configObj.waitUntilFrameDrawn ? "true" : "false";
+            }
         }, 100);
     },
 };
 
 _DEBUG.init = async function(){
     const loadFiles = async function(){
-        // Load the second debug.js file.
-        await new Promise(async (res,rej)=>{
-            //
-            let jsFile = "js/debug2.js";
+        // await new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/debug2.js", t:"js"    }, "."); res(); } );
+        await new Promise( async (res,rej) => { await _APP.utility.addFile({f:"css/debug.css", t:"css"   }, "."); res(); } );
+        await new Promise( async (res,rej) => { 
+            // Create the debug nav tab and view.
+            let navBar1Tabs  = document.getElementById("controls_navBarTabs1");
+            let navBar1Views = document.getElementById("controls_navBarViews");
+            
+            // Tab
+            let tab = document.createElement("div");
+            tab.id = "controls_navBar1_tab_debug1"; 
+            tab.classList.add("controls_navBarTabs");
+            tab.innerText = "DEBUG";
+            
+            // View
+            let view = document.createElement("div");
+            view.id = "controls_navBar1_view_debug1"; 
+            view.classList.add("controls_navBarViews");
+            
+            // Inner debug div
+            let innerDebugDiv = document.createElement("div");
+            innerDebugDiv.id = "debug";
+            
+            // Append
+            view.append(innerDebugDiv);
+            navBar1Tabs.append(tab);
+            navBar1Views.append(view);
 
-            // Create the script. 
-            let script = document.createElement('script');
+            // Add the HTML to the inner debug div.
+            let data = await _APP.utility.addFile({f:"debug.html"  , t:"html"  }, "."); 
+            innerDebugDiv.innerHTML = data;
 
-            // Set the name. 
-            script.setAttribute("name", jsFile);
+            // Move the alwaysVisible div to the bottom of controls.
+            document.getElementById("controls").append( document.getElementById("debug_test_alwaysVisible") ); 
 
-            // Set defer.
-            script.defer=true;
-
-            // Onload.
-            script.onload = async function () { script.onload = null; res(); };
-            script.onerror = function (err)   { script.onload = null; rej(err); console.log("js: FAILURE:", jsFile, err); };
-
-            // Append the element. 
-            document.head.appendChild(script);
-
-            // Set source. 
-            script.src = jsFile;
-        });
-
-        // Load the CSS
-        await new Promise(async (res,rej)=>{
-            let cssFile = "css/debug.css";
-            let link = document.createElement('link');
-            link.type   = 'text/css';
-            link.rel    = 'stylesheet';
-            link.setAttribute("name", cssFile);
-            link.onload  = function()     { link.onload = null; res(); };
-            link.onerror = function (err) { link.onload = null; rej(err); console.log("css: FAILURE:", cssFile, err); };
-            document.head.appendChild(link);
-            link.href   = cssFile;
-        });
-    
-        // Load the HTML
-        let htmlFile = "debug.html";
-        let html = await (await fetch(htmlFile)).text();
-        let debugDiv = document.getElementById("debug");
-        debugDiv.innerHTML = html;
-        debugDiv.classList.remove("displayNone");
+            res(); 
+        } );
     };
     const loadColorFinder = function(){
         const canvas_src_BG1 = document.querySelector(".canvasLayer[name='BG1']");
@@ -572,11 +540,11 @@ _DEBUG.init = async function(){
     };
 
     return new Promise(async (resolve,reject)=>{
-        // Load the remaining debug files. 
-        let tsLoadFiles = performance.now(); 
-        await loadFiles(); 
-        tsLoadFiles = performance.now() - tsLoadFiles;
-        
+        // Init the color finder.
+        let ts_loadFiles = performance.now(); 
+        await loadFiles();
+        ts_loadFiles = performance.now() - ts_loadFiles;
+
         // Init the color finder.
         let tsLoadColorFinder = performance.now(); 
         loadColorFinder();
@@ -607,15 +575,21 @@ _DEBUG.init = async function(){
         this.gameLoopControl();
         ts_gameLoopControl = performance.now() - ts_gameLoopControl;
 
+        // Init waitForDrawControl.
+        let ts_waitForDrawControl = performance.now(); 
+        this.waitForDrawControl();
+        ts_waitForDrawControl = performance.now() - ts_waitForDrawControl;
+
         // Output some timing info.
         // console.log("DEBUG: init:");
-        // console.log("  tsLoadFiles                 :", tsLoadFiles.toFixed(3));
+        // console.log("  ts_loadFiles                :", ts_loadFiles.toFixed(3));
         // console.log("  tsLoadColorFinder           :", tsLoadColorFinder.toFixed(3));
         // console.log("  ts_drawColorPalette         :", ts_drawColorPalette.toFixed(3));
         // console.log("  ts_createGridCanvas         :", ts_createGridCanvas.toFixed(3));
         // console.log("  ts_fadeHandler              :", ts_fadeHandler.toFixed(3));
         // console.log("  ts_countHandler             :", ts_countHandler.toFixed(3));
         // console.log("  ts_gameLoopControl          :", ts_gameLoopControl.toFixed(3));
+        // console.log("  ts_waitForDrawControl       :", ts_waitForDrawControl.toFixed(3));
         
         // Init init2.
         let ts_init2 = performance.now(); 
