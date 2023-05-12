@@ -324,9 +324,30 @@ var _DEBUG = {
     gameLoopControl: function(){
         let stopGameLoop  = document.getElementById("debug_test_stopGameLoop");
         let startGameLoop = document.getElementById("debug_test_startGameLoop");
+        let restartGS1 = document.getElementById("debug_test_restartGS1");
+        let gotoGS_JSG = document.getElementById("debug_test_gotoGS_JSG");
+        let gotoGS_N782 = document.getElementById("debug_test_gotoGS_N782");
 
         stopGameLoop .addEventListener("click", ()=>{ _APP.game.gameLoop.loop_stop(); }, false);
         startGameLoop.addEventListener("click", ()=>{ _APP.game.gameLoop.loop_start(); }, false);
+        restartGS1.addEventListener("click", ()=>{ 
+            _APP.game.gameLoop.loop_stop(); 
+            _APP.game.gamestates[_APP.game.gs1].inited = false;
+            _APP.game.gameLoop.loop_start(); 
+        }, false);
+        
+        let goToGs = function(gs){
+            _APP.game.gamestates[_APP.game.gs1].inited = false;
+            _APP.game.gameLoop.loop_stop(); 
+            _APP.game.gs1 = gs;
+            _APP.game.gamestates[_APP.game.gs1].inited = false;
+            _APP.game.gameLoop.loop_start(); 
+        }
+        gotoGS_JSG .addEventListener("click", ()=>{ goToGs("gs_JSG"); }, false);
+        gotoGS_N782.addEventListener("click", ()=>{ goToGs("gs_N782"); }, false);
+
+        // <button id="debug_test_gotoGS_JSG">Goto: gs_JSG</button>
+        // <button id="debug_test_gotoGS_N782">Goto: gs_N782</button>
     },
     
     waitForDrawControl: function(){
@@ -450,6 +471,9 @@ _DEBUG.init = async function(){
         const canvas_src_SP1 = document.querySelector(".canvasLayer[name='SP1']");
         const canvas_src_TX1 = document.querySelector(".canvasLayer[name='TX1']");
         let copyCanvas    = document.getElementById("debug_colorFinder_src");
+        copyCanvas.width = canvas_src_BG1.width;
+        copyCanvas.height = canvas_src_BG1.height;
+
         let copyCanvasCtx = copyCanvas.getContext("2d", { willReadFrequently: true } );
         let zoomCanvas = document.getElementById("debug_colorFinder_zoom");
         let zoomCanvasCtx = zoomCanvas.getContext("2d");
@@ -461,7 +485,8 @@ _DEBUG.init = async function(){
         let debug_test_copyLayer_ALL = document.getElementById("debug_test_copyLayer_ALL");
 
         let replaceCopyCanvas = function(canvas_src){
-            copyCanvasCtx.clearRect(0, 0, canvas_src.width, canvas_src.height);
+            // copyCanvasCtx.clearRect(0, 0, canvas_src.width, canvas_src.height);
+            copyCanvasCtx.clearRect(0, 0, copyCanvasCtx.canvas.width, copyCanvasCtx.canvas.height);
             copyCanvasCtx.drawImage(canvas_src, 0, 0);
         };
         let copyAll = function(){
@@ -471,6 +496,13 @@ _DEBUG.init = async function(){
             copyCanvasCtx.drawImage(canvas_src_SP1, 0, 0);
             copyCanvasCtx.drawImage(canvas_src_TX1, 0, 0);
         };
+
+        // Copy buttons: event listeners.
+        debug_test_copyLayer_BG1 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_BG1);  }, false);
+        debug_test_copyLayer_BG2 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_BG2);  }, false);
+        debug_test_copyLayer_SP1 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_SP1);  }, false);
+        debug_test_copyLayer_TEXT.addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_TX1); }, false);
+        debug_test_copyLayer_ALL .addEventListener("click", copyAll, false);
 
         // Mousemove event listener.
         let last_regionX;
@@ -522,13 +554,6 @@ _DEBUG.init = async function(){
             }
             pixelRGBA.innerText = text;
         });
-
-        // Copy buttons: event listeners.
-        debug_test_copyLayer_BG1 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_BG1);  }, false);
-        debug_test_copyLayer_BG2 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_BG2);  }, false);
-        debug_test_copyLayer_SP1 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_SP1);  }, false);
-        debug_test_copyLayer_TEXT.addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_TX1); }, false);
-        debug_test_copyLayer_ALL.addEventListener("click", copyAll, false);
     };
     const drawColorPalette = function(){
         let debug_test_drawColorPalette = document.getElementById("debug_test_drawColorPalette");

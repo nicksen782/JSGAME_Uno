@@ -29,8 +29,8 @@ const _GFX = {
         tilemapToImageData: function(tilesetName, tilemap, settings, fade=null){
             // Get the tileset and the dimensions for the tileset. 
             let tileset = _GFX.tilesets[tilesetName].tileset;
-            let tw = _GFX.tilesets["bg_tiles2"].config.tileWidth;
-            let th = _GFX.tilesets["bg_tiles2"].config.tileHeight;
+            let tw = _GFX.tilesets[tilesetName].config.tileWidth;
+            let th = _GFX.tilesets[tilesetName].config.tileHeight;
 
             // Get the dimensions of the tilemap.
             let mapW = tilemap[0];
@@ -40,10 +40,8 @@ const _GFX = {
             let index=2;
             
             // Create new ImageData. (The final copy and the reusable tile copy.)
-            let imageData = new ImageData(mapW*tw, mapH*th); // The width and height come from the tilemap and should be correct.
+            let imageData = new ImageData(mapW * tw, mapH * th); // The width and height come from the tilemap and should be correct.
             let imageDataTile = new ImageData(tw, th);
-            let mapWidth  = 1 * tw;
-            let mapHeight = 1 * th;
 
             // Break-out settings.
             let rotation  = settings.rotation;
@@ -55,21 +53,11 @@ const _GFX = {
             if( (fade && fade.fade && fade.currFade != null) ){ fadeLevel = fade.currFade; }
             else if( settings.fade != null){ fadeLevel = settings.fade; }
 
-            // If global fade is on but not 10 OR
-            // If settings.fade is set but not 10 OR
-            // If global fade is off and settings.fade is off
-            // if( 
-            //     (fade.fade     && fade.currFade != 10) || 
-            //     (settings.fade && settings.fade != 10) ||
-            //     (!fade.fade    && !settings.fade!= null)
-            // ){
             if( fadeLevel != 10 ){
                 // Draw the tilemap.
                 for(let y=0; y<mapH; y+=1){
                     for(let x=0; x<mapW; x+=1){
                         // Reset the tile dims.
-                        mapWidth  = 1 * tw;
-                        mapHeight = 1 * th;
     
                         // Copy the tile data to the imageDataTile. 
                         // imageDataTile.data.fill(0);
@@ -77,8 +65,7 @@ const _GFX = {
     
                         // Rotate tile?
                         if(rotation) { 
-                            // NOTE: This part is here for completeness. Normally the tiles in a tileset are square (same width and height.)
-                            ({ width: mapWidth, height: mapHeight } = _GFX.utilities.rotateImageData(imageDataTile, rotation)); 
+                            _GFX.utilities.rotateImageData(imageDataTile, rotation); 
                         }
     
                         // Flip tile horizontally?
@@ -90,14 +77,14 @@ const _GFX = {
                         // Update the imageData with this tile.
                         createGraphicsAssets.updateRegion(
                             imageDataTile.data,  // source
-                            // imageDataTile.width, // srcWidth
-                            mapWidth,           // srcWidth
+                            imageDataTile.width, // srcWidth
                             imageData.data,      // destination
                             imageData.width,     // destWidth
-                            x*tw,                // x
-                            y*th,                // y
+                            x * tw,              // x
+                            y * th,              // y
                             tw,                  // w
-                            th                   // h
+                            th,                  // h
+                            false                // onlyWriteToTransparent
                         );
     
                         // Increment the tile index in the tilemap.
@@ -127,11 +114,7 @@ const _GFX = {
             }
 
             // Return the completed data.
-            return {
-                imgData: imageData,
-                tw     : tw,
-                th     : th,
-            }
+            return imageData;
         },
 
         // Flips ImageData horizontally. (By reference, changes source imageData.)
@@ -188,7 +171,7 @@ const _GFX = {
             let allowedDegrees = [-90, 90, -180, 180, 270];
             if (allowedDegrees.indexOf(degrees) === -1) {
                 console.error('Invalid degrees. Only use these:', allowedDegrees);
-                return;
+                return imageData;
             }
         
             // Break-out the imageData.
@@ -284,7 +267,7 @@ const _DEBUG = {
             a = 255;
 
             // Create the new tile container. 
-            thisTile = new Uint8ClampedArray( (4*tw*th)*4);
+            thisTile = new Uint8ClampedArray( (4 * tw * th)*4);
 
             // Fill the tile container with the same color.
             let uint8Data = new Uint32Array(thisTile.buffer);
@@ -482,7 +465,8 @@ const messageFuncs = {
                         x, // x
                         y, // y
                         w, // w
-                        h  // h
+                        h, // h
+                        false // onlyWriteToTransparent
                     );
                 }
 
@@ -530,39 +514,41 @@ const messageFuncs = {
             let mapKeys = Object.keys(tilemaps);
             if(this.flickerFlag){ mapKeys.reverse(); }
 
-            // for(let mapKey in tilemaps){
+            let imgData, mapKey, tmap;
+            let r, g, b, a, uint32Data, fillColor;
             for(let i=0; i<mapKeys.length; i+=1){
-                let mapKey = mapKeys[i];
-                let tmap = tilemaps[mapKey];
-                let obj = _GFX.utilities.tilemapToImageData(tmap.ts, tmap.tmap, tmap.settings, fade);
+                mapKey = mapKeys[i];
+                tmap = tilemaps[mapKey];
+                imgData = _GFX.utilities.tilemapToImageData(tmap.ts, tmap.tmap, tmap.settings, fade);
 
                 if(tmap.settings.bgColorRgba){
-                    let [r, g, b, a] = tmap.settings.bgColorRgba;
-                    let uint32Data = new Uint32Array(obj.imgData.data.buffer);
-                    let fillColor = (a << 24) | (b << 16) | (g << 8) | r;
-                    let len = uint32Data.length;
-                    for (let p = 0; p < len; ++p) {
+                    [r, g, b, a] = tmap.settings.bgColorRgba;
+                    uint32Data = new Uint32Array(obj.imgData.data.buffer);
+                    fillColor = (a << 24) | (b << 16) | (g << 8) | r;
+                    for (let p = 0, len = uint32Data.length; p < len; ++p) {
                         if (uint32Data[p] === 0) { uint32Data[p] = fillColor; }
                     }
                 }
 
-                createGraphicsAssets.updateRegionBlit(
-                    obj.imgData.data,                      // source
-                    obj.imgData.width,                     // srcWidth
+                // Use onlyWriteToTransparent.
+                createGraphicsAssets.updateRegion(
+                    imgData.data,                          // source
+                    imgData.width,                         // srcWidth
                     _GFX.layers[layer].imgDataCache.data,  // destination
                     _GFX.layers[layer].imgDataCache.width, // destWidth
-                    tmap.x * obj.tw,                       // x
-                    tmap.y * obj.th,                       // y
-                    obj.imgData.width,                     // w
-                    obj.imgData.height                     // h
+                    tmap.x,                                // x
+                    tmap.y,                                // y
+                    imgData.width,                         // w
+                    imgData.height,                        // h
+                    true                                   // onlyWriteToTransparent
                 );
 
                 if(save){
                     _GFX.currentData[layer].tilemaps[mapKey] = {
-                        x: tmap.x * obj.tw,
-                        y: tmap.y * obj.th,
-                        w: obj.imgData.width,
-                        h: obj.imgData.height,
+                        x: tmap.x,
+                        y: tmap.y,
+                        w: imgData.width,
+                        h: imgData.height,
                         hash: tmap.hash,
                     };
                 }

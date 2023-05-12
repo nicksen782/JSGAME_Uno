@@ -1,6 +1,6 @@
 _APP.game = {
-    // gs1: "gs_JSG",
-    gs1: "gs_N782",
+    gs1: "gs_JSG",
+    // gs1: "gs_N782",
     // gs1: "gs_TITLE",
     // gs1: "gs_OPTIONS",
     // gs1: "gs_RULES",

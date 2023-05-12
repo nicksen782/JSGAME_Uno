@@ -17,17 +17,26 @@ class LayerObject {
         this.layerKey    = config.layerKey;
         this.tilesetKey  = config.tilesetKey;
 
-        // Tilemap.
-        this.tmap = config.tmap    ?? [0,0];
+        // Tilemap. (It is possible that a tilemap is not provided/required.)
+        this.tmap = config.tmap; // ?? new Uint8ClampedArray([1,1,0]);
 
         // X position.
-        this.x    = config.x    ?? 0;
+        this.x = config.x ?? 0;
         
         // Y position.
-        this.y    = config.y    ?? 0;
+        this.y = config.y ?? 0;
+
+        // x,y positioning (grid or pixel based.)
+        this.xyByGrid = config.xyByGrid ?? false;
+        
+        // Get the tileWidth and tileHeight from the tileset config. 
+        if(this.xyByGrid && this.tilesetKey){
+            this.tw = _GFX.tilesets[this.tilesetKey].config.tileWidth ;
+            this.th = _GFX.tilesets[this.tilesetKey].config.tileHeight;
+        }
 
         // Settings.
-        this.settings = config.settings ?? {};
+        this.settings = config.settings ?? _GFX.funcs.correctSettings(null);
 
         // Hidden.
         this.hidden = false; 
@@ -72,10 +81,19 @@ class LayerObject {
 
     render(){
         if(this.hidden){ return; }
+
+        // Draw by grid or by pixel?
+        let x = this.x; 
+        let y = this.y;
+        if(this.xyByGrid && this.tilesetKey){ 
+            x = x * this.tw; 
+            y = y * this.th;
+        }
+
         _GFX.funcs.updateLayer(this.layerKey, 
             {
                 ..._GFX.funcs.createLayerObjData({ 
-                    mapKey: this.layerObjKey, x: this.x/8, y: this.y/8, ts: this.tilesetKey, settings: this.settings, 
+                    mapKey: this.layerObjKey, x: x, y: y, ts: this.tilesetKey, settings: this.settings, 
                     tmap: this.tmap
                 }),
             }
@@ -84,20 +102,138 @@ class LayerObject {
 }
 
 
-class N782_face extends LayerObject{
+class N782_face_anim extends LayerObject{
     constructor(config){
         super(config);
+        this.tilesetKey  = "bg_tiles2";
+
+        this.frames = [
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F1"),
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F2"),
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F3"),
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F4"),
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F5"),
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F1"),
+        ];
+        this.framesIndex = 0;
+        this.framesCounter = 0;
+        this.framesBeforeIndexChange = 6;
+        this.repeatCount = 0;
+        this.repeats = 4;
+        this.done = false;
+        this.tmap = this.frames[this.framesIndex];
+        this.x = config.x ?? (( (28/2) - (7/2) )) * 8;
+        this.y = config.y ?? ( 10 ) * 8;
+        console.log("face:", `(x: ${this.x}, y: ${this.y}), (x/8: ${this.x/8}, y/8: ${this.y/8}), this.xyByGrid: ${this.xyByGrid}`);
     }
+
+    // Render functions.
+    nextFrame(){
+        // Stop after repeating up to this.repeats.
+        if(this.done){ return; }
+
+        // Time to change frames?
+        if(this.framesCounter < this.framesBeforeIndexChange){ 
+            this.framesCounter += 1; 
+        }
+        else {
+            // Reset the frames counter.
+            this.framesCounter = 0;
+            
+            // Increment the framesIndex
+            if(this.framesIndex < this.frames.length -1){ 
+                this.framesIndex += 1; 
+            }
+            else { 
+                // Reset the framesIndex.
+                this.framesIndex = 0; 
+
+                // Increment repeatCount.
+                this.repeatCount += 1; 
+
+                // Stop after repeating up to this.repeats.
+                if(this.repeatCount == this.repeats) { 
+                    this.tmap = _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F1");
+                    this.done = true; 
+                    return; 
+                }
+                else{
+                }
+
+            }
+        }
+
+        // Set the new tmap.
+        this.tmap = this.frames[this.framesIndex];
+    };
 };
-class N782_text extends LayerObject{
+class N782_text_anim extends LayerObject{
     constructor(config){
         super(config);
+        this.tilesetKey  = "bg_tiles2";
+
+        this.frames = [
+            // _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F1"),
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F2"),
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F3"),
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F4"),
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F5"),
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F6"),
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F7"),
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F8"),
+        ];
+        this.framesIndex = 0;
+        this.framesCounter = 0;
+        this.framesBeforeIndexChange = 3;
+        this.repeatCount = 0;
+        this.repeats = 5;
+        this.done = false;
+        this.tmap = this.frames[this.framesIndex];
+
+        this.x = config.x ?? (( (28/2) - (7/2) )) * 8;
+        this.y = config.y ?? ( 16 )*8;
+        console.log("text:", `(x: ${this.x}, y: ${this.y}), (x/8: ${this.x/8}, y/8: ${this.y/8}), this.xyByGrid: ${this.xyByGrid}`);
     }
-};
-class N782_star extends LayerObject{
-    constructor(config){
-        super(config);
-    }
+
+    // Render functions.
+    nextFrame(){
+        // Stop after repeating up to this.repeats.
+        if(this.done){ return; }
+
+        // Time to change frames?
+        if(this.framesCounter < this.framesBeforeIndexChange){ 
+            this.framesCounter += 1; 
+        }
+        else {
+            // Reset the frames counter.
+            this.framesCounter = 0;
+            
+            // Increment the framesIndex
+            if(this.framesIndex < this.frames.length -1){ 
+                this.framesIndex += 1; 
+            }
+            else { 
+                // Reset the framesIndex.
+                this.framesIndex = 0; 
+
+                // Increment repeatCount.
+                this.repeatCount += 1; 
+
+                // Stop after repeating up to this.repeats.
+                if(this.repeatCount == this.repeats) { 
+                    this.tmap = _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F1");
+                    this.done = true; 
+                    return; 
+                }
+                else{
+                }
+
+            }
+        }
+
+        // Set the new tmap.
+        this.tmap = this.frames[this.framesIndex];
+    };
 };
 
 class Card extends LayerObject{
@@ -246,20 +382,6 @@ class Card extends LayerObject{
                 this.tmap[this.tmap.length-1] = tmpMap2[2];
             }
         }
-    };
-
-    // Render function.
-    firstRender(){ this.render(); };
-
-    render(){
-        _GFX.funcs.updateLayer(this.layerKey, 
-            {
-                ..._GFX.funcs.createLayerObjData({ 
-                    mapKey: this.layerObjKey, x: this.x/8, y: this.y/8, ts: this.tilesetKey, settings: this.settings, 
-                    tmap: this.tmap
-                }),
-            }
-        );
     };
 };
 

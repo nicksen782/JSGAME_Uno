@@ -310,39 +310,22 @@
     }
 
     // Update a region in the destination with the source data.
-    function updateRegion(source, srcWidth, destination, destWidth, x, y, w, h) {
-        for (let j = 0; j < h; j++) {
-            for (let i = 0; i < w; i++) {
-                let srcIndex = (j * srcWidth + i) * 4;
-                let destIndex = ((y + j) * destWidth + (x + i)) * 4;
-
-                for (let k = 0; k < 4; k++) {
-                    destination[destIndex + k] = source[srcIndex + k];
-                }
-            }
-        }
-    }
-
-    // BLIT: Update a region in the destination with the source data but only on transparent pixels at the destination.
-    function updateRegionBlit(source, srcWidth, destination, destWidth, x, y, w, h) {
-        let srcIndex;
-        let destIndex;
-        let subArray = new Uint8ClampedArray(4);
-
-        // Rows
+    function updateRegion(source, srcWidth, destination, destWidth, x, y, w, h, onlyWriteToTransparent=false) {
+        let alphaPixel;
         for (let y_inc = 0; y_inc < h; y_inc++) {
             // Cols
             for (let x_inc = 0; x_inc < w; x_inc++) {
                 // Get the indexes for the source and the destination for this pixel.
                 srcIndex  = (y_inc * srcWidth + x_inc) * 4;
                 destIndex = ((y + y_inc) * destWidth + (x + x_inc)) * 4;
+                alphaPixel = destination[destIndex + 3];
 
-                // Check if the destination pixel is transparent.
-                if (destination[destIndex + 3] === 0) {
-                    // Copy the source pixel data to the destination using set and subarray.
-                    subArray = source.subarray(srcIndex, srcIndex + 4);
-                    destination.set( subArray, destIndex );
-                }
+                // Only write to transparent pixels?
+                if ( onlyWriteToTransparent && alphaPixel !== 0 ) { continue; }
+
+                // Copy the source pixel data to the destination using set and subarray.
+                subArray = source.subarray(srcIndex, srcIndex + 4);
+                destination.set( subArray, destIndex );
             }
         }
     }
@@ -378,7 +361,6 @@
         setPixelated    : setPixelated,
         updateRegion    : updateRegion,
         copyRegion      : copyRegion,
-        updateRegionBlit: updateRegionBlit,
         rgba32TileToFadedRgba32Tile: rgba32TileToFadedRgba32Tile,
     };
 }));

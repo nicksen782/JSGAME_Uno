@@ -58,7 +58,9 @@ var _GFX = {
                     !Array.isArray(settings)
                 )
             ){
-                settings = {};
+                // Settings was not an object. Replace with default settings.
+                // console.error("Fixing settings", settings);
+                settings = { fade: null, xFlip: false, yFlip: false, rotation: 0, colorData:[] };
             }
 
             return settings;
@@ -258,7 +260,9 @@ var _GFX = {
             // return _GFX.tilesets[ts].tilemaps[mapKey];
             
             // Value copy.
-            return new Uint8ClampedArray(_GFX.tilesets[ts].tilemaps[mapKey]);
+            let tilemap = _GFX.tilesets[ts].tilemaps[mapKey];
+            if(!tilemap){ throw `getTilemap: Missing tmap: ts: ${ts}, mapKey: ${mapKey}`; }
+            return new Uint8ClampedArray(tilemap);
         },
 
         // Removes a layer object and sets the changes for that layer to true. 
@@ -272,14 +276,11 @@ var _GFX = {
         createLayerObjData: function(obj={}){
             // Correct any missing data in the object.
             if(!obj){ obj = {}; }
-            if(!obj.mapKey) { 
-                throw `createLayerObjData: Missing mapKey: ${JSON.stringify(obj)}`;
-                // obj.mapKey = "" ;
-            }
-            if(!obj.ts)     { obj.ts     = "bg_tiles" }
-            if(!obj.tmap)   { obj.tmap   = [0,0,0] }
-            if(!obj.x)      { obj.x      = 0; }
-            if(!obj.y)      { obj.y      = 0; }
+            if(!obj.mapKey) { throw `createLayerObjData: Missing mapKey: ${JSON.stringify(obj)}`; }
+            if(!obj.tmap)   { throw `createLayerObjData: Missing tmap: ${JSON.stringify(obj)}`; }
+            if(!obj.ts)     { obj.ts = "bg_tiles" }
+            if(!obj.x)      { obj.x  = 0; }
+            if(!obj.y)      { obj.y  = 0; }
             obj.settings = this.correctSettings(obj.settings); // Make sure that settings is an object.
 
             // Handle tilemap transforms.
@@ -307,7 +308,6 @@ var _GFX = {
             // Correct any missing data in the object.
             if(!obj){ obj = {}; }
             if(!obj.mapKey) { obj.mapKey = "" }
-            // if(!obj.layer)  { obj.layer  = "TX1" }
             if(!obj.ts)     { obj.ts     = "font_tiles" }
             if(!obj.text)   { obj.text   = [""]; }
             if(!obj.x)      { obj.x      = 0; }
@@ -370,7 +370,6 @@ var _GFX = {
             // Return the layerObject.
             return { 
                 [obj.mapKey]: { 
-                    // layer   : obj.layer,
                     ts      : obj.ts,
                     x       : obj.x,
                     y       : obj.y,
@@ -452,10 +451,10 @@ var _GFX = {
         // Performs a rotational transform on a tilemap.
         tilemap_rotate: function(map, degrees){
             // Make sure a map was provided.
-            if(!map){ console.error("Missing tilemap."); return map; }
+            if(!map){ console.error("tilemap_rotate: Missing tilemap.", map); return map; }
             
-            // Make sure a rotation was provided.
-            if(!degrees){ console.error("Missing degrees."); return map; }
+            // Make sure a rotation was provided. (0 is considered invalid here.)
+            if(!degrees){ console.error("tilemap_rotate: Missing degrees.", degrees); return map; }
 
             // Make sure that the rotation specified is allowed.
             let allowedDegrees = [-90, 90, -180, 180, 270];

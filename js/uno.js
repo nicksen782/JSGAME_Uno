@@ -14,7 +14,7 @@ _APP.configObj = {
     dimensions: {
         "tileWidth" : 8,
         "tileHeight": 8,
-        "rows":36, 
+        "rows":28, 
         "cols":28
     },
 
@@ -250,9 +250,14 @@ _APP.loader = {
         await _INPUT.customized.init(_APP.configObj.inputConfig);
         if(_APP.debugActive && _DEBUG && _DEBUG.init){ await _DEBUG.init(); }
         _APP.navBar1.init();
-        _APP.navBar1.showOne("view_controls");
-        // _APP.navBar1.showOne("view_input");
-        // _APP.navBar1.showOne("view_debug");
+        
+        if(_APP.debugActive && _DEBUG && _DEBUG.init){ _APP.navBar1.showOne("view_debug"); }
+        else{
+            _APP.navBar1.showOne("view_controls");
+            // _APP.navBar1.showOne("view_input");
+            // _APP.navBar1.showOne("view_debug");
+        }
+        
         _APP.initOutputScaleControls();
         _APP.game.gamestates_list = Object.keys(_APP.game.gamestates);
         _APP.game.gameLoop.init();
