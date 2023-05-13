@@ -64,3 +64,26 @@ div#debug_test_alwaysVisible {
     background-color: rgba(255,255,255,0.5);
     margin-top: 5px;
 }
+
+.debugLive{
+    /* transition: background-color 0.25s ease-out; */
+    display:inline;
+}
+.debugLive.active{ background-color:yellow; }
+.debug_table{
+    border-collapse: collapse;
+    display:inline-block;
+}
+.debug_table td{border:1px solid black;padding: 5px;}
+.debug_td_header{ 
+    text-decoration: underline;
+    font-weight: bold;
+}
+.debug_td_long{
+    width: 170px;
+    max-width: 170px;
+}
+.debug_td_short{
+    width: 60px;
+    max-width: 60px;
+}

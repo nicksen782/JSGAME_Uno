@@ -38,6 +38,7 @@ const _GFX = {
             
             // Start at index 2 since the first two indexs are the map dimensions in tiles. 
             let index=2;
+            let missingTile = false;
             
             // Create new ImageData. (The final copy and the reusable tile copy.)
             let imageData = new ImageData(mapW * tw, mapH * th); // The width and height come from the tilemap and should be correct.
@@ -60,19 +61,22 @@ const _GFX = {
                         // Reset the tile dims.
     
                         // Copy the tile data to the imageDataTile. 
-                        // imageDataTile.data.fill(0);
-                        imageDataTile.data.set(tileset[ tilemap[index] ].imgData.data.slice());
+                        try{ imageDataTile.data.set(tileset[ tilemap[index] ].imgData.data.slice()); missingTile = false; }
+                        
+                        // Missing tile. (Wrong tileset?) 
+                        // Create a transparent tile and set the missingTile flag to skip any transforms from settings.
+                        catch(e){ imageDataTile.data.fill(0); missingTile = true; }
     
                         // Rotate tile?
-                        if(rotation) { 
+                        if(!missingTile && rotation) { 
                             _GFX.utilities.rotateImageData(imageDataTile, rotation); 
                         }
     
                         // Flip tile horizontally?
-                        if(xFlip)    { _GFX.utilities.flipImageDataHorizontally(imageDataTile); }
+                        if(!missingTile && xFlip)    { _GFX.utilities.flipImageDataHorizontally(imageDataTile); }
     
                         // Flip tile vertically?
-                        if(yFlip)    { _GFX.utilities.flipImageDataVertically(imageDataTile); }
+                        if(!missingTile && yFlip)    { _GFX.utilities.flipImageDataVertically(imageDataTile); }
     
                         // Update the imageData with this tile.
                         createGraphicsAssets.updateRegion(
@@ -92,18 +96,16 @@ const _GFX = {
                     }
                 }
 
-                // Apply color changes and/or fading to the imageData.
+                // Apply color replacements and/or fading to the imageData.
     
-                // Fade?
+                // Fade? (Replaces the colors THEN fades the result.
                 if(fadeLevel != null){
                     _GFX.utilities.fadeImageData(imageData, fadeLevel, colorData);
                 }
-                // No fade...
-                else{
-                    // Apply color replacements (RGBA).
-                    if(colorData && colorData.length){ 
-                        _GFX.utilities.replaceColors(imageData, colorData); 
-                    }
+
+                // Just color replacements?
+                else if(colorData && colorData.length){
+                    _GFX.utilities.replaceColors(imageData, colorData); 
                 }
             }
 
@@ -370,6 +372,7 @@ const messageFuncs = {
     initLayers: function(messageData){
         // Save the layers data. Configure the ctx value for each layer.
         let tsLayerSave = performance.now();
+
         for(let layer of messageData.layers){ 
             // Get the canvas.
             let canvas = layer.canvas;
@@ -742,6 +745,7 @@ const messageFuncs = {
         run: function(messageData){
             let sendGfxUpdates = performance.now();
             
+            if( messageData["ALLCLEAR"] ){ messageFuncs.sendGfxUpdates.clearAllLayers() }
             if( messageData["BG1"] ){ this.updateBG1(messageData["BG1"]); }
             if( messageData["BG2"] ){ this.updateBG2(messageData["BG2"]); }
             if( messageData["SP1"] ){ this.updateSP1(messageData["SP1"]); }
@@ -762,34 +766,64 @@ const messageFuncs = {
 
 self.onmessage = async function(event) {
     // Accept only version 2 methods.
-    if(!event.data.version == 2){ 
+    if(event.data.version != 2){ 
         console.log("Mismatched version. Must be version 2.");
         self.postMessage( {mode: event.data, data: ""}, [] );
     }
     else{
         if(!event.data.mode){ console.log("No mode was specified."); self.postMessage( {mode: event.data, data: ""}, [] ); }
         if(!event.data.data){ console.log("No data was specified."); self.postMessage( {mode: event.data, data: ""}, [] ); }
-        let messageMode = event.data.mode;
-        let messageData = event.data.data;
+        let mode  = event.data.mode;
+        let data  = event.data.data;
+        let flags = event.data.flags;
+        let refs  = [];
         let returnData = "";
 
-        // console.log(messageMode, messageData);
+        // DEBUG:
+        // console.log(`mode: ${mode}`, ", data:", data, ", flags:", flags);
+        // console.log(`mode: ${mode}`, ", flags:", flags);
 
-        switch(messageMode){
-            case "initConfigAndGraphics": { returnData = await messageFuncs.initConfigAndGraphics(messageData); break; }
-            case "initLayers"           : { messageFuncs.initLayers(messageData); break; }
-            // case "sendGfxUpdates"       : { messageFuncs.sendGfxUpdates.run(messageData); break; }
-            case "sendGfxUpdates"       : { returnData = messageFuncs.sendGfxUpdates.run(messageData); break; }
-            case "clearAllLayers"       : { messageFuncs.sendGfxUpdates.clearAllLayers(); break; }
+        switch(mode){
+            // NORMAL REQUESTS.
+            // case "initConfigAndGraphics": { returnData = await messageFuncs.initConfigAndGraphics(data); break; }
+            case "initConfigAndGraphics": { 
+                if(!flags.dataRequest){              await messageFuncs.initConfigAndGraphics(data); }
+                else                  { returnData = await messageFuncs.initConfigAndGraphics(data); }
+                break;
+            }
+            case "initLayers"           : { 
+                messageFuncs.initLayers(data); break; 
+            }
+            case "sendGfxUpdates"       : { 
+                if(!flags.dataRequest){              messageFuncs.sendGfxUpdates.run(data); }
+                else                  { returnData = messageFuncs.sendGfxUpdates.run(data); }
+                break; 
+            }
+            
+            // DEBUG REQUESTS.
+            case "_DEBUG.drawColorPalette" : { 
+                _DEBUG.drawColorPalette(); 
+                break; 
+            }
+            case "clearAllLayers"          : { 
+                messageFuncs.sendGfxUpdates.clearAllLayers(); 
+                break; 
+            }
 
-            // DEBUG
-            case "_DEBUG.drawColorPalette" : { _DEBUG.drawColorPalette(); break; }
+            // UNKNOWN REQUESTS.
             default: {
-                console.log("WEBWORKER: Unknown mode:", messageMode);
+                console.log("WEBWORKER: Unknown mode:", mode);
                 break; 
             }
         }
 
-        self.postMessage( {mode: event.data.mode, data: returnData}, [] );
+        // Send a response.
+        self.postMessage( 
+            { 
+                mode: event.data.mode, 
+                data: returnData, 
+                flags: flags 
+            }, refs 
+        );
     }
 };

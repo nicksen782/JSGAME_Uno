@@ -1,11 +1,12 @@
 _APP.game = {
-    gs1: "gs_JSG",
+    // gs1: "gs_JSG",
     // gs1: "gs_N782",
     // gs1: "gs_TITLE",
     // gs1: "gs_OPTIONS",
     // gs1: "gs_RULES",
     // gs1: "gs_PLAYING",
 
+    gs1: "",
     gs2: "",
     
     gs1_new: "",
@@ -15,8 +16,40 @@ _APP.game = {
 
     changeGs1_triggered: false,
     changeGs2_triggered: false,
-    changeGs1: function(){},
-    changeGs2: function(){},
+
+    changeGs1: function(new_gs1){
+        // Set the gamestate change trigger.
+        this.changeGs1_triggered = true; 
+        // Set the previous gamestate.
+        this.gs1_prev = this.gs1; 
+        // Set the new gamestate.
+        this.gs1_new = new_gs1; 
+    },
+    _changeGs1: function(){
+        // Unset the gamestate change trigger.
+        this.changeGs1_triggered = false; 
+        // Set the new gamestate.
+        this.gs1 = this.gs1_new;
+        // Clear gamestate 2.
+        this.gs2 = "";
+        // Reset the inited flag for this gamestate.
+        _APP.game.gamestates[this.gs1].inited = false;
+    },
+
+    changeGs2: function(new_gs2){
+        // Set the gamestate change trigger.
+        this.changeGs2_triggered = true; 
+        // Set the previous gamestate.
+        this.gs2_prev = this.gs2; 
+        // Set the new gamestate.
+        this.gs2_new = new_gs2; 
+    },
+    _changeGs2: function(){
+        // Unset the gamestate change trigger.
+        this.changeGs2_triggered = false; 
+        // Set the new gamestate.
+        this.gs2 = this.gs2_new;
+    },
 
     gamestates: {},
     gamestates_list: {},
@@ -36,9 +69,8 @@ _APP.game.gameLoop = {
     lastLoopRun  : 0,
     delta        : undefined,
     loopType     : "raf", // Can be "raf" or "to".
-    lastDebug    : 0,
-    debugDelay   : undefined,
-    fadeIsBlocking: false,
+    fadeIsBlocking: false, // TODO
+    DRAWNEEDED_prev: false, // Used by the loop to track the previous state of _GFX.DRAWNEEDED.
 
     // Calculates the average frames per second.
     fpsCalc : {
@@ -176,27 +208,30 @@ _APP.game.gameLoop = {
                 
                 // DRAW
                 if( _APP.game.gamestates[_APP.game.gs1].render){ _APP.game.gamestates[_APP.game.gs1].render(); };
+
+                // Determine if there are any draw updates. (Returns true/false and also sets _GFX.DRAWNEEDED.)
+                this.DRAWNEEDED_prev = _GFX.funcs.isDrawNeeded();
+
+                // DEBUG
+                if(_APP.debugActive && _DEBUG){ _DEBUG.loop_display_func(); }
                 
                 // Send a draw request if there are changes for any layer.
-                if(
-                    (
-                        _GFX.currentData["BG1"].changes ||
-                        _GFX.currentData["BG2"].changes ||
-                        _GFX.currentData["SP1"].changes ||
-                        _GFX.currentData["TX1"].changes
-                    )
-                ){
+                if( _GFX.DRAWNEEDED ) { 
                     // Synchronize the gameLoop with the rendering.
-                    if(_APP.configObj.waitUntilFrameDrawn){ await _GFX.funcs.sendGfxUpdates(true);  }
+                    if(_APP.configObj.waitUntilFrameDrawn){ await _GFX.funcs.sendGfxUpdates(true, true);  }
                     
                     // Send the graphics updates without waiting. (This could be a problem where there are many graphics updates.)
-                    else                                  {       _GFX.funcs.sendGfxUpdates(false); }
+                    else                                  {       _GFX.funcs.sendGfxUpdates(false, true); }
 
                     this.frameDrawCounter += 1;
                 }
-
+                
                 // DEBUG
-                // console.log(this.frameCounter, _APP.gameLoop.loopType, this.fpsCalc.average.toFixed(2), this.fpsCalc.avgMsPerFrame.toFixed(2));
+                // if(_APP.debugActive && _DEBUG){ _DEBUG.loop_display_func(); }
+
+                // GAMESTATE CHANGES
+                if(_APP.game.changeGs2_triggered){ _APP.game._changeGs2(); } 
+                if(_APP.game.changeGs1_triggered){ _APP.game._changeGs1(); } 
             }
 
             // End the loop and run any end of loop tasks.
@@ -216,5 +251,19 @@ _APP.game.gameLoop = {
 
         // Get initial input states.
         await _INPUT.util.getStatesForPlayers();
+
+        // Set the first gamestate.
+        _APP.game.changeGs1("gs_JSG");
+        // _APP.game.changeGs1("gs_N782");
+        // _APP.game.changeGs1("gs_TITLE");
+        // _APP.game.changeGs1("gs_OPTIONS");
+        // _APP.game.changeGs1("gs_RULES");
+        // _APP.game.changeGs1("gs_PLAYING");
+
+        // DEBUG
+        if(_APP.debugActive && _DEBUG){ _DEBUG.loop_display_func(); }
+
+        // Change to the set gamestate.
+        _APP.game._changeGs1();
     },
 };

@@ -235,7 +235,7 @@ var _DEBUG = {
         });
 
         for(let i=0; i<this.objs.length; i+=1){ if(this.objs[i]) { this.objs[i].render(); } }
-        _GFX.funcs.sendGfxUpdates();
+        _GFX.funcs.sendGfxUpdates(false, false);
 
         setTimeout(()=>{
             let newConfig = this.objs[19].removeLayerObject();
@@ -245,7 +245,7 @@ var _DEBUG = {
             delete this.objs[19];
             this.objs[19] = new LayerObject(newConfig);
             this.objs[19].render();
-            _GFX.funcs.sendGfxUpdates();
+            _GFX.funcs.sendGfxUpdates(false, false);
         }, 1000);
         setTimeout(()=>{
             let newConfig = this.objs[19].removeLayerObject();
@@ -254,14 +254,14 @@ var _DEBUG = {
             newConfig.layerKey = "BG2";
             this.objs[19] = new LayerObject(newConfig);
             this.objs[19].render();
-            _GFX.funcs.sendGfxUpdates(); 
+            _GFX.funcs.sendGfxUpdates(false, false);
         }, 2000);
 
         // for(let i=0; i<this.objs.length; i+=1){ this.objs[i].render(); }
 
         // this.objs[20].x-=8;
         // this.objs[20].render();
-        // _GFX.funcs.sendGfxUpdates();
+        // _GFX.funcs.sendGfxUpdates(false, false);
     },
 
     obs2:[],
@@ -336,18 +336,8 @@ var _DEBUG = {
             _APP.game.gameLoop.loop_start(); 
         }, false);
         
-        let goToGs = function(gs){
-            _APP.game.gamestates[_APP.game.gs1].inited = false;
-            _APP.game.gameLoop.loop_stop(); 
-            _APP.game.gs1 = gs;
-            _APP.game.gamestates[_APP.game.gs1].inited = false;
-            _APP.game.gameLoop.loop_start(); 
-        }
-        gotoGS_JSG .addEventListener("click", ()=>{ goToGs("gs_JSG"); }, false);
-        gotoGS_N782.addEventListener("click", ()=>{ goToGs("gs_N782"); }, false);
-
-        // <button id="debug_test_gotoGS_JSG">Goto: gs_JSG</button>
-        // <button id="debug_test_gotoGS_N782">Goto: gs_N782</button>
+        gotoGS_JSG .addEventListener("click", ()=>{ _APP.game.changeGs1("gs_JSG"); }, false);
+        gotoGS_N782.addEventListener("click", ()=>{ _APP.game.changeGs1("gs_N782"); }, false);
     },
     
     waitForDrawControl: function(){
@@ -392,34 +382,92 @@ var _DEBUG = {
         fadeSliderTX1.addEventListener("input", ()=>{ changeFade("TX1", fadeSliderTX1, fadeSliderTX1Text); }, false);
     },
 
-    countHandler: function(){
-        let frameCounter     = document.getElementById("debug_frameCounter");
-        let frameDrawCounter = document.getElementById("debug_frameDrawCounter");
-        let fpsDisplay = document.getElementById("debug_fpsDisplay");
-        let waitUntilFrameDrawn = document.getElementById("debug_waitUntilFrameDrawn");
+    elemsObj: {
+        frameCounter       : { e: null, t:0 },
+        frameDrawCounter   : { e: null, t:0 },
+        fpsDisplay         : { e: null, t:0 },
+        waitUntilFrameDrawn: { e: null, t:0 },
+        debug_GS1Text      : { e: null, t:0 },
+        debug_GS2Text      : { e: null, t:0 },
+        DRAWNEEDED: { e: null, t: 0 },
+        BG1_tms: { e: null, t: 0 },
+        BG2_tms: { e: null, t: 0 },
+        SP1_tms: { e: null, t: 0 },
+        TX1_tms: { e: null, t: 0 },
+    },
+    elemsObjInit: function(){
+        this.elemsObj.frameCounter.e        = document.getElementById("debug_frameCounter");
+        this.elemsObj.frameDrawCounter.e    = document.getElementById("debug_frameDrawCounter");
+        this.elemsObj.fpsDisplay.e          = document.getElementById("debug_fpsDisplay");
+        this.elemsObj.waitUntilFrameDrawn.e = document.getElementById("debug_waitUntilFrameDrawn");
+        this.elemsObj.debug_GS1Text.e       = document.getElementById("debug_GS1Text");
+        this.elemsObj.debug_GS2Text.e       = document.getElementById("debug_GS2Text");
+        this.elemsObj.DRAWNEEDED.e          = document.getElementById("debug_DRAWNEEDED");
+        this.elemsObj.BG1_tms.e          = document.getElementById("debug_BG1_tms");
+        this.elemsObj.BG2_tms.e          = document.getElementById("debug_BG2_tms");
+        this.elemsObj.SP1_tms.e          = document.getElementById("debug_SP1_tms");
+        this.elemsObj.TX1_tms.e          = document.getElementById("debug_TX1_tms");
+    },
+    applyChange(newText, obj, activeTime){
+        // Trim the incoming text.
+        newText = newText.trim();
+        if(obj.e.innerText != newText){
+            obj.e.innerText = newText;
+            if(!obj.e.classList.contains("active")){ obj.e.classList.add("active"); }
+            obj.p = performance.now();
+        }
+        else if(obj.e.classList.contains("active") && performance.now() - obj.p > activeTime){ obj.e.classList.remove("active"); }
+    },
+    loop_display_func: function(){
+        let frameCounter        = this.elemsObj["frameCounter"];
+        let frameDrawCounter    = this.elemsObj["frameDrawCounter"];
+        let fpsDisplay          = this.elemsObj["fpsDisplay"];
+        let waitUntilFrameDrawn = this.elemsObj["waitUntilFrameDrawn"];
+        let debug_GS1Text       = this.elemsObj["debug_GS1Text"];
+        let debug_GS2Text       = this.elemsObj["debug_GS2Text"];
+        let DRAWNEEDED          = this.elemsObj["DRAWNEEDED"];
+        let BG1_tms             = this.elemsObj["BG1_tms"];
+        let BG2_tms             = this.elemsObj["BG2_tms"];
+        let SP1_tms             = this.elemsObj["SP1_tms"];
+        let TX1_tms             = this.elemsObj["TX1_tms"];
+        let activeTime = 200;
+        let testText = "";
+        
+        // Show the frameCounter.
+        testText = _APP.game.gameLoop.frameCounter.toString();
+        this.applyChange(testText, frameCounter, activeTime);
 
-        setInterval(()=>{
-            // Show the frameCounter.
-            if(frameCounter.innerText != _APP.game.gameLoop.frameCounter.toString()){
-                frameCounter    .innerText = _APP.game.gameLoop.frameCounter;
-            }
-            // Show the frameDrawCounter.
-            if(frameDrawCounter.innerText != _APP.game.gameLoop.frameDrawCounter.toString()){
-                frameDrawCounter.innerText = _APP.game.gameLoop.frameDrawCounter;
-            }
+        // Show the frameDrawCounter.
+        testText = _APP.game.gameLoop.frameDrawCounter.toString();
+        this.applyChange(testText, frameDrawCounter, activeTime);
 
-            // Show average FPS, average ms per frame, how much off is the average ms per frame.
-            let new_average       = _APP.game.gameLoop.fpsCalc.average.toFixed(0) ?? 0;
-            let new_avgMsPerFrame = _APP.game.gameLoop.fpsCalc.avgMsPerFrame.toFixed(1) ?? 0;
-            let msDiff            = (_APP.game.gameLoop.fpsCalc.avgMsPerFrame - _APP.game.gameLoop.msFrame).toFixed(1);
-            let fpsText           = `A: ${new_average} M: ${new_avgMsPerFrame} D: ${msDiff}`;
-            if(fpsDisplay.innerText != fpsText){ fpsDisplay.innerText = fpsText; }
-            
-            // Show the waitUntilFrameDrawn flag.
-            if(waitUntilFrameDrawn.innerText != (_APP.configObj.waitUntilFrameDrawn ? "true" : "false")){
-                waitUntilFrameDrawn.innerText = _APP.configObj.waitUntilFrameDrawn ? "true" : "false";
-            }
-        }, 100);
+        // Show the DRAWNEEDED.
+        testText = (_APP.game.gameLoop.DRAWNEEDED_prev ? "1" : "0").toString();
+        this.applyChange(testText, DRAWNEEDED, activeTime);
+
+        // Show average FPS, average ms per frame, how much off is the average ms per frame.
+        let new_average       = _APP.game.gameLoop.fpsCalc.average.toFixed(0) ?? 0;
+        let new_avgMsPerFrame = _APP.game.gameLoop.fpsCalc.avgMsPerFrame.toFixed(1) ?? 0;
+        let msDiff            = (_APP.game.gameLoop.fpsCalc.avgMsPerFrame - _APP.game.gameLoop.msFrame).toFixed(1);
+        testText = `A: ${new_average} M: ${new_avgMsPerFrame} D: ${msDiff}`;
+        this.applyChange(testText, fpsDisplay, activeTime);
+
+        // Show the waitUntilFrameDrawn flag.
+        testText = (_APP.configObj.waitUntilFrameDrawn ? "true" : "false");
+        this.applyChange(testText, waitUntilFrameDrawn, activeTime);
+
+        // Update the displayed gamestate data. (gamestate 1.)
+        testText = `C: '${_APP.game.gs1}', T: ${_APP.game.changeGs1_triggered?1:0}`;
+        this.applyChange(testText, debug_GS1Text, activeTime);
+        
+        // Update the displayed gamestate data. (gamestate 2.)
+        testText = `C: '${_APP.game.gs2}', T: ${_APP.game.changeGs2_triggered?1:0}`;
+        this.applyChange(testText, debug_GS2Text, activeTime);
+        
+        testText = Object.keys(_GFX.currentData["BG1"].tilemaps).length.toString(); this.applyChange(testText, BG1_tms, activeTime);
+        testText = Object.keys(_GFX.currentData["BG2"].tilemaps).length.toString(); this.applyChange(testText, BG2_tms, activeTime);
+        testText = Object.keys(_GFX.currentData["SP1"].tilemaps).length.toString(); this.applyChange(testText, SP1_tms, activeTime);
+        testText = Object.keys(_GFX.currentData["TX1"].tilemaps).length.toString(); this.applyChange(testText, TX1_tms, activeTime);
     },
 };
 
@@ -460,7 +508,10 @@ _DEBUG.init = async function(){
             innerDebugDiv.innerHTML = data;
 
             // Move the alwaysVisible div to the bottom of controls.
-            document.getElementById("controls").append( document.getElementById("debug_test_alwaysVisible") ); 
+            // document.getElementById("controls").append( document.getElementById("debug_test_alwaysVisible") ); 
+            
+            // Move the alwaysVisible div below the canvav output.
+            document.getElementById("outputContainer").append( document.getElementById("debug_test_alwaysVisible") ); 
 
             res(); 
         } );
@@ -561,7 +612,7 @@ _DEBUG.init = async function(){
             await _WEBW_V.SEND("_DEBUG.drawColorPalette", { 
                 data:{}, 
                 refs:[]
-            }, true);
+            }, true, false);
         }, false);
         let debug_test_copyLayer_TEXT = document.getElementById("debug_test_copyLayer_TEXT");
         debug_test_copyLayer_TEXT.click();
@@ -594,9 +645,9 @@ _DEBUG.init = async function(){
         ts_fadeHandler = performance.now() - ts_fadeHandler;
 
         // Init countHandler.
-        let ts_countHandler = performance.now(); 
-        this.countHandler();
-        ts_countHandler = performance.now() - ts_countHandler;
+        let ts_elemsObjInit = performance.now(); 
+        this.elemsObjInit();
+        ts_elemsObjInit = performance.now() - ts_elemsObjInit;
 
         // Init gameLoopControl.
         let ts_gameLoopControl = performance.now(); 
@@ -615,7 +666,7 @@ _DEBUG.init = async function(){
         // console.log("  ts_drawColorPalette         :", ts_drawColorPalette.toFixed(3));
         // console.log("  ts_createGridCanvas         :", ts_createGridCanvas.toFixed(3));
         // console.log("  ts_fadeHandler              :", ts_fadeHandler.toFixed(3));
-        // console.log("  ts_countHandler             :", ts_countHandler.toFixed(3));
+        // console.log("  ts_elemsObjInit             :", ts_elemsObjInit.toFixed(3));
         // console.log("  ts_gameLoopControl          :", ts_gameLoopControl.toFixed(3));
         // console.log("  ts_waitForDrawControl       :", ts_waitForDrawControl.toFixed(3));
         

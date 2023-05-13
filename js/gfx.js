@@ -46,9 +46,26 @@ var _GFX = {
             }
         },
     },
+    ALLCLEAR: true,         //
+    DRAWNEEDED: false,      //
 
     // Drawing update and drawing functions. 
     funcs:{
+        // Determines if a draw is needed and updates _GFX.DRAWNEEDED.
+        isDrawNeeded: function(){
+            if(
+                ! (
+                    _GFX.ALLCLEAR                   ||
+                    _GFX.currentData["BG1"].changes ||
+                    _GFX.currentData["BG2"].changes ||
+                    _GFX.currentData["SP1"].changes ||
+                    _GFX.currentData["TX1"].changes ||
+                    _GFX.DRAWNEEDED
+                )
+            )   { _GFX.DRAWNEEDED = false; }
+            else{ _GFX.DRAWNEEDED = true;  }
+            return _GFX.DRAWNEEDED;
+        },
         // Ensures that settings is an object.
         correctSettings: function(settings){
             if(
@@ -78,11 +95,11 @@ var _GFX = {
                 _GFX.currentData[layerKey].changes = true;
             }
 
-            // Request the screen and WebWorker cache clear.
-            await _WEBW_V.SEND("clearAllLayers", { 
-                data:{}, 
-                refs:[]
-            }, true);
+            // Set the flag for screen and WebWorker cache clear.
+            _GFX.ALLCLEAR = true;
+
+            // Directly request the screen and WebWorker cache clear.
+            // await _WEBW_V.SEND("clearAllLayers", { data:{}, refs:[] }, true, false);
         },
 
         // Updates the background color for BG1.
@@ -214,22 +231,18 @@ var _GFX = {
         },
 
         // This gathers the data created by the other update functions and sends the values.
-        sendGfxUpdates: async function(waitForResp=false){
-            // Do not continue if there are not any changes. 
-            if(
-                ! (
-                    _GFX.currentData["BG1"].changes ||
-                    _GFX.currentData["BG2"].changes ||
-                    _GFX.currentData["SP1"].changes ||
-                    _GFX.currentData["TX1"].changes
-                )
-            ){ return; }
+        sendGfxUpdates: async function(waitForResp=false, forceSend=false){
+            // NOTE: forceSend is used by the gameloop when it has already determined that there are changes.
+
+            // Do not continue if there are not any changes. (Unless overridden by forceSend.) 
+            if( forceSend && ! _GFX.funcs.isDrawNeeded() ) { return; }
 
             let data = {
                 BG1: _GFX.currentData["BG1"].changes ?_GFX.currentData["BG1"] : 0,
                 BG2: _GFX.currentData["BG2"].changes ?_GFX.currentData["BG2"] : 0,
                 SP1: _GFX.currentData["SP1"].changes ?_GFX.currentData["SP1"] : 0,
                 TX1: _GFX.currentData["TX1"].changes ?_GFX.currentData["TX1"] : 0,
+                ALLCLEAR: _GFX.ALLCLEAR
             };
 
             // Send ASYNC
@@ -237,14 +250,14 @@ var _GFX = {
                 _WEBW_V.SEND("sendGfxUpdates", { 
                     data: data, 
                     refs:[]
-                }, false);
+                }, false, false);
             }
             // Await for the graphics update to finish.
             else{
                 await _WEBW_V.SEND("sendGfxUpdates", { 
                     data: data, 
                     refs:[]
-                }, true);
+                }, true, false);
             }
 
             // Clear the changes flags.
@@ -252,6 +265,8 @@ var _GFX = {
             _GFX.currentData["BG2"].changes = false;
             _GFX.currentData["SP1"].changes = false;
             _GFX.currentData["TX1"].changes = false;
+            _GFX.ALLCLEAR = false;
+            _GFX.DRAWNEEDED = false;
         },
 
         // Returns a copy of a tilemap.
@@ -564,7 +579,7 @@ _GFX.init = async function(){
         };
 
         // Send the config. Await the response.
-        await _WEBW_V.SEND("initConfigAndGraphics", {data: { configObj: _APP.configObj } }, true);
+        await _WEBW_V.SEND("initConfigAndGraphics", {data: { configObj: _APP.configObj } }, true, true);
         
         // Generate canvas layers and attach to the DOM.
         let outputDiv = document.getElementById("output");
@@ -591,7 +606,7 @@ _GFX.init = async function(){
                 layers: layers,
             },
             refs:[...layers.map(d=>d.canvas)]
-        }, true);
+        }, true, false);
 
         resolve();
     });

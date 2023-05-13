@@ -207,6 +207,7 @@ _APP.loader = {
 
             // Download these files sequentially.
             await _APP.utility.addFile( { f:"js/uno_main.js"               , t:"js"  }, relPath);
+            await _APP.utility.addFile( { f:"js/shared.js"                 , t:"js"  }, relPath);
             await _APP.utility.addFile( { f:"css/uno.css"                  , t:"css" }, relPath);
             await _APP.utility.addFile( { f:"js/webv.js"                   , t:"js"  }, relPath);
             await _APP.utility.addFile( { f:"js/gfx.js"                    , t:"js"  }, relPath);

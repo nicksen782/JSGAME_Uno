@@ -29,10 +29,18 @@ class LayerObject {
         // x,y positioning (grid or pixel based.)
         this.xyByGrid = config.xyByGrid ?? false;
         
-        // Get the tileWidth and tileHeight from the tileset config. 
-        if(this.xyByGrid && this.tilesetKey){
-            this.tw = _GFX.tilesets[this.tilesetKey].config.tileWidth ;
-            this.th = _GFX.tilesets[this.tilesetKey].config.tileHeight;
+        // xyByGrid requires tw and th.
+        if(this.xyByGrid){
+            // Get the tileWidth and tileHeight from the tileset config. 
+            if(this.tilesetKey){
+                this.tw = _GFX.tilesets[this.tilesetKey].config.tileWidth ;
+                this.th = _GFX.tilesets[this.tilesetKey].config.tileHeight;
+            }
+            // Get the tileWidth and tileHeight from the configObj.dimensions config.
+            else{
+                this.tw = _APP.configObj.dimensions.tileWidth ;
+                this.th = _APP.configObj.dimensions.tileHeight;
+            }
         }
 
         // Settings.
@@ -63,6 +71,8 @@ class LayerObject {
     }
     
     removeLayerObject(){
+        // NOTE: The object instance will need to be removed from where it was stored.
+        
         // Remove the layer object from the cache.
         _GFX.funcs.removeLayerObj(this.layerKey, this.layerObjKey);
         
@@ -105,7 +115,7 @@ class LayerObject {
 class N782_face_anim extends LayerObject{
     constructor(config){
         super(config);
-        this.tilesetKey  = "bg_tiles2";
+        this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
 
         this.frames = [
             _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F1"),
@@ -124,7 +134,6 @@ class N782_face_anim extends LayerObject{
         this.tmap = this.frames[this.framesIndex];
         this.x = config.x ?? (( (28/2) - (7/2) )) * 8;
         this.y = config.y ?? ( 10 ) * 8;
-        console.log("face:", `(x: ${this.x}, y: ${this.y}), (x/8: ${this.x/8}, y/8: ${this.y/8}), this.xyByGrid: ${this.xyByGrid}`);
     }
 
     // Render functions.
@@ -170,7 +179,7 @@ class N782_face_anim extends LayerObject{
 class N782_text_anim extends LayerObject{
     constructor(config){
         super(config);
-        this.tilesetKey  = "bg_tiles2";
+        this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
 
         this.frames = [
             // _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F1"),
@@ -192,7 +201,6 @@ class N782_text_anim extends LayerObject{
 
         this.x = config.x ?? (( (28/2) - (7/2) )) * 8;
         this.y = config.y ?? ( 16 )*8;
-        console.log("text:", `(x: ${this.x}, y: ${this.y}), (x/8: ${this.x/8}, y/8: ${this.y/8}), this.xyByGrid: ${this.xyByGrid}`);
     }
 
     // Render functions.

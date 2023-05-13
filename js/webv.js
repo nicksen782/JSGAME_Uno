@@ -70,7 +70,7 @@ var _WEBW_V = {
         else{ console.error(`ERROR: No mode? e.data: ${e.data}, e.data.mode: ${e.data.mode}, e:`, e); }
 
     },
-    SEND: async function(mode, data, waitForResp=false){
+    SEND: async function(mode, data, waitForResp=false, dataRequest=false){
         try     { if(this.modes_SEND.indexOf(mode) == -1){ console.error("Invalid mode for SEND:", mode); return; } }
         catch(e){ console.error("SEND: Error in 'e.data.mode'. ERROR:", e); return; }
 
@@ -79,6 +79,8 @@ var _WEBW_V = {
                 {
                     mode: mode,
                     data: data.data,
+                    flags: { waitForResp: waitForResp, dataRequest: dataRequest },
+                    version: 2,
                 },
                 data.refs ?? [],
             );

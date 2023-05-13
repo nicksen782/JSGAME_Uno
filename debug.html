@@ -1,10 +1,5 @@
-<!-- TEST DRAWS -->
-<!-- <div class="debug_border"> -->
-    <!-- <label class="debug_title">TESTS</label> -->
-<!-- </div> -->
-
-<!-- COLOR FINDER -->
 <div class="debug_border">
+    <!-- COLOR FINDER -->
     <div>
         <label class="debug_title">COLOR-FINDER</label>
         COPY: 
@@ -28,6 +23,7 @@
         </div>
     </div>
     
+    <!-- BUTTONS -->
     <div>
         <label class="debug_title">BUTTONS!</label>
         <button id="debug_test_drawColorPalette">drawColorPalette (TX1)</button>
@@ -41,26 +37,41 @@
         <input type="range" class="debug_fadeSlider" id="fadeSliderTX1" min="0" max="11" step="1" value="0"> <input type="text" class="debug_fadeSliderText" id="fadeSliderTX1Text"><br>
         <br>
     </div>
+</div>
 
-    <!-- Always displayed -->
-    <!-- controls -->
-    <div id="debug_test_alwaysVisible"> 
-        <label class="debug_title">AlwaysVisible</label>
-        <label class="debug_title">COUNTS!</label>
-        <table>
-            <tr> <td>frameCounter    </td> <td> <div id="debug_frameCounter"></div>     </td> </tr>
-            <tr> <td>frameDrawCounter</td> <td> <div id="debug_frameDrawCounter"></div> </td> </tr>
-            <tr> <td>FPS</td> <td> <div id="debug_fpsDisplay"></div> </td> </tr>
-            <tr> <td>waitForDraw</td> <td> <div id="debug_waitUntilFrameDrawn"></div> </td> </tr>
-        </table>
-        <br>
-        <label class="debug_title">BUTTONS!</label>
-        <button id="debug_test_startGameLoop">Start loop</button>
-        <button id="debug_test_stopGameLoop">Stop loop</button>
-        <button id="debug_test_toggleWaitForDraw">Toggle waitForDraw</button>
-        <button id="debug_test_restartGS1">Restart GS1</button>
-        <button id="debug_test_gotoGS_JSG">gs_JSG</button>
-        <button id="debug_test_gotoGS_N782">gs_N782</button>
-        <br>
-    </div>
+<!-- Always displayed -->
+<div id="debug_test_alwaysVisible"> 
+    <label class="debug_title">AlwaysVisible</label>
+    <label class="debug_title">COUNTS!</label>
+
+    <table class="debug_table">
+        <tr> <td class="debug_td_header">FPS :         </td> <td class="debug_td_long"> <div class="debugLive" id="debug_fpsDisplay"></div> </td> </td>
+        <tr> <td class="debug_td_header">GS1 :         </td> <td class="debug_td_long"> <div class="debugLive" id="debug_GS1Text"></div> </td> </td>
+        <tr> <td class="debug_td_header">GS2 :         </td> <td class="debug_td_long"> <div class="debugLive" id="debug_GS2Text"></div> </td> </td>
+        <tr> <td class="debug_td_header"> :            </td> <td></td> </tr>
+    </table>
+    
+    <table class="debug_table">
+        <tr> <td class="debug_td_header">Frames :      </td> <td class="debug_td_short"> <div class="debugLive" id="debug_frameCounter"></div> </td> </tr>
+        <tr> <td class="debug_td_header">Drawn frames :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_frameDrawCounter"></div> </td> </tr>
+        <tr> <td class="debug_td_header">waitForDraw  :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_waitUntilFrameDrawn"></div> </td> </tr>
+        <tr> <td class="debug_td_header">DRAWNEEDED :  </td> <td class="debug_td_short"> <div class="debugLive" id="debug_DRAWNEEDED"></div> </td> </tr>
+    </table>
+
+    <table class="debug_table">
+        <tr> <td class="debug_td_header">BG1 tmaps :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_BG1_tms">12</div> </td> </tr>
+        <tr> <td class="debug_td_header">BG2 tmaps :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_BG2_tms">50</div> </td> </tr>
+        <tr> <td class="debug_td_header">SP1 tmaps :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_SP1_tms">5</div> </td> </tr>
+        <tr> <td class="debug_td_header">TX1 tmaps :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_TX1_tms">2</div> </td> </tr>
+    </table>
+
+    <br>
+    <label class="debug_title">BUTTONS!</label>
+    <button id="debug_test_startGameLoop">Start loop</button>
+    <button id="debug_test_stopGameLoop">Stop loop</button>
+    <button id="debug_test_toggleWaitForDraw">Toggle waitForDraw</button>
+    <button id="debug_test_restartGS1">Restart GS1</button>
+    <button id="debug_test_gotoGS_JSG">gs_JSG</button>
+    <button id="debug_test_gotoGS_N782">gs_N782</button>
+    <br>
 </div>
