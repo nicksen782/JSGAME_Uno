@@ -457,11 +457,11 @@ var _DEBUG = {
         this.applyChange(testText, waitUntilFrameDrawn, activeTime);
 
         // Update the displayed gamestate data. (gamestate 1.)
-        testText = `C: '${_APP.game.gs1}', T: ${_APP.game.changeGs1_triggered?1:0}`;
+        testText = `'${_APP.game.gs1}' ${_APP.game.changeGs1_triggered?"**":""}`;
         this.applyChange(testText, debug_GS1Text, activeTime);
         
         // Update the displayed gamestate data. (gamestate 2.)
-        testText = `C: '${_APP.game.gs2}', T: ${_APP.game.changeGs2_triggered?1:0}`;
+        testText = `'${_APP.game.gs2}' ${_APP.game.changeGs2_triggered?"**":""}`;
         this.applyChange(testText, debug_GS2Text, activeTime);
         
         testText = Object.keys(_GFX.currentData["BG1"].tilemaps).length.toString(); this.applyChange(testText, BG1_tms, activeTime);
@@ -672,7 +672,7 @@ _DEBUG.init = async function(){
         
         // Init init2.
         let ts_init2 = performance.now(); 
-        // await _DEBUG2.init();
+        await _DEBUG2.init();
         ts_init2 = performance.now() - ts_init2;
         
         // console.log("  ts_init2                    :", ts_init2.toFixed(3));

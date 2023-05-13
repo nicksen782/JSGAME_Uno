@@ -31,7 +31,7 @@ _APP.game = {
         // Set the new gamestate.
         this.gs1 = this.gs1_new;
         // Clear gamestate 2.
-        this.gs2 = "";
+        // this.gs2 = "";
         // Reset the inited flag for this gamestate.
         _APP.game.gamestates[this.gs1].inited = false;
     },
@@ -207,14 +207,12 @@ _APP.game.gameLoop = {
                 _APP.game.gamestates[_APP.game.gs1].main();
                 
                 // DRAW
-                if( _APP.game.gamestates[_APP.game.gs1].render){ _APP.game.gamestates[_APP.game.gs1].render(); };
+                if( _APP.game.gamestates[_APP.game.gs1].render){ _APP.game.gamestates[_APP.game.gs1].render(); }
+                else { _GFX.layerObjs.render(_APP.game.gs1); }
 
                 // Determine if there are any draw updates. (Returns true/false and also sets _GFX.DRAWNEEDED.)
                 this.DRAWNEEDED_prev = _GFX.funcs.isDrawNeeded();
 
-                // DEBUG
-                if(_APP.debugActive && _DEBUG){ _DEBUG.loop_display_func(); }
-                
                 // Send a draw request if there are changes for any layer.
                 if( _GFX.DRAWNEEDED ) { 
                     // Synchronize the gameLoop with the rendering.
@@ -226,12 +224,12 @@ _APP.game.gameLoop = {
                     this.frameDrawCounter += 1;
                 }
                 
-                // DEBUG
-                // if(_APP.debugActive && _DEBUG){ _DEBUG.loop_display_func(); }
-
                 // GAMESTATE CHANGES
                 if(_APP.game.changeGs2_triggered){ _APP.game._changeGs2(); } 
                 if(_APP.game.changeGs1_triggered){ _APP.game._changeGs1(); } 
+
+                // DEBUG
+                if(_APP.debugActive && _DEBUG){ _DEBUG.loop_display_func(); }
             }
 
             // End the loop and run any end of loop tasks.

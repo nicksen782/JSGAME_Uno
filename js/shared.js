@@ -1,4 +1,5 @@
 _APP.shared = {
+    // Used for frame-count-based timing.
     genTimer: {
         timers:{},
 

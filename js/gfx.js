@@ -49,6 +49,151 @@ var _GFX = {
     ALLCLEAR: true,         //
     DRAWNEEDED: false,      //
 
+    // Used for layer object management within a gamestate.
+    layerObjs: {
+        // Holds the layer objects per gamestate.
+        objs: {},
+        
+        // Returns the specified layer object for a gamestate.
+        getOne: function(key, gamestate){
+            /* 
+            // EXAMPLE USAGE:
+            // NOTE: The last argument, gamestate is technically optional and defaults to the current gamestate 1.
+
+            _GFX.layerObjs.getOne("keyToGet", _APP.game.gs1);
+            */
+
+            // If the gamestate was not provided use the current gamestate 1.
+            if(gamestate == undefined){ gamestate = _APP.game.gs1; }
+
+            // Create the gamestate key in objs if it does not exist.
+            if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
+
+            // console.log(`key: ${key}, gamestate: ${gamestate},`, this.objs[gamestate][key]);
+
+            // Return the object.
+            return this.objs[gamestate][key];
+        },
+
+        // Adds or updates one layer object for a gamestate.
+        updateOne: function(className, config, gamestate){
+            /* 
+            // EXAMPLE USAGE:
+            // NOTE: The last argument, gamestate is technically optional and defaults to the current gamestate 1.
+
+            _GFX.layerObjs.updateOne(LayerObject, {
+                    immediateAdd: false,
+                    layerObjKey: "demo_board", layerKey: "BG1", tilesetKey: "bg_tiles",
+                    tmap: _GFX.funcs.getTilemap("bg_tiles", "board_28x28"),
+                    x: 0, y: 0, xyByGrid: true,
+                    settings : {
+                        xFlip: false, yFlip: false, rotation: 0, colorData:[]
+                    }
+                }, _APP.game.gs1
+            );
+            */
+
+            // If the gamestate was not provided use the current gamestate 1.
+            if(gamestate == undefined){ gamestate = _APP.game.gs1; }
+
+            // Create the gamestate key in objs if it does not exist.
+            if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
+
+            // Create the new layer object.
+            this.objs[gamestate][ config.layerObjKey ] = new className(config);
+        },
+
+        // Remove one layer object from objs for a gamestate.
+        removeOne: function(key, gamestate){
+            /* 
+            // EXAMPLE USAGE:
+            // NOTE: The last argument, gamestate is technically optional and defaults to the current gamestate 1.
+
+            _GFX.layerObjs.removeOne("keyNameToRemove", _APP.game.gs1);
+            */
+
+            // If the gamestate was not provided use the current gamestate 1.
+            if(gamestate == undefined){ gamestate = _APP.game.gs1; }
+
+            // Create the gamestate key in objs if it does not exist.
+            if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
+
+            // If this layer object does not have a render function then assume the layer object is not created yet and skip the render.
+            if(!this.objs[gamestate][key].render){ return {}; }
+
+            // Remove from the graphics cache. 
+            let config = this.obs[gamestate][key].removeLayerObject();
+        
+            // Clear this key.
+            this.objs[gamestate][key] = {}; 
+        
+            // Return the config to the caller (makes reuse easier.)
+            return config;
+        },
+        
+        // Clear ALL layer objects in objs for a gamestate.
+        clearAll : function(gamestate){
+            /* 
+            // EXAMPLE USAGE:
+            // NOTE: The last argument, gamestate is technically optional and defaults to the current gamestate 1.
+
+            _GFX.layerObjs.clearAll(_APP.game.gs1);
+            */
+
+            // If the gamestate was not provided use the current gamestate 1.
+            if(gamestate == undefined){ gamestate = _APP.game.gs1; }
+
+            // Create the gamestate key in objs if it does not exist.
+            if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
+
+            // Set each layer object to {}.
+            for(let key in this.objs[gamestate]){ this.objs[gamestate][key] = {}; }
+        },
+
+        // Remove ALL layer objects for a gamestate.
+        removeAll : function(gamestate){
+            /* 
+            // EXAMPLE USAGE:
+            // NOTE: The last argument, gamestate is technically optional and defaults to the current gamestate 1.
+
+            _GFX.layerObjs.removeAll(_APP.game.gs1);
+            */
+
+            // If the gamestate was not provided use the current gamestate 1.
+            if(gamestate == undefined){ gamestate = _APP.game.gs1; }
+
+            // Create the gamestate key in objs if it does not exist.
+            if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
+
+            // Run the removeOne function against each key for the gamestate's layer objects.
+            for(let key in this.objs[gamestate]){ this.removeOne(key, gamestate); }
+        },
+        
+        // Render ALL layer objects for a gamestate. (Skips layer objects with the hidden flag set.)
+        render: function(gamestate){
+            /* 
+            // EXAMPLE USAGE:
+            // NOTE: The last argument, gamestate is technically optional and defaults to the current gamestate 1.
+
+            _GFX.layerObjs.render(_APP.game.gs1);
+            */
+
+            // If the gamestate was not provided use the current gamestate 1.
+            if(gamestate == undefined){ gamestate = _APP.game.gs1; }
+
+            // Create the gamestate key in objs if it does not exist.
+            if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
+
+            for(let key in this.objs[gamestate]){
+                // Skip the rendering of hidden layer objects. 
+                if(this.objs[gamestate][key].hidden){ continue; }
+
+                // Render the layer objects if it contains the render function.
+                if(this.objs[gamestate][key].render){ this.objs[gamestate][key].render() }
+            }
+        },
+    },
+
     // Drawing update and drawing functions. 
     funcs:{
         // Determines if a draw is needed and updates _GFX.DRAWNEEDED.
