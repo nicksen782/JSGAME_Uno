@@ -68,22 +68,24 @@ div#debug_test_alwaysVisible {
 .debugLive{
     /* transition: background-color 0.25s ease-out; */
     display:inline;
+    white-space: pre;
 }
 .debugLive.active{ background-color:yellow; }
 .debug_table{
     border-collapse: collapse;
     display:inline-block;
+    vertical-align: top;
 }
-.debug_table td{border:1px solid black;padding: 5px;}
+.debug_table td{border:1px solid black;padding: 5px;font-family: monospace;}
 .debug_td_header{ 
     text-decoration: underline;
     font-weight: bold;
 }
 .debug_td_long{
-    width: 170px;
-    max-width: 170px;
+    width: 185px;
+    max-width: 185px;
 }
 .debug_td_short{
-    width: 60px;
-    max-width: 60px;
+    width: 55px;
+    max-width: 55px;
 }

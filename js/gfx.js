@@ -75,6 +75,25 @@ var _GFX = {
             return this.objs[gamestate][key];
         },
 
+        // Creates an empty object placeholder for a gamestate layer object.
+        createPlaceholder: function(key, gamestate){
+            /* 
+            // EXAMPLE USAGE:
+            // NOTE: The last argument, gamestate is technically optional and defaults to the current gamestate 1.
+
+            _GFX.layerObjs.createPlaceholder("placeholderKey", _APP.game.gs1);
+            */
+
+            // If the gamestate was not provided use the current gamestate 1.
+            if(gamestate == undefined){ gamestate = _APP.game.gs1; }
+
+            // Create the gamestate key in objs if it does not exist.
+            if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
+
+            // Add/Create the new layer object.
+            this.objs[gamestate][key] = {};
+        },
+
         // Adds or updates one layer object for a gamestate.
         updateOne: function(className, config, gamestate){
             /* 
@@ -99,7 +118,7 @@ var _GFX = {
             // Create the gamestate key in objs if it does not exist.
             if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
 
-            // Create the new layer object.
+            // Add/Create the new layer object.
             this.objs[gamestate][ config.layerObjKey ] = new className(config);
         },
 

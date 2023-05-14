@@ -82,6 +82,10 @@
                     let ts1E = performance.now() - ts1S;
                     console.log(`Uno (Stand-Alone version) load time: ${ts1E.toFixed(2)}ms`);
                     // alert(`Uno (Stand-Alone version) load time: ${ts1E.toFixed(2)}ms`);
+
+                    // Start the game loop.
+                    _APP.game.gameLoop.loop_start();
+
                     res(); 
                 };
                 script.onerror = function (err) { 

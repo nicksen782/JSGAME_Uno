@@ -1,4 +1,4 @@
-// _APP.debugActive: false;
+// _APP.debugActive = false;
 _APP.debugActive = true;
 _APP.configObj = {
     waitUntilFrameDrawn: true,
@@ -260,8 +260,8 @@ _APP.loader = {
         }
         
         _APP.initOutputScaleControls();
-        _APP.game.gamestates_list = Object.keys(_APP.game.gamestates);
-        _APP.game.gameLoop.init();
+        
+        await _APP.game.gameLoop.init();
     },
 };
 
@@ -364,9 +364,6 @@ _APP.init_standAlone = async function(){
         // INITS
         await _APP.loader.inits();
 
-        // Start the game loop.
-        _APP.game.gameLoop.loop_start();
-
         resolve();
     });
 };
@@ -394,11 +391,13 @@ _APP.init = async function(){
 // JSGAME REQUESTS THIS FUNCTION SECOND.
 _APP.start = async function(){
     return new Promise(async (resolve,reject)=>{
+        let loadTime = performance.now() - _JSG.appStart_timestamp;
+        console.log(`Uno (JSGAMEV2 version) load time: ${loadTime.toFixed(2)}ms`);
+        // alert(`Uno (JSGAMEV2 version) load time: ${loadTime.toFixed(2)}ms`);
+
         // Start the game loop.
         _APP.game.gameLoop.loop_start();
 
-        let loadTime = performance.now() - _JSG.appStart_timestamp;
-        console.log(`Uno (JSGAMEV2 version) load time: ${loadTime.toFixed(2)}ms`);
         resolve();
     });
 };

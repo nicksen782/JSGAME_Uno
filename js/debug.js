@@ -394,29 +394,85 @@ var _DEBUG = {
         BG2_tms: { e: null, t: 0 },
         SP1_tms: { e: null, t: 0 },
         TX1_tms: { e: null, t: 0 },
+        changesBG1: { e: null, t: 0 },
+        changesBG2: { e: null, t: 0 },
+        changesSP1: { e: null, t: 0 },
+        changesTX1: { e: null, t: 0 },
+        time_LOOP   : { e: null, t: 0 },
+        time_LOGIC  : { e: null, t: 0 },
+        time_DRAW   : { e: null, t: 0 },
+        // time_DEBUG1   : { e: null, t: 0 },
+    },
+    cachedData : {
+        changes: {
+            "BG1": 0, 
+            "BG2": 0, 
+            "SP1": 0, 
+            "TX1": 0, 
+        }
     },
     elemsObjInit: function(){
+        // Table 0.
+        this.elemsObj.time_LOOP.e    = document.getElementById("debug_time_LOOP");
+        this.elemsObj.time_LOGIC.e   = document.getElementById("debug_time_LOGIC");
+        this.elemsObj.time_DRAW.e    = document.getElementById("debug_time_DRAW");
+        // this.elemsObj.time_DEBUG1.e    = document.getElementById("debug_time_DEBUG1");
+
+        // Table 1.
+        this.elemsObj.fpsDisplay.e    = document.getElementById("debug_fpsDisplay");
+        this.elemsObj.debug_GS1Text.e = document.getElementById("debug_GS1Text");
+        this.elemsObj.debug_GS2Text.e = document.getElementById("debug_GS2Text");
+        this.elemsObj.changesBG1.e    = document.getElementById("debug_changesBG1");
+        this.elemsObj.changesBG2.e    = document.getElementById("debug_changesBG2");
+        this.elemsObj.changesSP1.e    = document.getElementById("debug_changesSP1");
+        this.elemsObj.changesTX1.e    = document.getElementById("debug_changesTX1");
+        
+        // Table 2.
         this.elemsObj.frameCounter.e        = document.getElementById("debug_frameCounter");
         this.elemsObj.frameDrawCounter.e    = document.getElementById("debug_frameDrawCounter");
-        this.elemsObj.fpsDisplay.e          = document.getElementById("debug_fpsDisplay");
         this.elemsObj.waitUntilFrameDrawn.e = document.getElementById("debug_waitUntilFrameDrawn");
-        this.elemsObj.debug_GS1Text.e       = document.getElementById("debug_GS1Text");
-        this.elemsObj.debug_GS2Text.e       = document.getElementById("debug_GS2Text");
         this.elemsObj.DRAWNEEDED.e          = document.getElementById("debug_DRAWNEEDED");
-        this.elemsObj.BG1_tms.e          = document.getElementById("debug_BG1_tms");
-        this.elemsObj.BG2_tms.e          = document.getElementById("debug_BG2_tms");
-        this.elemsObj.SP1_tms.e          = document.getElementById("debug_SP1_tms");
-        this.elemsObj.TX1_tms.e          = document.getElementById("debug_TX1_tms");
+        
+        // Table 3.
+        this.elemsObj.BG1_tms.e = document.getElementById("debug_BG1_tms");
+        this.elemsObj.BG2_tms.e = document.getElementById("debug_BG2_tms");
+        this.elemsObj.SP1_tms.e = document.getElementById("debug_SP1_tms");
+        this.elemsObj.TX1_tms.e = document.getElementById("debug_TX1_tms");
     },
-    applyChange(newText, obj, activeTime){
-        // Trim the incoming text.
-        newText = newText.trim();
-        if(obj.e.innerText != newText){
+    applyChange(newText, obj, activeTime, noTrim=false){
+        // Trim the text.
+        if(!noTrim){
+            newText = newText.trim();
+            oldText = obj.e.innerText.trim();
+        }
+        // Do not trim the text.
+        else{
+            newText = newText;
+            oldText = obj.e.innerText;
+        }
+
+        // Determine if the active class can be removed once the old and new text match again.
+        let canChange = (performance.now() - obj.p > activeTime) || obj.p == 0;
+
+        // If the newText is different that the current text...
+        if(oldText != newText){
+            // Update the text.
             obj.e.innerText = newText;
+
+            // Add the active class?
             if(!obj.e.classList.contains("active")){ obj.e.classList.add("active"); }
+            
+            // Update the timestamp.
             obj.p = performance.now();
         }
-        else if(obj.e.classList.contains("active") && performance.now() - obj.p > activeTime){ obj.e.classList.remove("active"); }
+        
+        else if(obj.e.classList.contains("active") && canChange){ 
+            // Remove the active class.
+            obj.e.classList.remove("active"); 
+        }
+    },
+    endOfLoopDraw_funcs: function(){
+        this.loop_display_func();
     },
     loop_display_func: function(){
         let frameCounter        = this.elemsObj["frameCounter"];
@@ -430,6 +486,15 @@ var _DEBUG = {
         let BG2_tms             = this.elemsObj["BG2_tms"];
         let SP1_tms             = this.elemsObj["SP1_tms"];
         let TX1_tms             = this.elemsObj["TX1_tms"];
+        let time_LOOP           = this.elemsObj["time_LOOP"];
+        let time_LOGIC          = this.elemsObj["time_LOGIC"];
+        let time_DRAW           = this.elemsObj["time_DRAW"];
+        // let time_DEBUG1         = this.elemsObj["time_DEBUG1"];
+        let changesBG1             = this.elemsObj["changesBG1"];
+        let changesBG2             = this.elemsObj["changesBG2"];
+        let changesSP1             = this.elemsObj["changesSP1"];
+        let changesTX1             = this.elemsObj["changesTX1"];
+        
         let activeTime = 200;
         let testText = "";
         
@@ -442,7 +507,8 @@ var _DEBUG = {
         this.applyChange(testText, frameDrawCounter, activeTime);
 
         // Show the DRAWNEEDED.
-        testText = (_APP.game.gameLoop.DRAWNEEDED_prev ? "1" : "0").toString();
+        // testText = (_APP.game.gameLoop.DRAWNEEDED_prev ? "1" : "0").toString();
+        testText = (_APP.game.gameLoop.DRAWNEEDED_prev).toString();
         this.applyChange(testText, DRAWNEEDED, activeTime);
 
         // Show average FPS, average ms per frame, how much off is the average ms per frame.
@@ -464,10 +530,43 @@ var _DEBUG = {
         testText = `'${_APP.game.gs2}' ${_APP.game.changeGs2_triggered?"**":""}`;
         this.applyChange(testText, debug_GS2Text, activeTime);
         
+        // Display the number of layer objects per layer.
         testText = Object.keys(_GFX.currentData["BG1"].tilemaps).length.toString(); this.applyChange(testText, BG1_tms, activeTime);
         testText = Object.keys(_GFX.currentData["BG2"].tilemaps).length.toString(); this.applyChange(testText, BG2_tms, activeTime);
         testText = Object.keys(_GFX.currentData["SP1"].tilemaps).length.toString(); this.applyChange(testText, SP1_tms, activeTime);
         testText = Object.keys(_GFX.currentData["TX1"].tilemaps).length.toString(); this.applyChange(testText, TX1_tms, activeTime);
+
+        // Update the individual game loop timings. 
+        let lastLoop_testText = ((100*(_APP.game.gameLoop.lastLoop_timestamp/_APP.game.gameLoop.msFrame)).toFixed(0) + "%").padStart(4, " ");
+        this.applyChange(lastLoop_testText, time_LOOP, activeTime, true);
+
+        let lastLogic_testText = ((100*(_APP.game.gameLoop.lastLogic_timestamp/_APP.game.gameLoop.msFrame)).toFixed(0) + "%").padStart(4, " ");
+        this.applyChange(lastLogic_testText, time_LOGIC, activeTime, true);
+
+        let lastDraw_testText = ((100*(_APP.game.gameLoop.lastDraw_timestamp/_APP.game.gameLoop.msFrame)).toFixed(0) + "%").padStart(4, " ");
+        this.applyChange(lastDraw_testText, time_DRAW, activeTime, true);
+
+        // let lastDebug1_testText = ((100*(_APP.game.gameLoop.lastDebug1_timestamp/_APP.game.gameLoop.msFrame)).toFixed(0) + "%").padStart(4, " ");
+        // this.applyChange(lastDebug1_testText, time_DEBUG1, activeTime, true);
+
+        // Log to the console if the loop took too long.
+        if(parseInt(lastLoop_testText) > 99){ 
+            console.log(`lastLoop: ${lastLoop_testText} ms of: ${_APP.game.gameLoop.msFrame.toFixed(1)} ms`); 
+            console.log("  lastLogic : ", lastLogic_testText); 
+            console.log("  lastDraw  : ", lastDraw_testText); 
+            // console.log("  lastDebug1: ", lastDebug1_testText); 
+            console.log("  gs1       : ", _APP.game.gs1); 
+            console.log("  gs2       : ", _APP.game.gs2); 
+            console.log("  frameCounter    : ", _APP.game.gameLoop.frameCounter); 
+            console.log("  frameDrawCounter: ", _APP.game.gameLoop.frameDrawCounter); 
+            console.log("");
+        }
+
+        // Display which layers have changes on this frame. 
+        testText = `${_DEBUG.cachedData.changes["BG1"] ? "BG1" : "___"} `; this.applyChange(testText, changesBG1, activeTime);
+        testText = `${_DEBUG.cachedData.changes["BG2"] ? "BG2" : "___"} `; this.applyChange(testText, changesBG2, activeTime);
+        testText = `${_DEBUG.cachedData.changes["SP1"] ? "SP1" : "___"} `; this.applyChange(testText, changesSP1, activeTime);
+        testText = `${_DEBUG.cachedData.changes["TX1"] ? "TX1" : "___"} `; this.applyChange(testText, changesTX1, activeTime);
     },
 };
 

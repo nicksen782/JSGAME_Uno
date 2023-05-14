@@ -45,10 +45,28 @@
     <label class="debug_title">COUNTS!</label>
 
     <table class="debug_table">
-        <tr> <td class="debug_td_header">FPS :         </td> <td class="debug_td_long"> <div class="debugLive" id="debug_fpsDisplay"></div> </td> </td>
-        <tr> <td class="debug_td_header">GS1 :         </td> <td class="debug_td_long"> <div class="debugLive" id="debug_GS1Text"></div> </td> </td>
-        <tr> <td class="debug_td_header">GS2 :         </td> <td class="debug_td_long"> <div class="debugLive" id="debug_GS2Text"></div> </td> </td>
-        <tr> <td class="debug_td_header"> :            </td> <td></td> </tr>
+        <tr>
+            <td class="debug_td_header">FPS     </td> <td class="debug_td_long">  <div class="debugLive" id="debug_fpsDisplay"></div> </td>
+            <td class="debug_td_header">LOOP    </td> <td class="debug_td_short"> <div class="debugLive" id="debug_time_LOOP"></div> </td>
+            <td class="debug_td_header">LOGIC   </td> <td class="debug_td_short"> <div class="debugLive" id="debug_time_LOGIC"></div> </td>
+            <td class="debug_td_header">DRAW    </td> <td class="debug_td_short"> <div class="debugLive" id="debug_time_DRAW"></div> </td>
+            <!-- <td class="debug_td_header">DEBUG1  </td> <td class="debug_td_short"> <div class="debugLive" id="debug_time_DEBUG1"></div> </td> -->
+        </tr>
+    </table>
+
+    <table class="debug_table">
+        <tr> <td class="debug_td_header">GS1 :         </td> <td class="debug_td_long"> <div class="debugLive" id="debug_GS1Text"></div> </td> </tr>
+        <tr> <td class="debug_td_header">GS2 :         </td> <td class="debug_td_long"> <div class="debugLive" id="debug_GS2Text"></div> </td> </tr>
+        <tr> 
+            <td class="debug_td_header">CHANGES :         </td> 
+            <td class="debug_td_long"> 
+                <span class="debugLive" id="debug_changesBG1">___</span> 
+                <span class="debugLive" id="debug_changesBG2">___</span> 
+                <span class="debugLive" id="debug_changesSP1">___</span> 
+                <span class="debugLive" id="debug_changesTX1">___</span> 
+            </td> 
+        </tr>
+        <tr> <td class="debug_td_header">:             </td> <td class="debug_td_long">  </td> </tr>
     </table>
     
     <table class="debug_table">
