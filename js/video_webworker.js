@@ -11,8 +11,9 @@ const _GFX = {
     layers: {},
     currentData: {
         "BG1":{
-            // bgColorRgba: [0,255,255,255],
-            // tilemaps   : {},
+            bgColorRgba: [0,0,0,0],
+            bgColor32bit: 0,
+            tilemaps   : {},
         },
         "BG2":{
             tilemaps   : {},
@@ -58,8 +59,6 @@ const _GFX = {
                 // Draw the tilemap.
                 for(let y=0; y<mapH; y+=1){
                     for(let x=0; x<mapW; x+=1){
-                        // Reset the tile dims.
-    
                         // Copy the tile data to the imageDataTile. 
                         try{ imageDataTile.data.set(tileset[ tilemap[index] ].imgData.data.slice()); missingTile = false; }
                         
@@ -761,6 +760,1006 @@ const messageFuncs = {
             // Return the timings.
             return messageFuncs.timings["sendGfxUpdates"];
         },
+
+        V3: {
+            aabb_collisionDetection: function(rect1, rect2){
+                // EXAMPLE USAGE:
+                // aabb_collisionDetection({x:0,y:0,w:16,h:16}, {x:8,y:8,w:16,h:16});
+
+                let collision = false;
+                let overlapX, overlapY, overlapWidth, overlapHeight;
+        
+                // Check for overlap.
+                if (
+                    rect1.x < rect2.x + rect2.w &&
+                    rect1.x + rect1.w > rect2.x &&
+                    rect1.y < rect2.y + rect2.h &&
+                    rect1.h + rect1.y > rect2.y
+                ){ 
+                    collision = true;
+        
+                    // Calculate the region that is overlapped.
+                    overlapX      = Math.max(rect1.x, rect2.x);
+                    overlapY      = Math.max(rect1.y, rect2.y);
+                    overlapWidth  = Math.min(rect1.x + rect1.w, rect2.x + rect2.w) - overlapX;
+                    overlapHeight = Math.min(rect1.y + rect1.h, rect2.y + rect2.h) - overlapY;
+                }
+                
+                // Return the collision flag and the overlap region if applicable. 
+                return {
+                    collision: collision,
+                    x: overlapX,
+                    y: overlapY,
+                    w: overlapWidth,
+                    h: overlapHeight
+                };
+            },
+
+            clearLayer: function(layer){
+                // Clear the imgDataCache for this layer. (Set fully transparent.)
+                _GFX.layers[layer].imgDataCache.data.fill(0);
+            },
+            clearAllLayers: function(){
+                // For all layers...
+                for(let layer in _GFX.layers){
+                    // Clear the layer.
+                    this.clearLayer(layer);
+                }
+            },
+            setBgColorRgba: function(layer, bgColor){
+                // Break out the values in bgColor.
+                let [r, g, b, a] = bgColor;
+
+                // Generate the 32-bit version of the bgColor.
+                let fillColor = (a << 24) | (b << 16) | (g << 8) | r;
+
+                // Create a Uint32Array view of the imgDataCache for this layer.
+                let uint32Data = new Uint32Array(_GFX.layers[layer].imgDataCache.data.buffer);
+
+                // Replace all transparent pixels with the bgColor.
+                for (let p = 0, len = uint32Data.length; p < len; ++p) {
+                    if (uint32Data[p] === 0) { uint32Data[p] = fillColor; }
+                }
+            },
+            tilemapToImageData: function(obj){
+                // console.log("------------tilemapToImageData:", obj);
+
+                // Get the tileset and the dimensions for the tileset. 
+                let tileset = _GFX.tilesets[ obj.tmap.ts ].tileset;
+                let tilemap = obj.tmap.tmap;
+                let tw = obj.tw;
+                let th = obj.th;
+
+                // Get the dimensions of the tilemap.
+                let mapW = obj.mapW;
+                let mapH = obj.mapH;
+
+                // Start at index 2 since the first two indexs are the map dimensions in tiles. 
+                let index=2;
+                let missingTile = false;
+
+                // Create new ImageData for the individual tile.
+                let imageData = obj.imageData; // The complete ImageData for the tilemap.
+                let imageDataTile = new ImageData(tw, th); // The ImageData for an individual tile.
+
+                // Break-out settings.
+                let settings  = obj.tmap.settings;
+                let rotation  = settings.rotation;
+                let xFlip     = settings.xFlip;
+                let yFlip     = settings.yFlip;
+                let colorData = settings.colorData;
+                let fadeLevel = null;
+
+                
+                // Determine the fade level to use.
+                // if( (fade && fade.fade && fade.currFade != null) ){ fadeLevel = fade.currFade; }
+                // else if( settings.fade != null){ fadeLevel = settings.fade; }
+                if( settings.fade != null){ fadeLevel = settings.fade; }
+                
+                // If fadeLevel is 10 then the tile will be full black. No transformations are needed.
+                if(fadeLevel == 10){
+                    // R,G,B is already 0. Need to set alpha.
+                    for (let i = 3; i < imageData.data.length; i += 4) { imageData.data[i] = 255; }
+                }
+
+                // Not a level 10 fade. Continue with specified transformations.
+                else{
+                    // Draw the tilemap to the Image Data.
+                    for(let y=0; y<mapH; y+=1){
+                        for(let x=0; x<mapW; x+=1){
+                            // Copy the tile data to the imageDataTile. 
+                            try{ imageDataTile.data.set(tileset[ tilemap[index] ].imgData.data.slice()); missingTile = false; }
+                            
+                            // Missing tile. (Wrong tileset?) 
+                            // Create a transparent tile and set the missingTile flag to skip any transforms from settings.
+                            catch(e){ console.log("missing tile", obj); debugger; imageDataTile.data.fill(0); missingTile = true; }
+
+                            // Rotate tile?
+                            if(!missingTile && rotation) { 
+                                // console.log("rotation:", rotation);
+                                _GFX.utilities.rotateImageData(imageDataTile, rotation); 
+                            }
+        
+                            // Flip tile horizontally?
+                            if(!missingTile && xFlip)    { 
+                                // console.log("xFlip");
+                                _GFX.utilities.flipImageDataHorizontally(imageDataTile); 
+                            }
+        
+                            // Flip tile vertically?
+                            if(!missingTile && yFlip)    { 
+                                // console.log("yFlip");
+                                _GFX.utilities.flipImageDataVertically(imageDataTile); 
+                            }
+        
+                            // Update the imageData with this tile.
+                            // console.log("Writing tile:", index, tilemap.length-1, x * tw, y * th);
+                            createGraphicsAssets.updateRegion(
+                                imageDataTile.data,  // source
+                                imageDataTile.width, // srcWidth
+                                imageData.data,      // destination
+                                imageData.width,     // destWidth
+                                x * tw,              // x
+                                y * th,              // y
+                                tw,                  // w
+                                th,                  // h
+                                false                // onlyWriteToTransparent
+                            );
+        
+                            // Increment the tile index in the tilemap.
+                            index++;
+                        }
+                    }
+
+                    // Apply color replacements to the ImageData of the tilemap?
+                    if(colorData && colorData.length){
+                        // console.log("Color replacements", colorData);
+                        _GFX.utilities.replaceColors(imageData, colorData); 
+                    }
+                    
+                    // Apply a background color against the transparent pixels of the ImageData of the tilemap?
+                    if(settings.bgColorRgba){
+                        console.log("bgColorRgba replacements", settings.bgColorRgba);
+                        [r, g, b, a] = settings.bgColorRgba;
+                        uint32Data = new Uint32Array(imageData.data.buffer);
+                        fillColor = (a << 24) | (b << 16) | (g << 8) | r;
+                        for (let p = 0, len = uint32Data.length; p < len; ++p) {
+                            if (uint32Data[p] === 0) { uint32Data[p] = fillColor; }
+                        }
+                    }
+                }
+
+                return imageData;
+
+            },
+
+            update_ImgDataCache_tilemaps: function(layer, tilemaps, type){
+                let mapKeys = Object.keys(tilemaps);
+                let mapKey;
+
+                // Get the tileset and the dimensions for the tileset. 
+                let obj = {
+                    tmap      : undefined,
+                    tw        : undefined,
+                    th        : undefined,
+                    mapW      : undefined,
+                    mapH      : undefined,
+                    imageData : undefined,
+                };
+                
+                for(let i=0, mapKeysLength=mapKeys.length; i<mapKeysLength; i+=1){
+                    mapKey = mapKeys[i];
+                    obj.tmap = tilemaps[mapKey];
+
+                    // Get the dimensions of the tilemap.
+                    obj.mapW = obj.tmap.tmap[0];
+                    obj.mapH = obj.tmap.tmap[1];
+
+                    // Get the tileset and the dimensions for the tileset. 
+                    obj.tileset = _GFX.tilesets[ obj.tmap.ts ].tileset;
+                    obj.tw      = _GFX.tilesets[ obj.tmap.ts ].config.tileWidth;
+                    obj.th      = _GFX.tilesets[ obj.tmap.ts ].config.tileHeight;
+
+                    // The width and height come from the tilemap and should be correct.
+                    obj.imageData = new ImageData(obj.mapW * obj.tw, obj.mapH * obj.th); 
+
+                    // Updates require that the existing drawn tilemap is removed first.
+                    if(type=="UPDATE"){
+                        this.remove_ImgDataCache_tilemaps(layer, [mapKey]);
+                        obj.imageData = this.tilemapToImageData(obj);
+                    }
+                    
+                    // Adds just draw the tilemap.
+                    else if(type=="ADD"){
+                        obj.imageData = this.tilemapToImageData(obj);
+                    }
+
+                    // Use onlyWriteToTransparent.
+                    createGraphicsAssets.updateRegion(
+                        obj.imageData.data,                    // source
+                        obj.imageData.width,                   // srcWidth
+                        _GFX.layers[layer].imgDataCache.data,  // destination
+                        _GFX.layers[layer].imgDataCache.width, // destWidth
+                        obj.tmap.x,                            // x
+                        obj.tmap.y,                            // y
+                        obj.imageData.width,                   // w
+                        obj.imageData.height,                  // h
+                        true                                   // onlyWriteToTransparent
+                        // false                                   // onlyWriteToTransparent
+                    );
+
+                    // Save the data to the local cache.
+                    _GFX.currentData[layer].tilemaps[mapKey] = {
+                        x       : obj.tmap.x,
+                        y       : obj.tmap.y,
+                        w       : obj.imageData.width,
+                        h       : obj.imageData.height,
+                        imgData : obj.imageData,
+                        hash    : obj.tmap.hash,    // TODO: This are UNUSED and most likely NOT needed.
+                        hashPrev: obj.tmap.hashPrev // TODO: This are UNUSED and most likely NOT needed.
+                    };
+                }
+            },
+            remove_ImgDataCache_tilemaps: function(layer, tilemapKeys){
+                let layerTilemapKeys = Object.keys(_GFX.currentData[layer].tilemaps);
+                let overlappingTilemapKeys = [];
+                let mapKey1, mapKey2, map2, cData;
+                let x, y, w, h, imgData;
+                let x2, y2, w2, h2, imgData2;
+                
+                // let rect1, rect2;
+                // let cData;
+
+                for(let i=0, len=tilemapKeys.length; i<len; i+=1){
+                    mapKey1 = tilemapKeys[i];
+                    let overlaps = this.getOverlappedTilemaps(layer, layerTilemapKeys, mapKey1);
+                    if(overlaps.length){ overlappingTilemapKeys.push(...overlaps); }
+
+                    // Remove the tilemap from imgDataCache.
+                    // Use without onlyWriteToTransparent.
+                    ({ x, y, w, h, imgData } = _GFX.currentData[layer].tilemaps[mapKey1]);
+                    imgData.data.fill(0);
+                    createGraphicsAssets.updateRegion(
+                        imgData.data,                          // source
+                        imgData.width,                         // srcWidth
+                        _GFX.layers[layer].imgDataCache.data,  // destination
+                        _GFX.layers[layer].imgDataCache.width, // destWidth
+                        x,                                     // x
+                        y,                                     // y
+                        w, // imgData.width,                         // w
+                        h, // imgData.height,                        // h
+                        false                                  // onlyWriteToTransparent
+                    );
+
+                    // Remove the cache data for this tilemap.
+                    delete _GFX.currentData[layer].tilemaps[mapKey1];
+                }
+
+                // Remove the overlapped tilemaps.
+                for(let i=0, len=overlappingTilemapKeys.length; i<len; i+=1){
+                    map2 = overlappingTilemapKeys[i];
+                    mapKey1 = map2.mapKey1;
+                    mapKey2 = map2.mapKey2;
+                    cData = map2.cData;
+                    // ({ x, y, w, h } = _GFX.currentData[layer].tilemaps[mapKey2]);
+                    // ({ w, h } = _GFX.currentData[layer].tilemaps[mapKey2]);
+                    // imgData2 = new ImageData(imgData.width, imgData.height);
+                    imgData2 = new ImageData(w, h);
+                    // console.log(`${mapKey1} overlaps ${mapKey2} within this region:`, x, y, w, h, tilemapKeys);
+                    // debugger;
+
+                    // Remove the tilemap from imgDataCache.
+                    // Use without onlyWriteToTransparent.
+                    // createGraphicsAssets.updateRegion(
+                    //     imgData2.data,                         // source
+                    //     imgData2.width,                        // srcWidth
+                    //     _GFX.layers[layer].imgDataCache.data,  // destination
+                    //     _GFX.layers[layer].imgDataCache.width, // destWidth
+                    //     map2.cData.x,                                     // x
+                    //     map2.cData.y,                                     // y
+                    //     map2.cData.w,                        // w
+                    //     map2.cData.h,                       // h
+                    //     // false                                  // onlyWriteToTransparent
+                    //     true                                  // onlyWriteToTransparent
+                    // );
+                }
+                // console.log("");
+                
+                // Return the overlapped keys so that they can be added to changes.
+                return overlappingTilemapKeys;
+            },
+            getOverlappedTilemaps: function(layer, mapKeys, mapKey1){
+                if(!_GFX.currentData[layer].tilemaps[mapKey1]){ 
+                    console.log("getOverlappedTilemaps: could not find mapKey1", layer, mapKey1);
+                    return []; 
+                }
+
+                let overlappingTilemapKeys = [];
+                let layerTilemapKeys = Object.keys(_GFX.currentData[layer].tilemaps);
+                let mapKey2;
+                let x2, y2, w2, h2; 
+
+                // Get data from the cache.
+                let { x, y, w, h } = _GFX.currentData[layer].tilemaps[mapKey1];
+                let rect1 = {x:x, y:y, w:w, h:h};
+                let rect2;
+                let cData;
+
+                // Determine if this tilemap is overlapping with any other tilemaps.
+                for(let c=0, clen=layerTilemapKeys.length; c<clen; c+=1){
+                    mapKey2 = layerTilemapKeys[c];
+                    if(mapKey2 == mapKey1){ continue; }
+                    if(!_GFX.currentData[layer].tilemaps[mapKey2]){ continue; }
+
+                    ({ x: x2, y: y2, w: w2, h: h2 } = _GFX.currentData[layer].tilemaps[mapKey2]);
+                    rect2 = {x:x2, y:y2, w:w2, h:h2};
+                    cData = this.aabb_collisionDetection(rect1, rect2);
+                    
+                    // Overlapped tilemaps need to be redrawn.
+                    if(cData.collision){
+                        overlappingTilemapKeys.push( { 
+                            mapKey1: mapKey1, 
+                            mapKey2: mapKey2, 
+                            cData: cData, 
+                            // rect1: rect1, 
+                            // rect2: rect2, 
+                        } );
+                    }
+                }
+
+                return overlappingTilemapKeys;
+            },
+
+            redraw_ImgDataCache_imgData: function(layer, tilemapKeys){
+                // return;
+                let mapKey, x, y, w, h, imgData;
+
+                for(let i=0, len=tilemapKeys.length; i<len; i+=1){
+                    // Get the tilemap key.
+                    mapKey = tilemapKeys[i];
+
+                    if(!_GFX.currentData[layer].tilemaps[mapKey]){ console.log("not here"); continue; }
+                    ( { x, y, w, h, imgData } = _GFX.currentData[layer].tilemaps[mapKey] );
+
+                    // Draw the tilemap ImageData from cache to imgDataCache.
+                    // Use with onlyWriteToTransparent.
+                    // imgData.data.fill(0);
+                    console.log(mapKey, x, y, w, h, imgData);
+                    createGraphicsAssets.updateRegion(
+                        imgData.data,                          // source
+                        imgData.width,                         // srcWidth
+                        _GFX.layers[layer].imgDataCache.data,  // destination
+                        _GFX.layers[layer].imgDataCache.width, // destWidth
+                        x,                                     // x
+                        y,                                     // y
+                        imgData.width,                         // w
+                        imgData.height,                        // h
+                        // true                                   // onlyWriteToTransparent
+                        false                                   // onlyWriteToTransparent
+                    );
+
+                    // // Use onlyWriteToTransparent.
+                    // createGraphicsAssets.updateRegion(
+                    //     obj.imageData.data,                    // source
+                    //     obj.imageData.width,                   // srcWidth
+                    //     _GFX.layers[layer].imgDataCache.data,  // destination
+                    //     _GFX.layers[layer].imgDataCache.width, // destWidth
+                    //     obj.tmap.x,                            // x
+                    //     obj.tmap.y,                            // y
+                    //     obj.imageData.width,                   // w
+                    //     obj.imageData.height,                  // h
+                    //     true                                   // onlyWriteToTransparent
+                    //     // false                                   // onlyWriteToTransparent
+                    // );
+
+
+
+                }
+
+            },
+            drawImgDataCacheToCanvas: function(layer, fade){
+                // Get the imgDataCache.
+                let imgDataCache = _GFX.layers[layer].imgDataCache;
+
+                // If there is a global fade then apply it to imgDataCache.
+                //
+
+                // Use the imgDataCache to draw to the output canvas.
+                _GFX.layers[layer].ctx.putImageData(imgDataCache, 0, 0);
+            },
+
+            updateBG1: function(data, ALLCLEAR){
+                // console.log("updateBG1:", data);
+                // Set the layer.
+                let layer = "BG1";
+    
+                // Clear the layer on any update.
+                if(ALLCLEAR || layer == "BG1"){
+                    this.clearLayer(layer);
+                    _GFX.currentData[layer].tilemaps = {};
+                    // data.REMOVALS_ONLY = [];
+                }
+    
+                // Draw tilemaps to imgDataCache.
+                // let redraws1 = this.remove_ImgDataCache_tilemaps(layer, data.REMOVALS_ONLY);
+                // // this.redraw_ImgDataCache_imgData(layer, redraws1);
+                this.update_ImgDataCache_tilemaps(layer, data.CHANGES_ONLY, "UPDATE");
+                this.update_ImgDataCache_tilemaps(layer, data.ADD_ONLY, "ADD");
+                
+                // If the layer is BG1 and a bgColor was specified then set the bgColor too.
+                // if(layer == "BG1" && data.bgColorRgba){ this.setBgColorRgba(layer, data.bgColorRgba); }
+                if(layer == "BG1" && data.bgColorRgba){ this.setBgColorRgba(layer, [32,32,32,255]); }
+            },
+            updateBG2: function(data, ALLCLEAR){
+                // Set the layer.
+                let layer = "BG2";
+    
+                // Clear the layer on ALLCLEAR..
+                if(ALLCLEAR){
+                    this.clearLayer(layer);
+                    _GFX.currentData[layer].tilemaps = {};
+                    data.REMOVALS_ONLY = [];
+                }
+
+                // Draw tilemaps to imgDataCache.
+                let redraws1 = this.remove_ImgDataCache_tilemaps(layer, data.REMOVALS_ONLY);
+                // if(redraws1){ this.redraw_ImgDataCache_imgData(layer, redraws1); }
+                
+                let redraws2 = this.update_ImgDataCache_tilemaps(layer, data.CHANGES_ONLY, "UPDATE");
+                // if(redraws2){ this.redraw_ImgDataCache_imgData(layer, redraws2); }
+
+                this.update_ImgDataCache_tilemaps(layer, data.ADD_ONLY, "ADD");
+            },
+            updateSP1: function(data, ALLCLEAR){},
+            updateTX1: function(data, ALLCLEAR){},
+    
+            run: function(messageData){
+                let sendGfxUpdates = performance.now();
+                
+                // Clear the imgDataCache for each layer.
+                // if( messageData["ALLCLEAR"] ){ 
+                //     messageFuncs.sendGfxUpdates.clearAllLayers(messageData["BG1"].bgColorRgba); 
+                // }
+
+                // Update imgDataCache with layer changes.
+                if(messageData.hasChanges){
+                    if( messageData["BG1"].changes ){ this.updateBG1( messageData["BG1"], messageData["ALLCLEAR"] )  }
+                    if( messageData["BG2"].changes ){ this.updateBG2( messageData["BG2"], messageData["ALLCLEAR"] )  }
+                    if( messageData["SP1"].changes ){ this.updateSP1( messageData["SP1"], messageData["ALLCLEAR"] )  }
+                    if( messageData["TX1"].changes ){ this.updateTX1( messageData["TX1"], messageData["ALLCLEAR"] )  }
+                }
+
+                // Update all canvas output layers that have changed.
+                for(let layer in _GFX.layers){
+                    // If the layer has changes draw imgDataCache to canvas and fade if specified.
+                    if(messageData[layer].changes){
+                        this.drawImgDataCacheToCanvas(layer, messageData[layer].fade);
+                    }
+                }
+
+                // // Was an ALLCLEAR requested but there were no tilemap changes?
+                // if( messageData["ALLCLEAR"] && ! messageData.changes){
+                //     console.log("ALLCLEAR but there were no changes...");
+                //     // For all layers...
+                //     for(let layer in _GFX.layers){
+                //         // Draw imgDataCache to canvas and fade if specified.
+                //         this.drawImgDataCacheToCanvas(layer, messageData[layer].fade);
+                //     }
+                // }
+                
+                // // There were tilemap changes. Draw each chnaged layer to it's canvas with imgDataCache.
+                // else if(messageData.changes){
+                //     console.log("There are changes...");
+
+                //     // For all layers...
+                //     for(let layer in _GFX.layers){
+                //         // Draw imgDataCache to canvas and fade if specified.
+                //         this.drawImgDataCacheToCanvas(layer, messageData[layer].fade);
+                //     }
+                // }
+    
+                this.flickerFlag = ! this.flickerFlag;
+    
+                sendGfxUpdates = performance.now() - sendGfxUpdates;
+    
+                // Save the timings.
+                messageFuncs.timings["sendGfxUpdates"]["sendGfxUpdates"] = sendGfxUpdates.toFixed(3);
+    
+                // Return the timings.
+                return messageFuncs.timings["sendGfxUpdates"];
+            },
+        },
+        V4:{
+            CLEAR:{
+                parent: null,
+
+                fullTransparent_imgDataLayer: null,
+                
+                // Clears ONE layer gfx. (imgDataCache)
+                oneLayerGfx: function(layerKey){
+                    // Clear the imgDataCache for this layer.
+                    _GFX.layers[layerKey].imgDataCache.data.set(this.fullTransparent_imgDataLayer.data);
+                },
+                // Clears ALL layers gfx. (imgDataCache)
+                allLayersGfx: function(){
+                    let layerKeys = Object.keys(_GFX.layers);
+                    for(let i=0, len=layerKeys.length; i<len; i+=1){
+                        this.oneLayerGfx(layerKeys[i]);
+                    }
+                },
+
+                // Clears ONE layer data. (data cache)
+                oneLayerData: function(layerKey){
+                    // Clear the cache for this layer.
+                    _GFX.currentData[layerKey].tilemaps = {};
+
+                    // If the layer is BG1 then reset bgColorRgba and bgColor32bit also.
+                    if(layerKey == "BG1"){
+                        _GFX.currentData[layerKey].bgColorRgba = [0,0,0,0];
+                        _GFX.currentData[layerKey].bgColor32bit = 0;
+                    }
+
+                },
+                // Clears ALL layers data. (data cache)
+                allLayersData: function(){
+                    let layerKeys = Object.keys(_GFX.layers);
+                    for(let i=0, len=layerKeys.length; i<len; i+=1){
+                        this.oneLayerData(layerKeys[i]);
+                    }
+                },
+
+                // Deletes a specific map key in the data cache.
+                oneMapKey: function(layer, mapKey){
+                    if(_GFX.currentData[layer][mapKey]){
+                        delete _GFX.currentData[layer][mapKey];
+                    }
+                },
+
+                // Deletes a many specific map key in the data cache.
+                manyMapKeys: function(layer, mapKeys=[]){
+                    let mapKey;
+                    for(let i=0, len=mapKeys.length; i<len; i+=1){
+                        mapKey = mapKeys[i];
+                        if(_GFX.currentData[layer][mapKey]){
+                            delete _GFX.currentData[layer][mapKey];
+                        }
+                    }
+                },
+            },
+            SETBG:{
+                parent: null,
+
+                // Convert JsAlpha (0.0 - 1.0) to Uint8 (0-255) alpha.
+                convertJsAlphaToUint8Alpha: function(JsAlpha){
+                    return  Math.round(JsAlpha * 255);
+                },
+
+                // Convert Uint8 (0-255) alpha to JsAlpha (0.0 - 1.0).
+                convertUint8AlphaToJsAlpha: function(Uint8Alpha){
+                    return Number((Uint8Alpha / 255).toFixed(2));
+                },
+
+                // Convert array having values for r,g,b,a to 32-bit rgba value.
+                rgbaTo32bit: function(rgbaArray){
+                    // Break out the values in rgbaArray.
+                    let [r, g, b, a] = rgbaArray;
+                    
+                    // Generate the 32-bit version of the rgbaArray.
+                    let fillColor = (a << 24) | (b << 16) | (g << 8) | r;
+                    
+                    // Return the result.
+                    return fillColor;
+                },
+
+                // UNUSED
+                // Convert 32-bit rgba value to array having values for r,g,b,a. (alpha 0-255 or 0.1)
+                bits32ToRgbaArray: function(bits32Value, alphaAsFloat=false){
+                    // Generate the alpha value.
+                    let alpha = (bits32Value >> 24) & 255;
+                    
+                    // Optionally convert the alpha value to float.
+                    if(alphaAsFloat){
+                        alpha = this.convertUint8AlphaToJsAlpha(alpha);
+                    }
+
+                    // Return the r,g,b,a array.
+                    return [
+                         bits32Value & 255,        // r
+                        (bits32Value >> 8) & 255,  // g
+                        (bits32Value >> 16) & 255, // b
+                        alpha,                     // a
+                    ];
+                },
+
+                // Replaces the specified color pixels with the replacement bgColor.
+                // Also stores the replacement colors for later use.
+                setLayerBgColorRgba: function(layer, findColorArray, replaceColorArray){
+                    if(layer != "BG1"){ 
+                        throw `setLayerBgColorRgba is only available for BG1. You specified: ${layer}`;
+                    }
+
+                    // Get the 32-bit value for the [r,g,b,a] values provided.
+                    let findColor_32bit    = this.rgbaTo32bit(findColorArray);
+                    let replaceColor_32bit = this.rgbaTo32bit(replaceColorArray);
+
+                    // If the 32-bit value is different than the stored value then update both.
+                    if(_GFX.currentData["BG1"].bgColor32bit != replaceColor_32bit){
+                        _GFX.currentData["BG1"].bgColorRgba  = replaceColorArray;
+                        _GFX.currentData["BG1"].bgColor32bit = replaceColor_32bit;
+                    }
+
+                    // Create a Uint32Array view of the imgDataCache for this layer.
+                    let uint32Data = new Uint32Array(_GFX.layers["BG1"].imgDataCache.data.buffer);
+    
+                    // Find the findColor and replace with the replacementColor.
+                    for (let p = 0, len = uint32Data.length; p < len; ++p) {
+                        if (uint32Data[p] === findColor_32bit) { uint32Data[p] = replaceColor_32bit; }
+                    }
+                },
+
+                // Replaces the specified color pixels with the replacement bgColor.
+                setImageDataBgColorRgba: function(imageData, findColorArray, replaceColorArray){
+                    // Get the 32-bit value for the [r,g,b,a] values provided.
+                    let findColor_32bit    = this.rgbaTo32bit(findColorArray);
+                    let replaceColor_32bit = this.rgbaTo32bit(replaceColorArray);
+
+                    // Create a Uint32Array view of the imgDataCache for this layer.
+                    let uint32Data = new Uint32Array(imageData.data.buffer);
+    
+                    // Find the findColor and replace with the replacementColor.
+                    for (let p = 0, len = uint32Data.length; p < len; ++p) {
+                        if (uint32Data[p] === findColor_32bit) { uint32Data[p] = replaceColor_32bit; }
+                    }
+                },
+            },
+            UPDATE:{
+                parent:null,
+
+                ANYLAYER: function(layerKey, messageData){
+                    let layerData = messageData[layerKey];
+
+                    // Clear the layer. (imgDataCache)
+                    this.parent.CLEAR.oneLayerGfx(layerKey);
+                    
+                    // Set the background color?
+                    if(layerKey == "BG1"){
+                        this.parent.SETBG.setLayerBgColorRgba( layerKey, [0,0,0,0], layerData.bgColorRgba );
+                    }
+
+                    // Clear graphics cache data mapKeys indicated by the REMOVALS_ONLY array.
+                    this.parent.CLEAR.manyMapKeys(layerKey, layerData["REMOVALS_ONLY"]);
+
+                    // Create ImageData tilemaps as needed and update the graphics data cache. 
+                    this.parent.DRAW.createImageDataFromTilemapsAndUpdateGraphicsCache(
+                        layerKey,
+                        [
+                            ...Object.keys(layerData["ADD_ONLY"]),
+                            ...Object.keys(layerData["CHANGES_ONLY"]),
+                        ],
+                        {
+                            ...layerData["ADD_ONLY"],
+                            ...layerData["CHANGES_ONLY"],
+                        },
+                        layerData.fade
+                    );
+                    
+                    // Redraw the imgDataCache from the graphics data cache.
+                    this.parent.DRAW.drawImgDataCacheFromDataCache(layerKey, false);
+
+                    // Redraw the layer from the cache data to imgDataCache.
+                    this.parent.DRAW.drawImgDataCacheToCanvas(layerKey, layerData.fade);
+                },
+                BG1: function(messageData){
+                    let layerKey = "BG1";
+                    let layerData = messageData[layerKey];
+
+                    // Clear the layer. (imgDataCache and canvas fillRect)
+                    // Remove the cache data for REMOVED tilemaps.
+                    // Create ADDED tilemaps (add to cache.)
+                    // Create CHANGED tilemaps. (add to cache.)
+                    // Add the bgColor for tilemaps if specified (fillRect)
+                    // Draw the layer background-color if specified. (fillRect)
+                    // Fade the layer background-color if specified. (fillRect)
+                    // Redraw the layer from the cache data to imgDataCache.
+
+                    // 
+                },
+                BG2: function(messageData){
+                    let layerKey = "BG2";
+                    let layerData = messageData[layerKey];
+
+                    // Clear the layer.
+                    this.parent.CLEAR.oneLayerGfx(layerKey);
+                    
+                    // Clear cache data mapKeys indicated by the REMOVALS_ONLY array.
+                    this.parent.CLEAR.manyMapKeys(layerKey, layerData["REMOVALS_ONLY"]);
+
+                    // Create ImageData tilemaps as needed and update the graphics data cache. 
+                    this.parent.DRAW.createImageDataFromTilemapsAndUpdateGraphicsCache(
+                        layerKey,
+                        [
+                            ...Object.keys(layerData["ADD_ONLY"]),
+                            ...Object.keys(layerData["CHANGES_ONLY"]),
+                        ],
+                        {
+                            ...layerData["ADD_ONLY"],
+                            ...layerData["CHANGES_ONLY"],
+                        },
+                        layerData.fade
+                    );
+                    
+                    // Redraw the imgDataCache from the graphics data cache.
+                    this.parent.DRAW.drawImgDataCacheFromDataCache(layerKey, false);
+
+                    // Redraw the layer from the cache data to imgDataCache.
+                    this.parent.DRAW.drawImgDataCacheToCanvas(layerKey, layerData.fade);
+                },
+                SP1: function(messageData){
+                    let layerKey = "SP1";
+                    let layerData = messageData[layerKey];
+
+                    // Clear the layer.
+                    // Remove the cache data for REMOVED tilemaps.
+                    // Create ADDED tilemaps (add to cache.)
+                    // Create CHANGED tilemaps. (add to cache.)
+                    // Redraw the layer from the cache data to imgDataCache.
+
+                    // 
+                },
+                TX1: function(messageData){
+                    let layerKey = "TX1";
+                    let layerData = messageData[layerKey];
+
+                    // Clear the layer.
+                    // Remove the cache data for REMOVED tilemaps.
+                    // Create ADDED tilemaps (add to cache.)
+                    // Create CHANGED tilemaps. (add to cache.)
+                    // Redraw the layer from the cache data to imgDataCache.
+
+                    // 
+                },
+            },
+            DRAW: {
+                parent:null,
+                // flickerFlag: 0,
+
+                //
+                createImageDataFromTilemap: function(tmapObj, globalFade){
+                    // Get the tileset and the dimensions for the tileset. 
+                    let tileset = _GFX.tilesets[ tmapObj.ts ].tileset;
+                    let tw      = _GFX.tilesets[ tmapObj.ts ].config.tileWidth;
+                    let th      = _GFX.tilesets[ tmapObj.ts ].config.tileHeight;
+
+                    // Get the dimensions of the tilemap.
+                    let mapW = tmapObj.tmap[0];
+                    let mapH = tmapObj.tmap[1];
+                    
+                    // Start at index 2 since the first two indexs are the map dimensions in tiles. 
+                    let index=2;
+                    let missingTile = false;
+
+                    // Create new ImageData for the tilemap.
+                    let imageData = new ImageData(mapW * tw, mapH * th); // The width and height come from the tilemap and should be correct.
+                    
+                    // Create new ImageData to be reused for each tilemap tile.
+                    let imageDataTile = new ImageData(tw, th);
+                    let width  = imageDataTile.width;
+                    let height = imageDataTile.height;
+                    
+                    // Break-out settings.
+                    let settings  = tmapObj.settings;
+                    let colorData = settings.colorData;
+                    let fadeLevel = null;
+
+                    // Determine the fade level (the global fade takes priority over the tmapObj.settings.fade.)
+                    if( (globalFade && globalFade.fade && globalFade.currFade != null) ){ fadeLevel = globalFade.currFade; }
+                    else if( settings.fade != null){ fadeLevel = settings.fade; }
+
+                    // Fully faded out? If the fade level is 10 then just draw the entire tilemap imageData as full black;
+                    if( fadeLevel == 10 ){
+                        // R,G,B is already 0. Need to set alpha to enable full black.
+                        for (let i = 3; i < imageData.data.length; i += 4) { imageData.data[i] = 255; }
+                    }
+
+                    // No. Process the tilemap tile-by-tile.
+                    else{
+                        // Create the ImageData version of the tilemap.
+                        for(let y=0; y<mapH; y+=1){
+                            for(let x=0; x<mapW; x+=1){
+                                // Replace the imageDataTile.data with the tile ImageData.data specified by the tilemap.
+                                try{ 
+                                    imageDataTile.data.set(tileset[ tmapObj.tmap[index] ].imgData.data.slice()); 
+                                    missingTile = false; 
+                                }
+                                
+                                // Missing tile. (Wrong tileset?) 
+                                // Create a transparent tile and set the missingTile flag to skip any transforms from settings.
+                                catch(e){ 
+                                    imageDataTile.data.fill(0); 
+                                    missingTile = true; 
+                                    ({width, height} = imageDataTile);
+                                }
+                                
+                                // Apply tile transforms using rotation, xFlip, yFlip.
+                                // Skip the transforms if the tile was not found. 
+                                if(!missingTile){
+                                    ({width, height} = this.performTransformsOnImageData(imageDataTile, settings));
+                                }
+
+                                // Update the imageData with the completed imageDataTile.
+                                createGraphicsAssets.updateRegion(
+                                    imageDataTile.data,  // source
+                                    width, // imageDataTile.width, // srcWidth
+                                    imageData.data,      // destination
+                                    imageData.width,     // destWidth
+                                    x * tw,              // x
+                                    y * th,              // y
+                                    width,  // tw,                  // w
+                                    height, // th,                  // h
+                                    false                // onlyWriteToTransparent
+                                );
+
+                                // Increment the tile index in the tilemap.
+                                index++;
+                            }
+                        }
+
+                        // Handle adding a background?  (by reference.)
+                        if(settings.bgColorRgba){
+                            this.parent.SETBG.setImageDataBgColorRgba(imageData, [0,0,0,0], settings.bgColorRgba);
+                        }
+
+                        // Handle color replacements. (by reference.)
+                        if(colorData && colorData.length){
+                            _GFX.utilities.replaceColors(imageData, colorData); 
+                        }
+                    }
+
+                    // Return the completed ImageData version of the tilemap.
+                    return imageData;
+                },
+                
+                // Transforms using rotation, xFlip, yFlip (no recoloring.) (By reference.)
+                performTransformsOnImageData: function(imageData, settings){
+                    let width  = imageData.width;
+                    let height = imageData.height;
+
+                    // Handle rotation.
+                    // NOTE: If a tilemap is NOT a square then the tilemap will have swapped new width and height values.
+                    if(settings.rotation)        { ({width, height} = _GFX.utilities.rotateImageData(imageData, settings.rotation)); }
+                    
+                    // Handle xFlip.
+                    if(settings.xFlip)           { imageData = _GFX.utilities.flipImageDataHorizontally(imageData); }
+                    
+                    // Handle yFlip.
+                    if(settings.yFlip)           { imageData = _GFX.utilities.flipImageDataVertically(imageData); }
+                    
+                    // Handle color replacements. (by reference.)
+                    // if(settings.colorData.length){ imageData = _GFX.utilities.replaceColors(imageData, settings.colorData); }
+
+                    // Return the width and height (only useful for non-square image data.)
+                    return { width:width, height:height };
+                },
+                
+                //
+                createImageDataFromTilemapsAndUpdateGraphicsCache: function(layerKey, mapKeys, maps, fade){
+                    let mapKey;
+                    let map;
+                    for(let i=0, len=mapKeys.length; i<len; i+=1){
+                        // Get the mapKey and the map;
+                        mapKey = mapKeys[i];
+                        map = maps[mapKey];
+
+                        // Create the ImageData for this tilemap.
+                        map.imgData = this.createImageDataFromTilemap( map, fade );
+
+                        // Save the completed data to the data cache.
+                        _GFX.currentData[layerKey].tilemaps[mapKey] = {
+                            ...map,
+                            w: map.imgData.width, 
+                            h: map.imgData.height
+                        }
+                    }
+                },
+
+                // Draw ALL tilemap ImageData from cache.
+                drawImgDataCacheFromDataCache: function(layer, flicker=false){
+                    let maps    = _GFX.currentData[layer].tilemaps;
+                    let mapKeys = Object.keys(maps);
+
+                    // "Flicker"
+                    // if(layerKey == "SP1"){ if(this.flickerFlag){ mapKeys.reverse(); } }
+
+                    for(let i=0, len=mapKeys.length; i<len; i+=1){
+                        let mapKey = mapKeys[i];
+                        let map = _GFX.currentData[layer].tilemaps[mapKey];
+
+                        // Use blitDestTransparency.
+                        createGraphicsAssets.updateRegion2(
+                            map.imgData.data,                      // source
+                            map.imgData.width,                     // srcWidth
+                            _GFX.layers[layer].imgDataCache.data,  // destination
+                            _GFX.layers[layer].imgDataCache.width, // destWidth
+                            map.x,                                 // x
+                            map.y,                                 // y
+                            map.w,                                 // w
+                            map.h,                                 // h
+                            true                                   // blitDestTransparency
+                            // false                                  // blitDestTransparency
+                        );
+                    }
+                },
+
+                // Draw the imgDataCache for a layer to the canvas layer. (Can also apply the global fade.)
+                drawImgDataCacheToCanvas: function(layer, fade){
+                    // Get the imgDataCache.
+                    let imgDataCache = _GFX.layers[layer].imgDataCache;
+
+                    // If there is a global fade then apply it to imgDataCache.
+                    // createGraphicsAssets.rgba32TileToFadedRgba32Tile(imgDataCache, fadeLevel);
+
+                    // Use the imgDataCache to draw to the output canvas.
+                    _GFX.layers[layer].ctx.putImageData(imgDataCache, 0, 0);
+                },
+            },
+            run: function(messageData){
+                // if(messageData.gs1 != "gs_N782"){ console.log("messageData.gs1:", messageData.gs1); return; }
+                // console.log("YES messageData.gs1:", messageData.gs1);
+                
+                // Handle the ALLCLEAR. (Clears imgDataCache and the data cache.)
+                if(messageData.ALLCLEAR){
+                    this.CLEAR.allLayersGfx();
+                    this.CLEAR.allLayersData();
+                    // return;
+                }
+
+                let layerKeys = ["BG1", "BG2", "SP1", "TX1"];
+                let layerKey;
+                for(let i=0, len1=layerKeys.length; i<len1; i+=1){
+                    // Get this layer key.
+                    layerKey = layerKeys[i];
+
+                    // Skip this layer key if it does not exist in the messageData.
+                    if(!messageData[layerKey]){ continue; }
+
+                    // Run the draw updater for this layer if ALLCLEAR is set or there are changes. 
+                    if(messageData.ALLCLEAR || messageData.hasChanges){
+                        this.UPDATE.ANYLAYER(layerKey, messageData);
+
+                        // "Flicker"
+                        // if(layerKey == "SP1"){ this.flickerFlag = ! this.flickerFlag; }
+                    }
+                }
+
+                // // MessageData should look like this:
+                // let data2 = {
+                //     version: 4,       // Version of the messageData.
+                //     ALLCLEAR: false,  // Request to clear all layers and data.
+                //     hasChanges: true, // At least one layer has changes.
+                //     BG1:{
+                //         ADD_ONLY      : {},                              // Added
+                //         CHANGES_ONLY  : {},                              // Existing and changed
+                //         REMOVALS_ONLY : [],                              // Previously existing and requiring removal
+                //         ALL_MAPKEYS   : [],                              // A list of all active map keys for this layer.
+                //         fade       : _GFX.currentData["BG1"].fade,       // Fade for this layer.
+                //         changes    : _GFX.currentData["BG1"].changes,    // If the layer has changes
+                //         bgColorRgba: _GFX.currentData["BG1"].bgColorRgba // background-color for the layer.
+                //     }
+                //     // ... BG1 repeated but for the remaining layers which won't have bgColorRgba.
+                // };
+            },
+            init: function(){
+                this.CLEAR.parent = this;
+                let {width, height} = _GFX.layers["BG1"].imgDataCache;
+                this.CLEAR.fullTransparent_imgDataLayer = new ImageData(width, height);
+
+                this.DRAW.parent = this;
+
+                this.SETBG.parent = this;
+
+                this.UPDATE.parent = this;
+            }
+        }
     },
 };
 
@@ -792,11 +1791,25 @@ self.onmessage = async function(event) {
                 break;
             }
             case "initLayers"           : { 
-                messageFuncs.initLayers(data); break; 
+                messageFuncs.initLayers(data); 
+                messageFuncs.sendGfxUpdates.V4.init();
+                break; 
             }
             case "sendGfxUpdates"       : { 
-                if(!flags.dataRequest){              messageFuncs.sendGfxUpdates.run(data); }
-                else                  { returnData = messageFuncs.sendGfxUpdates.run(data); }
+                // console.log(`mode: ${mode}`, "\n  data:", data, "\n  flags:", flags);
+                // debugger;
+                if(data.version == 3){
+                    if(!flags.dataRequest){              messageFuncs.sendGfxUpdates.V3.run(data); }
+                    else                  { returnData = messageFuncs.sendGfxUpdates.V3.run(data); }
+                }
+                if(data.version == 4){
+                    if(!flags.dataRequest){              messageFuncs.sendGfxUpdates.V4.run(data); }
+                    else                  { returnData = messageFuncs.sendGfxUpdates.V4.run(data); }
+                }
+                else{
+                    // if(!flags.dataRequest){              messageFuncs.sendGfxUpdates.run(data); }
+                    // else                  { returnData = messageFuncs.sendGfxUpdates.run(data); }
+                }
                 break; 
             }
             

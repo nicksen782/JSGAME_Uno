@@ -330,6 +330,48 @@
         }
     }
 
+    // Update a region in the destination with the source data.
+    function updateRegion2(source, srcWidth, destination, destWidth, x, y, w, h, blitDestTransparency=false) {
+        let alphaPixel_src;
+        let alphaPixel_dest;
+        for (let y_inc = 0; y_inc < h; y_inc++) {
+            // Cols
+            for (let x_inc = 0; x_inc < w; x_inc++) {
+                // Get the indexes for the source and the destination for this pixel.
+                srcIndex  = (y_inc * srcWidth + x_inc) * 4;
+                destIndex = ((y + y_inc) * destWidth + (x + x_inc)) * 4;
+                
+                // Blitting with alpha? (Like a sprite with transparent pixels drawn against a background.)
+                // If the source pixel is fully transparent , the destination pixel is preserved.
+                // Otherwise, the source pixel overwrites the destination pixel.
+                if(blitDestTransparency){
+                    // If blitDestTransparency is true:
+
+                    alphaPixel_src  = source[srcIndex + 3];
+                    alphaPixel_dest = destination[destIndex + 3];
+
+                    // If source pixel is transparent, preserve the destination pixel.
+                    if(alphaPixel_src == 0){
+                        subArray = destination.subarray(destIndex, destIndex + 4);
+                    }
+                    // If source pixel is not transparent, overwrite the destination pixel.
+                    else{
+                        subArray = source.subarray(srcIndex, srcIndex + 4);
+                    }
+
+                    // Draw the pixel.
+                    destination.set( subArray, destIndex );
+                }
+                // When drawing ImageData onto ImageData, transparency overwrites existing data (unlike drawImage).
+                else{
+                    // Copy the source pixel data to the destination using set and subarray.
+                    subArray = source.subarray(srcIndex, srcIndex + 4);
+                    destination.set( subArray, destIndex );
+                }
+            }
+        }
+    }
+
     // Performs the graphics processing functions. 
     async function process(tilesetFiles){
         let ts1 = performance.now();
@@ -360,6 +402,7 @@
         process         : process,
         setPixelated    : setPixelated,
         updateRegion    : updateRegion,
+        updateRegion2    : updateRegion2,
         copyRegion      : copyRegion,
         rgba32TileToFadedRgba32Tile: rgba32TileToFadedRgba32Tile,
     };

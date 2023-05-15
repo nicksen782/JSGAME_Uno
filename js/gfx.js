@@ -48,6 +48,12 @@ var _GFX = {
     },
     ALLCLEAR: true,         //
     DRAWNEEDED: false,      //
+    REMOVALS: {
+        BG1: [],
+        BG2: [],
+        SP1: [],
+        TX1: [],
+    },      //
 
     // Used for layer object management within a gamestate.
     layerObjs: {
@@ -252,10 +258,18 @@ var _GFX = {
         clearAllLayers: async function(keepBg1BgColor=true){
             // Local data clear.
             for(let layerKey in _GFX.currentData){ 
+                // Add to REMOVALS.
+                for(let mapKey in _GFX.currentData[layerKey].tilemaps){ _GFX.REMOVALS[layerKey].push(mapKey); }
+
+                // Remove all tilemaps. 
                 _GFX.currentData[layerKey].tilemaps = {};
+
+                // Keep the background color for BG1?
                 if(layerKey == "BG1" && !keepBg1BgColor){
                     _GFX.currentData[layerKey].bgColorRgba = [0,0,0,0];
                 }
+
+                // Set changes true so that this updates the canvas output.
                 _GFX.currentData[layerKey].changes = true;
             }
 
@@ -308,8 +322,8 @@ var _GFX = {
                     if(oldHash != newHash){
                         // Update the layerObject.
                         _GFX.currentData[layer].tilemaps[tilemapKey] = {
-                            hash: newHash,
-                            // hash: newHash + parseInt((Math.random()*100000).toFixed(0)),
+                            hash    : newHash, // Newly generated hash.
+                            hashPrev: oldHash ?? 0, // Previous hash or 0 if there wasn't one.
                             ts       : tilemap.ts,
                             tmap     : tilemap.tmap,
                             x        : tilemap.x,
@@ -406,31 +420,123 @@ var _GFX = {
                 BG2: _GFX.currentData["BG2"].changes ?_GFX.currentData["BG2"] : 0,
                 SP1: _GFX.currentData["SP1"].changes ?_GFX.currentData["SP1"] : 0,
                 TX1: _GFX.currentData["TX1"].changes ?_GFX.currentData["TX1"] : 0,
-                ALLCLEAR: _GFX.ALLCLEAR
+                ALLCLEAR: _GFX.ALLCLEAR,
+            };
+            
+            // TODO: probably should store this in the _GFX object instead of the sendGfxUpdates function.
+            let data2 = {
+                gs1: _APP.game.gs1,
+                gs2: _APP.game.gs2,
+                // version: 3,
+                version: 4,
+                ALLCLEAR: _GFX.ALLCLEAR,
+                // hasChanges: false,
+                hasChanges: _GFX.DRAWNEEDED || forceSend,
+
+                BG1: { 
+                    ADD_ONLY: {}, CHANGES_ONLY: {}, REMOVALS_ONLY: [], ALL_MAPKEYS: [],
+                    fade: _GFX.currentData["BG1"].fade, 
+                    changes: _GFX.currentData["BG1"].changes, 
+                    // changes: false, 
+                    bgColorRgba: _GFX.currentData["BG1"].bgColorRgba 
+                }, 
+                BG2: { 
+                    ADD_ONLY: {}, CHANGES_ONLY: {}, REMOVALS_ONLY: [], ALL_MAPKEYS: [],
+                    fade: _GFX.currentData["BG2"].fade, 
+                    changes: _GFX.currentData["BG2"].changes 
+                    // changes: false, 
+                }, 
+                SP1: { 
+                    ADD_ONLY: {}, CHANGES_ONLY: {}, REMOVALS_ONLY: [], ALL_MAPKEYS: [],
+                    fade: _GFX.currentData["SP1"].fade, 
+                    changes: _GFX.currentData["SP1"].changes 
+                    // changes: false, 
+                }, 
+                TX1: { 
+                    ADD_ONLY: {}, CHANGES_ONLY: {}, REMOVALS_ONLY: [], ALL_MAPKEYS: [],
+                    fade: _GFX.currentData["TX1"].fade, 
+                    changes: _GFX.currentData["TX1"].changes 
+                    // changes: false, 
+                }, 
             };
 
-            // Send ASYNC
-            if(!waitForResp){
-                _WEBW_V.SEND("sendGfxUpdates", { 
-                    data: data, 
-                    refs:[]
-                }, false, false);
+            for(let layerKey in _GFX.currentData){ 
+                let layer = _GFX.currentData[layerKey];
+                let tilemap;
+
+                // Process what has changed.
+                for(let mapKey in layer.tilemaps){ 
+                    tilemap = layer.tilemaps[mapKey];
+
+                    // ALL_MAPKEYS (active)
+                    if(
+                        (_GFX.REMOVALS[layerKey].indexOf(mapKey) == -1)
+                    ){
+                        data2[layerKey]["ALL_MAPKEYS"].push(mapKey);
+                    }
+
+                    // ADD_ONLY
+                    if(layer.tilemaps[mapKey].hashPrev == 0){ 
+                        data2[layerKey]["ADD_ONLY"][mapKey] = tilemap; 
+                        // data2.hasChanges = true; 
+                        // data2[layerKey].changes = true; 
+                    }
+                    
+                    // CHANGES_ONLY
+                    else if(layer.tilemaps[mapKey].hashPrev != layer.tilemaps[mapKey].hash){ 
+                        data2[layerKey]["CHANGES_ONLY"][mapKey] = tilemap; 
+                        // data2.hasChanges = true; 
+                        // data2[layerKey].changes = true; 
+                    }
+                    
+                    // REMOVALS_ONLY (if there are removals AND this mapKey is in removals.)
+                    if(_GFX.REMOVALS[layerKey].length && _GFX.REMOVALS[layerKey].indexOf(mapKey) != -1){
+                        data2.hasChanges = true; 
+                        data2[layerKey].changes = true; 
+                    }
+                }
+
+                // If there were no changes delete the layer key.
+                if(!data2[layerKey].changes){ delete data2[layerKey]; }
+                
+                // Otherwise include the removals with the other updates..
+                else{
+                    data2[layerKey]["REMOVALS_ONLY"] = _GFX.REMOVALS[layerKey]; 
+                }
             }
-            // Await for the graphics update to finish.
-            else{
-                await _WEBW_V.SEND("sendGfxUpdates", { 
-                    data: data, 
-                    refs:[]
-                }, true, false);
+            // if(_GFX.REMOVALS["BG2"].length){ console.log("REMOVALS:", JSON.stringify(_GFX.REMOVALS)); }
+
+            if(data2.hasChanges){
+                // Send ASYNC
+                if(!waitForResp){
+                    _WEBW_V.SEND("sendGfxUpdates", { 
+                        data: data2, 
+                        refs:[]
+                    }, false, false);
+                }
+                // Await for the graphics update to finish.
+                else{
+                    await _WEBW_V.SEND("sendGfxUpdates", { 
+                        data: data2, 
+                        refs:[]
+                    }, true, false);
+                }
             }
 
-            // Clear the changes flags.
-            _GFX.currentData["BG1"].changes = false;
-            _GFX.currentData["BG2"].changes = false;
-            _GFX.currentData["SP1"].changes = false;
-            _GFX.currentData["TX1"].changes = false;
+            // Clear the special changes flags.
             _GFX.ALLCLEAR = false;
             _GFX.DRAWNEEDED = false;
+
+            // Clear the changes flags and update hashPrev.
+            // NOTE: _GFX.currentData and _GFX.REMOVALS have the same layerKeys.
+            for(let layerKey in _GFX.currentData){ 
+                let layer = _GFX.currentData[layerKey];
+                for(let mapKey in layer.tilemaps){ 
+                    layer.tilemaps[mapKey].hashPrev = layer.tilemaps[mapKey].hash;
+                }
+                layer.changes = false;
+                _GFX.REMOVALS[layerKey] = [];
+            }
         },
 
         // Returns a copy of a tilemap.
@@ -446,7 +552,13 @@ var _GFX = {
 
         // Removes a layer object and sets the changes for that layer to true. 
         removeLayerObj: function(layerKey, mapKey){
+            // Remove from REMOVALS.
+            _GFX.REMOVALS[layerKey].filter(d => d != mapKey);
+
+            // Delete from currentData.
             delete _GFX.currentData[layerKey].tilemaps[mapKey];
+
+            // Set changes to true so that the canvas output updates.
             _GFX.currentData[layerKey].changes = true;
         }, 
 

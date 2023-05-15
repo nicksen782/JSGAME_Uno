@@ -244,6 +244,99 @@ class N782_text_anim extends LayerObject{
     };
 };
 
+class N782_oneStar_anim extends LayerObject{
+    constructor(config){
+        super(config);
+        this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
+
+        this.frames = [
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_STAR"),
+        ];
+        this.framesIndex = 0;
+        this.framesCounter = 0;
+        this.framesBeforeIndexChange = 5;
+        this.repeatCount = 0;
+        this.repeats = 0;
+        this.done = false;
+        this.tmap = this.frames[this.framesIndex];
+
+        
+        this.x_min = 8*8;
+        this.x_max = (20*8)-8;
+        this.x_inc = 4;
+        this.xDir = 1;
+
+        this.x = config.x ?? this.x_min;
+        this.y = config.y ?? ( 13 )*8;
+    }
+
+    // Render functions.
+    nextFrame(){
+        // Stop after repeating up to this.repeats.
+        if(this.done){ return; }
+
+        // Time to change frames?
+        if(this.framesCounter < this.framesBeforeIndexChange){ 
+            this.framesCounter += 1; 
+        }
+        else {
+            // Reset the frames counter.
+            this.framesCounter = 0;
+            
+            // Increment the framesIndex
+            if(this.framesIndex < this.frames.length -1){ 
+                this.framesIndex += 1; 
+            }
+            else { 
+                
+                if     (this.xDir == -1 && this.x < this.x_min){ this.xDir *= -1; }
+                else if(this.xDir ==  1 && this.x >= this.x_max){ this.xDir *= -1; }
+                this.x += (this.x_inc * this.xDir);
+                // console.log(`x: ${this.x}, xDir: ${this.xDir}, x_min: ${this.x_min}, x_max: ${this.x_max}`);
+
+                // // Reset the framesIndex.
+                // this.framesIndex = 0; 
+
+                // // Increment repeatCount.
+                // this.repeatCount += 1; 
+
+                // // Stop after repeating up to this.repeats.
+                // if(this.repeatCount == this.repeats && this.repeats != 0) { 
+                //     this.tmap = _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F1");
+                //     this.done = true; 
+                //     return; 
+                // }
+            }
+        }
+
+        // Set the new tmap.
+        this.tmap = this.frames[this.framesIndex];
+    };
+};
+
+
+class N782_oneStar_anim2 extends N782_oneStar_anim{
+    constructor(config){
+        super(config);
+
+        this.frames = [
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT"),
+        ];
+    }
+}
+class N782_oneStar_anim3 extends N782_oneStar_anim2{
+    constructor(config){
+        super(config);
+
+        this.frames = [
+            _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT"),
+        ];
+        this.settings.rotation = 90;
+        this.xDir = -1;
+        this.x = config.x ?? this.x_max;
+    }
+}
+
 class Card extends LayerObject{
     // Set named colors.
     static colors = {

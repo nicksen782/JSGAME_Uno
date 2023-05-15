@@ -67,8 +67,8 @@ _DEBUG2.init = async function(){
         ts_debugGamestate = performance.now() - ts_debugGamestate;
 
         // Output some timing info.
-        console.log("DEBUG: init2:");
-        console.log("  ts_debugGamestate           :", ts_debugGamestate.toFixed(3));
+        // console.log("DEBUG: init2:");
+        // console.log("  ts_debugGamestate           :", ts_debugGamestate.toFixed(3));
 
         resolve();
     });
