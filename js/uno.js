@@ -1,7 +1,8 @@
 // _APP.debugActive = false;
 _APP.debugActive = true;
 _APP.configObj = {
-    waitUntilFrameDrawn: true,
+    // waitUntilFrameDrawn: true,
+    waitUntilFrameDrawn: false,
 
     // Relative paths need to be correctly relative to whatever loads this file (the web page or the web worker.)
     tilesetFiles: [

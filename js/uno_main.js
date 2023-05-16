@@ -40,6 +40,8 @@ _APP.game = {
         
         // Reset the inited flag for this gamestate.
         _APP.game.gamestates[this.gs1].inited = false;
+
+        // console.log(`gs1 has changed from '${this.gs1_prev}' to '${this.gs1_new}'`);
     },
 
     // Schedules a gamestate 2 change.
@@ -60,6 +62,8 @@ _APP.game = {
         
         // Set the new gamestate.
         this.gs2 = this.gs2_new;
+
+        // console.log(`gs2 has changed from '${this.gs2_prev}' to '${this.gs2_new}'`);
     },
 
     // Gamestate code will be placed here by each gamestate.
@@ -83,7 +87,6 @@ _APP.game = {
         fadeIsBlocking  : false,     // TODO: Flag indicating if a fadeIn or fadeOut is logic-blocking while in progress.
 
         lastLoop_timestamp   : 1,
-        lastLogic_timestamp  : 1,
         lastDraw_timestamp   : 1,
         lastDebug1_timestamp : 1,
 
@@ -121,32 +124,18 @@ _APP.game = {
         endOfLoopTasks: function(timestamp){
             // Update the 
             if(timestamp){
-                // Update this.lastLoopRun with this timestamp.
-                // this.lastLoopRun = timestamp - (this.delta % this.msFrame);
-                // this.lastLoopRun = timestamp - (this.msFrame);
-                this.lastLoopRun = performance.now() - (this.msFrame);
-                // this.lastLoopRun = timestamp;
-                // console.log(this.delta, " ---- ", this.delta % this.msFrame, this.delta - this.msFrame);
-
-                // Track performance.
-                // this.fpsCalc.tick(timestamp - (this.delta % this.msFrame));
-                this.fpsCalc.tick(timestamp);
-                
-                this.lastLoop_timestamp = performance.now() - this.lastLoop_timestamp;
-                
                 // DEBUG (Cannot time and display this one.)
                 if(_APP.debugActive && _DEBUG){ 
-                    let ts1 = performance.now();
+                    // let ts1 = performance.now();
                     _DEBUG.endOfLoopDraw_funcs(); 
-                    ts1 = performance.now() - ts1;
+                    // await _DEBUG.endOfLoopDraw_funcs(); 
+                    // ts1 = performance.now() - ts1;
                     // console.log(ts1.toFixed(1));
                 }
                 else{
                     // Log to the console if the loop took too long.
                     if(this.lastLoop_timestamp > this.msFrame){ 
-                        console.log(`lastLoop: ${this.lastLoop_timestamp.toFixed(1)} ms of: ${this.msFrame.toFixed(1)} ms`); 
-                        console.log(`  lastLogic: , ${this.lastLogic_timestamp.toFixed(1)} ms`); 
-                        console.log(`  lastDraw : , ${this.lastDraw_timestamp.toFixed(1)} ms`); 
+                        console.log(`lastLoop: ${100*(this.lastLoop_timestamp/this.msFrame).toFixed(0)} % (${this.lastLoop_timestamp.toFixed(1)} ms) of: ${this.msFrame.toFixed(1)} ms`); 
                         console.log("  gs1      : ", _APP.game.gs1); 
                         console.log("  gs2      : ", _APP.game.gs2); 
                         console.log("  frameCounter    : ", this.frameCounter); 
@@ -154,6 +143,7 @@ _APP.game = {
                         console.log("");
                     }
                 }
+                // console.log(`loop time: ${this.lastLoop_timestamp.toFixed(1)} ms, max time: ${this.msFrame.toFixed(1)} ms (${100*(this.lastLoop_timestamp/this.msFrame).toFixed(1)} %)`);
             }
 
             // Request the next frame.
@@ -180,8 +170,8 @@ _APP.game = {
             _APP.game.gamestates_list = Object.keys(_APP.game.gamestates);
         
             // Set the first gamestate.
-            // _APP.game.changeGs1("gs_JSG");
-            _APP.game.changeGs1("gs_N782");
+            _APP.game.changeGs1("gs_JSG");
+            // _APP.game.changeGs1("gs_N782");
             // _APP.game.changeGs1("gs_TITLE");
             // _APP.game.changeGs1("gs_OPTIONS");
             // _APP.game.changeGs1("gs_RULES");
@@ -269,65 +259,71 @@ _APP.game.gameLoop.loop = async function loop(timestamp){
 
         // Is it time to run the next loop?
         if( (this.delta >= this.msFrame) ){
-            this.lastLoop_timestamp = performance.now();
+            // Track performance.
+            this.fpsCalc.tick(timestamp - (this.delta % this.msFrame));
+            this.lastLoopRun = timestamp - (this.delta % this.msFrame);
             this.frameCounter += 1;
 
-            this.lastLogic_timestamp   = performance.now();
+            let lastLoop_timestamp = performance.now();
+            // this.lastLoop_timestamp = performance.now();
 
-            // -- NETWORK --
-            //
+            if(!this.skipLogic){
+                // -- NETWORK --
+                //
 
-            // -- INPUT --
-            _INPUT.util.getStatesForPlayers();
-            if(typeof _INPUT.customized.updateLiveGamepadDisplay != "undefined"){
-                _INPUT.customized.updateLiveGamepadDisplay();
-            }
+                // -- INPUT --
+                _INPUT.util.getStatesForPlayers();
+                if(typeof _INPUT.customized.updateLiveGamepadDisplay != "undefined"){
+                    _INPUT.customized.updateLiveGamepadDisplay();
+                }
 
-            // -- LOGIC --
-            _APP.game.gamestates[_APP.game.gs1].main();
-            
-            // -- RENDER --
-            // Render using the _GFX.layerObjs.render function.
-            if( !_APP.game.gamestates[_APP.game.gs1].render){ _GFX.layerObjs.render(_APP.game.gs1); }
-            // Render using the gamestate's render function.
-            else { _APP.game.gamestates[_APP.game.gs1].render(); }
-
-            // -- DEBUG --
-            if(_APP.debugActive && _DEBUG){ 
-                _DEBUG.cachedData.changes["BG1"] = _GFX.currentData["BG1"].changes;
-                _DEBUG.cachedData.changes["BG2"] = _GFX.currentData["BG2"].changes;
-                _DEBUG.cachedData.changes["SP1"] = _GFX.currentData["SP1"].changes;
-                _DEBUG.cachedData.changes["TX1"] = _GFX.currentData["TX1"].changes;
-            }
-
-            this.lastLogic_timestamp   = performance.now() - this.lastLogic_timestamp;
-            
-            // -- DRAW --
-            this.lastDraw_timestamp    = performance.now();
-            // Determine if there are any draw updates. (Returns true/false and also sets _GFX.DRAWNEEDED.)
-            this.DRAWNEEDED_prev = _GFX.funcs.isDrawNeeded();
-            // Send a draw request if there are changes for any layer.
-            if( _GFX.DRAWNEEDED ) { 
-                // this.lastDraw_timestamp = performance.now();
-                // Synchronize the gameLoop with the rendering.
-                if(_APP.configObj.waitUntilFrameDrawn){ await _GFX.funcs.sendGfxUpdates(true, true);  }
+                // -- LOGIC --
+                _APP.game.gamestates[_APP.game.gs1].main();
                 
-                // Send the graphics updates without waiting. (This could be a problem where there are many graphics updates.)
-                else                                  {       _GFX.funcs.sendGfxUpdates(false, true); }
+                // -- RENDER --
+                // Render using the _GFX.layerObjs.render function.
+                if( !_APP.game.gamestates[_APP.game.gs1].render){ _GFX.layerObjs.render(_APP.game.gs1); }
+                
+                // Render using the gamestate's render function.
+                else { _APP.game.gamestates[_APP.game.gs1].render(); }
 
-                this.frameDrawCounter += 1;
-                // this.lastDraw_timestamp = performance.now() - this.lastDraw_timestamp;
+                // -- DEBUG --
+                if(_APP.debugActive && _DEBUG){ 
+                    _DEBUG.cachedData.changes["BG1"] = _GFX.currentData["BG1"].changes;
+                    _DEBUG.cachedData.changes["BG2"] = _GFX.currentData["BG2"].changes;
+                    _DEBUG.cachedData.changes["SP1"] = _GFX.currentData["SP1"].changes;
+                    _DEBUG.cachedData.changes["TX1"] = _GFX.currentData["TX1"].changes;
+                }
+
+                // GAMESTATE CHANGES
+                if(_APP.game.changeGs2_triggered){ _APP.game._changeGs2(); } 
+                if(_APP.game.changeGs1_triggered){ _APP.game._changeGs1(); } 
+
+                // -- DRAW --
+                // Determine if there are any draw updates. (Returns true/false and also sets _GFX.DRAWNEEDED.)
+                this.DRAWNEEDED_prev = _GFX.funcs.isDrawNeeded();
+                
+                // Send a draw request if there are changes for any layer.
+                if( _GFX.DRAWNEEDED ) { 
+                    // Synchronize the gameLoop with the rendering.
+                    // EXAMPLE USAGE: sendGfxUpdates: (waitForResp=false, forceSend=false)
+                    if(_APP.configObj.waitUntilFrameDrawn){ await _GFX.funcs.sendGfxUpdates(true, true); }
+                    
+                    // Send the graphics updates without waiting. (This could be a problem where there are many graphics updates.)
+                    else                                  {       _GFX.funcs.sendGfxUpdates(false, true); }
+
+                    this.frameDrawCounter += 1;
+                }
             }
-            this.lastDraw_timestamp = performance.now() - this.lastDraw_timestamp;
-            
-            // GAMESTATE CHANGES
-            if(_APP.game.changeGs2_triggered){ _APP.game._changeGs2(); } 
-            if(_APP.game.changeGs1_triggered){ _APP.game._changeGs1(); } 
 
+            this.lastLoop_timestamp = performance.now() - lastLoop_timestamp;
+            // console.log("this.lastLoop_timestamp:", this.lastLoop_timestamp.toFixed(1));
+            
             // End the loop and run any end of loop tasks.
             this.endOfLoopTasks(timestamp);
         }
         else{
+            // console.log("THE LOOP DID NOT RUN THIS TIME:", new Date());
             // End the loop and run any end of loop tasks.
             this.endOfLoopTasks(false);
         }

@@ -63,10 +63,12 @@ div#debug_test_alwaysVisible {
     /* border: 1px solid blue; */
     background-color: rgba(255,255,255,0.5);
     margin-top: 5px;
+    width: 640px;
+    margin: auto;
 }
 
 .debugLive{
-    /* transition: background-color 0.25s ease-out; */
+    transition: background-color 175ms ease-out;
     display:inline;
     white-space: pre;
 }
@@ -88,4 +90,47 @@ div#debug_test_alwaysVisible {
 .debug_td_short{
     width: 55px;
     max-width: 55px;
+    white-space: pre;
 }
+.debug_td_short2{
+    width: 85px;
+    max-width: 85px;
+}
+
+.debug_progress-bar {
+    width: 100%;
+    background-color: #ddd;
+    position: relative;
+    height: 30px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+  
+.debug_inner-bar {
+    background-color: #4CAF50;
+    width: 0;
+    height: 100%;
+    position: relative;
+    /* transition: width 150ms ease-in-out; */
+    transition: width 175ms ease-in-out;
+    will-change: width;
+}
+
+.debug_progress-bar.level1, .debug_inner-bar.level1{background-color: #00cb0e;}
+.debug_progress-bar.level2, .debug_inner-bar.level2{ background-color: #023dff; }
+.debug_progress-bar.level3, .debug_inner-bar.level3{ background-color: #ffe200; }
+.debug_progress-bar.level4, .debug_inner-bar.level4{ background-color: #da9c32; }
+.debug_progress-bar.level5, .debug_inner-bar.level5{background-color: #ff0000;}
+  
+.debug_progress-bar-label {
+    position: absolute;
+    /* color: white; */
+    color: black;
+    width: 100%;
+    text-align: center;
+    line-height: 30px;
+    font-family: monospace;
+    white-space: pre;
+    z-index: 1;
+}
+  

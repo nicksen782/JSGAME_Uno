@@ -8,6 +8,7 @@ var _WEBW_V = {
         "sendGfxUpdates",
         "clearAllLayers",
         "_DEBUG.drawColorPalette",
+        "_DEBUG.toggleDebugFlag",
     ],
     // Allowed RECEIVE "modes."
     modes_RECEIVE:[
@@ -17,6 +18,7 @@ var _WEBW_V = {
         "sendGfxUpdates",
         "clearAllLayers",
         "_DEBUG.drawColorPalette",
+        "_DEBUG.toggleDebugFlag",
     ],
     differedProms: {},
     createDeferredPromise : function(){
@@ -38,16 +40,19 @@ var _WEBW_V = {
             
             switch(e.data.mode){
                 case "initConfigAndGraphics"     : {
+                    _GFX.tilesets = e.data.data;
                     if(this.differedProms[e.data.mode]){ 
-                        _GFX.tilesets = e.data.data;
                         this.differedProms[e.data.mode].resolve(); 
                     }
                     break;
                 }
 
                 case "sendGfxUpdates"     : {
-                    if(this.differedProms[e.data.mode]){ 
+                    if(_APP.debugActive){
                         // console.log("sendGfxUpdates:", e.data.data);
+                        _DEBUG.timingsDisplay.gfx.updateCache(e.data.data); 
+                    }
+                    if(this.differedProms[e.data.mode]){ 
                         this.differedProms[e.data.mode].resolve(); 
                     }
                     break;
@@ -75,6 +80,12 @@ var _WEBW_V = {
         catch(e){ console.error("SEND: Error in 'e.data.mode'. ERROR:", e); return; }
 
         return new Promise(async(resolve,reject)=>{
+            // Inject debugActive into data.data.
+            if(mode == "initConfigAndGraphics"){
+                data.data.debugActive = _APP.debugActive ?? false;
+            }
+
+            // Send the message.
             this.worker.postMessage(
                 {
                     mode: mode,

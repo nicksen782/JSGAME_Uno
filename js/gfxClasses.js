@@ -104,7 +104,7 @@ class LayerObject {
             {
                 ..._GFX.funcs.createLayerObjData({ 
                     mapKey: this.layerObjKey, x: x, y: y, ts: this.tilesetKey, settings: this.settings, 
-                    tmap: this.tmap
+                    tmap: this.tmap,
                 }),
             }
         );
@@ -260,7 +260,6 @@ class N782_oneStar_anim extends LayerObject{
         this.done = false;
         this.tmap = this.frames[this.framesIndex];
 
-        
         this.x_min = 8*8;
         this.x_max = (20*8)-8;
         this.x_inc = 4;
@@ -322,6 +321,13 @@ class N782_oneStar_anim2 extends N782_oneStar_anim{
         this.frames = [
             _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT"),
         ];
+        this.done = false;
+        this.x_min = 1*8;
+        this.x_max = (28*8)-(8*6);
+        this.x_inc = 6;
+        this.xDir = 1;
+        this.x = config.x ?? this.x_max;
+        this.tmap = this.frames[0];
     }
 }
 class N782_oneStar_anim3 extends N782_oneStar_anim2{
@@ -331,9 +337,11 @@ class N782_oneStar_anim3 extends N782_oneStar_anim2{
         this.frames = [
             _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT"),
         ];
+        this.done = false;
         this.settings.rotation = 90;
         this.xDir = -1;
         this.x = config.x ?? this.x_max;
+        this.tmap = this.frames[0];
     }
 }
 

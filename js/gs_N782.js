@@ -16,10 +16,24 @@ _APP.game.gamestates["gs_N782"] = {
         this.createLayerObjectPlaceholders();
         _GFX.layerObjs.clearAll(_APP.game.gs1);
 
-        _GFX.funcs.updateBG1BgColorRgba([16,16,16,255]);
+        _GFX.funcs.updateBG1BgColorRgba([32,24,48,255]);
 
-        _GFX.layerObjs.updateOne(N782_face_anim, { layerObjKey: "N782_face_anim", layerKey: "BG2", tilesetKey: "bg_tiles2" });
-        _GFX.layerObjs.updateOne(N782_text_anim, { layerObjKey: "N782_text_anim", layerKey: "BG2", tilesetKey: "bg_tiles2" });
+        _GFX.layerObjs.updateOne(N782_face_anim, { layerObjKey: "N782_face_anim", layerKey: "SP1", tilesetKey: "bg_tiles2" });
+        _GFX.layerObjs.updateOne(N782_text_anim, { layerObjKey: "N782_text_anim", layerKey: "SP1", tilesetKey: "bg_tiles2" });
+        
+        _GFX.layerObjs.updateOne(N782_oneStar_anim,  { layerObjKey: "N782_oneStar_anim1"  , layerKey: "SP1", tilesetKey: "bg_tiles2", y: ( 5 )*8});
+        _GFX.layerObjs.updateOne(N782_oneStar_anim,  { layerObjKey: "N782_oneStar_anim2"  , layerKey: "SP1", tilesetKey: "bg_tiles2", y: ( 6 )*8});
+        _GFX.layerObjs.updateOne(N782_oneStar_anim,  { layerObjKey: "N782_oneStar_anim3"  , layerKey: "SP1", tilesetKey: "bg_tiles2", y: ( 7 )*8});
+
+        _GFX.layerObjs.updateOne(N782_oneStar_anim3, { layerObjKey: "N782_oneStar_anim3_1", layerKey: "SP1", tilesetKey: "bg_tiles2", y: ( 10 )*8}); // rotated text
+
+        
+        let x = 0;
+        for(let i=0; i<28; i+=1){
+            let key = `N782_oneStar_anim2_${(i)}`;
+            _GFX.layerObjs.updateOne(N782_oneStar_anim2, { layerObjKey: key, layerKey: "BG2", tilesetKey: "bg_tiles2", y: ( i )*8, x: x});
+            x+=6;
+        }
 
         // Create general timers.
         _APP.shared.genTimer.create("timer1", 60);
@@ -39,6 +53,16 @@ _APP.game.gamestates["gs_N782"] = {
     main: function(){
         // Run init and return if this gamestate is not yet inited.
         if(!this.inited){ this.init(); return; }
+
+        _GFX.layerObjs.getOne("N782_oneStar_anim1").nextFrame();
+        _GFX.layerObjs.getOne("N782_oneStar_anim2").nextFrame();
+        _GFX.layerObjs.getOne("N782_oneStar_anim3").nextFrame();
+        _GFX.layerObjs.getOne("N782_oneStar_anim3_1").nextFrame();
+        
+        for(let i=0; i<28; i+=1){
+            let key = `N782_oneStar_anim2_${(i)}`;
+            _GFX.layerObjs.getOne(key).nextFrame();
+        }
 
         switch (_APP.game.gs2){
             case "anim1": { this.logoAnimations1(); break; }
@@ -64,13 +88,8 @@ _APP.game.gamestates["gs_N782"] = {
             // _APP.game.changeGs1("gs_JSG");
             // _APP.game.changeGs1("gs_N782");
 
-            _GFX.layerObjs.updateOne(N782_face_anim, { layerObjKey: "N782_face_anim", layerKey: "BG2" });
-            _GFX.layerObjs.updateOne(N782_text_anim, { layerObjKey: "N782_text_anim", layerKey: "BG2" });
-            // _GFX.layerObjs.updateOne(N782_face_anim, { layerObjKey: "N782_face_anim", layerKey: "BG2", tilesetKey: "bg_tiles2" });
-            // _GFX.layerObjs.updateOne(N782_text_anim, { layerObjKey: "N782_text_anim", layerKey: "BG2", tilesetKey: "bg_tiles2" });
-            // _GFX.layerObjs.updateOne(N782_text_anim, { layerObjKey: "N782_text_anim", layerKey: "BG2", tilesetKey: "bg_tiles2" });
-            // _GFX.layerObjs.updateOne(N782_text_anim, { layerObjKey: "N782_text_anim", layerKey: "BG2", tilesetKey: "font_tiles" });
-            // _GFX.layerObjs.updateOne(N782_text_anim, { layerObjKey: "N782_text_anim", layerKey: "BG2", tilesetKey: "sprite_tiles" });
+            _GFX.layerObjs.updateOne(N782_face_anim, { layerObjKey: "N782_face_anim", layerKey: "SP1" });
+            _GFX.layerObjs.updateOne(N782_text_anim, { layerObjKey: "N782_text_anim", layerKey: "SP1" });
 
             _APP.game.changeGs2("anim2");
         }
@@ -84,8 +103,9 @@ _APP.game.gamestates["gs_N782"] = {
         }
         else{
             if(_APP.shared.genTimer.check("timer1")){
-                _APP.game.changeGs1("gs_N782");
-                _APP.game.changeGs2("DONE");
+                // _APP.game.changeGs1("gs_N782");
+                // _APP.game.changeGs2("DONE");
+                _APP.game.changeGs2("anim1");
                 return;
             }
         }

@@ -318,14 +318,26 @@
                 // Get the indexes for the source and the destination for this pixel.
                 srcIndex  = (y_inc * srcWidth + x_inc) * 4;
                 destIndex = ((y + y_inc) * destWidth + (x + x_inc)) * 4;
-                alphaPixel = destination[destIndex + 3];
+                try{
+                    alphaPixel = destination[destIndex + 3];
+                    
+                    // Only write to transparent pixels?
+                    if ( onlyWriteToTransparent && alphaPixel !== 0 ) { continue; }
+                    
+                    // Copy the source pixel data to the destination using set and subarray.
+                    subArray = source.subarray(srcIndex, srcIndex + 4);
 
-                // Only write to transparent pixels?
-                if ( onlyWriteToTransparent && alphaPixel !== 0 ) { continue; }
-
-                // Copy the source pixel data to the destination using set and subarray.
-                subArray = source.subarray(srcIndex, srcIndex + 4);
-                destination.set( subArray, destIndex );
+                    // Draw the pixel.
+                    if(destIndex < destination.length){ 
+                        destination.set( subArray, destIndex );
+                    }
+                    // else{
+                    //     console.log("OUT OF BOUNDS!"); 
+                    // }
+                }
+                catch(e){
+                    console.log("updateRegion:", e);
+                }
             }
         }
     }
@@ -347,26 +359,42 @@
                 if(blitDestTransparency){
                     // If blitDestTransparency is true:
 
-                    alphaPixel_src  = source[srcIndex + 3];
-                    alphaPixel_dest = destination[destIndex + 3];
+                    try{
+                        alphaPixel_src  = source[srcIndex + 3];
+                        alphaPixel_dest = destination[destIndex + 3];
 
-                    // If source pixel is transparent, preserve the destination pixel.
-                    if(alphaPixel_src == 0){
-                        subArray = destination.subarray(destIndex, destIndex + 4);
-                    }
-                    // If source pixel is not transparent, overwrite the destination pixel.
-                    else{
-                        subArray = source.subarray(srcIndex, srcIndex + 4);
-                    }
+                        // If source pixel is transparent, preserve the destination pixel.
+                        if(alphaPixel_src == 0){
+                            subArray = destination.subarray(destIndex, destIndex + 4);
+                        }
+                        // If source pixel is not transparent, overwrite the destination pixel.
+                        else{
+                            subArray = source.subarray(srcIndex, srcIndex + 4);
+                        }
 
-                    // Draw the pixel.
-                    destination.set( subArray, destIndex );
+                        // Draw the pixel.
+                        if(destIndex < destination.length){ 
+                            destination.set( subArray, destIndex );
+                        }
+                        // else{
+                        //     console.log("OUT OF BOUNDS!"); 
+                        // }
+                    }
+                    catch(e){
+                        console.log("updateRegion2:", e);
+                    }
                 }
                 // When drawing ImageData onto ImageData, transparency overwrites existing data (unlike drawImage).
                 else{
                     // Copy the source pixel data to the destination using set and subarray.
                     subArray = source.subarray(srcIndex, srcIndex + 4);
-                    destination.set( subArray, destIndex );
+
+                    if(destIndex < destination.length){ 
+                        destination.set( subArray, destIndex );
+                    }
+                    // else{
+                    //     console.log("OUT OF BOUNDS!"); 
+                    // }
                 }
             }
         }

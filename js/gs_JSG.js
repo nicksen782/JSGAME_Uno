@@ -303,7 +303,7 @@ _APP.game.gamestates["gs_JSG"] = {
     // Calls debug functions specific to this gamestate.
     debug: function(){
         // console.log("DEBUG");
-        if(_APP.debugActive && _DEBUG2){ _DEBUG2.debugGamestate.run(_APP.game.gs1, _APP.game.gs2)}
+        // if(_APP.debugActive && _DEBUG2){ _DEBUG2.debugGamestate.run(_APP.game.gs1, _APP.game.gs2)}
     },
 
     // Main function of this game state. Calls other functions/handles logic, etc.
@@ -314,7 +314,7 @@ _APP.game.gamestates["gs_JSG"] = {
         // console.log("MAIN:", _APP.game.gs1);
 
         // DEBUG
-        if(_APP.debugActive && _DEBUG){ this.debug(); }
+        // if(_APP.debugActive && _DEBUG){ this.debug(); }
     },
 
     // Draws the card on the discard pile (Only draws the card.)

@@ -13,7 +13,8 @@ var _GFX = {
                 fade      : false,
                 // prevFade   : null,
                 currFade   : null,
-            }
+            },
+            useFlicker: false
         },
         "BG2":{
             tilemaps  : {},
@@ -23,7 +24,8 @@ var _GFX = {
                 fade      : false,
                 // prevFade   : null,
                 currFade   : null,
-            }
+            },
+            useFlicker: false
         },
         "SP1":{
             tilemaps  : {},
@@ -33,7 +35,8 @@ var _GFX = {
                 fade      : false,
                 // prevFade   : null,
                 currFade   : null,
-            }
+            },
+            useFlicker: true,
         },
         "TX1":{
             tilemaps  : {},
@@ -43,7 +46,8 @@ var _GFX = {
                 fade      : false,
                 // prevFade   : null,
                 currFade   : null,
-            }
+            },
+            useFlicker: false,
         },
     },
     ALLCLEAR: true,         //
@@ -54,6 +58,78 @@ var _GFX = {
         SP1: [],
         TX1: [],
     },      //
+    
+    GFX_UPDATE_DATA: {
+        gs1: "",
+        gs2: "",
+        version: 4,
+        ALLCLEAR: false,
+        hasChanges: false,
+
+        BG1: { 
+            CHANGES: {}, REMOVALS_ONLY: [],
+            fade       : {}, 
+            changes    : false, 
+            bgColorRgba: [0,0,0,0]
+        }, 
+        BG2: { 
+            CHANGES: {}, REMOVALS_ONLY: [],
+            fade       : {}, 
+            changes    : false, 
+        }, 
+        SP1: { 
+            CHANGES: {}, REMOVALS_ONLY: [],
+            fade       : {}, 
+            changes    : false, 
+        }, 
+        TX1: { 
+            CHANGES: {}, REMOVALS_ONLY: [],
+            fade       : {}, 
+            changes    : false, 
+        }, 
+    },
+    create_GFX_UPDATE_DATA: function(){
+        this.GFX_UPDATE_DATA.gs1        = _APP.game.gs1 ;
+        this.GFX_UPDATE_DATA.gs2        = _APP.game.gs2 ;
+        // this.GFX_UPDATE_DATA.version    = this.GFX_UPDATE_DATA.version;
+        this.GFX_UPDATE_DATA.ALLCLEAR   = _GFX.ALLCLEAR;
+        this.GFX_UPDATE_DATA.hasChanges = _GFX.DRAWNEEDED;
+
+        for(let layerKey in _GFX.currentData){ 
+            let layerData = _GFX.currentData[layerKey];
+            this.GFX_UPDATE_DATA[layerKey].CHANGES       = {};
+            this.GFX_UPDATE_DATA[layerKey].REMOVALS_ONLY = [];
+            this.GFX_UPDATE_DATA[layerKey].fade          = layerData.fade;
+            this.GFX_UPDATE_DATA[layerKey].changes       = layerData.changes;
+            this.GFX_UPDATE_DATA[layerKey].useFlicker    = layerData.useFlicker;
+            if([layerKey] == "BG1"){
+                this.GFX_UPDATE_DATA[layerKey].bgColorRgba   = layerData.bgColorRgba;
+            }
+
+            // Process what has changed.
+            for(let mapKey in layerData.tilemaps){ 
+                tilemap = layerData.tilemaps[mapKey];
+
+                // ADD or CHANGED
+                if(
+                    layerData.tilemaps[mapKey].hashPrev == 0 ||
+                    layerData.tilemaps[mapKey].hashPrev != layerData.tilemaps[mapKey].hash
+                ){ 
+                    this.GFX_UPDATE_DATA[layerKey]["CHANGES"][mapKey] = tilemap; 
+                    // this.GFX_UPDATE_DATA[layerKey].changes = true; 
+                }
+
+                // REMOVALS_ONLY (if there are removals AND this mapKey is in removals.)
+                if(_GFX.REMOVALS[layerKey].length && _GFX.REMOVALS[layerKey].indexOf(mapKey) != -1){
+                    this.GFX_UPDATE_DATA.hasChanges = true; 
+                    this.GFX_UPDATE_DATA[layerKey].changes = true;
+                }
+            }
+
+            // Add the REMOVALS_ONLY values.
+            this.GFX_UPDATE_DATA[layerKey]["REMOVALS_ONLY"] = _GFX.REMOVALS[layerKey]
+        }
+    },
 
     // Used for layer object management within a gamestate.
     layerObjs: {
@@ -328,6 +404,8 @@ var _GFX = {
                             tmap     : tilemap.tmap,
                             x        : tilemap.x,
                             y        : tilemap.y,
+                            w        : tilemap.w,
+                            h        : tilemap.h,
                             settings : tilemap.settings,
                         };
 
@@ -413,113 +491,29 @@ var _GFX = {
             // NOTE: forceSend is used by the gameloop when it has already determined that there are changes.
 
             // Do not continue if there are not any changes. (Unless overridden by forceSend.) 
-            if( forceSend && ! _GFX.funcs.isDrawNeeded() ) { return; }
+            // if( forceSend && ! _GFX.funcs.isDrawNeeded() ) { return; }
 
-            let data = {
-                BG1: _GFX.currentData["BG1"].changes ?_GFX.currentData["BG1"] : 0,
-                BG2: _GFX.currentData["BG2"].changes ?_GFX.currentData["BG2"] : 0,
-                SP1: _GFX.currentData["SP1"].changes ?_GFX.currentData["SP1"] : 0,
-                TX1: _GFX.currentData["TX1"].changes ?_GFX.currentData["TX1"] : 0,
-                ALLCLEAR: _GFX.ALLCLEAR,
-            };
-            
-            // TODO: probably should store this in the _GFX object instead of the sendGfxUpdates function.
-            let data2 = {
-                gs1: _APP.game.gs1,
-                gs2: _APP.game.gs2,
-                // version: 3,
-                version: 4,
-                ALLCLEAR: _GFX.ALLCLEAR,
-                // hasChanges: false,
-                hasChanges: _GFX.DRAWNEEDED || forceSend,
+            // Update _GFX.GFX_UPDATE_DATA
+            _GFX.create_GFX_UPDATE_DATA();
 
-                BG1: { 
-                    ADD_ONLY: {}, CHANGES_ONLY: {}, REMOVALS_ONLY: [], ALL_MAPKEYS: [],
-                    fade: _GFX.currentData["BG1"].fade, 
-                    changes: _GFX.currentData["BG1"].changes, 
-                    // changes: false, 
-                    bgColorRgba: _GFX.currentData["BG1"].bgColorRgba 
-                }, 
-                BG2: { 
-                    ADD_ONLY: {}, CHANGES_ONLY: {}, REMOVALS_ONLY: [], ALL_MAPKEYS: [],
-                    fade: _GFX.currentData["BG2"].fade, 
-                    changes: _GFX.currentData["BG2"].changes 
-                    // changes: false, 
-                }, 
-                SP1: { 
-                    ADD_ONLY: {}, CHANGES_ONLY: {}, REMOVALS_ONLY: [], ALL_MAPKEYS: [],
-                    fade: _GFX.currentData["SP1"].fade, 
-                    changes: _GFX.currentData["SP1"].changes 
-                    // changes: false, 
-                }, 
-                TX1: { 
-                    ADD_ONLY: {}, CHANGES_ONLY: {}, REMOVALS_ONLY: [], ALL_MAPKEYS: [],
-                    fade: _GFX.currentData["TX1"].fade, 
-                    changes: _GFX.currentData["TX1"].changes 
-                    // changes: false, 
-                }, 
-            };
-
-            for(let layerKey in _GFX.currentData){ 
-                let layer = _GFX.currentData[layerKey];
-                let tilemap;
-
-                // Process what has changed.
-                for(let mapKey in layer.tilemaps){ 
-                    tilemap = layer.tilemaps[mapKey];
-
-                    // ALL_MAPKEYS (active)
-                    if(
-                        (_GFX.REMOVALS[layerKey].indexOf(mapKey) == -1)
-                    ){
-                        data2[layerKey]["ALL_MAPKEYS"].push(mapKey);
-                    }
-
-                    // ADD_ONLY
-                    if(layer.tilemaps[mapKey].hashPrev == 0){ 
-                        data2[layerKey]["ADD_ONLY"][mapKey] = tilemap; 
-                        // data2.hasChanges = true; 
-                        // data2[layerKey].changes = true; 
-                    }
-                    
-                    // CHANGES_ONLY
-                    else if(layer.tilemaps[mapKey].hashPrev != layer.tilemaps[mapKey].hash){ 
-                        data2[layerKey]["CHANGES_ONLY"][mapKey] = tilemap; 
-                        // data2.hasChanges = true; 
-                        // data2[layerKey].changes = true; 
-                    }
-                    
-                    // REMOVALS_ONLY (if there are removals AND this mapKey is in removals.)
-                    if(_GFX.REMOVALS[layerKey].length && _GFX.REMOVALS[layerKey].indexOf(mapKey) != -1){
-                        data2.hasChanges = true; 
-                        data2[layerKey].changes = true; 
-                    }
-                }
-
-                // If there were no changes delete the layer key.
-                if(!data2[layerKey].changes){ delete data2[layerKey]; }
-                
-                // Otherwise include the removals with the other updates..
-                else{
-                    data2[layerKey]["REMOVALS_ONLY"] = _GFX.REMOVALS[layerKey]; 
-                }
-            }
-            // if(_GFX.REMOVALS["BG2"].length){ console.log("REMOVALS:", JSON.stringify(_GFX.REMOVALS)); }
-
-            if(data2.hasChanges){
+            // console.log("HEY");
+            if(_GFX.GFX_UPDATE_DATA.hasChanges){
+                // console.log(`_GFX.GFX_UPDATE_DATA.hasChanges:`, _GFX.GFX_UPDATE_DATA.hasChanges, _GFX.GFX_UPDATE_DATA);
+                // debugger;
                 // Send ASYNC
+                _GFX.GFX_UPDATE_DATA.currentgs1 = _APP.game.gs1;
                 if(!waitForResp){
                     _WEBW_V.SEND("sendGfxUpdates", { 
-                        data: data2, 
+                        data: _GFX.GFX_UPDATE_DATA, 
                         refs:[]
-                    }, false, false);
+                    }, false, _APP.debugActive); // Request data if debug is active.
                 }
                 // Await for the graphics update to finish.
                 else{
                     await _WEBW_V.SEND("sendGfxUpdates", { 
-                        data: data2, 
+                        data: _GFX.GFX_UPDATE_DATA, 
                         refs:[]
-                    }, true, false);
+                    }, true, _APP.debugActive); // waitForResp, Request data if debug is active.
                 }
             }
 
@@ -532,7 +526,9 @@ var _GFX = {
             for(let layerKey in _GFX.currentData){ 
                 let layer = _GFX.currentData[layerKey];
                 for(let mapKey in layer.tilemaps){ 
-                    layer.tilemaps[mapKey].hashPrev = layer.tilemaps[mapKey].hash;
+                    if(layer.tilemaps[mapKey].hashPrev != layer.tilemaps[mapKey].hash){
+                        layer.tilemaps[mapKey].hashPrev = layer.tilemaps[mapKey].hash;
+                    }
                 }
                 layer.changes = false;
                 _GFX.REMOVALS[layerKey] = [];
@@ -585,6 +581,8 @@ var _GFX = {
                     ts      : obj.ts,
                     x       : obj.x,
                     y       : obj.y,
+                    w       : obj.tmap[0] * _APP.configObj.dimensions.tileWidth,
+                    h       : obj.tmap[1] * _APP.configObj.dimensions.tileHeight,
                     tmap    : obj.tmap,
                     settings: obj.settings
                 } 
@@ -664,6 +662,8 @@ var _GFX = {
                     ts      : obj.ts,
                     x       : obj.x,
                     y       : obj.y,
+                    w       : newTilemap[0] * _APP.configObj.dimensions.tileWidth,
+                    h       : newTilemap[1] * _APP.configObj.dimensions.tileHeight,
                     tmap    : newTilemap,
                     settings: obj.settings
                 } 
@@ -675,7 +675,7 @@ var _GFX = {
     utilities:{
         // Returns a hash for the specified string. (Variation of Dan Bernstein's djb2 hash.)
         djb2Hash: function(str) {
-            str = str.toString();
+            if(typeof str != "string") { str = str.toString(); }
             var hash = 5381;
             for (var i = 0; i < str.length; i++) {
                 hash = ((hash << 5) + hash) + str.charCodeAt(i); /* hash * 33 + c */
