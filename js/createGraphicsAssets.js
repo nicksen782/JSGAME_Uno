@@ -28,6 +28,7 @@
         // 0xFF, //    11 // 255 // 3 7 7 // 11 111 111 // 100 100 100 
     ].reverse();
 
+    // Fade masks for fading rgb32 tiles/ImageData.
     const fadeMasksRGBA = [];
     function createRgbaFadeValues(){
         let src = fadeMasks;
@@ -51,8 +52,9 @@
         }
         fadeMasksRGBA.reverse();
     };
-    // Modifies the supplied rgb332 tile and applies a fade to it..
-    function rgba32TileToFadedRgba32Tile(imageDataTile, fadeLevel){
+
+    // Modifies the supplied ImageData  and applies a fade to it..
+    function applyFadeToImageData(imageData, fadeLevel){
         // Need the max values.
         let fadeColorObj = fadeMasksRGBA[fadeLevel];
         let maxRed   = fadeColorObj[0] / 100; 
@@ -60,7 +62,7 @@
         let maxBlue  = fadeColorObj[2] / 100; 
 
         // Restrict each pixel r,g,b color to a max value.
-        let data = imageDataTile.data;
+        let data = imageData.data;
         let len  = data.length;
         for(let i=0; i<len; i+=4){
             // Don't operate on transparent pixels.
@@ -104,8 +106,8 @@
         }
 
         return {
-            hasTransparency   : transparentPixelCounter ? true : false, 
-            isFullyTransparent: transparentPixelCounter == tileData.length, 
+            // hasTransparency   : transparentPixelCounter ? true : false, 
+            // isFullyTransparent: transparentPixelCounter == tileData.length, 
             tileDataRgb332    : tileDataRgb332,
         }
     }
@@ -117,9 +119,8 @@
         let translucent_color = config.translucent_color;
 
         let tileDataRgb32 = new Uint8ClampedArray( tileWidth * tileHeight * 4);
-        // tileDataRgb32.fill(0);
 
-        let transparentPixelCounter = 0;
+        // let transparentPixelCounter = 0;
 
         let rgba32_index = 0;
         let nR;
@@ -133,7 +134,9 @@
             nA = 0;
 
             // Transparent pixel?
-            if(rgb332_byte == translucent_color){ transparentPixelCounter += 1; }
+            if(rgb332_byte == translucent_color){ 
+                // transparentPixelCounter += 1;
+            }
 
             // Not a transparent pixel.
             else{
@@ -154,12 +157,13 @@
         }
 
         return {
-            hasTransparency   : transparentPixelCounter ? true : false, 
-            isFullyTransparent: transparentPixelCounter == tileData.length, 
+            // hasTransparency   : transparentPixelCounter ? true : false, 
+            // isFullyTransparent: transparentPixelCounter == tileData.length, 
             tileDataRgb32     : tileDataRgb32,
         }
     }
 
+    // UNUSED
     // Sets pixelated values on the specified ctx.
     function setPixelated(ctx){
         ctx.mozImageSmoothingEnabled    = false; // Firefox
@@ -255,20 +259,17 @@
                             // Image Data
                             imgData: new ImageData(tileWidth, tileHeight),
 
-                            //TODO: Is Uint8ClampedArray faster than ImageData considering I mostly do data changes to typed arrays?
-                            // imgData2: new Uint8ClampedArray(tileWidth * tileHeight * 4), // 
-                            
                             // Flags.
                             // TODO: These are not actually used anywhere.
-                            hasTransparency   : false, 
-                            isFullyTransparent: false, 
+                            // hasTransparency   : false, 
+                            // isFullyTransparent: false, 
                         };
 
                         // Generate rgba32 tile data from rgb332 data and save.
                         let tileDataRgba = rgb332TileDataToRgba32(rgb332Src, rgb332_tilesets[tsKey].config);
                         newTile.imgData.data.set(tileDataRgba.tileDataRgb32);
-                        newTile.hasTransparency    = tileDataRgba.hasTransparency;
-                        newTile.isFullyTransparent = tileDataRgba.isFullyTransparent;
+                        // newTile.hasTransparency    = tileDataRgba.hasTransparency;
+                        // newTile.isFullyTransparent = tileDataRgba.isFullyTransparent;
 
                         // Save this tile.
                         finishedTilesets[ tilesetName ].tileset[tileIndex] = newTile;
@@ -310,96 +311,173 @@
     }
 
     // Update a region in the destination with the source data.
-    function updateRegion(source, srcWidth, destination, destWidth, x, y, w, h, onlyWriteToTransparent=false) {
-        let alphaPixel;
-        for (let y_inc = 0; y_inc < h; y_inc++) {
-            // Cols
-            for (let x_inc = 0; x_inc < w; x_inc++) {
-                // Get the indexes for the source and the destination for this pixel.
-                srcIndex  = (y_inc * srcWidth + x_inc) * 4;
-                destIndex = ((y + y_inc) * destWidth + (x + x_inc)) * 4;
-                try{
-                    alphaPixel = destination[destIndex + 3];
-                    
-                    // Only write to transparent pixels?
-                    if ( onlyWriteToTransparent && alphaPixel !== 0 ) { continue; }
-                    
-                    // Copy the source pixel data to the destination using set and subarray.
-                    subArray = source.subarray(srcIndex, srcIndex + 4);
+    function prev_updateRegion3(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h, writeType="replace") {
+        // writeType: 
+        // [
+        //     "onlyToAlpha0", // onlyWriteToTransparentDest
+        //     "blitDest",     // blitDestTransparency
+        //     "replace"       // Write by row instead of pixel.
+        // ];
 
-                    // Draw the pixel.
-                    if(destIndex < destination.length){ 
-                        destination.set( subArray, destIndex );
+        let srcIndex;
+        let destIndex;
+        let x_current;
+        let diff;
+        
+        // Quick fail test. (Are the destination coordinates outside of the destination?
+        if( 
+            (dx < 0 -w)           // Fully offscreen to the left?
+            || (dx >= destWidth)  // Fully offscreen to the right?
+            || (dy < 0 -h)        // Fully offscreen to the top?
+            || (dy >= destHeight) // Fully offscreen to the bottom?
+        ){
+            // console.log("totally offscreen");
+            return; 
+        }
+
+        for (let y = 0; y < h; y++) {
+            // Out of bounds check on rows.
+            if (y + dy >= destHeight){
+                // console.log(`TOO LOW : Out of bounds: dy: ${dy}, y: ${y}, h: ${h}`);
+                break; 
+            }
+            if(y + dy < 0) {
+                // console.log(`TOO HIGH: Out of bounds: dy: ${dy}, y: ${y}, h: ${h}`);
+                continue; 
+            }
+
+            // Calculate the starting source and destination indexes for this row.
+            srcIndex  = y * srcWidth * 4;
+            destIndex = ( (y + dy) * destWidth + dx ) * 4;
+
+            // Limit the rowLength (in rgba pixels) to ensure that we can not go out of bounds on x.
+            rowLength = Math.min( (w * 4), ((destWidth - dx) * 4) );
+            
+            switch(writeType){
+                case "blitDest": 
+                case "onlyToAlpha0":
+                    for (let i = 0; i < rowLength; i += 4) {
+                        // If the source pixel is fully transparent , the destination pixel is preserved.
+                        if (writeType=="blitDest"     && source[srcIndex + i + 3] == 0) { continue; }
+                        
+                        // If the destination pixel is transparent then write the source pixel.
+                        if (writeType=="onlyToAlpha0" && destination[destIndex + i + 3] !== 0) { continue; }
+                        
+                        // Bounds check.
+                        x_current = dx + (i / 4);
+                        if(x_current < 0 || x_current >= destWidth) { continue; }
+                        
+                        // Write the data.
+                        destination.set(source.subarray(srcIndex + i, srcIndex + i + 4), destIndex + i);
                     }
-                    // else{
-                    //     console.log("OUT OF BOUNDS!"); 
-                    // }
-                }
-                catch(e){
-                    console.log("updateRegion:", e);
-                }
+                    break;
+                    
+                // The source pixel overwrites the destination pixel.
+                // One whole row at a time.
+                case "replace":
+                    // Bounds check.
+                    if(dx < 0){ 
+                        diff = (dx * -1);    // Diff will be a positive version of dx.
+                        srcIndex  += diff*4; // Add pixels to srcIndex (read ahead.)
+                        destIndex += diff*4; // Add pixels to destIndex (read ahead.)
+                        rowLength -= diff*4; // Reduce rowLength since we will be reading "diff" pixels less than before.
+                        // console.log("FIXED: x is too far left:");
+                    }
+                    if(dx >= destWidth){
+                        // console.log("CANNOT FIX: IGNORE: x too far right");
+                        continue;
+                    }
+                    
+                    destination.set( source.subarray(srcIndex, srcIndex + rowLength), destIndex);
+                    break;
+
+                default: 
+                    throw new Error(`Unsupported writeType: ${writeType}`);
             }
         }
-    }
+    };
 
     // Update a region in the destination with the source data.
-    function updateRegion2(source, srcWidth, destination, destWidth, x, y, w, h, blitDestTransparency=false) {
-        let alphaPixel_src;
-        let alphaPixel_dest;
-        for (let y_inc = 0; y_inc < h; y_inc++) {
-            // Cols
-            for (let x_inc = 0; x_inc < w; x_inc++) {
-                // Get the indexes for the source and the destination for this pixel.
-                srcIndex  = (y_inc * srcWidth + x_inc) * 4;
-                destIndex = ((y + y_inc) * destWidth + (x + x_inc)) * 4;
-                
-                // Blitting with alpha? (Like a sprite with transparent pixels drawn against a background.)
-                // If the source pixel is fully transparent , the destination pixel is preserved.
-                // Otherwise, the source pixel overwrites the destination pixel.
-                if(blitDestTransparency){
-                    // If blitDestTransparency is true:
+    function updateRegion(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h, writeType="replace") {
+        // writeType: 
+        // [
+        //     "onlyToAlpha0", // onlyWriteToTransparentDest
+        //     "blitDest",     // blitDestTransparency
+        //     "replace"       // Write by row instead of pixel.
+        // ];
 
-                    try{
-                        alphaPixel_src  = source[srcIndex + 3];
-                        alphaPixel_dest = destination[destIndex + 3];
-
-                        // If source pixel is transparent, preserve the destination pixel.
-                        if(alphaPixel_src == 0){
-                            subArray = destination.subarray(destIndex, destIndex + 4);
-                        }
-                        // If source pixel is not transparent, overwrite the destination pixel.
-                        else{
-                            subArray = source.subarray(srcIndex, srcIndex + 4);
-                        }
-
-                        // Draw the pixel.
-                        if(destIndex < destination.length){ 
-                            destination.set( subArray, destIndex );
-                        }
-                        // else{
-                        //     console.log("OUT OF BOUNDS!"); 
-                        // }
+        let srcIndex, destIndex, diff;
+        let x_start = Math.max(0, -dx);
+        let x_end = Math.min(w, destWidth - dx);
+    
+        // Quick fail test. (Are the destination coordinates outside of the destination?
+        if( 
+            (dx < 0 -w)           // Fully offscreen to the left?
+            || (dx >= destWidth)  // Fully offscreen to the right?
+            || (dy < 0 -h)        // Fully offscreen to the top?
+            || (dy >= destHeight) // Fully offscreen to the bottom?
+        ){
+            // console.log("totally offscreen");
+            return; 
+        }
+    
+        for (let y = 0; y < h; y++) {
+            // Out of bounds check on rows.
+            if (y + dy >= destHeight){
+                // console.log(`TOO LOW : Out of bounds: dy: ${dy}, y: ${y}, h: ${h}`);
+                break; 
+            }
+            if(y + dy < 0) {
+                // console.log(`TOO HIGH: Out of bounds: dy: ${dy}, y: ${y}, h: ${h}`);
+                continue; 
+            }
+    
+            // Calculate the starting source and destination indexes for this row.
+            srcIndex  = y * srcWidth * 4;
+            destIndex = ((y + dy) * destWidth + dx) * 4;
+    
+            switch(writeType){
+                case "blitDest": 
+                case "onlyToAlpha0":
+                    for (let i = x_start * 4; i < x_end * 4; i += 4) {
+                        // If the source pixel is fully transparent , the destination pixel is preserved.
+                        if (writeType=="blitDest"     && source[srcIndex + i + 3] == 0) { continue; }
+                        
+                        // If the destination pixel is transparent then write the source pixel.
+                        if (writeType=="onlyToAlpha0" && destination[destIndex + i + 3] !== 0) { continue; }
+                        
+                        // Write the data.
+                        destination.set(source.subarray(srcIndex + i, srcIndex + i + 4), destIndex + i);
                     }
-                    catch(e){
-                        console.log("updateRegion2:", e);
-                    }
-                }
-                // When drawing ImageData onto ImageData, transparency overwrites existing data (unlike drawImage).
-                else{
-                    // Copy the source pixel data to the destination using set and subarray.
-                    subArray = source.subarray(srcIndex, srcIndex + 4);
+                    break;
 
-                    if(destIndex < destination.length){ 
-                        destination.set( subArray, destIndex );
+                // The source pixel overwrites the destination pixel.
+                // One whole row at a time.
+                case "replace":
+                    // Bounds check.
+                    if(dx < 0){ 
+                        diff       = -dx;      // Diff will be a positive version of dx.
+                        srcIndex  += diff * 4; // Add pixels to srcIndex (read ahead.)
+                        destIndex += diff * 4; // Add pixels to destIndex (read ahead.)
+                        x_end     -= diff;     // Reduce x_end since we will be reading "diff" pixels less than before.
+                        // console.log("FIXED: x is too far left:");
                     }
-                    // else{
-                    //     console.log("OUT OF BOUNDS!"); 
-                    // }
-                }
+                    if(dx >= destWidth){
+                        // console.log("CANNOT FIX: IGNORE: x too far right");
+                        continue;
+                    }
+
+                    for (let i = x_start * 4; i < x_end * 4; i += 4) {
+                        destination.set(source.subarray(srcIndex + i, srcIndex + i + 4), destIndex + i);
+                    }
+                    break;
+    
+                default: 
+                    throw new Error(`Unsupported writeType: ${writeType}`);
             }
         }
-    }
-
+    };
+    
     // Performs the graphics processing functions. 
     async function process(tilesetFiles){
         let ts1 = performance.now();
@@ -422,16 +500,13 @@
                 createGraphicsAssets   : ts2e,
                 createRgbaFadeValues   : ts3e,
             },
-
         }
     }
 
     return {
-        process         : process,
-        setPixelated    : setPixelated,
-        updateRegion    : updateRegion,
-        updateRegion2    : updateRegion2,
-        copyRegion      : copyRegion,
-        rgba32TileToFadedRgba32Tile: rgba32TileToFadedRgba32Tile,
+        process             : process,
+        updateRegion        : updateRegion,
+        copyRegion          : copyRegion,
+        applyFadeToImageData: applyFadeToImageData,
     };
 }));

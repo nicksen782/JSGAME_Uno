@@ -50,6 +50,10 @@ var _GFX = {
             useFlicker: false,
         },
     },
+
+    // Cache of all generated ImageData tilemaps. (Main thread does NOT include the ImageData.)
+    hashCacheMap: new Map(),
+
     ALLCLEAR: true,         //
     DRAWNEEDED: false,      //
     REMOVALS: {
@@ -378,9 +382,16 @@ var _GFX = {
             if(layer == "BG1" || layer == "BG2" || layer == "SP1" || layer == "TX1"){
                 let fade = _GFX.currentData[layer].fade;
                 let tilemap, exists, oldHash, newHash;
+                let tw ;
+                let th ;
+                let isNewTilemaphash;
                 for(let tilemapKey in tilemaps){
+                    isNewTilemaphash = false;
+                    
                     // Get the tilemap from the provided list.
                     tilemap = tilemaps[tilemapKey];
+                    tw = _GFX.tilesets[tilemap.ts].config.tileWidth;
+                    th = _GFX.tilesets[tilemap.ts].config.tileHeight;
 
                     // Make sure that settings is an object.
                     tilemap.settings = this.correctSettings(tilemap.settings);
@@ -393,6 +404,29 @@ var _GFX = {
 
                     // Generate a new hash. 
                     newHash = _GFX.utilities.djb2Hash( JSON.stringify({tilemap, fade}) );
+
+                    // Cache of all generated ImageData tilemaps. (to avoid regeneration.)
+                    // HASHCACHEHMAP: Create a unique hash for some of the tilemap data.
+                    let hashMapHash = _GFX.utilities.djb2Hash(JSON.stringify({
+                        ts      : tilemap.ts,
+                        settings: JSON.stringify(tilemap.settings),
+                        tmap    : Array.from(tilemap.tmap),
+                        w: tilemap.tmap[0] * tw ,
+                        h: tilemap.tmap[1] * th,
+                    }));
+
+                    // Save to hashCacheMap. (Map)
+                    if(!_GFX.hashCacheMap.get(hashMapHash)){
+                        // console.log("Saving");
+                        _GFX.hashCacheMap.set(hashMapHash, {
+                            ts      : tilemap.ts,
+                            settings: tilemap.settings,
+                            tmap    : tilemap.tmap,
+                            w       : tilemap.tmap[0] * tw,
+                            h       : tilemap.tmap[1] * th,
+                        });
+                        isNewTilemaphash = true;
+                    }
 
                     // Is this a changed object? (TEST: Hashes don't match.)
                     if(oldHash != newHash){
@@ -407,6 +441,7 @@ var _GFX = {
                             w        : tilemap.w,
                             h        : tilemap.h,
                             settings : tilemap.settings,
+                            isNewTilemaphash : isNewTilemaphash,
                         };
 
                         // Set the changes flag for this layer since there were changes.
@@ -487,12 +522,7 @@ var _GFX = {
         },
 
         // This gathers the data created by the other update functions and sends the values.
-        sendGfxUpdates: async function(waitForResp=false, forceSend=false){
-            // NOTE: forceSend is used by the gameloop when it has already determined that there are changes.
-
-            // Do not continue if there are not any changes. (Unless overridden by forceSend.) 
-            // if( forceSend && ! _GFX.funcs.isDrawNeeded() ) { return; }
-
+        sendGfxUpdates: async function(waitForResp=false){
             // Update _GFX.GFX_UPDATE_DATA
             _GFX.create_GFX_UPDATE_DATA();
 
@@ -584,7 +614,7 @@ var _GFX = {
                     w       : obj.tmap[0] * _APP.configObj.dimensions.tileWidth,
                     h       : obj.tmap[1] * _APP.configObj.dimensions.tileHeight,
                     tmap    : obj.tmap,
-                    settings: obj.settings
+                    settings: obj.settings,
                 } 
             } ;
         },

@@ -85,10 +85,9 @@ _APP.game = {
         lastLoopRun     : 0,         // Timestamp for when the last game loop began.
         delta           : undefined, // The difference between now and the lastLoopRun
         fadeIsBlocking  : false,     // TODO: Flag indicating if a fadeIn or fadeOut is logic-blocking while in progress.
-
-        lastLoop_timestamp   : 1,
-        lastDraw_timestamp   : 1,
-        lastDebug1_timestamp : 1,
+        skipLogic       : false,
+        lastLoop_timestamp   : 0,
+        lastDebug1_timestamp : 0,
 
         // Starts the game loop (Stops it first if it is already running.)
         loop_start: function(){
@@ -170,8 +169,8 @@ _APP.game = {
             _APP.game.gamestates_list = Object.keys(_APP.game.gamestates);
         
             // Set the first gamestate.
-            _APP.game.changeGs1("gs_JSG");
-            // _APP.game.changeGs1("gs_N782");
+            // _APP.game.changeGs1("gs_JSG");
+            _APP.game.changeGs1("gs_N782");
             // _APP.game.changeGs1("gs_TITLE");
             // _APP.game.changeGs1("gs_OPTIONS");
             // _APP.game.changeGs1("gs_RULES");
@@ -306,11 +305,11 @@ _APP.game.gameLoop.loop = async function loop(timestamp){
                 // Send a draw request if there are changes for any layer.
                 if( _GFX.DRAWNEEDED ) { 
                     // Synchronize the gameLoop with the rendering.
-                    // EXAMPLE USAGE: sendGfxUpdates: (waitForResp=false, forceSend=false)
-                    if(_APP.configObj.waitUntilFrameDrawn){ await _GFX.funcs.sendGfxUpdates(true, true); }
+                    // EXAMPLE USAGE: sendGfxUpdates: (waitForResp=false)
+                    if(_APP.configObj.waitUntilFrameDrawn){ await _GFX.funcs.sendGfxUpdates(true); }
                     
                     // Send the graphics updates without waiting. (This could be a problem where there are many graphics updates.)
-                    else                                  {       _GFX.funcs.sendGfxUpdates(false, true); }
+                    else                                  {       _GFX.funcs.sendGfxUpdates(false); }
 
                     this.frameDrawCounter += 1;
                 }

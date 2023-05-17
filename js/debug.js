@@ -1,273 +1,4 @@
 var _DEBUG = {
-    // Testing card movement1.
-    objs : [],
-    test1: function(){
-        // BOARD
-        this.objs[0] = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_board", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "board_28x28"),
-            x: 0*8, y: 0*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 0, colorData:[]
-            }
-        });
-
-        // PLAYER 1 CARDS
-        this.objs[1] = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_orangeCard1", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 7*8, y: 24*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 0, colorData:[]
-            }
-        });
-        this.objs[2] = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_yellowCard1", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 10*8, y: 24*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardYellow ]
-                ]
-            }
-        });
-        this.objs[3] = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_blueCard1", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 13*8, y: 24*8,  
-            settings : {
-                xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardBlue ]
-                ]
-            }
-        });
-        this.objs[4]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_redCard1", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 16*8, y: 24*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardRed ]
-                ]
-            }
-        });
-        this.objs[5]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_greenCard1", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 19*8, y: 24*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardGreen ]
-                ]
-            }
-        });
-
-        // PLAYER 2 CARDS
-        this.objs[6]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_orangeCard2", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 1*8, y: 7*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 90, colorData:[]
-            }
-        });
-        this.objs[7]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_yellowCard2", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 1*8, y: 10*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardYellow ]
-                ]
-            }
-        });
-        this.objs[8]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_blueCard2", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 1*8, y: 13*8,  
-            settings : {
-                xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardBlue ]
-                ]
-            }
-        });
-        this.objs[9]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_redCard2", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 1*8, y: 16*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardRed ]
-                ]
-            }
-        });
-        this.objs[10] = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_greenCard2", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 1*8, y: 19*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardGreen ]
-                ]
-            }
-        });
-        
-        // PLAYER 3 CARDS
-        this.objs[11]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_orangeCard3", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 7*8, y: 1*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 0, colorData:[]
-            }
-        });
-        this.objs[12]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_yellowCard3", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 10*8, y: 1*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardYellow ]
-                ]
-            }
-        });
-        this.objs[13]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_blueCard3", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 13*8, y: 1*8,  
-            settings : {
-                xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardBlue ]
-                ]
-            }
-        });
-        this.objs[14]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_redCard3", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 16*8, y: 1*8,  
-            settings : {
-                xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardRed ]
-                ]
-            }
-        });
-        this.objs[15] = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_greenCard3", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 19*8, y: 1*8,  
-            settings : {
-                xFlip: false, yFlip: false, rotation: 0, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardGreen ]
-                ]
-            }
-        });
-        
-
-        // PLAYER 4 CARDS
-        this.objs[16]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_orangeCard4", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 24*8, y: 7*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 90, colorData:[]
-            }
-        });
-        this.objs[17]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_yellowCard4", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 24*8, y: 10*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardYellow ]
-                ]
-            }
-        });
-        this.objs[18]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_blueCard4", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 24*8, y: 13*8,  
-            settings : {
-                xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardBlue ]
-                ]
-            }
-        });
-        this.objs[19]  = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_redCard4", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 24*8, y: 16*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardRed ]
-                ]
-            }
-        });
-        this.objs[20] = new LayerObject({
-            immediateAdd: false,
-            layerObjKey: "demo_greenCard4", layerKey: "BG2", tilesetKey: "bg_tiles",
-            tmap: _GFX.funcs.getTilemap("bg_tiles", "card_front_orange_sm"),
-            x: 24*8, y: 19*8, 
-            settings : {
-                xFlip: false, yFlip: false, rotation: 90, colorData:[
-                    [ Card.colors.cardOrange, Card.colors.cardGreen ]
-                ]
-            }
-        });
-
-        for(let i=0; i<this.objs.length; i+=1){ if(this.objs[i]) { this.objs[i].render(); } }
-        _GFX.funcs.sendGfxUpdates(false, false);
-
-        setTimeout(()=>{
-            let newConfig = this.objs[19].removeLayerObject();
-            console.log(newConfig);
-            newConfig.x -= 24;
-            newConfig.layerKey = "SP1";
-            delete this.objs[19];
-            this.objs[19] = new LayerObject(newConfig);
-            this.objs[19].render();
-            _GFX.funcs.sendGfxUpdates(false, false);
-        }, 1000);
-        setTimeout(()=>{
-            let newConfig = this.objs[19].removeLayerObject();
-            console.log(newConfig);
-            newConfig.x += 24;
-            newConfig.layerKey = "BG2";
-            this.objs[19] = new LayerObject(newConfig);
-            this.objs[19].render();
-            _GFX.funcs.sendGfxUpdates(false, false);
-        }, 2000);
-
-        // for(let i=0; i<this.objs.length; i+=1){ this.objs[i].render(); }
-
-        // this.objs[20].x-=8;
-        // this.objs[20].render();
-        // _GFX.funcs.sendGfxUpdates(false, false);
-    },
-
-    obs2:[],
-    test2:function(){
-    },
-
     gridCanvas: null,
     createGridCanvas: function(){
         // Copy the dimensions of the first canvas. 
@@ -362,11 +93,26 @@ var _DEBUG = {
         function changeFade(layer, sliderElem, sliderTextElem) {
             let level;
             level = parseFloat(sliderElem.value);
+            let level_text;
+            
+            if(level==0) { 
+                _GFX.funcs.setFade(layer, null);
+                level_text = "OFF"
+            }
+            else if(level==11){ 
+                _GFX.funcs.setFade(layer, level-1);
+                level_text = "BLACK";
+            }
+            else if(level==12){ 
+                _GFX.funcs.setFade(layer, level-1);
+                level_text = "CLEAR"; 
+            }
+            else{ 
+                _GFX.funcs.setFade(layer, level-1); 
+                level_text = `LEVEL: ${(level-1).toString()}`;
+            }
 
-            if(level==0){ _GFX.funcs.setFade(layer, null);    level = "null"; }
-            else        { _GFX.funcs.setFade(layer, level-1); level = (level-1).toString(); }
-
-            sliderElem.title = `${layer}: FADE: ${level}`;
+            sliderElem.title = `${layer}: ${level_text}`;
             sliderTextElem.value = sliderElem.title;
         }
         changeFade("ALL", fadeSliderALL, fadeSliderALLText);
@@ -406,15 +152,7 @@ var _DEBUG = {
         debug_GS1Text      : { e: null, t:0 },
         debug_GS2Text      : { e: null, t:0 },
         DRAWNEEDED: { e: null, t: 0 },
-        BG1_tms: { e: null, t: 0 },
-        BG2_tms: { e: null, t: 0 },
-        SP1_tms: { e: null, t: 0 },
-        TX1_tms: { e: null, t: 0 },
-        changesBG1: { e: null, t: 0 },
-        changesBG2: { e: null, t: 0 },
-        changesSP1: { e: null, t: 0 },
-        changesTX1: { e: null, t: 0 },
-
+        skipLogic: { e: null, t: 0 },
         time_LOOP   : { e0: null, e1: null, e2: null, t: 0 },
         time_LOGIC  : { e0: null, e1: null, e2: null, t: 0 },
         time_DRAW   : { e0: null, e1: null, e2: null, t: 0 },
@@ -432,22 +170,13 @@ var _DEBUG = {
         this.elemsObj.fpsDisplay.e    = document.getElementById("debug_fpsDisplay");
         this.elemsObj.debug_GS1Text.e = document.getElementById("debug_GS1Text");
         this.elemsObj.debug_GS2Text.e = document.getElementById("debug_GS2Text");
-        this.elemsObj.changesBG1.e    = document.getElementById("debug_changesBG1");
-        this.elemsObj.changesBG2.e    = document.getElementById("debug_changesBG2");
-        this.elemsObj.changesSP1.e    = document.getElementById("debug_changesSP1");
-        this.elemsObj.changesTX1.e    = document.getElementById("debug_changesTX1");
         
         // Table 2.
         this.elemsObj.frameCounter.e        = document.getElementById("debug_frameCounter");
         this.elemsObj.frameDrawCounter.e    = document.getElementById("debug_frameDrawCounter");
         this.elemsObj.waitUntilFrameDrawn.e = document.getElementById("debug_waitUntilFrameDrawn");
         this.elemsObj.DRAWNEEDED.e          = document.getElementById("debug_DRAWNEEDED");
-        
-        // Table 3.
-        this.elemsObj.BG1_tms.e = document.getElementById("debug_BG1_tms");
-        this.elemsObj.BG2_tms.e = document.getElementById("debug_BG2_tms");
-        this.elemsObj.SP1_tms.e = document.getElementById("debug_SP1_tms");
-        this.elemsObj.TX1_tms.e = document.getElementById("debug_TX1_tms");
+        this.elemsObj.skipLogic.e           = document.getElementById("debug_skipLogic");
     },
     applyChange(newText, obj, activeTime, noTrim=false){
         // Trim the text.
@@ -482,7 +211,9 @@ var _DEBUG = {
         }
     },
     endOfLoopDraw_funcs: function(timings){
-        window.requestAnimationFrame(()=>{
+        window.requestAnimationFrame((now)=>{
+            let debugTs = now;
+            
             // Display local settings/values/counts.
             this.loop_display_func();
 
@@ -491,12 +222,19 @@ var _DEBUG = {
             
             // Display the canvas draw timings returned from the WebWorker.
             
-            // Display the timing for the game loop (canvas draws are separate.)
-            let now = performance.now();
-            this.timingsDisplay.gfx.display(now);
+            // Display the canvas draw timings data returned from the WebWorker.
+            this.timingsDisplay.gfx.display_progressBars(now);
+            this.timingsDisplay.gfx.display_layerChanges(now);
             
-            // Display the canvas draw timings returned from the WebWorker.
-            this.timingsDisplay.loop.display(now);
+            // Display the timing for the game loop (canvas draws are separate.)
+            this.timingsDisplay.loop.display_progressBars(now);
+            this.timingsDisplay.loop.display_layerChanges(now);
+            this.timingsDisplay.loop.display_tmapCountByLayer(now);
+            
+            _APP.game.gameLoop.lastDebug1_timestamp =  performance.now() - debugTs;
+            // console.log(_APP.game.gameLoop.lastDebug1_timestamp);
+
+            _DEBUG.timingsDisplay.gfx.dataIsUsed = true;
         });
     },
     timingsDisplay: {
@@ -513,11 +251,14 @@ var _DEBUG = {
             let cssClasses = ["level1", "level2", "level3", "level4", "level5"];
             let cssClass = "";
 
-            difference = (modifiedNewValue - +prevValue);
-            modifiedNewValue += Math.round(difference * easingFactor);
-            modifiedNewValue = Math.round(modifiedNewValue / mult) * mult;
-            if(modifiedNewValue < 0)  { modifiedNewValue = 0; }
-            // if(modifiedNewValue > 100){ modifiedNewValue = 100; }
+            if(modifiedNewValue != 0){
+                difference = (modifiedNewValue - +prevValue);
+                modifiedNewValue += Math.round(difference * easingFactor);
+                // modifiedNewValue = Math.round(modifiedNewValue / mult) * mult;
+                modifiedNewValue = this.roundToNearestMultiple(modifiedNewValue, mult, "D");
+                if(modifiedNewValue < 0)  { modifiedNewValue = 0; }
+                // if(modifiedNewValue > 100){ modifiedNewValue = 100; }
+            }
 
             // Adjust the width of the bar.
             if(!same){
@@ -547,6 +288,38 @@ var _DEBUG = {
         },
         forceToRange: function(num, min, max){
             return Math.min( Math.max(num, min), max) ;
+        },
+        applyChange(newText, obj, activeTime, noTrim=false){
+            // Trim the text.
+            if(!noTrim){
+                newText = newText.trim();
+                oldText = obj.e.innerText.trim();
+            }
+            // Do not trim the text.
+            else{
+                newText = newText;
+                oldText = obj.e.innerText;
+            }
+    
+            // Determine if the active class can be removed once the old and new text match again.
+            let canChange = (performance.now() - obj.t > activeTime) || obj.t == 0;
+    
+            // If the newText is different that the current text...
+            if(oldText != newText){
+                // Update the text.
+                obj.e.innerText = newText;
+    
+                // Add the active class?
+                if(!obj.e.classList.contains("active")){ obj.e.classList.add("active"); }
+                
+                // Update the timestamp.
+                obj.t = performance.now();
+            }
+            
+            else if(obj.e.classList.contains("active") && canChange){ 
+                // Remove the active class.
+                obj.e.classList.remove("active"); 
+            }
         },
         gfx :{
             elems:{},
@@ -621,21 +394,20 @@ var _DEBUG = {
                 this.elems.E_TX1      = { e: document.getElementById("debug_timings_E_TX1"),        t: 0, data: 0 } 
                 this.elems.TOTAL_ALL  = { e: document.getElementById("debug_timings_TOTAL_ALL"),    t: 0, data: 0 } 
             },
-            display: function(now){
+            display_progressBars: function(now){
                 if(!this.values["sendGfxUpdates"] || this.values["sendGfxUpdates"] == 0){ 
                     // console.log("No timings yet.");
                     return; 
                 }
-
+    
                 let testText;
                 let activeTime = 200;
-                // let activeTime = 1000;
                 let mult = 5;
                 let newVal;
                 let oldVal;
                 let t;
                 let canRun;
-
+    
                 newVal = (100*(this.elems.TOTAL_ALL.data / _APP.game.gameLoop.msFrame));
                 if(this.dataIsUsed){
                     let value = +this.elems.TOTAL_ALL.data;
@@ -660,7 +432,15 @@ var _DEBUG = {
                     );
                     this.elems.time_DRAW.t = now;
                 }
+            },
+            display_layerChanges: function(now){
+                if(!this.values["sendGfxUpdates"] || this.values["sendGfxUpdates"] == 0){ 
+                    // console.log("No timings yet.");
+                    return; 
+                }
 
+                let testText;
+                let activeTime = 200;
                 for(let eKey in this.elems){
                     if(eKey == "time_DRAW"){ continue; }
                     let elem = this.elems[eKey];
@@ -672,59 +452,65 @@ var _DEBUG = {
 
                     _DEBUG.applyChange(testText, elem, activeTime, true);
                 }
-
-                this.dataIsUsed = true;
-
-                // // Indicator of a graphics draw that took too long.
-                // if(_DEBUG.gfxTimings["sendGfxUpdates"] > 10 && _APP.game.gameLoop.DRAWNEEDED_prev){
-                //     // console.log(`_DEBUG.gfxTimings["sendGfxUpdates"]:`, _DEBUG.gfxTimings["sendGfxUpdates"]);
-                //     // console.log("_DEBUG.gfxTimings:", _DEBUG.gfxTimings);
-                //     // console.log("_DEBUG.gfxTimings.currentgs1:", _DEBUG.gfxTimings.currentgs1);
-                //     // console.log("_DEBUG.gfxTimings.gs1       :", _DEBUG.gfxTimings.gs1);
-                //     // console.log("_DEBUG.gfxTimings.gs2       :", _DEBUG.gfxTimings.gs2);
-                //     // console.log("_APP.game.gs1               :", _APP.game.gs1);
-                //     // console.log("_APP.game.gs2               :", _APP.game.gs2);
-                //     // console.log("");
-                // }
             },
         },
         loop:{
             elems:{},
             // values:{},
             init: function(){
-                // Progress bar: loop.
+                // display_progressBars: Progress bar: loop.
                 this.elems.time_LOOP = {
                     e0 : document.getElementById("debug_time_LOOP"),
                     e1 : document.getElementById("debug_time_LOOP").querySelector(".debug_innerProgressBar"),
                     e2 : document.getElementById("debug_time_LOOP").querySelector(".debug_progressBarLabel"),
                     t: 0
-                }
+                };
+
+                // display_progressBars: Progress bar: loop + draw.
                 this.elems.time_TOTAL = {
                     e0 : document.getElementById("debug_time_TOTAL"),
                     e1 : document.getElementById("debug_time_TOTAL").querySelector(".debug_innerProgressBar"),
                     e2 : document.getElementById("debug_time_TOTAL").querySelector(".debug_progressBarLabel"),
                     t: 0
-                }
+                };
+
+                // display_tmapCountByLayer: Tilemap counts by layer.
+                this.elems.changesBG1 = { e: document.getElementById("debug_changesBG1"), t: 0 };
+                this.elems.changesBG2 = { e: document.getElementById("debug_changesBG2"), t: 0 };
+                this.elems.changesSP1 = { e: document.getElementById("debug_changesSP1"), t: 0 };
+                this.elems.changesTX1 = { e: document.getElementById("debug_changesTX1"), t: 0 };
+                
+                // display_layerChanges: Display the number of layer objects per layer.
+                this.elems.BG1_tms = { e: document.getElementById("debug_BG1_tms"), t: 0 };
+                this.elems.BG2_tms = { e: document.getElementById("debug_BG2_tms"), t: 0 };
+                this.elems.SP1_tms = { e: document.getElementById("debug_SP1_tms"), t: 0 };
+                this.elems.TX1_tms = { e: document.getElementById("debug_TX1_tms"), t: 0 };
+                
             },
-            display: function(now){
-                let testText;
+            display_progressBars: function(now){
                 let mult = 5;
                 let newVal;
                 let oldVal;
                 let activeTime = 200;
                 let t;
                 let canRun;
-
+    
                 // LOOP
                 newVal = +(100*(_APP.game.gameLoop.lastLoop_timestamp/_APP.game.gameLoop.msFrame)).toFixed(1);
-                newVal = _DEBUG.timingsDisplay.roundToNearestMultiple(newVal, mult, "D");
                 newVal = _DEBUG.timingsDisplay.forceToRange(newVal, 0, 999);
+                newVal = _DEBUG.timingsDisplay.roundToNearestMultiple(newVal, mult, "D");
                 oldVal = +this.elems.time_LOOP.e2.getAttribute("curr");
                 if(newVal == oldVal){
-                    let value = +newVal;
-                    value = Math.round(value - (value/8));
-                    newVal = _DEBUG.timingsDisplay.roundToNearestMultiple(newVal, mult, "D");
-                    newVal = _DEBUG.timingsDisplay.forceToRange(newVal, 0, 999);
+                    // if(newVal > 10){
+                        let value = +newVal;
+                        // console.log(newVal, oldVal, value, _APP.game.gameLoop.lastLoop_timestamp.toFixed(1));
+                        value = Math.round(value - (value/8));
+                        newVal = _DEBUG.timingsDisplay.forceToRange(newVal, 0, 999);
+                        newVal = _DEBUG.timingsDisplay.roundToNearestMultiple(newVal, mult, "D");
+                    // }
+                    // else{
+                        // newVal = 0;
+                    // }
                 }
                 t = this.elems.time_LOOP.t;
                 canRun = ((now - t) > activeTime) || t == 0;
@@ -755,9 +541,37 @@ var _DEBUG = {
                     this.elems.time_TOTAL.t = now;
                 }
             },
+            display_layerChanges: function(now){
+                // // Display which layers have changes on this frame. 
+                let activeTime = 200;
+                let testText = "";
+    
+                let changesBG1 = this.elems["changesBG1"];
+                let changesBG2 = this.elems["changesBG2"];
+                let changesSP1 = this.elems["changesSP1"];
+                let changesTX1 = this.elems["changesTX1"];
+    
+                testText = `${_DEBUG.cachedData.changes["BG1"] ? "BG1" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesBG1, activeTime);
+                testText = `${_DEBUG.cachedData.changes["BG2"] ? "BG2" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesBG2, activeTime);
+                testText = `${_DEBUG.cachedData.changes["SP1"] ? "SP1" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesSP1, activeTime);
+                testText = `${_DEBUG.cachedData.changes["TX1"] ? "TX1" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesTX1, activeTime);
+            },
+            display_tmapCountByLayer: function(now){
+                let BG1_tms             = this.elems["BG1_tms"];
+                let BG2_tms             = this.elems["BG2_tms"];
+                let SP1_tms             = this.elems["SP1_tms"];
+                let TX1_tms             = this.elems["TX1_tms"];
+                let activeTime = 200;
+                let testText = "";
+
+                // Display the number of layer objects per layer.
+                testText = Object.keys(_GFX.currentData["BG1"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, BG1_tms, activeTime);
+                testText = Object.keys(_GFX.currentData["BG2"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, BG2_tms, activeTime);
+                testText = Object.keys(_GFX.currentData["SP1"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, SP1_tms, activeTime);
+                testText = Object.keys(_GFX.currentData["TX1"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, TX1_tms, activeTime);
+            },
         },
     },
-
 
     loop_display_func: function(){
         let frameCounter        = this.elemsObj["frameCounter"];
@@ -767,20 +581,13 @@ var _DEBUG = {
         let debug_GS1Text       = this.elemsObj["debug_GS1Text"];
         let debug_GS2Text       = this.elemsObj["debug_GS2Text"];
         let DRAWNEEDED          = this.elemsObj["DRAWNEEDED"];
-        let BG1_tms             = this.elemsObj["BG1_tms"];
-        let BG2_tms             = this.elemsObj["BG2_tms"];
-        let SP1_tms             = this.elemsObj["SP1_tms"];
-        let TX1_tms             = this.elemsObj["TX1_tms"];
-        let changesBG1             = this.elemsObj["changesBG1"];
-        let changesBG2             = this.elemsObj["changesBG2"];
-        let changesSP1             = this.elemsObj["changesSP1"];
-        let changesTX1             = this.elemsObj["changesTX1"];
+        let skipLogic           = this.elemsObj["skipLogic"];
         
         let activeTime = 200;
         let testText = "";
         
         // Show the frameCounter.
-        testText = _APP.game.gameLoop.frameCounter.toString();
+        testText = (_APP.game.gameLoop.frameCounter/1000).toFixed(1)+"k";
         this.applyChange(testText, frameCounter, activeTime);
 
         // Show the frameDrawCounter.
@@ -792,11 +599,17 @@ var _DEBUG = {
         testText = (_APP.game.gameLoop.DRAWNEEDED_prev).toString();
         this.applyChange(testText, DRAWNEEDED, activeTime);
 
+        // Show the skipLogic flag.
+        // testText = (_APP.game.gameLoop.skipLogic ? "1" : "0").toString();
+        testText = (_APP.game.gameLoop.skipLogic).toString();
+        this.applyChange(testText, skipLogic, activeTime);
+
         // Show average FPS, average ms per frame, how much off is the average ms per frame.
         let new_average       = _APP.game.gameLoop.fpsCalc.average.toFixed(0) ?? 0;
         let new_avgMsPerFrame = _APP.game.gameLoop.fpsCalc.avgMsPerFrame.toFixed(1) ?? 0;
         let msDiff            = (_APP.game.gameLoop.fpsCalc.avgMsPerFrame - _APP.game.gameLoop.msFrame).toFixed(1);
-        testText = `A: ${new_average} M: ${new_avgMsPerFrame} D: ${msDiff}`;
+        // testText = `A: ${new_average} M: ${new_avgMsPerFrame} D: ${msDiff}`;
+        testText = `AVG: ${new_average}, MS: ${new_avgMsPerFrame}, DELTA: ${msDiff}`;
         this.applyChange(testText, fpsDisplay, activeTime);
 
         // Show the waitUntilFrameDrawn flag.
@@ -810,18 +623,6 @@ var _DEBUG = {
         // Update the displayed gamestate data. (gamestate 2.)
         testText = `'${_APP.game.gs2}' ${_APP.game.changeGs2_triggered?"**":""}`;
         this.applyChange(testText, debug_GS2Text, activeTime);
-        
-        // Display the number of layer objects per layer.
-        testText = Object.keys(_GFX.currentData["BG1"].tilemaps).length.toString(); this.applyChange(testText, BG1_tms, activeTime);
-        testText = Object.keys(_GFX.currentData["BG2"].tilemaps).length.toString(); this.applyChange(testText, BG2_tms, activeTime);
-        testText = Object.keys(_GFX.currentData["SP1"].tilemaps).length.toString(); this.applyChange(testText, SP1_tms, activeTime);
-        testText = Object.keys(_GFX.currentData["TX1"].tilemaps).length.toString(); this.applyChange(testText, TX1_tms, activeTime);
-
-        // Display which layers have changes on this frame. 
-        testText = `${_DEBUG.cachedData.changes["BG1"] ? "BG1" : "___"} `; this.applyChange(testText, changesBG1, activeTime);
-        testText = `${_DEBUG.cachedData.changes["BG2"] ? "BG2" : "___"} `; this.applyChange(testText, changesBG2, activeTime);
-        testText = `${_DEBUG.cachedData.changes["SP1"] ? "SP1" : "___"} `; this.applyChange(testText, changesSP1, activeTime);
-        testText = `${_DEBUG.cachedData.changes["TX1"] ? "TX1" : "___"} `; this.applyChange(testText, changesTX1, activeTime);
     },
 
 };
@@ -1021,7 +822,7 @@ _DEBUG.init = async function(){
         let debug_test_toggleLogic = document.getElementById("debug_test_toggleLogic");
         debug_test_toggleLogic.addEventListener("click", ()=>{
             _APP.game.gameLoop.skipLogic = !_APP.game.gameLoop.skipLogic;
-            console.log("skipLogic value is now:", _APP.game.gameLoop.skipLogic);
+            // console.log("skipLogic value is now:", _APP.game.gameLoop.skipLogic);
         }, false);
 
         _DEBUG.timingsDisplay.gfx.init()

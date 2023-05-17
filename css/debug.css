@@ -73,6 +73,15 @@ div#debug_test_alwaysVisible {
     white-space: pre;
 }
 .debugLive.active{ background-color:yellow; }
+
+#debug_progressTable{
+    width: 100%;
+    display: block;
+}
+.debug_td_progressTable{
+    width: 200px;
+}
+
 .debug_table{
     border-collapse: collapse;
     display:inline-block;
@@ -83,12 +92,21 @@ div#debug_test_alwaysVisible {
     text-decoration: underline;
     font-weight: bold;
 }
+.debug_td_header2{ 
+    text-decoration: underline;
+    font-weight: bold;
+    text-align:center;
+}
 .debug_td_long{
-    width: 185px;
-    max-width: 185px;
+    width: 260px;
+    max-width: 260px;
+}
+.debug_td_long2{
+    width: 140px;
+    max-width: 140px;
 }
 .debug_td_short{
-    width: 55px;
+    width: 75px;
     max-width: 55px;
     white-space: pre;
 }
@@ -104,6 +122,7 @@ div#debug_test_alwaysVisible {
     height: 30px;
     border-radius: 5px;
     overflow: hidden;
+    border: 1px solid black;
 }
   
 .debug_inner-bar {
@@ -132,5 +151,6 @@ div#debug_test_alwaysVisible {
     font-family: monospace;
     white-space: pre;
     z-index: 1;
+    /* border: 1px solid black; */
 }
   

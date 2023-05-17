@@ -1,3 +1,8 @@
+/* 
+_GFX.layers[layerKey].imgDataCache.data.set(this.fullTransparent_imgDataLayer.data); // A copy
+imageDataTile                     .data.set(tileset[ tmapObj.tmap[index] ].imgData.data.slice()); // A copy
+imageDataTile                     .data.set(tileset[ tmapObj.tmap[index] ].imgData.data); // Also a copy, not a reference
+*/
 messageFuncs.sendGfxUpdates.V4 = {
     CLEAR:{
         parent: null,
@@ -8,7 +13,7 @@ messageFuncs.sendGfxUpdates.V4 = {
         // Clears ONE layer gfx. (imgDataCache)
         oneLayerGfx: function(layerKey){
             // Clear the imgDataCache for this layer.
-            _GFX.layers[layerKey].imgDataCache.data.set(this.fullTransparent_imgDataLayer.data);
+            _GFX.layers[layerKey].imgDataCache.data.set(this.fullTransparent_imgDataLayer.data); // A copy
         },
 
         // Clears ALL layers gfx. (imgDataCache)
@@ -167,31 +172,6 @@ messageFuncs.sendGfxUpdates.V4 = {
             this.parent.CLEAR.manyMapKeys(layerKey, layerData["REMOVALS_ONLY"]);
             ts_clearRemovedData = performance.now() - ts_clearRemovedData;
 
-            // ******************************
-            // SET THE BACKGROUND COLOR (BG1)
-            // ******************************
-
-            // Set the background color?
-            let ts_setLayerBackgroundColor = performance.now();
-            if(layerData.fade.fade && layerData.fade.currFade == 10){
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["__TOTAL"]            = + (ts_clearLayer+ts_clearRemovedData).toFixed(3);
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["A_clearLayer"]       = + ts_clearLayer.toFixed(3);
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["B_clearRemovedData"] = + ts_clearRemovedData.toFixed(3);
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["C_createTilemaps"]   = + 0;
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["D_drawFromDataCache"]= + 0;
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["E_drawImgDataCache"] = + 0;
-
-                // Redraw the layer from the cache data to imgDataCache.
-                let ts_drawImgDataCache = performance.now();
-                this.parent.DRAW.drawImgDataCacheToCanvas(layerKey, layerData.fade);
-                ts_drawImgDataCache = performance.now() - ts_drawImgDataCache;
-                return;
-            }
-            if(layerKey == "BG1"){
-                this.parent.SETBG.setLayerBgColorRgba( layerKey, [0,0,0,0], layerData.bgColorRgba );
-            }
-            ts_setLayerBackgroundColor = performance.now() - ts_setLayerBackgroundColor;
-
             // *******************************
             // CREATE/REUSE IMAGEDATA TILEMAPS
             // *******************************
@@ -213,7 +193,33 @@ messageFuncs.sendGfxUpdates.V4 = {
                 );
             }
             ts_createTilemaps = performance.now() - ts_createTilemaps;
-            
+
+            // ******************************
+            // SET THE BACKGROUND COLOR (BG1)
+            // ******************************
+
+            // Set the background color?
+            let ts_setLayerBackgroundColor = performance.now();
+            // If the global fade is 10 or 11 then.
+            if(layerData.fade.fade && (layerData.fade.currFade == 10 || layerData.fade.currFade == 11)){
+                messageFuncs.timings["sendGfxUpdates"][layerKey]["__TOTAL"]            = + (ts_clearLayer+ts_clearRemovedData).toFixed(3);
+                messageFuncs.timings["sendGfxUpdates"][layerKey]["A_clearLayer"]       = + ts_clearLayer.toFixed(3);
+                messageFuncs.timings["sendGfxUpdates"][layerKey]["B_clearRemovedData"] = + ts_clearRemovedData.toFixed(3);
+                messageFuncs.timings["sendGfxUpdates"][layerKey]["C_createTilemaps"]   = + 0;
+                messageFuncs.timings["sendGfxUpdates"][layerKey]["D_drawFromDataCache"]= + 0;
+                messageFuncs.timings["sendGfxUpdates"][layerKey]["E_drawImgDataCache"] = + 0;
+
+                // Redraw the layer from the cache data to imgDataCache.
+                let ts_drawImgDataCache = performance.now();
+                this.parent.DRAW.drawImgDataCacheToCanvas(layerKey, layerData.fade);
+                ts_drawImgDataCache = performance.now() - ts_drawImgDataCache;
+                return;
+            }
+            if(layerKey == "BG1"){
+                this.parent.SETBG.setLayerBgColorRgba( layerKey, [0,0,0,0], layerData.bgColorRgba );
+            }
+            ts_setLayerBackgroundColor = performance.now() - ts_setLayerBackgroundColor;
+
             // ********************
             // DRAW TO IMGDATACACHE
             // ********************
@@ -226,9 +232,9 @@ messageFuncs.sendGfxUpdates.V4 = {
             }
             ts_drawFromDataCache = performance.now() - ts_drawFromDataCache;
 
-            // *************************************
-            // DRAW TO IMGDATACACHE TO OUTPUT CANVAS
-            // *************************************
+            // ***************************************
+            // DRAW FROM IMGDATACACHE TO OUTPUT CANVAS
+            // ***************************************
 
             // Redraw the layer from the cache data to imgDataCache.
             let ts_drawImgDataCache = performance.now();
@@ -295,10 +301,15 @@ messageFuncs.sendGfxUpdates.V4 = {
             // Determine the fade level for this specific tilemap.
             if( settings.fade != null){ fadeLevel = settings.fade; }
 
-            // Fully faded out? If the fade level is 10 then just draw the entire tilemap imageData as full black;
+            // Fully faded out? 
+            // If the fade level is 10 then just draw the entire tilemap imageData as full black;
             if( fadeLevel == 10 ){
                 // R,G,B is already 0. Need to set alpha to enable full black.
                 for (let i = 3; i < imageData.data.length; i += 4) { imageData.data[i] = 255; }
+            }
+            // If the fade level is 11 then do nothing and leave the entire tilemap imageData as transparent.
+            else if( fadeLevel == 11 ){
+                // R,G,B,A is already 0. Nothing to do.
             }
 
             // No. Process the tilemap tile-by-tile.
@@ -308,7 +319,8 @@ messageFuncs.sendGfxUpdates.V4 = {
                     for(let x=0; x<mapW; x+=1){
                         // Replace the imageDataTile.data with the tile ImageData.data specified by the tilemap.
                         try{ 
-                            imageDataTile.data.set(tileset[ tmapObj.tmap[index] ].imgData.data.slice()); 
+                            // imageDataTile.data.set(tileset[ tmapObj.tmap[index] ].imgData.data.slice()); // A copy then copied. 
+                            imageDataTile.data.set(tileset[ tmapObj.tmap[index] ].imgData.data); // One copy.
                             missingTile = false; 
                         }
                         
@@ -320,7 +332,7 @@ messageFuncs.sendGfxUpdates.V4 = {
                             ({width, height} = imageDataTile);
                         }
                         
-                        // Apply tile transforms using rotation, xFlip, yFlip.
+                        // Apply tile transforms using rotation, xFlip, yFlip. (by reference)
                         // Skip the transforms if the tile was not found. 
                         if(!missingTile){
                             ({width, height} = this.performTransformsOnImageData(imageDataTile, settings));
@@ -329,16 +341,17 @@ messageFuncs.sendGfxUpdates.V4 = {
                         // Update the imageData with the completed imageDataTile.
                         createGraphicsAssets.updateRegion(
                             imageDataTile.data,  // source
-                            width, // imageDataTile.width, // srcWidth
+                            width,               // srcWidth
                             imageData.data,      // destination
                             imageData.width,     // destWidth
+                            imageData.height,    // destHeight
                             x * tw,              // x
                             y * th,              // y
-                            width,  // tw,                  // w
-                            height, // th,                  // h
-                            // tw,                  // w
-                            // th,                  // h
-                            false                // onlyWriteToTransparent
+                            width,               // w
+                            height,              // h
+                            // "onlyToAlpha0"       // writeType ["onlyToAlpha0", "blitDest", "replace"]
+                            // "blitDest"           // writeType ["onlyToAlpha0", "blitDest", "replace"]
+                            "replace"            // writeType ["onlyToAlpha0", "blitDest", "replace"]
                         );
 
                         // Increment the tile index in the tilemap.
@@ -360,7 +373,7 @@ messageFuncs.sendGfxUpdates.V4 = {
                 if(fadeLevel){
                     // Fade the tile (RGBA version of the fade table.)
                     // _GFX.utilities.replaceColors(imageData, fadeLevel); 
-                    createGraphicsAssets.rgba32TileToFadedRgba32Tile(imageData, fadeLevel);
+                    createGraphicsAssets.applyFadeToImageData(imageData, fadeLevel);
                 }
             }
 
@@ -516,7 +529,8 @@ messageFuncs.sendGfxUpdates.V4 = {
                         ts      : map.ts,
                         settings: map.settings,
                         tmap    : map.tmap,
-                        mapKey  : mapKey
+                        w: map.imgData.width, 
+                        h: map.imgData.height
                     });
                 }
 
@@ -524,8 +538,6 @@ messageFuncs.sendGfxUpdates.V4 = {
                 _GFX.currentData[layerKey].tilemaps[mapKey] = {
                     ...map,
                     imgData: map.imgData,
-                    w: map.imgData.width, 
-                    h: map.imgData.height
                 }
             }
         },
@@ -547,17 +559,19 @@ messageFuncs.sendGfxUpdates.V4 = {
                 let map = _GFX.currentData[layerKey].tilemaps[mapKey];
 
                 // Use blitDestTransparency.
-                createGraphicsAssets.updateRegion2(
-                    map.imgData.data,                      // source
-                    map.imgData.width,                     // srcWidth
-                    _GFX.layers[layerKey].imgDataCache.data,  // destination
-                    _GFX.layers[layerKey].imgDataCache.width, // destWidth
-                    map.x,                                 // x
-                    map.y,                                 // y
-                    map.w,                                 // w
-                    map.h,                                 // h
-                    true                                   // blitDestTransparency
-                    // false                                  // blitDestTransparency
+                createGraphicsAssets.updateRegion(
+                    map.imgData.data,                          // source
+                    map.imgData.width,                         // srcWidth
+                    _GFX.layers[layerKey].imgDataCache.data,   // destination
+                    _GFX.layers[layerKey].imgDataCache.width,  // destWidth
+                    _GFX.layers[layerKey].imgDataCache.height, // destHeight
+                    map.x,                                     // x
+                    map.y,                                     // y
+                    map.w,                                     // w
+                    map.h,                                     // h
+                    // "onlyToAlpha0"                             // writeType ["onlyToAlpha0", "blitDest", "replace"]
+                    "blitDest"                                 // writeType ["onlyToAlpha0", "blitDest", "replace"]
+                    // "replace"                                  // writeType ["onlyToAlpha0", "blitDest", "replace"]
                 );
             }
         },
@@ -568,14 +582,20 @@ messageFuncs.sendGfxUpdates.V4 = {
             let imgDataCache = _GFX.layers[layer].imgDataCache;
 
             // If there is a global fade then apply it to imgDataCache.
-            // fadeLevel (currFade) 10 is all black.
-            if(fade.fade && fade.currFade == 10){
-                // R,G,B is already 0. Need to set alpha to enable full black.
-                for (let i = 3; i < imgDataCache.data.length; i += 4) { imgDataCache.data[i] = 255; }
-            }
-            // Fade the imgDataCache in it's entirety..
-            else if(fade.fade){
-                createGraphicsAssets.rgba32TileToFadedRgba32Tile(imgDataCache, fade.currFade);
+            if(fade.fade){
+                // fadeLevel (currFade) 10 is all black.
+                if(fade.currFade == 10){
+                    // R,G,B is already 0. Need to set alpha to enable full black.
+                    for (let i = 3; i < imgDataCache.data.length; i += 4) { imgDataCache.data[i] = 255; }
+                }
+                // fadeLevel (currFade) 11 is full transparent.
+                else if(fade.currFade == 11){
+                    // R,G,B,A is already 0. Nothing to do.
+                }
+                // Fade the imgDataCache in it's entirety.
+                else if(fade.fade){
+                    createGraphicsAssets.applyFadeToImageData(imgDataCache, fade.currFade);
+                }
             }
 
             // Use the imgDataCache to draw to the output canvas.

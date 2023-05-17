@@ -109,8 +109,6 @@ const messageFuncs = {
 
 // Import the graphics module.
 importScripts("createGraphicsAssets.js");
-// importScripts("ww_sendGfxUpdatesV2.js");
-// importScripts("ww_sendGfxUpdatesV3.js");
 importScripts("ww_sendGfxUpdatesV4.js");
 
 const _GFX = {
@@ -133,98 +131,6 @@ const _GFX = {
         },
     },
     utilities: {
-        // Converts a tilemap to new ImageData (respects the settings provided.)
-        tilemapToImageData: function(tilesetName, tilemap, settings, fade=null){
-            // Get the tileset and the dimensions for the tileset. 
-            let tileset = _GFX.tilesets[tilesetName].tileset;
-            let tw = _GFX.tilesets[tilesetName].config.tileWidth;
-            let th = _GFX.tilesets[tilesetName].config.tileHeight;
-
-            // Get the dimensions of the tilemap.
-            let mapW = tilemap[0];
-            let mapH = tilemap[1];
-            
-            // Start at index 2 since the first two indexs are the map dimensions in tiles. 
-            let index=2;
-            let missingTile = false;
-            
-            // Create new ImageData. (The final copy and the reusable tile copy.)
-            let imageData = new ImageData(mapW * tw, mapH * th); // The width and height come from the tilemap and should be correct.
-            let imageDataTile = new ImageData(tw, th);
-
-            // Break-out settings.
-            let rotation  = settings.rotation;
-            let xFlip     = settings.xFlip;
-            let yFlip     = settings.yFlip;
-            let colorData = settings.colorData;
-            let fadeLevel = null;
-            
-            if( (fade && fade.fade && fade.currFade != null) ){ fadeLevel = fade.currFade; }
-            else if( settings.fade != null){ fadeLevel = settings.fade; }
-
-            if( fadeLevel != 10 ){
-                // Draw the tilemap.
-                for(let y=0; y<mapH; y+=1){
-                    for(let x=0; x<mapW; x+=1){
-                        // Copy the tile data to the imageDataTile. 
-                        try{ imageDataTile.data.set(tileset[ tilemap[index] ].imgData.data.slice()); missingTile = false; }
-                        
-                        // Missing tile. (Wrong tileset?) 
-                        // Create a transparent tile and set the missingTile flag to skip any transforms from settings.
-                        catch(e){ imageDataTile.data.fill(0); missingTile = true; }
-    
-                        // Rotate tile?
-                        if(!missingTile && rotation) { 
-                            _GFX.utilities.rotateImageData(imageDataTile, rotation); 
-                        }
-    
-                        // Flip tile horizontally?
-                        if(!missingTile && xFlip)    { _GFX.utilities.flipImageDataHorizontally(imageDataTile); }
-    
-                        // Flip tile vertically?
-                        if(!missingTile && yFlip)    { _GFX.utilities.flipImageDataVertically(imageDataTile); }
-    
-                        // Update the imageData with this tile.
-                        createGraphicsAssets.updateRegion(
-                            imageDataTile.data,  // source
-                            imageDataTile.width, // srcWidth
-                            imageData.data,      // destination
-                            imageData.width,     // destWidth
-                            x * tw,              // x
-                            y * th,              // y
-                            tw,                  // w
-                            th,                  // h
-                            false                // onlyWriteToTransparent
-                        );
-    
-                        // Increment the tile index in the tilemap.
-                        index++;
-                    }
-                }
-
-                // Apply color replacements and/or fading to the imageData.
-    
-                // Fade? (Replaces the colors THEN fades the result.
-                if(fadeLevel != null){
-                    _GFX.utilities.fadeImageData(imageData, fadeLevel, colorData);
-                }
-
-                // Just color replacements?
-                else if(colorData && colorData.length){
-                    _GFX.utilities.replaceColors(imageData, colorData); 
-                }
-            }
-
-            // Fade level is 10. Set full black;
-            else{
-                // R,G,B is already 0. Need to set alpha.
-                for (let i = 3; i < imageData.data.length; i += 4) { imageData.data[i] = 255; }
-            }
-
-            // Return the completed data.
-            return imageData;
-        },
-
         // Flips ImageData horizontally. (By reference, changes source imageData.)
         flipImageDataHorizontally: function(imageData) {
             const width = imageData.width;
@@ -350,9 +256,44 @@ const _GFX = {
                 }
 
                 // Fade the tile (RGBA version of the fade table.)
-                createGraphicsAssets.rgba32TileToFadedRgba32Tile(imageData, fadeLevel);
+                createGraphicsAssets.applyFadeToImageData(imageData, fadeLevel);
             }
         },
+
+        // UNUSED: Axis-Aligned Bounding Box. (Determine if two rectangles are intersecting.)
+        aabb_collisionDetection: function(rect1, rect2){
+            // EXAMPLE USAGE:
+            // aabb_collisionDetection({x:0,y:0,w:16,h:16}, {x:8,y:8,w:16,h:16});
+    
+            let collision = false;
+            let overlapX, overlapY, overlapWidth, overlapHeight;
+    
+            // Check for overlap.
+            if (
+                rect1.x < rect2.x + rect2.w &&
+                rect1.x + rect1.w > rect2.x &&
+                rect1.y < rect2.y + rect2.h &&
+                rect1.h + rect1.y > rect2.y
+            ){ 
+                collision = true;
+    
+                // Calculate the region that is overlapped.
+                overlapX      = Math.max(rect1.x, rect2.x);
+                overlapY      = Math.max(rect1.y, rect2.y);
+                overlapWidth  = Math.min(rect1.x + rect1.w, rect2.x + rect2.w) - overlapX;
+                overlapHeight = Math.min(rect1.y + rect1.h, rect2.y + rect2.h) - overlapY;
+            }
+            
+            // Return the collision flag and the overlap region if applicable. 
+            return {
+                collision: collision,
+                x: overlapX,
+                y: overlapY,
+                w: overlapWidth,
+                h: overlapHeight
+            };
+        },
+    
     },
 };
 const _DEBUG = {
@@ -435,7 +376,6 @@ self.onmessage = async function(event) {
 
         switch(mode){
             // NORMAL REQUESTS.
-            // case "initConfigAndGraphics": { returnData = await messageFuncs.initConfigAndGraphics(data); break; }
             case "initConfigAndGraphics": { 
                 if(!flags.dataRequest){              await messageFuncs.initConfigAndGraphics(data); }
                 else                  { returnData = await messageFuncs.initConfigAndGraphics(data); }
@@ -450,14 +390,6 @@ self.onmessage = async function(event) {
                     if(!flags.dataRequest){              messageFuncs.sendGfxUpdates.V4.run(data); }
                     else                  { returnData = messageFuncs.sendGfxUpdates.V4.run(data); }
                 }
-                // else if(data.version == 3){
-                //     if(!flags.dataRequest){              messageFuncs.sendGfxUpdates.V3.run(data); }
-                //     else                  { returnData = messageFuncs.sendGfxUpdates.V3.run(data); }
-                // }
-                // else{
-                //     if(!flags.dataRequest){              messageFuncs.sendGfxUpdates.V2.run(data); }
-                //     else                  { returnData = messageFuncs.sendGfxUpdates.V2.run(data); }
-                // }
                 break; 
             }
             
