@@ -48,10 +48,8 @@ var _WEBW_V = {
                 }
 
                 case "sendGfxUpdates"     : {
-                    if(_APP.debugActive){
-                        // console.log("sendGfxUpdates:", e.data.data);
-                        _DEBUG.timingsDisplay.gfx.updateCache(e.data.data); 
-                    }
+                    _GFX.funcs.afterDraw(e.data.data);
+
                     if(this.differedProms[e.data.mode]){ 
                         this.differedProms[e.data.mode].resolve(); 
                     }

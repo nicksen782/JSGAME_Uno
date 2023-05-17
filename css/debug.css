@@ -43,9 +43,9 @@
     font-family: monospace;
     white-space: pre;
     display:inline-block;
-    min-width: 264px;
-    max-width: 264px;
-    width: 100%;
+    min-width: 255px;
+    max-width: 255px;
+    /* width: 100%; */
     min-height: 48px;
     max-height: 48px;
     vertical-align: top;
@@ -56,8 +56,8 @@
     background-color: antiquewhite;
 }
 
-.debug_fadeSlider{ width: 180px; }
-.debug_fadeSliderText{ width: 120px; }
+.debug_fadeSlider{width: 210px;}
+.debug_fadeSliderText{width: 85px;display: inline-block;background-color: rgb(0 0 0 / 6%);font-family: monospace;}
 
 div#debug_test_alwaysVisible {
     /* border: 1px solid blue; */
@@ -87,7 +87,7 @@ div#debug_test_alwaysVisible {
     display:inline-block;
     vertical-align: top;
 }
-.debug_table td{border:1px solid black;padding: 5px;font-family: monospace;}
+.debug_table td{border:1px solid black;/* padding: 5px; */font-family: monospace;}
 .debug_td_header{ 
     text-decoration: underline;
     font-weight: bold;
@@ -106,9 +106,10 @@ div#debug_test_alwaysVisible {
     max-width: 140px;
 }
 .debug_td_short{
-    width: 75px;
-    max-width: 55px;
-    white-space: pre;
+    text-align: center;
+    width: 65px;
+    max-width: 65px;
+    /* white-space: pre; */
 }
 .debug_td_short2{
     width: 85px;
@@ -131,7 +132,7 @@ div#debug_test_alwaysVisible {
     height: 100%;
     position: relative;
     /* transition: width 150ms ease-in-out; */
-    transition: width 175ms ease-in-out;
+    transition: width 250ms;
     will-change: width;
 }
 

@@ -5,47 +5,47 @@ var _GFX = {
     // Holds the graphics data that will be sent to the WebWorker.
     currentData : {
         "BG1":{
+            canvas: null,
             bgColorRgba: [0,0,0,255],
             tilemaps   : {},
             changes    : false,
-            // FADE
             fade:{
-                fade      : false,
-                // prevFade   : null,
-                currFade   : null,
+                fade    : false,
+                currFade: null,
+                // prevFade: null,
             },
             useFlicker: false
         },
         "BG2":{
+            canvas: null,
             tilemaps  : {},
             changes   : false,
-            // FADE
             fade:{
-                fade      : false,
-                // prevFade   : null,
-                currFade   : null,
+                fade    : false,
+                currFade: null,
+                // prevFade: null,
             },
             useFlicker: false
         },
         "SP1":{
+            canvas: null,
             tilemaps  : {},
             changes   : false,
-            // FADE
             fade:{
-                fade      : false,
-                // prevFade   : null,
-                currFade   : null,
+                fade    : false,
+                currFade: null,
+                // prevFade: null,
             },
             useFlicker: true,
         },
         "TX1":{
+            canvas: null,
             tilemaps  : {},
             changes   : false,
-            // FADE
             fade:{
-                fade      : false,
-                // prevFade   : null,
-                currFade   : null,
+                fade    : false,
+                currFade: null,
+                // prevFade: null,
             },
             useFlicker: false,
         },
@@ -399,6 +399,12 @@ var _GFX = {
                     // Does this tilemapKey already exist?
                     exists = _GFX.currentData[layer].tilemaps[tilemapKey] ? true : false;
 
+                    // If useGlobalOffsets is defined use them to offset x and y.
+                    if(_APP.configObj.useGlobalOffsets){
+                        tilemap.x += ( (_APP.configObj.globalOffsets.x ?? 0) * tw);
+                        tilemap.y += ( (_APP.configObj.globalOffsets.y ?? 0) * th);
+                    }
+
                     // If it exists then get it's existing hash.
                     if(exists){ oldHash = _GFX.currentData[layer].tilemaps[tilemapKey].hash ?? 0; }
 
@@ -699,6 +705,20 @@ var _GFX = {
                 } 
             } ;
         },
+
+        afterDraw: function(data = {}){
+            if(_APP.debugActive && _DEBUG){
+                _DEBUG.timingsDisplay.gfx.updateCache(data); 
+            }
+
+            if(data.newBG1_bgColor){
+                // Save the new bgColorRgba.
+                // _GFX.currentData["BG1"].bgColorRgba = e.data.data.newBG1_bgColorRgba;
+
+                // Apply the new bgColorRgba.
+                //
+            }
+        },
     },
 
     // Transformation utilities.
@@ -898,6 +918,10 @@ _GFX.init = async function(){
             layer.canvasElem.setAttribute("name", rec.name);
             outputDiv.append(layer.canvasElem);
             layer.canvas = layer.canvasElem.transferControlToOffscreen();
+            
+            // Save the canvas element to currentData.
+            _GFX.currentData[rec.name].canvas = layer.canvasElem;
+            
             layers.push({
                 canvas        : layer.canvas,
                 canvasOptions : rec.canvasOptions,

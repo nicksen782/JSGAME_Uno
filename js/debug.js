@@ -109,11 +109,12 @@ var _DEBUG = {
             }
             else{ 
                 _GFX.funcs.setFade(layer, level-1); 
-                level_text = `LEVEL: ${(level-1).toString()}`;
+                level_text = `L:${(level-1).toString()}`;
             }
 
             sliderElem.title = `${layer}: ${level_text}`;
-            sliderTextElem.value = sliderElem.title;
+            // sliderTextElem.value = sliderElem.title;
+            sliderTextElem.innerText = sliderElem.title;
         }
         changeFade("ALL", fadeSliderALL, fadeSliderALLText);
         changeFade("BG1", fadeSliderBG1, fadeSliderBG1Text);
@@ -400,9 +401,8 @@ var _DEBUG = {
                     return; 
                 }
     
-                let testText;
                 let activeTime = 200;
-                let mult = 5;
+                let mult = 10;
                 let newVal;
                 let oldVal;
                 let t;
@@ -488,7 +488,7 @@ var _DEBUG = {
                 
             },
             display_progressBars: function(now){
-                let mult = 5;
+                let mult = 10;
                 let newVal;
                 let oldVal;
                 let activeTime = 200;
@@ -591,7 +591,7 @@ var _DEBUG = {
         this.applyChange(testText, frameCounter, activeTime);
 
         // Show the frameDrawCounter.
-        testText = _APP.game.gameLoop.frameDrawCounter.toString();
+        testText = (_APP.game.gameLoop.frameDrawCounter/1000).toFixed(1)+"k";
         this.applyChange(testText, frameDrawCounter, activeTime);
 
         // Show the DRAWNEEDED.

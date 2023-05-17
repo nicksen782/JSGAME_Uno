@@ -33,6 +33,44 @@ body{
     background-color:cornflowerblue;
     display: inline-block;
 }
+#error_display{
+    width: 500px;
+    height: 200px;
+    background-color: indianred;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 6px;
+    /* overflow: hidden !important; */
+}
+#error_display_title{
+    font-weight: bold;
+    text-decoration: underline;
+    font-size: 32px;
+    text-align: center;
+    background-color: crimson;
+    color: black;
+    padding: 5px;
+}
+#error_display_text{
+    font-weight: bold;
+    text-decoration: underline;
+    font-size: 22px;
+    text-align: center;
+    background-color: blanchedalmond;
+    color: black;
+    padding: 5px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+#error_display_text_inner{}
 #game_uno{
     border:1px solid white;
     padding:5px;

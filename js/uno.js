@@ -1,8 +1,17 @@
 // _APP.debugActive = false;
 _APP.debugActive = true;
 _APP.configObj = {
+    appName: "UNO!",
+
     // waitUntilFrameDrawn: true,
     waitUntilFrameDrawn: false,
+
+    // Offset x and y for all drawings by this number of tiles.
+    useGlobalOffsets: true,
+    globalOffsets:{
+        x: 2,
+        y: 2,
+    },
 
     // Relative paths need to be correctly relative to whatever loads this file (the web page or the web worker.)
     tilesetFiles: [
@@ -15,8 +24,10 @@ _APP.configObj = {
     dimensions: {
         "tileWidth" : 8,
         "tileHeight": 8,
-        "rows":28, 
-        "cols":28
+        // "rows":28, 
+        // "cols":28
+        "rows":32, 
+        "cols":32
     },
 
     layers:[
@@ -197,6 +208,40 @@ _APP.utility = {
             };
         });
     },
+    //
+    errorTriggered: false,
+    errorHandler: function(e){
+        e.preventDefault();
+        if(this.errorTriggered){ return false ; }
+
+        this.errorTriggered = false;
+        console.log(
+            `ERRORHANDLER:`+
+            `\n  e.filename: ${e.filename}`+
+            `\n  e.error   : `, e.error
+        ); 
+        try{
+            _APP.game.gameLoop.running = false;
+            _APP.game.gameLoop.loop_stop();
+            _APP.utility.displayError(e.message);
+            console.error(`${_APP.configObj.appName}: STOPPED THE GAMELOOP DUE TO ERROR`);
+            
+            // Open the debugger.
+            if(_APP.debugActive){ debugger; }
+        }
+        catch(e){
+            console.log(e);
+        }
+        return false;
+    },
+    displayError: function(message){
+        let error_display = document.getElementById("error_display")
+        let text = document.getElementById("error_display_text_inner")
+        error_display.style.display = "";
+
+        text .innerText = message;
+        console.log(message);
+    },
 };
 
 // For loading customized wrappers for plug-ins.
@@ -360,6 +405,8 @@ _APP.navBar1 = {
 
 _APP.init_standAlone = async function(){
     return new Promise(async (resolve,reject)=>{
+        window.addEventListener('error', _APP.utility.errorHandler);
+
         await _APP.loader.loadFiles();
 
         // INITS
@@ -372,6 +419,8 @@ _APP.init_standAlone = async function(){
 // JSGAME REQUESTS THIS FUNCTION FIRST.
 _APP.init = async function(){
     return new Promise(async (resolve,reject)=>{
+        window.addEventListener('error', _APP.utility.errorHandler);
+
         // Set flags. 
         _APP.standAlone       = false;
         _APP.usingJSGAME      = true;
@@ -393,8 +442,8 @@ _APP.init = async function(){
 _APP.start = async function(){
     return new Promise(async (resolve,reject)=>{
         let loadTime = performance.now() - _JSG.appStart_timestamp;
-        console.log(`Uno (JSGAMEV2 version) load time: ${loadTime.toFixed(2)}ms`);
-        // alert(`Uno (JSGAMEV2 version) load time: ${loadTime.toFixed(2)}ms`);
+        console.log(`${_APP.configObj.appName} (JSGAMEV2 version) load time: ${loadTime.toFixed(2)}ms`);
+        // alert(`${_APP.configObj.appName} (JSGAMEV2 version) load time: ${loadTime.toFixed(2)}ms`);
 
         // Start the game loop.
         _APP.game.gameLoop.loop_start();

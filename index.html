@@ -15,6 +15,15 @@
         <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
     </div>
 
+    <!-- The error display -->
+    <div id="error_display" style="display:none;">
+        <div id="error_display_title">APPLICATION ERROR</div>
+        <div id="error_display_text">
+            <div id="error_display_text_inner"></div>
+            <div>GAME LOOP STOPPED</div>
+        </div>
+    </div>
+
     <!-- The main HTML. -->
     <div id="wrapper">
         <div id="game_uno">
@@ -80,8 +89,8 @@
                     loading.style.display = "none";
                     wrapper.style.display = "";
                     let ts1E = performance.now() - ts1S;
-                    console.log(`Uno (Stand-Alone version) load time: ${ts1E.toFixed(2)}ms`);
-                    // alert(`Uno (Stand-Alone version) load time: ${ts1E.toFixed(2)}ms`);
+                    console.log(`${_APP.configObj.appName} (Stand-Alone version) load time: ${ts1E.toFixed(2)}ms`);
+                    // alert(`${_APP.configObj.appName} (Stand-Alone version) load time: ${ts1E.toFixed(2)}ms`);
 
                     // Start the game loop.
                     _APP.game.gameLoop.loop_start();
