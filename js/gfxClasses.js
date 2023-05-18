@@ -1,22 +1,123 @@
+/*
+// NOTES:
 // Static methods and properties belong to the class and not to the instances of the class. 
 // They cannot be used by an instance of the class.
 // They can only be called by NameOfClass.property or NameOfClass.method.
 // They are NOT inherited when the class is extended.
+
+// A "setter" function such as set x(value){ this._x = value; } will set the value of _x.
+// A "getter" function such as get x(){ return this._x; } will return the current value of _x.
+// This is why the _x property is needed since a setter and getter would call themselves trying to access this.x.
+// Setters and getters are invoked by access from anywhere. You have a setter/getter for x but the property internally is_x.
+
+// CHANGE POSITION:
+_GFX.layerObjs.getOne("N782_face_anim", "gs_N782").x = 8;
+_GFX.layerObjs.getOne("N782_face_anim", "gs_N782").y += 8;
+
+// CHANGE TILEMAP:
+_GFX.layerObjs.getOne("board_28x28"   , "gs_JSG") .tmap = _GFX.tilesets.bg_tiles2.tilemaps.N782_TEXT1_F2;
+_GFX.layerObjs.getOne("board_28x28"   , "gs_JSG") .tmap = _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F2");
+
+// CHANGE TILESET:
+_GFX.layerObjs.getOne("N782_text_anim", "gs_N782").tilesetKey = "bg_tiles";
+_GFX.layerObjs.getOne("board_28x28"   , "gs_JSG") .tilesetKey = "bg_tiles2";
+
+// CHANGE SETTINGS:
+_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").setSetting("colorData", [ [ [ 255,182,  0,255], [ 255,72,36,255] ], ]);
+_GFX.layerObjs.getOne("N782_text_anim"       , "gs_N782").setSetting("bgColorRgba", [128, 128, 0, 255]);
+_GFX.layerObjs.getOne("N782_text_anim"       , "gs_N782").setSetting("rotation", 90);
+_GFX.layerObjs.getOne("N782_text_anim"       , "gs_N782").setSetting("xFlip", true);
+_GFX.layerObjs.getOne("N782_text_anim"       , "gs_N782").setSetting("yFlip", true);
+_GFX.layerObjs.getOne("N782_text_anim"       , "gs_N782").setSetting("fade", 5);
+
+// CHANGE LAYER:
+_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "BG1";
+_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "BG2";
+_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "TX1";
+_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "SP1";
+
+// TESTING: (TODO: Layer changes leave the old copy on it's previous layer.)
+_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").setSetting("colorData", [ [ [ 255,182,  0,255], [ 255,72,36,255] ], ]);
+_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "BG1";
+_GFX.layerObjs.getOne("board_28x28", "gs_JSG").layerKey = "BG2";
+*/
 
 // Creates one LayerObject.
 class LayerObject {
     /* EXAMPLE USAGE:
     */
 
+    // // Getters and setters:
+    get x()          { return this._x; } 
+    get y()          { return this._y; } 
+    get tmap()       { return this._tmap; } 
+    get layerKey()   { return this._layerKey; } 
+    get tilesetKey() { return this._tilesetKey; } 
+    get settings()   { return this._settings; } 
+    get xyByGrid()   { return this._xyByGrid; } 
+    
+    set x(value)          { if( this._x          !== value){ this._x          = value; this._changed = true; } }
+    set y(value)          { if( this._y          !== value){ this._y          = value; this._changed = true; } }
+    set tmap(value)       { if( this._tmap       !== value){ this._tmap       = value; this._changed = true; } }
+    set layerKey(value)   { if( this._layerKey   !== value){ 
+        // Remove the existing layerObject from it's previous layer.
+        // _GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "BG1";
+        if(this._layerKey && this.layerObjKey && _GFX.currentData[this._layerKey].tilemaps[this.layerObjKey]){
+            console.log(`REMOVING: layerKey: ${this._layerKey}, layerObjKey: ${this.layerObjKey}`);
+            _GFX.funcs.removeLayerObj(this._layerKey, this.layerObjKey);
+            // _GFX.currentData["BG2"].tilemaps["N782_oneStar_anim2_10"];
+        }
+
+        this._layerKey   = value; this._changed = true; 
+    } }
+    set tilesetKey(value) { if( this._tilesetKey !== value){ this._tilesetKey = value; this._changed = true; } }
+    set settings(value)   { this._settings = value; this._changed = true; }
+    set xyByGrid(value)   { 
+        if(this._xyByGrid == value) { return; }
+
+        // xyByGrid requires tw and th.
+        
+        // Get the tileWidth and tileHeight from the tileset config. 
+        if(this.tilesetKey){
+            this.tw = _GFX.tilesets[this.tilesetKey].config.tileWidth ;
+            this.th = _GFX.tilesets[this.tilesetKey].config.tileHeight;
+        }
+        // Get the tileWidth and tileHeight from the configObj.dimensions config.
+        else{
+            this.tw = _APP.configObj.dimensions.tileWidth ;
+            this.th = _APP.configObj.dimensions.tileHeight;
+        }
+
+        // // TODO: Convert x and y.
+        // if(this._xyByGrid){
+        //     // Multiply x by tw.
+        //     this._x *= this.tw;
+            
+        //     // Multiply y by th.
+        //     this._y *= this.th;
+        // }
+        // else{
+        //     // Divide x by tw and round it down to get the new grid x.
+        //     this._x = ~~( this._x / this.tw) * this.tw;
+            
+        //     // Divide y by th and round it down to get the new grid y.
+        //     this._y = ~~( this._y / this.th) * this.th; 
+        // }
+        
+        this._xyByGrid = value; 
+        this._changed = true; 
+    }
+    
+    getSetting(key)       { return this._settings[key]; } 
+    setSetting(key, value){ this._settings[key] = value; this._changed = true; }
+
     constructor(config){
         this.orgConfig  = config;
-        this.immediateAdd = config.immediateAdd ?? false;
 
         // layerObjKey (MapKey), layerKey, and tilesetKey.
         this.layerObjKey = config.layerObjKey;
         this.layerKey    = config.layerKey;
         this.tilesetKey  = config.tilesetKey;
-        this.tilemapKey  = config.tilemapKey ?? "LayerObject_notmapName";
 
         // Tilemap. (It is possible that a tilemap is not provided/required.)
         this.tmap = config.tmap; // ?? new Uint8ClampedArray([1,1,0]);
@@ -30,48 +131,42 @@ class LayerObject {
         // x,y positioning (grid or pixel based.)
         this.xyByGrid = config.xyByGrid ?? false;
         
-        // xyByGrid requires tw and th.
-        if(this.xyByGrid){
-            // Get the tileWidth and tileHeight from the tileset config. 
-            if(this.tilesetKey){
-                this.tw = _GFX.tilesets[this.tilesetKey].config.tileWidth ;
-                this.th = _GFX.tilesets[this.tilesetKey].config.tileHeight;
-            }
-            // Get the tileWidth and tileHeight from the configObj.dimensions config.
-            else{
-                this.tw = _APP.configObj.dimensions.tileWidth ;
-                this.th = _APP.configObj.dimensions.tileHeight;
-            }
-        }
-
         // Settings.
         this.settings = config.settings ?? _GFX.funcs.correctSettings(null);
 
         // Hidden.
         this.hidden = false; 
 
-        // Add to _GFX.currentData.
-        if(config.immediateAdd){
-            this.firstRender();
-        }
+        // Change detection.
+        this._changed = true;
     };
     
+    // TODO: Redundant with removeLayerObject?
     // Remove the LayerObject from _GFX.currentData, set the hidden flag, return the orgConfig
     hideLayerObject(){
+        console.log("NOT READY: hideLayerObject", this); return;
+
         // Remove from _GFX.currentData and return the original config. (Helpful when changing layers.)
         return this.removeLayerObject();
     }
+
     // Removes the LayerObject data from _GFX.currentData. (Causing the drawing to be removed.)
     // Unsets the hidden flag to enable the render functions for this LayerObject. (So that drawing will work.)
     unhideLayerObject(){
+        console.log("NOT READY: unhideLayerObject", this); return;
+
         // Allow rendering by unsetting the hidden flag.
         this.hidden = false; 
+        this._changed = true;
 
         // Render the LayerObject.
         // this.render();
     }
     
+    // TODO: Redundant with hideLayerObject?
     removeLayerObject(){
+        console.log("NOT READY: removeLayerObject", this); return;
+        
         // NOTE: The object instance will need to be removed from where it was stored.
         
         // Remove the layer object from the cache.
@@ -79,19 +174,19 @@ class LayerObject {
         
         // Prevent further rendering by settings the hidden flag.
         this.hidden = true; 
+        this._changed = true;
         
         // Return the original config. (Helpful when changing layers.)
         return this.orgConfig;
     };
 
-    // Render functions.
-    firstRender(){
+    // Render function.
+    render(onlyReturnLayerObjData=false){
+        // Do not render hidden LayerObjects.
         if(this.hidden){ return; }
-        this.render();
-    };
-
-    render(){
-        if(this.hidden){ return; }
+        
+        // Do not render unchanged LayerObjects.
+        if(!this._changed){ return; }
 
         // Draw by grid or by pixel?
         let x = this.x; 
@@ -101,15 +196,30 @@ class LayerObject {
             y = y * this.th;
         }
 
+        //
+        let layerObjectData = _GFX.funcs.createLayerObjData({ 
+            mapKey  : this.layerObjKey, 
+            x       : x, 
+            y       : y, 
+            ts      : this.tilesetKey, 
+            settings: this.settings, 
+            tmap    : this.tmap, 
+        });
+
+        //
+        if(onlyReturnLayerObjData){ 
+            layerObjectData[this.layerObjKey].layerKey = this.layerKey;
+            this._changed = false;
+            return layerObjectData[this.layerObjKey]; 
+        }
+
+        //
         _GFX.funcs.updateLayer(this.layerKey, 
             {
-                ..._GFX.funcs.createLayerObjData({ 
-                    mapKey: this.layerObjKey, x: x, y: y, ts: this.tilesetKey, settings: this.settings, 
-                    tmap: this.tmap, 
-                    // tilemapKey: this.tilemapKey
-                }),
+                ...layerObjectData,
             }
         );
+        this._changed = false;
     };
 }
 class N782_face_anim extends LayerObject{
@@ -328,10 +438,10 @@ class N782_oneStar_animNS extends N782_oneStar_anim{
         this.done = false;
         this.tmap = this.frames[this.framesIndex];
 
-        this.x_min = -8*8+8;
+        this.x_min = -12*8+8;
         this.x_max = (35*8)-8;
-        this.x_inc =8;
-        this.xDir = 1;
+        this.x_inc =16;
+        this.xDir = -1;
 
         this.y_min = -8*8+8;
         this.y_max = (35*8)-8;
@@ -344,7 +454,7 @@ class N782_oneStar_animNS extends N782_oneStar_anim{
         this.x =  ( 25 )*8;
         this.y =  ( 5 )*8;
 
-        this.settings.colorData = [ [ [ 36, 72,255,255], [ 255,72,36,255] ], ];
+        this.settings.colorData = [ [ [ 36, 72,255,255], [ 255,72,36,255] ] ];
     }
 
     // Render functions.
@@ -395,7 +505,6 @@ class N782_oneStar_animNS extends N782_oneStar_anim{
     };
 };
 
-
 class N782_oneStar_anim2 extends N782_oneStar_anim{
     constructor(config){
         super(config);
@@ -444,7 +553,6 @@ class Card extends LayerObject{
         super(config);
 
         this.orgConfig  = config;
-        this.immediateAdd = config.immediateAdd ?? false;
         this.card = config.card ?? { size: "small", value: "CARD_0", color: "CARD_YELLOW" };
 
         // What type of card is this?
@@ -578,7 +686,16 @@ class Card extends LayerObject{
         }
     };
 };
+class GameBoard extends LayerObject{
+    constructor(config){
+        super(config);
+        this.tilesetKey = config.tilesetKey ?? "bg_tiles";
+        this.tmap = _GFX.funcs.getTilemap("bg_tiles", "board_28x28");
+        this.x = config.x ?? 0;
+        this.y = config.y ?? 0;
+    }
 
+};
 class Cursor extends LayerObject{
     constructor(config){
         super(config);

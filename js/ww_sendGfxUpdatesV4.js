@@ -44,6 +44,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             }
         },
 
+        // UNUSED
         // Deletes a specific map key in the data cache.
         oneMapKey: function(layer, mapKey){
             if(_GFX.currentData[layer][mapKey]){
@@ -407,7 +408,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             // The contents of these will determine what maps get new ImageData.
             let filtered_newMapKeys = [];
             let filtered_newMapData = {};
-            let filtered_reasons = {};
+            // let filtered_reasons = {};
 
             // If only x or y changed then the ImageData can be reused.
             for(let i=0, len=newMapKeys.length; i<len; i+=1){
@@ -415,10 +416,11 @@ messageFuncs.sendGfxUpdates.V4 = {
                 let newMap = newMapData[newMapKey];
 
                 // If this is a new map then currentData won't have it. Add it.
+                // TODO: use isNewTilemaphash
                 if(!_GFX.currentData[layerKey].tilemaps[newMapKey]){
                     filtered_newMapKeys.push(newMapKey);
                     filtered_newMapData[newMapKey] = newMap;
-                    filtered_reasons[newMapKey] = `New tilemap`;
+                    // filtered_reasons[newMapKey] = `${newMapKey}: New tilemap`;
                     continue; 
                 }
                 
@@ -429,8 +431,7 @@ messageFuncs.sendGfxUpdates.V4 = {
                 if(curr_tmap != new_tmap){ 
                     filtered_newMapKeys.push(newMapKey);
                     filtered_newMapData[newMapKey] = newMap;
-                    filtered_reasons[newMapKey] = `Changed tmap: curr: ${curr_tmap}, new: ${new_tmap}`;
-                    // console.log(filtered_reasons[newMapKey]);
+                    // filtered_reasons[newMapKey] = `${newMapKey}: Changed tmap: curr: ${curr_tmap}, new: ${new_tmap}`;
                     continue; 
                 }
 
@@ -439,27 +440,36 @@ messageFuncs.sendGfxUpdates.V4 = {
                 if(curr_settings != new_settings){ 
                     filtered_newMapKeys.push(newMapKey);
                     filtered_newMapData[newMapKey] = newMap;
-                    filtered_reasons[newMapKey] = `Changed settings: curr: ${curr_settings}, new: ${new_settings}`;
+                    // filtered_reasons[newMapKey] = `${newMapKey}: Changed settings: curr: ${curr_settings}, new: ${new_settings}`;
                     continue; 
                 }
 
-                let curr_w = curr_map.w;
-                let new_w = newMap.w;
-                if(curr_w != new_w){ 
+                let curr_ts = curr_map.ts;
+                let new_ts = newMap.ts;
+                if(curr_ts != new_ts){ 
                     filtered_newMapKeys.push(newMapKey);
                     filtered_newMapData[newMapKey] = newMap;
-                    filtered_reasons[newMapKey] = `Changed w: curr: ${curr_w}, new: ${new_w}`;
+                    // filtered_reasons[newMapKey] = `${newMapKey}: Changed ts: curr: ${curr_ts}, new: ${new_ts}`;
                     continue; 
                 }
 
-                let curr_h = curr_map.h;
-                let new_h = newMap.h;
-                if(curr_h != new_h){ 
-                    filtered_newMapKeys.push(newMapKey);
-                    filtered_newMapData[newMapKey] = newMap;
-                    filtered_reasons[newMapKey] = `Changed h: curr: ${curr_h}, new: ${new_h}`;
-                    continue; 
-                }
+                // let curr_w = curr_map.w;
+                // let new_w = newMap.w;
+                // if(curr_w != new_w){ 
+                //     filtered_newMapKeys.push(newMapKey);
+                //     filtered_newMapData[newMapKey] = newMap;
+                //     // filtered_reasons[newMapKey] = `${newMapKey}: Changed w: curr: ${curr_w}, new: ${new_w}`;
+                //     continue; 
+                // }
+
+                // let curr_h = curr_map.h;
+                // let new_h = newMap.h;
+                // if(curr_h != new_h){ 
+                //     filtered_newMapKeys.push(newMapKey);
+                //     filtered_newMapData[newMapKey] = newMap;
+                //     // filtered_reasons[newMapKey] = `${newMapKey}: Changed h: curr: ${curr_h}, new: ${new_h}`;
+                //     continue; 
+                // }
 
                 // Save the updated data to the data cache.
                 _GFX.currentData[layerKey].tilemaps[newMapKey].x = newMap.x;
@@ -470,8 +480,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             }
 
             // if(Object.keys(filtered_reasons).length){
-                // console.log("REASONS:", filtered_reasons);
-                // debugger;
+            //     console.log("REASONS:", Object.keys(filtered_reasons).length, "\n", filtered_reasons);
             // }
 
             return {

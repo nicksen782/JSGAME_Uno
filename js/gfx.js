@@ -187,7 +187,6 @@ var _GFX = {
             // NOTE: The last argument, gamestate is technically optional and defaults to the current gamestate 1.
 
             _GFX.layerObjs.updateOne(LayerObject, {
-                    immediateAdd: false,
                     layerObjKey: "demo_board", layerKey: "BG1", tilesetKey: "bg_tiles",
                     tmap: _GFX.funcs.getTilemap("bg_tiles", "board_28x28"),
                     x: 0, y: 0, xyByGrid: true,
@@ -289,12 +288,41 @@ var _GFX = {
             // Create the gamestate key in objs if it does not exist.
             if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
 
+            let layerObjects = {
+                "BG1": {},
+                "BG2": {},
+                "SP1": {},
+                "TX1": {},
+            };
+            
+            // Get all the layer objects. 
+            let temp;
+            let cnt = 0;
             for(let key in this.objs[gamestate]){
-                // Skip the rendering of hidden layer objects. 
-                if(this.objs[gamestate][key].hidden){ continue; }
+                let obj = this.objs[gamestate][key];
 
+                // TODO: test
+                // Skip the rendering of hidden layer objects. 
+                if(obj.hidden){ continue; }
+                
+                // Skip the rendering of unchanged layer objects. 
+                if(!obj._changed){ continue; }
+                
                 // Render the layer objects if it contains the render function.
-                if(this.objs[gamestate][key].render){ this.objs[gamestate][key].render() }
+                // if(this.objs[gamestate][key].render){ this.objs[gamestate][key].render(); }
+                if(obj.render){ 
+                    temp = obj.render(true); 
+                    layerObjects[temp.layerKey][key] = temp;
+                    cnt += 1;
+                }
+            }
+            if(cnt){ 
+                // console.log(cnt); 
+
+                // Send the layer objects to updateLayer all at once instead of one at a time.
+                for(let layerKey in layerObjects){ 
+                    _GFX.funcs.updateLayer(layerKey, layerObjects[layerKey]);
+                }
             }
         },
     },
@@ -381,7 +409,7 @@ var _GFX = {
             // 
             if(layer == "BG1" || layer == "BG2" || layer == "SP1" || layer == "TX1"){
                 let fade = _GFX.currentData[layer].fade;
-                let tilemap, exists, oldHash, newHash;
+                let tilemap, exists, oldHash, newHash, hashMapHash;
                 let tw ;
                 let th ;
                 let isNewTilemaphash;
@@ -408,33 +436,36 @@ var _GFX = {
                     // If it exists then get it's existing hash.
                     if(exists){ oldHash = _GFX.currentData[layer].tilemaps[tilemapKey].hash ?? 0; }
 
-                    // Generate a new hash. 
-                    newHash = _GFX.utilities.djb2Hash( JSON.stringify({tilemap, fade}) );
-
                     // Cache of all generated ImageData tilemaps. (to avoid regeneration.)
                     // HASHCACHEHMAP: Create a unique hash for some of the tilemap data.
-                    let hashMapHash = _GFX.utilities.djb2Hash(JSON.stringify({
-                        ts      : tilemap.ts,
-                        settings: JSON.stringify(tilemap.settings),
-                        tmap    : Array.from(tilemap.tmap),
-                        w: tilemap.tmap[0] * tw ,
-                        h: tilemap.tmap[1] * th,
-                    }));
+                    hashMapHash = _GFX.utilities.djb2Hash( JSON.stringify([
+                        [...tilemap.tmap],
+                        [Object.values(tilemap.settings)], 
+                        tilemap.ts
+                    ]));
 
-                    // Save to hashCacheMap. (Map)
+                    // Save hashMapHash to hashCacheMap. (Map)
                     if(!_GFX.hashCacheMap.get(hashMapHash)){
                         // console.log("Saving");
                         _GFX.hashCacheMap.set(hashMapHash, {
-                            ts      : tilemap.ts,
-                            settings: tilemap.settings,
                             tmap    : tilemap.tmap,
+                            settings: tilemap.settings,
+                            ts      : tilemap.ts,
                             w       : tilemap.tmap[0] * tw,
-                            h       : tilemap.tmap[1] * th,
+                            h       : tilemap.tmap[1] * th
                         });
+
                         isNewTilemaphash = true;
                     }
 
-                    // Is this a changed object? (TEST: Hashes don't match.)
+                    // Generate a new hash for THIS layerObject. 
+                    newHash = _GFX.utilities.djb2Hash( JSON.stringify([
+                        tilemap.x, 
+                        tilemap.y, 
+                        hashMapHash
+                    ]));
+
+                    // Is this a changed object?
                     if(oldHash != newHash){
                         // Update the layerObject.
                         _GFX.currentData[layer].tilemaps[tilemapKey] = {
@@ -584,8 +615,14 @@ var _GFX = {
 
         // Removes a layer object and sets the changes for that layer to true. 
         removeLayerObj: function(layerKey, mapKey){
+            console.log(`REMOVING: layerKey: ${layerKey}, mapKey: ${mapKey}`);
             // Remove from REMOVALS.
+            console.log(_GFX.REMOVALS[layerKey]);
             _GFX.REMOVALS[layerKey].filter(d => d != mapKey);
+            
+            console.log(_GFX.REMOVALS[layerKey]);
+            // Add to REMOVALS.
+            _GFX.REMOVALS[layerKey].push(mapKey);
 
             // Delete from currentData.
             delete _GFX.currentData[layerKey].tilemaps[mapKey];

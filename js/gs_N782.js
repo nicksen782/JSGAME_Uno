@@ -16,7 +16,8 @@ _APP.game.gamestates["gs_N782"] = {
         this.createLayerObjectPlaceholders();
         _GFX.layerObjs.clearAll(_APP.game.gs1);
 
-        _GFX.funcs.updateBG1BgColorRgba([32,24,48,255]);
+        // _GFX.funcs.updateBG1BgColorRgba([32,24,64,255]);
+        _GFX.funcs.updateBG1BgColorRgba([0,0,0,0]);
 
         _GFX.layerObjs.updateOne(N782_face_anim, { layerObjKey: "N782_face_anim", layerKey: "BG2", tilesetKey: "bg_tiles2" });
         _GFX.layerObjs.updateOne(N782_text_anim, { layerObjKey: "N782_text_anim", layerKey: "BG2", tilesetKey: "bg_tiles2" });

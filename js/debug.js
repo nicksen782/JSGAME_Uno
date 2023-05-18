@@ -582,7 +582,7 @@ var _DEBUG = {
             },
             // TODO: FIX.
             display_progressBars: function(now){
-                let mult = 10;
+                let mult = 1;
                 let newVal;
                 let oldVal;
                 let activeTime = 200;
@@ -615,7 +615,7 @@ var _DEBUG = {
                         this.elems.time_LOOP.e2,           // label
                         newVal,
                         mult
-                        , `${_APP.game.gameLoop.lastLoop_timestamp.toFixed(1)}ms`
+                        , `${_APP.game.gameLoop.lastLoop_timestamp.toFixed(1)}`
                     );
                     this.elems.time_LOOP.t = now;
                 }
@@ -633,7 +633,7 @@ var _DEBUG = {
                         this.elems.time_TOTAL.e2,           // label
                         newVal,
                         mult
-                        , `${(_APP.game.gameLoop.lastLoop_timestamp + +drawVal).toFixed(1)}ms`
+                        , `${(_APP.game.gameLoop.lastLoop_timestamp + +drawVal).toFixed(1)}`
                     );
                     this.elems.time_TOTAL.t = now;
                 }
