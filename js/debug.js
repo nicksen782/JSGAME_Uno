@@ -224,64 +224,89 @@ var _DEBUG = {
             // Display the canvas draw timings returned from the WebWorker.
             
             // Display the canvas draw timings data returned from the WebWorker.
-            this.timingsDisplay.gfx.display_progressBars(now);
-            this.timingsDisplay.gfx.display_layerChanges(now);
+            // let v1 = _DEBUG.timingsDisplay.gfx.dataIsUsed;
+            // let v2 = _DEBUG.timingsDisplay.gfx.dataIsUsed;;
+            if(
+                this.timingsDisplay.gfx.display_progressBars(now) &&
+                this.timingsDisplay.gfx.display_layerChanges(now) 
+            ){ 
+                _DEBUG.timingsDisplay.gfx.dataIsUsed = true;
+                // v2 = _DEBUG.timingsDisplay.gfx.dataIsUsed;
+            }
+            // console.log("dataIsUsed was:", v1, ", now:", v2);
             
             // Display the timing for the game loop (canvas draws are separate.)
             this.timingsDisplay.loop.display_progressBars(now);
-            this.timingsDisplay.loop.display_layerChanges(now);
-            this.timingsDisplay.loop.display_tmapCountByLayer(now);
+            // this.timingsDisplay.loop.display_layerChanges(now);
+            // this.timingsDisplay.loop.display_tmapCountByLayer(now);
             
             _APP.game.gameLoop.lastDebug1_timestamp =  performance.now() - debugTs;
             // console.log(_APP.game.gameLoop.lastDebug1_timestamp);
 
-            _DEBUG.timingsDisplay.gfx.dataIsUsed = true;
         });
     },
     timingsDisplay: {
         // prevValue and newValue should be values between 0-100.
-        updateProgressBar2: function(container, bar, label, newValue, mult) {
+        updateProgressBar2: function(container, bar, label, newValue, mult, label2="") {
             // newValue = Math.min( Math.max(newValue, 0), 100);
-            let prevValue = +label.getAttribute("curr");
+            let prevValue  = +label.getAttribute("curr");
+            let prevValue2 = +label.getAttribute("curr2");
+            let same  = +prevValue  === +newValue;
+            let same2 = +prevValue2 === +label2;
+            if(same && same2){ return; }
+
             let modifiedNewValue = newValue;
             let easingFactor = 0.05;
             let textOutput;
             let clampedPercent;
             let difference;
-            let same = prevValue == newValue;
             let cssClasses = ["level1", "level2", "level3", "level4", "level5"];
             let cssClass = "";
-
+            
             if(modifiedNewValue != 0){
                 difference = (modifiedNewValue - +prevValue);
                 modifiedNewValue += Math.round(difference * easingFactor);
-                // modifiedNewValue = Math.round(modifiedNewValue / mult) * mult;
                 modifiedNewValue = this.roundToNearestMultiple(modifiedNewValue, mult, "D");
                 if(modifiedNewValue < 0)  { modifiedNewValue = 0; }
                 // if(modifiedNewValue > 100){ modifiedNewValue = 100; }
             }
+            
+            let part1 = `${modifiedNewValue}%`.padStart(5, " ");
+            let part2 = `(${parseInt(label2).toFixed(1)}ms)`.padStart(9, " ");
 
-            // Adjust the width of the bar.
-            if(!same){
-                // Adjust the bar width.
-                clampedPercent = Math.min( Math.max(modifiedNewValue, 0), 100) ;  // Ensure percent is within 0-100 range.
-                bar.style.width = `${clampedPercent}%`;
-
-                if     (clampedPercent < 20){ cssClass = "level1"; } // GREEN
-                else if(clampedPercent < 40){ cssClass = "level2"; } // BLUE
-                else if(clampedPercent < 60){ cssClass = "level3"; } // YELLOW
-                else if(clampedPercent < 80){ cssClass = "level4"; } // ORANGE
-                else                        { cssClass = "level5"; } // RED
-                bar.classList.remove(...cssClasses);
-                bar.classList.add(cssClass);
-
-                // Adjust the values on the label.
-                textOutput = `${modifiedNewValue}%`.padStart(3, " ");
-                label.innerText = textOutput;
+            // if(!same || !same2){
+                // Generate the values for the label.
+                if(label2){ textOutput = `${part1} ${part2}`; }
+                else      { textOutput = `${part1} `; }
                 
-                // Adjust the attributes on the label.
+                // Adjust the width of the bar.
+                if(!same){
+                    // Adjust the bar width.
+                    clampedPercent = Math.min( Math.max(modifiedNewValue, 0), 100) ;  // Ensure percent is within 0-100 range.
+                    bar.style.width = `${clampedPercent}%`;
+
+                    if     (clampedPercent < 20){ cssClass = "level1"; } // GREEN
+                    else if(clampedPercent < 40){ cssClass = "level2"; } // BLUE
+                    else if(clampedPercent < 60){ cssClass = "level3"; } // YELLOW
+                    else if(clampedPercent < 80){ cssClass = "level4"; } // ORANGE
+                    else                        { cssClass = "level5"; } // RED
+                    bar.classList.remove(...cssClasses);
+                    bar.classList.add(cssClass);
+                    
+                    // Adjust the attributes on the label.
+                    // label.setAttribute("curr", modifiedNewValue); 
+                }
+                
+                if(!same2){
+                    // Adjust the attributes on the label.
+                    // label.setAttribute("curr2", label2); 
+                }
+                
+                // Adjust the values on the label.
+                label.innerText = textOutput;
                 label.setAttribute("curr", modifiedNewValue); 
-            }
+                label.setAttribute("curr2", label2); 
+            // }
         },
         roundToNearestMultiple: function(num, mult, dir){
             if(dir=="D")     { return Math.floor(num / mult) * mult; }
@@ -304,7 +329,8 @@ var _DEBUG = {
     
             // Determine if the active class can be removed once the old and new text match again.
             let canChange = (performance.now() - obj.t > activeTime) || obj.t == 0;
-    
+            if(!canChange){ return; }
+
             // If the newText is different that the current text...
             if(oldText != newText){
                 // Update the text.
@@ -326,10 +352,12 @@ var _DEBUG = {
             elems:{},
             values:{},
             dataIsUsed: false,
+            lastUpdate1: 0,
             updateCache: function(data){
                 // Save the data.
                 this.values = data;
                 this.dataIsUsed = false;
+                this.lastUpdate1 = performance.now();
 
                 // Add to the data key for each elem.
                 this.elems.TOTAL_ALL.data = (this.values.sendGfxUpdates.toString());
@@ -395,48 +423,110 @@ var _DEBUG = {
                 this.elems.E_TX1      = { e: document.getElementById("debug_timings_E_TX1"),        t: 0, data: 0 } 
                 this.elems.TOTAL_ALL  = { e: document.getElementById("debug_timings_TOTAL_ALL"),    t: 0, data: 0 } 
             },
+            calcValuesForProgressBars: function(obj){
+                let mult         = obj.mult;
+                let activeTime   = obj.activeTime;
+                let elems        = obj.elems;
+                let now          = obj.now;
+                
+                let label1_new   = "";
+                let label1_old   = "";
+                let label2_new   = "";
+                let label2_old   = "";
+                let tmpValue     = "";
+                let adjusted     = false;
+
+                // Determine if enough time has occurred for the next update.
+                let lastDrawTime = elems.bar.t;
+                let canRun = ((now - lastDrawTime) > activeTime) || lastDrawTime == 0 ; 
+
+                if(canRun){
+                    // (%) Generate label1 (reduce the value if the data is stale.)
+                    label1_new = (100*(elems.new.data / _APP.game.gameLoop.msFrame));
+                    if(this.dataIsUsed || (now - this.lastUpdate1 > activeTime)){
+                        tmpValue = +elems.new.data;
+                        tmpValue = + (tmpValue - (tmpValue/2)) .toFixed(1);
+                        // tmpValue = _DEBUG.timingsDisplay.roundToNearestMultiple(tmpValue, 1, "D");
+                        if(tmpValue <= 0.1) { tmpValue = 0; }
+                        elems.new.data = tmpValue;
+                        label1_new = (100*(tmpValue / _APP.game.gameLoop.msFrame));
+                        adjusted = true;
+                    }
+
+                    label1_new = _DEBUG.timingsDisplay.roundToNearestMultiple(label1_new, mult, "D");
+                    label1_new = _DEBUG.timingsDisplay.forceToRange(label1_new, 0, 999);
+                    label1_old = +elems.bar.e2.getAttribute("curr");
+                    
+                    // (ms) Generate label2.
+                    label2_new = +elems.new.data || "0";
+                    label2_old = +elems.bar.e2.getAttribute("curr2");
+                    
+                    // Determine if there should be an update.
+                    canRun = (label1_new != label1_old || label2_new != label2_old);
+                }
+                
+                return {
+                    canRun    : canRun,
+                    label1_new: label1_new,
+                    label2_new: label2_new,
+                    bar       : elems.bar,
+                    adjusted  : adjusted,
+                };
+            },
             display_progressBars: function(now){
                 if(!this.values["sendGfxUpdates"] || this.values["sendGfxUpdates"] == 0){ 
                     // console.log("No timings yet.");
-                    return; 
+                    return false; 
                 }
-    
+
+                let lastDrawTime = this.elems.time_DRAW.t;
                 let activeTime = 200;
-                let mult = 10;
-                let newVal;
-                let oldVal;
-                let t;
-                let canRun;
-    
-                newVal = (100*(this.elems.TOTAL_ALL.data / _APP.game.gameLoop.msFrame));
-                if(this.dataIsUsed){
-                    let value = +this.elems.TOTAL_ALL.data;
-                    value = Math.round(value - (value/8));
-                    // console.log("using used data", this.elems.TOTAL_ALL.data, value);
-                    this.elems.TOTAL_ALL.data = value;
-                    newVal = value;
-                }
+                let mult = 1;
                 
-                oldVal = this.elems.time_DRAW.e2.getAttribute("curr");
-                newVal = _DEBUG.timingsDisplay.roundToNearestMultiple(newVal, mult, "D");
-                newVal = _DEBUG.timingsDisplay.forceToRange(newVal, 0, 999);
-                t = this.elems.time_DRAW.t;
-                canRun = ((now - t) > activeTime) || t == 0;
-                if(newVal != oldVal && ( canRun )){
+                // Determine if enough time has occurred for the next update.
+                let canRun = ((now - lastDrawTime) > activeTime) || lastDrawTime == 0 ; 
+                if(!canRun){ return false; }
+
+                // Calculate the values for the progress bar.
+                let obj = this.calcValuesForProgressBars({
+                    elems: { 
+                        new: this.elems.TOTAL_ALL, 
+                        bar: this.elems.time_DRAW 
+                    },
+                    activeTime: activeTime,
+                    mult      : mult,
+                    now       : now,
+                });
+                let {
+                    bar: bar,
+                    label1_new: label1_new, // %
+                    label2_new: label2_new, // ms
+                    adjusted: noLabel,
+                } = obj;
+
+                ({ canRun: canRun } = obj);
+                // console.log(obj);
+
+                // Run the update.
+                if(canRun){
                     _DEBUG.timingsDisplay.updateProgressBar2(
-                        this.elems.time_DRAW.e0,           // container
-                        this.elems.time_DRAW.e1,           // bar
-                        this.elems.time_DRAW.e2,           // label
-                        newVal,
-                        mult
+                        bar.e0,           // container
+                        bar.e1,           // bar
+                        bar.e2,           // label
+                        label1_new, mult, 
+                        label2_new
+                        // noLabel ? " " : label2_new
                     );
-                    this.elems.time_DRAW.t = now;
+                    bar.t = now;
+                    return true;
                 }
+
+                return false;
             },
             display_layerChanges: function(now){
                 if(!this.values["sendGfxUpdates"] || this.values["sendGfxUpdates"] == 0){ 
                     // console.log("No timings yet.");
-                    return; 
+                    return false; 
                 }
 
                 let testText;
@@ -450,8 +540,11 @@ var _DEBUG = {
 
                     // if(eKey == "TOTAL_ALL"){ testText = testText.padStart(3, "0"); }
 
-                    _DEBUG.applyChange(testText, elem, activeTime, true);
+                    _DEBUG.timingsDisplay.applyChange(testText, elem, activeTime, true);
+                    // _DEBUG.timingsDisplay.applyChange(testText, elem, 0, true);
                 }
+
+                return true; 
             },
         },
         loop:{
@@ -487,6 +580,7 @@ var _DEBUG = {
                 this.elems.TX1_tms = { e: document.getElementById("debug_TX1_tms"), t: 0 };
                 
             },
+            // TODO: FIX.
             display_progressBars: function(now){
                 let mult = 10;
                 let newVal;
@@ -521,6 +615,7 @@ var _DEBUG = {
                         this.elems.time_LOOP.e2,           // label
                         newVal,
                         mult
+                        , `${_APP.game.gameLoop.lastLoop_timestamp.toFixed(1)}ms`
                     );
                     this.elems.time_LOOP.t = now;
                 }
@@ -528,6 +623,7 @@ var _DEBUG = {
                 // TOTAL (LOOP AND DRAW)
                 newVal = +newVal + +_DEBUG.timingsDisplay.gfx.elems.time_DRAW.e2.getAttribute("curr");
                 oldVal = +this.elems.time_TOTAL.e2.getAttribute("curr");
+                let drawVal = (+_DEBUG.timingsDisplay.gfx.elems.TOTAL_ALL.data).toFixed(1);
                 t = this.elems.time_TOTAL.t;
                 canRun = ((now - t) > activeTime) || t == 0;
                 if(newVal != oldVal && ( canRun )){
@@ -537,6 +633,7 @@ var _DEBUG = {
                         this.elems.time_TOTAL.e2,           // label
                         newVal,
                         mult
+                        , `${(_APP.game.gameLoop.lastLoop_timestamp + +drawVal).toFixed(1)}ms`
                     );
                     this.elems.time_TOTAL.t = now;
                 }

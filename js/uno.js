@@ -212,14 +212,15 @@ _APP.utility = {
     errorTriggered: false,
     errorHandler: function(e){
         e.preventDefault();
-        if(this.errorTriggered){ return false ; }
+        if(this.errorTriggered){ return false; }
+        this.errorTriggered = true;
 
-        this.errorTriggered = false;
         console.log(
             `ERRORHANDLER:`+
-            `\n  e.filename: ${e.filename}`+
+            // `\n  e.filename: ${e.filename}`+
             `\n  e.error   : `, e.error
         ); 
+
         try{
             _APP.game.gameLoop.running = false;
             _APP.game.gameLoop.loop_stop();
@@ -227,11 +228,12 @@ _APP.utility = {
             console.error(`${_APP.configObj.appName}: STOPPED THE GAMELOOP DUE TO ERROR`);
             
             // Open the debugger.
-            if(_APP.debugActive){ debugger; }
+            // if(_APP.debugActive){ setTimeout(()=>{debugger;}, 250); }
         }
         catch(e){
             console.log(e);
         }
+
         return false;
     },
     displayError: function(message){
