@@ -6,11 +6,14 @@ _APP.configObj = {
     // waitUntilFrameDrawn: true,
     waitUntilFrameDrawn: false,
 
+    generateAllCoreImageDataAssets: true,
+    // generateAllCoreImageDataAssets: false,
+
     // Offset x and y for all drawings by this number of tiles.
     useGlobalOffsets: true,
     globalOffsets:{
-        x: 2,
-        y: 2,
+        x: 1,
+        y: 1,
     },
 
     // Relative paths need to be correctly relative to whatever loads this file (the web page or the web worker.)
@@ -26,8 +29,8 @@ _APP.configObj = {
         "tileHeight": 8,
         // "rows":28, 
         // "cols":28
-        "rows":32, 
-        "cols":32
+        "rows":30, 
+        "cols":30
     },
 
     layers:[
@@ -52,6 +55,7 @@ _APP.initOutputScaleControls = function(){
     
     function resizeParent() {
         let scale = parseFloat(scaleSlider.value);
+        console.log("resizeParent", scale);
         let newW = firstLayerCanvas.width  * scale;
         let newH = firstLayerCanvas.height * scale;
         canvasOutputContainer.style.width  = newW + "px";
@@ -65,6 +69,26 @@ _APP.initOutputScaleControls = function(){
 };
 
 _APP.utility = {
+    //
+    ww_ImageDataAssetsGenerated: false, 
+
+    //
+    generateAllCoreImageDataAssets: async function(){
+        // _APP.game.gameLoop.loop_stop();
+        // _APP.utility.await generateAllCoreImageDataAssets();
+        // _APP.game.gameLoop.loop_start();
+
+        if(this.ww_ImageDataAssetsGenerated){ console.log("Already done!"); return; }
+        this.ww_ImageDataAssetsGenerated = true;
+        
+        await _WEBW_V.SEND("generateAllCoreImageDataAssets", {
+            data:{            },
+            refs:[]
+        }, true, false);
+
+        
+    },
+
     // Adds the specified file.
     addFile: function(rec, relativePath){
         return new Promise(async (res,rej)=>{
@@ -448,8 +472,10 @@ _APP.start = async function(){
         // alert(`${_APP.configObj.appName} (JSGAMEV2 version) load time: ${loadTime.toFixed(2)}ms`);
 
         // Start the game loop.
-        _APP.game.gameLoop.loop_start();
-
+        // _APP.game.gameLoop.loop_start();
+        setTimeout(()=>{ 
+            _APP.game.gameLoop.loop_start(); 
+        }, 250);
         resolve();
     });
 };

@@ -157,6 +157,14 @@ _APP.game = {
             // Init the fps object.
             this.fpsCalc.init(this.fps);
         
+            // Generate all graphics on the WebWorker.
+            if(_APP.configObj.generateAllCoreImageDataAssets){
+                let ts1 = performance.now();
+                await _APP.utility.generateAllCoreImageDataAssets();
+                ts1 = performance.now() - ts1;
+                console.log(`generateAllCoreImageDataAssets: ${ts1.toFixed(2)}ms`);
+            }
+
             // Give default values to avoid "jumpy values" at start.
             _APP.game.gameLoop.fpsCalc.average = this.fps;
             _APP.game.gameLoop.fpsCalc.avgMsPerFrame = _APP.game.gameLoop.msFrame;
@@ -169,8 +177,8 @@ _APP.game = {
             _APP.game.gamestates_list = Object.keys(_APP.game.gamestates);
         
             // Set the first gamestate.
-            // _APP.game.changeGs1("gs_JSG");
-            _APP.game.changeGs1("gs_N782");
+            _APP.game.changeGs1("gs_JSG");
+            // _APP.game.changeGs1("gs_N782");
             // _APP.game.changeGs1("gs_TITLE");
             // _APP.game.changeGs1("gs_OPTIONS");
             // _APP.game.changeGs1("gs_RULES");

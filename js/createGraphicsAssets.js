@@ -399,6 +399,10 @@
 
     // Update a region in the destination with the source data.
     function updateRegion(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h, writeType="replace") {
+        // source and destination should both be Uint8ClampedArray. 
+        // The bitwise math: x_start << 2; x_end << 2 are multipling by 4.
+        // The bitwise math: srcOffset << 2; destOffset << 2 are multipling by 4.
+
         // writeType: 
         // [
         //     "onlyToAlpha0", // onlyWriteToTransparentDest
@@ -407,6 +411,7 @@
         // ];
 
         let srcIndex, destIndex, diff;
+        let srcOffset, destOffset;
         let x_start = Math.max(0, -dx);
         let x_end = Math.min(w, destWidth - dx);
     
@@ -433,21 +438,31 @@
             }
     
             // Calculate the starting source and destination indexes for this row.
-            srcIndex  = y * srcWidth * 4;
-            destIndex = ((y + dy) * destWidth + dx) * 4;
+            // srcIndex  = y * srcWidth * 4;
+            // destIndex = ((y + dy) * destWidth + dx) * 4;
+            srcOffset  = y * srcWidth << 2;
+            destOffset = ((y + dy) * destWidth + dx) << 2;
     
             switch(writeType){
                 case "blitDest": 
                 case "onlyToAlpha0":
-                    for (let i = x_start * 4; i < x_end * 4; i += 4) {
+                    // for (let i = x_start * 4; i < x_end * 4; i += 4) {
+                    for (let i = x_start << 2; i < x_end << 2; i += 4) {
                         // If the source pixel is fully transparent , the destination pixel is preserved.
-                        if (writeType=="blitDest"     && source[srcIndex + i + 3] == 0) { continue; }
-                        
+                        // if (writeType=="blitDest"     && source[srcIndex + i + 3] == 0) { continue; }
+                        if (writeType == "blitDest"     && source[srcOffset + i + 3] == 0) continue;
+
                         // If the destination pixel is transparent then write the source pixel.
-                        if (writeType=="onlyToAlpha0" && destination[destIndex + i + 3] !== 0) { continue; }
-                        
+                        // if (writeType=="onlyToAlpha0" && destination[destIndex + i + 3] !== 0) { continue; }
+                        if (writeType == "onlyToAlpha0" && destination[destOffset + i + 3] !== 0) continue;
+
                         // Write the data.
-                        destination.set(source.subarray(srcIndex + i, srcIndex + i + 4), destIndex + i);
+                        // destination.set(source.subarray(srcIndex + i, srcIndex + i + 4), destIndex + i);
+                        // destination.set(source.subarray(srcOffset + i, srcOffset + i + 4), destOffset + i);
+                        destination[destOffset + i + 0] = source[srcOffset + i + 0];
+                        destination[destOffset + i + 1] = source[srcOffset + i + 1];
+                        destination[destOffset + i + 2] = source[srcOffset + i + 2];
+                        destination[destOffset + i + 3] = source[srcOffset + i + 3];
                     }
                     break;
 
@@ -457,8 +472,10 @@
                     // Bounds check.
                     if(dx < 0){ 
                         diff       = -dx;      // Diff will be a positive version of dx.
-                        srcIndex  += diff * 4; // Add pixels to srcIndex (read ahead.)
-                        destIndex += diff * 4; // Add pixels to destIndex (read ahead.)
+                        // srcIndex  += diff * 4; // Add pixels to srcIndex (read ahead.)
+                        srcOffset  += diff << 2; // Add pixels to srcIndex (read ahead.)
+                        // destIndex += diff * 4; // Add pixels to destIndex (read ahead.)
+                        destOffset += diff << 2; // Add pixels to destIndex (read ahead.)
                         x_end     -= diff;     // Reduce x_end since we will be reading "diff" pixels less than before.
                         // console.log("FIXED: x is too far left:");
                     }
@@ -467,9 +484,13 @@
                         continue;
                     }
 
-                    for (let i = x_start * 4; i < x_end * 4; i += 4) {
-                        destination.set(source.subarray(srcIndex + i, srcIndex + i + 4), destIndex + i);
+                    // for (let i = x_start * 4; i < x_end * 4; i += 4) {
+                    //     destination.set(source.subarray(srcIndex + i, srcIndex + i + 4), destIndex + i);
+                    // }
+                    for (let i = x_start << 2; i < x_end << 2; i += 4) {
+                        destination.set(source.subarray(srcOffset + i, srcOffset + i + 4), destOffset + i);
                     }
+                    
                     break;
     
                 default: 

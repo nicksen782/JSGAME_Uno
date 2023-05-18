@@ -925,6 +925,11 @@ _DEBUG.init = async function(){
         _DEBUG.timingsDisplay.gfx.init()
         _DEBUG.timingsDisplay.loop.init()
 
+        // Resize
+        let scaleSlider = document.getElementById("scaleSlider");
+        scaleSlider.value = "2.00";
+        scaleSlider.dispatchEvent(new Event("input"));
+
         // Output some timing info.
         // console.log("DEBUG: init:");
         // console.log("  ts_loadFiles                :", ts_loadFiles.toFixed(3));

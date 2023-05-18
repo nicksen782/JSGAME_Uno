@@ -71,9 +71,11 @@ messageFuncs.sendGfxUpdates.V4 = {
             return  Math.round(JsAlpha * 255);
         },
 
+        // UNUSED
         // Convert Uint8 (0-255) alpha to JsAlpha (0.0 - 1.0).
         convertUint8AlphaToJsAlpha: function(Uint8Alpha){
-            return Number((Uint8Alpha / 255).toFixed(2));
+            // return Number((Uint8Alpha / 255).toFixed(2));
+            return ( ( (Uint8Alpha/255) * 100 ) |0 ) / 100;
         },
 
         // Convert array having values for r,g,b,a to 32-bit rgba value.
@@ -82,7 +84,8 @@ messageFuncs.sendGfxUpdates.V4 = {
             let [r, g, b, a] = rgbaArray;
             
             // Generate the 32-bit version of the rgbaArray.
-            let fillColor = (a << 24) | (b << 16) | (g << 8) | r;
+            // let fillColor = (a << 24) | (b << 16) | (g << 8) | r;
+            let fillColor = ((a << 24) | (b << 16) | (g << 8) | r) >>> 0;
             
             // Return the result.
             return fillColor;
@@ -186,9 +189,11 @@ messageFuncs.sendGfxUpdates.V4 = {
             // x/y changes will be updated in the graphics data cache.
             // Non-reusable keys and data will be replace newMapKeys and newMapData.
             ({newMapKeys, newMapData} = this.parent.DRAW.canImageDataTilemapBeReused(layerKey, newMapKeys, newMapData));
+            // ({newMapKeys, newMapData, reasons} = this.parent.DRAW.canImageDataTilemapBeReused(layerKey, newMapKeys, newMapData));
             
             // Create ImageData tilemaps as needed and update the graphics data cache. 
             if(newMapKeys.length){
+                // console.log("These tilemaps were not in the graphics cache:", reasons);
                 this.parent.DRAW.createImageDataFromTilemapsAndUpdateGraphicsCache(
                     layerKey, newMapKeys, newMapData
                 );
@@ -201,6 +206,12 @@ messageFuncs.sendGfxUpdates.V4 = {
 
             // Set the background color?
             let ts_setLayerBackgroundColor = performance.now();
+            
+            if(layerKey == "BG1" && Array.isArray(layerData.bgColorRgba)){
+                // this.parent.SETBG.setLayerBgColorRgba( layerKey, [0,0,0,0], layerData.bgColorRgba );
+                this.parent.SETBG.setImageDataBgColorRgba( _GFX.layers[layerKey].imgDataCache, [0,0,0,0], layerData.bgColorRgba );
+            }
+
             // If the global fade is 10 or 11 then.
             if(layerData.fade.fade && (layerData.fade.currFade == 10 || layerData.fade.currFade == 11)){
                 messageFuncs.timings["sendGfxUpdates"][layerKey]["__TOTAL"]            = + (ts_clearLayer+ts_clearRemovedData).toFixed(3);
@@ -215,9 +226,6 @@ messageFuncs.sendGfxUpdates.V4 = {
                 this.parent.DRAW.drawImgDataCacheToCanvas(layerKey, layerData.fade);
                 ts_drawImgDataCache = performance.now() - ts_drawImgDataCache;
                 return;
-            }
-            if(layerKey == "BG1"){
-                this.parent.SETBG.setLayerBgColorRgba( layerKey, [0,0,0,0], layerData.bgColorRgba );
             }
             ts_setLayerBackgroundColor = performance.now() - ts_setLayerBackgroundColor;
 
@@ -269,6 +277,35 @@ messageFuncs.sendGfxUpdates.V4 = {
                 hash = ((hash << 5) + hash) + str.charCodeAt(i); /* hash * 33 + c */
             }
             return hash;
+        },
+
+        // 
+        generateAllCoreImageDataAssets: async function(){
+            // console.log("RUNNING: generateAllCoreImageDataAssets");
+
+            // Pre-generate all ImageData tilemaps to cache.
+            for(let tilesetKey in _GFX.tilesets){ 
+                let tilemaps = {};
+                let mapKeys = [];
+
+                for(let tilemapKey in _GFX.tilesets[tilesetKey].tilemaps){ 
+                    // Get the tilemap data.
+                    let tilemap = _GFX.tilesets[tilesetKey].tilemaps[tilemapKey];
+
+                    // Add the tilemapKey.
+                    mapKeys.push(tilemapKey);
+
+                    // Generate a minimal tilemap object for createImageDataFromTilemapsAndUpdateGraphicsCache.
+                    tilemaps[tilemapKey] = {
+                        "ts"      : tilesetKey,
+                        "settings": _GFX.defaultSettings,
+                        "tmap"    : tilemap,
+                    };
+                }
+
+                // Create tilemaps and hashCache entries for any missing tilemaps.
+                this.createImageDataFromTilemapsAndUpdateGraphicsCache("", mapKeys, tilemaps, false);
+            }
         },
 
         //
@@ -416,7 +453,6 @@ messageFuncs.sendGfxUpdates.V4 = {
                 let newMap = newMapData[newMapKey];
 
                 // If this is a new map then currentData won't have it. Add it.
-                // TODO: use isNewTilemaphash
                 if(!_GFX.currentData[layerKey].tilemaps[newMapKey]){
                     filtered_newMapKeys.push(newMapKey);
                     filtered_newMapData[newMapKey] = newMap;
@@ -482,6 +518,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             // if(Object.keys(filtered_reasons).length){
             //     console.log("REASONS:", Object.keys(filtered_reasons).length, "\n", filtered_reasons);
             // }
+            // if(filtered_newMapKeys.length){ console.log("filtered_newMapKeys:", filtered_newMapKeys); }
 
             return {
                 newMapKeys: filtered_newMapKeys,
@@ -491,7 +528,9 @@ messageFuncs.sendGfxUpdates.V4 = {
         },
 
         //
-        createImageDataFromTilemapsAndUpdateGraphicsCache: function(layerKey, mapKeys, maps){
+        createImageDataFromTilemapsAndUpdateGraphicsCache: function(layerKey, mapKeys, maps, save=true){
+            // console.log(mapKeys, maps);
+            // debugger;
             let mapKey;
             let map;
             let cacheHit = false; 
@@ -519,20 +558,18 @@ messageFuncs.sendGfxUpdates.V4 = {
 
                 // Use existing ImageData cache (Map)
                 if(this.hashCacheMap.has(hash)){
+                    // console.log("Cache hit: Map", mapKey, map);
                     map.imgData = this.hashCacheMap.get(hash).imgData;
                     if(map.imgData && map.imgData.width){ cacheHit = true; }
-                    // console.log("Cache hit: Map", cacheHit, mapKey, map);
                 }
 
-                // Create the ImageData for this tilemap since it does not exist in the cache.
                 if(!cacheHit){
+                    // console.log("Not in cache Generating/Saving:", mapKey, map);
+
+                    // Create the ImageData for this tilemap since it does not exist in the cache.
                     map.imgData = this.createImageDataFromTilemap( map );
-                    // console.log("Generated:", mapKey, map, map.settings.fade);
-                }
-
-                // Save to hashCacheMap. (Map)
-                if(!cacheHit){
-                    // console.log("Saving");
+                    
+                    // Save to hashCacheMap. (Map)
                     this.hashCacheMap.set(hash, {
                         imgData : map.imgData,
                         ts      : map.ts,
@@ -540,13 +577,16 @@ messageFuncs.sendGfxUpdates.V4 = {
                         tmap    : map.tmap,
                         w: map.imgData.width, 
                         h: map.imgData.height
+                        ,mapKey:mapKey // First tilemap key used by this hash.
                     });
                 }
 
                 // Save the completed data to the data cache.
-                _GFX.currentData[layerKey].tilemaps[mapKey] = {
-                    ...map,
-                    imgData: map.imgData,
+                if(save){
+                    _GFX.currentData[layerKey].tilemaps[mapKey] = {
+                        ...map,
+                        imgData: map.imgData,
+                    };
                 }
             }
         },
@@ -623,7 +663,6 @@ messageFuncs.sendGfxUpdates.V4 = {
         messageFuncs.timings["sendGfxUpdates"].hasChanges = messageData.hasChanges;
         messageFuncs.timings["sendGfxUpdates"].version    = messageData.version;
         messageFuncs.timings["sendGfxUpdates"].ALLCLEAR   = messageData.ALLCLEAR;
-        messageFuncs.timings["sendGfxUpdates"].currentgs1   = messageData.currentgs1;
     },
     run: function(messageData){
         let sendGfxUpdates = performance.now();
@@ -661,27 +700,42 @@ messageFuncs.sendGfxUpdates.V4 = {
         messageFuncs.timings["sendGfxUpdates"].hasChanges = messageData.hasChanges;
         messageFuncs.timings["sendGfxUpdates"].version    = messageData.version;
         messageFuncs.timings["sendGfxUpdates"].ALLCLEAR   = messageData.ALLCLEAR;
-        messageFuncs.timings["sendGfxUpdates"].currentgs1   = messageData.currentgs1;
 
         // Return the timings.
         return messageFuncs.timings["sendGfxUpdates"];
 
-        // MessageData should look like this:
-        // let data2 = {
-        //     version: 4,       // Version of the messageData.
-        //     ALLCLEAR: false,  // Request to clear all layers and data.
-        //     hasChanges: true, // At least one layer has changes.
-        //     BG1:{
-        //         CHANGES       : {},                              // Added or changed.
-        //         REMOVALS_ONLY : [],                              // Previously existing and requiring removal
-        //         fade       : _GFX.currentData["BG1"].fade,       // Fade for this layer.
-        //         changes    : _GFX.currentData["BG1"].changes,    // If the layer has changes
-        //         bgColorRgba: _GFX.currentData["BG1"].bgColorRgba // background-color for the layer.
-        //     }
-        //     // ... BG1 repeated but for the remaining layers which won't have bgColorRgba.
-        // };
+        // MessageData should look something like this:
+        /*
+        messageData = {
+            ALLCLEAR: false,  // Request to clear all layers and data.
+            version: 4,       // Version of the messageData.
+            hasChanges: true, // At least one layer has changes.
+            gs1       : "gs_JSG", 
+            gs2       : "", 
+            BG1:{
+                // Added or changed.
+                CHANGES       : {
+                    "board_28x28": {
+                        "hash": 528763009, "hashPrev": 528763009,
+                        "ts": "bg_tiles", "tmap": [],
+                        "x": 8, "y": 8, "w": 224, "h": 224,
+                        "settings": {
+                            "fade": null, "xFlip": false, "yFlip": false, "rotation": 0,
+                            "colorData": [],
+                            "bgColorRgba": [ 128, 128, 0, 255 ]
+                        }
+                    }
+                },
+                REMOVALS_ONLY : ["p1_card_0"],                   // Previously existing and requiring removal.
+                fade       : _GFX.currentData["BG1"].fade,       // Fade for this layer.
+                changes    : _GFX.currentData["BG1"].changes,    // If this layer has changes
+                bgColorRgba: _GFX.currentData["BG1"].bgColorRgba // Background-color for the layer.
+            }
+            // <OTHER LAYERS> NOTE: Only BG1 has bgColorRgba.
+        };
+        */
     },
-    init: function(){
+    init: async function(){
         this.CLEAR.parent = this;
         let {width, height} = _GFX.layers["BG1"].imgDataCache;
         this.CLEAR.fullTransparent_imgDataLayer = new ImageData(width, height);

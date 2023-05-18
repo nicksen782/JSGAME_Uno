@@ -86,14 +86,19 @@
                 script.onload = async function () { 
                     script.onload = null; 
                     await _APP.init_standAlone(); 
-                    loading.style.display = "none";
-                    wrapper.style.display = "";
+                    // loading.style.display = "none";
+                    // wrapper.style.display = "";
                     let ts1E = performance.now() - ts1S;
                     console.log(`${_APP.configObj.appName} (Stand-Alone version) load time: ${ts1E.toFixed(2)}ms`);
                     // alert(`${_APP.configObj.appName} (Stand-Alone version) load time: ${ts1E.toFixed(2)}ms`);
 
                     // Start the game loop.
-                    _APP.game.gameLoop.loop_start();
+                    // _APP.game.gameLoop.loop_start();
+                    setTimeout(()=>{ 
+                        loading.style.display = "none";
+                        wrapper.style.display = "";
+                        _APP.game.gameLoop.loop_start(); 
+                    }, 250);
 
                     res(); 
                 };

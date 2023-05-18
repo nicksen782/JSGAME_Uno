@@ -9,6 +9,7 @@ var _WEBW_V = {
         "clearAllLayers",
         "_DEBUG.drawColorPalette",
         "_DEBUG.toggleDebugFlag",
+        "generateAllCoreImageDataAssets",
     ],
     // Allowed RECEIVE "modes."
     modes_RECEIVE:[
@@ -19,6 +20,7 @@ var _WEBW_V = {
         "clearAllLayers",
         "_DEBUG.drawColorPalette",
         "_DEBUG.toggleDebugFlag",
+        "generateAllCoreImageDataAssets",
     ],
     differedProms: {},
     createDeferredPromise : function(){

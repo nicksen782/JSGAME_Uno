@@ -51,6 +51,16 @@ var _GFX = {
         },
     },
 
+    // Default values for settings.
+    defaultSettings: {
+        fade: null,
+        xFlip: false,
+        yFlip: false,
+        rotation: 0,
+        colorData: [],
+        bgColorRgba: []
+    },
+
     // Cache of all generated ImageData tilemaps. (Main thread does NOT include the ImageData.)
     hashCacheMap: new Map(),
 
@@ -344,21 +354,17 @@ var _GFX = {
             else{ _GFX.DRAWNEEDED = true;  }
             return _GFX.DRAWNEEDED;
         },
-        // Ensures that settings is an object.
+
+        // Ensures that settings is an object with at least the default values within it.
         correctSettings: function(settings){
-            if(
-                ! (
-                    settings !== null &&
-                    typeof settings === 'object' &&
-                    !Array.isArray(settings)
-                )
-            ){
-                // Settings was not an object. Replace with default settings.
-                // console.error("Fixing settings", settings);
-                settings = { fade: null, xFlip: false, yFlip: false, rotation: 0, colorData:[] };
+            // Check if settings is a valid object. Make it an object if it is not already.
+            if (settings === null || typeof settings !== 'object' || Array.isArray(settings)) {
+                settings = {};
             }
 
-            return settings;
+            // Merge the default settings with the provided settings.
+            // Already existing settings will remain and missing settings will be added from the default settings.
+            return Object.assign({}, _GFX.defaultSettings, settings);
         },
 
         // This requests that all output canvases be cleared. 
@@ -412,9 +418,9 @@ var _GFX = {
                 let tilemap, exists, oldHash, newHash, hashMapHash;
                 let tw ;
                 let th ;
-                let isNewTilemaphash;
+                // let isNewTilemaphash;
                 for(let tilemapKey in tilemaps){
-                    isNewTilemaphash = false;
+                    // isNewTilemaphash = false;
                     
                     // Get the tilemap from the provided list.
                     tilemap = tilemaps[tilemapKey];
@@ -455,7 +461,7 @@ var _GFX = {
                             h       : tilemap.tmap[1] * th
                         });
 
-                        isNewTilemaphash = true;
+                        // isNewTilemaphash = true;
                     }
 
                     // Generate a new hash for THIS layerObject. 
@@ -478,7 +484,7 @@ var _GFX = {
                             w        : tilemap.w,
                             h        : tilemap.h,
                             settings : tilemap.settings,
-                            isNewTilemaphash : isNewTilemaphash,
+                            // isNewTilemaphash : isNewTilemaphash,
                         };
 
                         // Set the changes flag for this layer since there were changes.
@@ -565,16 +571,14 @@ var _GFX = {
 
             // console.log("HEY");
             if(_GFX.GFX_UPDATE_DATA.hasChanges){
-                // console.log(`_GFX.GFX_UPDATE_DATA.hasChanges:`, _GFX.GFX_UPDATE_DATA.hasChanges, _GFX.GFX_UPDATE_DATA);
-                // debugger;
                 // Send ASYNC
-                _GFX.GFX_UPDATE_DATA.currentgs1 = _APP.game.gs1;
                 if(!waitForResp){
                     _WEBW_V.SEND("sendGfxUpdates", { 
                         data: _GFX.GFX_UPDATE_DATA, 
                         refs:[]
                     }, false, _APP.debugActive); // Request data if debug is active.
                 }
+                
                 // Await for the graphics update to finish.
                 else{
                     await _WEBW_V.SEND("sendGfxUpdates", { 
@@ -942,7 +946,7 @@ _GFX.init = async function(){
         };
 
         // Send the config. Await the response.
-        await _WEBW_V.SEND("initConfigAndGraphics", {data: { configObj: _APP.configObj } }, true, true);
+        await _WEBW_V.SEND("initConfigAndGraphics", {data: { configObj: _APP.configObj, defaultSettings: _GFX.defaultSettings } }, true, true);
         
         // Generate canvas layers and attach to the DOM.
         let outputDiv = document.getElementById("output");

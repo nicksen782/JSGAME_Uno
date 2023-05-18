@@ -59,6 +59,9 @@ const messageFuncs = {
         // Save the debugActive flag (global variable.)
         debugActive = messageData.debugActive ?? false;
 
+        // Save the default settings.
+        _GFX.defaultSettings = messageData.defaultSettings;
+
         // Save the timings.
         messageFuncs.timings["initConfigAndGraphics"]["tsDataSave"]              = tsDataSave.toFixed(3);
         messageFuncs.timings["initConfigAndGraphics"]["getAndParseGraphicsData"] = results.timings.getAndParseGraphicsData.toFixed(3);
@@ -68,7 +71,7 @@ const messageFuncs = {
         // Return some minimal data.
         return minimalReturnData;
     },
-    initLayers : function(messageData){
+    initLayers : async function(messageData){
         // Save the layers data. Configure the ctx value for each layer.
         let tsLayerSave = performance.now();
 
@@ -96,7 +99,7 @@ const messageFuncs = {
         // Init V4
         let ts_initV4 = performance.now();
         if(messageFuncs.sendGfxUpdates.V4){
-            messageFuncs.sendGfxUpdates.V4.init();
+            await messageFuncs.sendGfxUpdates.V4.init();
         }
         ts_initV4 = performance.now() - ts_initV4;
         
@@ -114,6 +117,7 @@ importScripts("ww_sendGfxUpdatesV4.js");
 const _GFX = {
     configObj: {},
     layers: {},
+    defaultSettings: {},
     currentData: {
         "BG1":{
             bgColorRgba: [0,0,0,0],
@@ -382,7 +386,12 @@ self.onmessage = async function(event) {
                 break;
             }
             case "initLayers"           : { 
-                messageFuncs.initLayers(data); 
+                await messageFuncs.initLayers(data); 
+                break; 
+            }
+            case "generateAllCoreImageDataAssets"           : { 
+                if(!flags.dataRequest){              await messageFuncs.sendGfxUpdates.V4.DRAW.generateAllCoreImageDataAssets(); }
+                else                  { returnData = await messageFuncs.sendGfxUpdates.V4.DRAW.generateAllCoreImageDataAssets(); }
                 break; 
             }
             case "sendGfxUpdates"       : { 
