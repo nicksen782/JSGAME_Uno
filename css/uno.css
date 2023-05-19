@@ -151,3 +151,7 @@ body{
 .controls_navBarViews.active{ 
     display: block;
 }
+
+div#outputContainer {
+    display: flex;
+}

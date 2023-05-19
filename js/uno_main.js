@@ -130,19 +130,12 @@ _APP.game = {
                     // await _DEBUG.endOfLoopDraw_funcs(); 
                     // ts1 = performance.now() - ts1;
                     // console.log(ts1.toFixed(1));
-                }
-                else{
+
                     // Log to the console if the loop took too long.
                     if(this.lastLoop_timestamp > this.msFrame){ 
-                        console.log(`lastLoop: ${100*(this.lastLoop_timestamp/this.msFrame).toFixed(0)} % (${this.lastLoop_timestamp.toFixed(1)} ms) of: ${this.msFrame.toFixed(1)} ms`); 
-                        console.log("  gs1      : ", _APP.game.gs1); 
-                        console.log("  gs2      : ", _APP.game.gs2); 
-                        console.log("  frameCounter    : ", this.frameCounter); 
-                        console.log("  frameDrawCounter: ", this.frameDrawCounter); 
-                        console.log("");
+                        console.log(`lastLoop: ${100*(this.lastLoop_timestamp/this.msFrame).toFixed(0)} % (${this.lastLoop_timestamp.toFixed(1)} ms) of: ${this.msFrame.toFixed(1)} ms (gs1: '${_APP.game.gs1}' gs2: '${_APP.game.gs2}')`); 
                     }
                 }
-                // console.log(`loop time: ${this.lastLoop_timestamp.toFixed(1)} ms, max time: ${this.msFrame.toFixed(1)} ms (${100*(this.lastLoop_timestamp/this.msFrame).toFixed(1)} %)`);
             }
 
             // Request the next frame.
@@ -159,10 +152,15 @@ _APP.game = {
         
             // Generate all graphics on the WebWorker.
             if(_APP.configObj.generateAllCoreImageDataAssets){
-                let ts1 = performance.now();
-                await _APP.utility.generateAllCoreImageDataAssets();
-                ts1 = performance.now() - ts1;
-                console.log(`generateAllCoreImageDataAssets: ${ts1.toFixed(2)}ms`);
+                if(!_APP.debugActive){
+                    await _APP.utility.generateAllCoreImageDataAssets();
+                }
+                else{
+                    let ts1 = performance.now();
+                    await _APP.utility.generateAllCoreImageDataAssets();
+                    ts1 = performance.now() - ts1;
+                    console.log(`generateAllCoreImageDataAssets: ${ts1.toFixed(2)}ms`);
+                }
             }
 
             // Give default values to avoid "jumpy values" at start.

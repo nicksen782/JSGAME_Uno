@@ -1,8 +1,9 @@
 #debug{
-    border:1px solid white;
+    /* border:1px solid white; */
     padding:5px;
     /* background-color: rgb(255 255 255 / 25%); */
-    background-color: rgb(113 143 233);
+    /* background-color: rgb(113 143 233); */
+    background-color: rgba(255,255,255,0.5);
 }
 
 .debug_title{
@@ -60,11 +61,12 @@
 .debug_fadeSliderText{width: 85px;display: inline-block;background-color: rgb(0 0 0 / 6%);font-family: monospace;}
 
 div#debug_test_alwaysVisible {
-    /* border: 1px solid blue; */
-    background-color: rgba(255,255,255,0.5);
-    margin-top: 5px;
-    width: 640px;
-    margin: auto;
+    border-bottom: 1px solid blue;
+    /* background-color: rgba(255,255,255,0.5); */
+    /* margin-top: 5px; */
+    /* width: 650px; */
+    /* margin: auto; */
+    width: 100%;
 }
 
 .debugLive{
@@ -76,10 +78,11 @@ div#debug_test_alwaysVisible {
 
 #debug_progressTable{
     width: 100%;
-    display: block;
+    /* display: block; */
 }
 .debug_td_progressTable{
-    width: 200px;
+    width: 210px;
+    /* width: 100%; */
 }
 
 .debug_table{
@@ -155,3 +158,34 @@ div#debug_test_alwaysVisible {
     /* border: 1px solid black; */
 }
   
+
+#debug_navBarTabs1 {
+    border-bottom: 1px solid black;
+    /* min-width: 335px; */
+    /* background-color: #00d4ff36; */
+    /* background-color: rgba(255,255,255,0.5); */
+}
+#debug_navBarTabs2 {
+    border-bottom: 1px solid black;
+    /* min-width: 335px; */
+    /* background-color: #00d4ff36; */
+    /* background-color: rgba(255,255,255,0.5); */
+}
+
+div#debug_sideDiv {
+    width: 650px;
+    margin: auto;
+    background-color: rgba(255,255,255,0.5);
+    height: 100%;
+    padding: 5px;
+    /* border: 1px solid white; */
+    border: 2px solid white;
+    margin-left: 2px;
+}
+
+div#debug_navBarViews {
+    /* background-color: rgba(255,255,255,0.5); */
+}
+div#debug_navBarViews2 {
+    /* background-color: rgba(255,255,255,0.5); */
+}

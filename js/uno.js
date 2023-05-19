@@ -55,7 +55,6 @@ _APP.initOutputScaleControls = function(){
     
     function resizeParent() {
         let scale = parseFloat(scaleSlider.value);
-        console.log("resizeParent", scale);
         let newW = firstLayerCanvas.width  * scale;
         let newH = firstLayerCanvas.height * scale;
         canvasOutputContainer.style.width  = newW + "px";
@@ -385,17 +384,19 @@ _APP.navBar1 = {
 
         // Handling the loop for the gamepad config.
         if(typeof _INPUT != undefined && _INPUT.web){
-            if(key == "view_input"){ 
-                try{ 
-                    _INPUT.web.mainView.showInput_hideOthers();
-                    this.DOM2.aux.classList.add("wide");
-                } catch(e){ console.log(e); };
-            }
-            else{ 
-                try{ 
-                    _INPUT.web.mainView.hideInput_restoreOthers(); 
-                    this.DOM2.aux.classList.remove("wide"); 
-                } catch(e){ console.log(e); };
+            if(this.DOM2 && this.DOM2.aux){
+                if(key == "view_input"){ 
+                    try{ 
+                        _INPUT.web.mainView.showInput_hideOthers();
+                        this.DOM2.aux.classList.add("wide");
+                    } catch(e){ console.log(e); };
+                }
+                else{ 
+                    try{ 
+                        _INPUT.web.mainView.hideInput_restoreOthers(); 
+                        this.DOM2.aux.classList.remove("wide"); 
+                    } catch(e){ console.log(e); };
+                }
             }
         }
     },
@@ -404,9 +405,16 @@ _APP.navBar1 = {
     init: function() {
         // Create the DOM cache and add the click event listener to the nav tabs.
         for (let key in this.DOM) {
+            // Skip DOM that has already been processed.
+            if(typeof this.DOM[key].tab != "string" || typeof this.DOM[key].view != "string"){ 
+                // console.log("Already processed:", this.DOM[key].tab, this.DOM[key].view); 
+                continue; 
+            }
+
             // Cache the DOM.
-            let tab  = document.getElementById(this.DOM[key].tab);
+            let tab  = document.getElementById(this.DOM[key].tab) ;
             let view = document.getElementById(this.DOM[key].view);
+            
             if(tab && view){
                 this.DOM[key].tab  = tab;
                 this.DOM[key].view = view;
@@ -425,7 +433,9 @@ _APP.navBar1 = {
         }
 
         //
-        this.DOM2.aux = document.getElementById(this.DOM2.aux);
+        if(this.DOM2 && this.DOM2.aux){
+            this.DOM2.aux = document.getElementById(this.DOM2.aux);
+        }
     },
 };
 

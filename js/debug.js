@@ -95,25 +95,28 @@ var _DEBUG = {
             level = parseFloat(sliderElem.value);
             let level_text;
             
+            // FADE: OFF
             if(level==0) { 
                 _GFX.funcs.setFade(layer, null);
                 level_text = "OFF"
             }
-            else if(level==11){ 
-                _GFX.funcs.setFade(layer, level-1);
-                level_text = "BLACK";
-            }
-            else if(level==12){ 
-                _GFX.funcs.setFade(layer, level-1);
+            // FADE: CLEAR
+            else if(level==-1){ 
+                _GFX.funcs.setFade(layer, 11);
                 level_text = "CLEAR"; 
             }
+            // FADE: BLACK
+            else if(level==11){ 
+                _GFX.funcs.setFade(layer, 10);
+                level_text = "BLACK";
+            }
+            // FADE: LEVEL
             else{ 
                 _GFX.funcs.setFade(layer, level-1); 
                 level_text = `L:${(level-1).toString()}`;
             }
 
             sliderElem.title = `${layer}: ${level_text}`;
-            // sliderTextElem.value = sliderElem.title;
             sliderTextElem.innerText = sliderElem.title;
         }
         changeFade("ALL", fadeSliderALL, fadeSliderALLText);
@@ -237,8 +240,8 @@ var _DEBUG = {
             
             // Display the timing for the game loop (canvas draws are separate.)
             this.timingsDisplay.loop.display_progressBars(now);
-            // this.timingsDisplay.loop.display_layerChanges(now);
-            // this.timingsDisplay.loop.display_tmapCountByLayer(now);
+            this.timingsDisplay.loop.display_layerChanges(now);
+            this.timingsDisplay.loop.display_tmapCountByLayer(now);
             
             _APP.game.gameLoop.lastDebug1_timestamp =  performance.now() - debugTs;
             // console.log(_APP.game.gameLoop.lastDebug1_timestamp);
@@ -724,6 +727,47 @@ var _DEBUG = {
 
 };
 
+_DEBUG.navBar1 = {
+    // Holds the DOM for the nav buttons and nav views.
+    DOM: {
+        'view_colorFinder': {
+            'tab' : 'debug_navBar1_tab_colorFinder',
+            'view': 'debug_navBar1_view_colorFinder',
+        },
+        'view_drawStats': {
+            'tab' : 'debug_navBar1_tab_drawStats',
+            'view': 'debug_navBar1_view_drawStats',
+        },
+        'view_fade': {
+            'tab' : 'debug_navBar1_tab_fade',
+            'view': 'debug_navBar1_view_fade',
+        },
+        'view_buttons1': {
+            'tab' : 'debug_navBar1_tab_buttons1',
+            'view': 'debug_navBar1_view_buttons1',
+        },
+    },
+    hideAll: _APP.navBar1.hideAll,
+    showOne: _APP.navBar1.showOne,
+    init   : _APP.navBar1.init,
+};
+_DEBUG.navBar2 = {
+    // Holds the DOM for the nav buttons and nav views.
+    DOM: {
+        'view_gs_JSG': {
+            'tab' : 'debug_navBar2_tab_gs_JSG',
+            'view': 'debug_navBar2_view_gs_JSG',
+        },
+        'view_gs_N782': {
+            'tab' : 'debug_navBar2_tab_gs_N782',
+            'view': 'debug_navBar2_view_gs_N782',
+        },
+    },
+    hideAll: _APP.navBar1.hideAll,
+    showOne: _APP.navBar1.showOne,
+    init   : _APP.navBar1.init,
+};
+
 _DEBUG.init = async function(){
     const loadFiles = async function(){
         let relPath = ".";
@@ -764,7 +808,11 @@ _DEBUG.init = async function(){
             // document.getElementById("controls").append( document.getElementById("debug_test_alwaysVisible") ); 
             
             // Move the alwaysVisible div below the canvav output.
-            document.getElementById("outputContainer").append( document.getElementById("debug_test_alwaysVisible") ); 
+            // document.getElementById("outputContainer").append( document.getElementById("debug_test_alwaysVisible") ); 
+
+            // Move the debug_test_gamestates to the side of the game output.
+            // document.getElementById("outputContainer").append( document.getElementById("debug_test_gamestates") ); 
+            document.getElementById("outputContainer").append( document.getElementById("debug_sideDiv") ); 
 
             res(); 
         } );
@@ -927,8 +975,20 @@ _DEBUG.init = async function(){
 
         // Resize
         let scaleSlider = document.getElementById("scaleSlider");
-        scaleSlider.value = "2.00";
+        scaleSlider.value = "2.50";
         scaleSlider.dispatchEvent(new Event("input"));
+
+        // DEBUG NAV 1
+        _DEBUG.navBar1.init();
+        // _DEBUG.navBar1.showOne("view_colorFinder");
+        _DEBUG.navBar1.showOne("view_drawStats");
+        // _DEBUG.navBar1.showOne("view_fade");
+        // _DEBUG.navBar1.showOne("view_buttons1");
+
+        // DEBUG NAV 2
+        _DEBUG.navBar2.init();
+        _DEBUG.navBar2.showOne("view_gs_JSG");
+        // _DEBUG.navBar2.showOne("view_gs_N782");
 
         // Output some timing info.
         // console.log("DEBUG: init:");
