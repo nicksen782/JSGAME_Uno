@@ -1,5 +1,29 @@
 var _DEBUG2 = {
+    navBar1 : {
+        // Holds the DOM for the nav buttons and nav views.
+        DOM: {
+            'view_gs_JSG': {
+                'tab' : 'debug_navBar2_tab_gs_JSG',
+                'view': 'debug_navBar2_view_gs_JSG',
+            },
+            'view_gs_N782': {
+                'tab' : 'debug_navBar2_tab_gs_N782',
+                'view': 'debug_navBar2_view_gs_N782',
+            },
+            'view_gs_TITLE': {
+                'tab' : 'debug_navBar2_tab_gs_TITLE',
+                'view': 'debug_navBar2_view_gs_TITLE',
+            },
+        },
+        hideAll: _APP.navBar1.hideAll,
+        showOne: _APP.navBar1.showOne,
+        init   : _APP.navBar1.init,
+    },
     debugGamestate: {
+        funcs: {
+            // updateDisplayedValue: function(){},
+        },
+
         // NOTE: debug object keys must match gs1. gs2 keys go within that key and must match gs2.
 
         // Set the inited false false for the specified debug object.
@@ -30,8 +54,19 @@ var _DEBUG2 = {
             }
         },
 
+        // Debug object for: gamestate 1: gs_TITLE
+        gs_TITLE: {
+            parent: null,
+            inited: false,
+            init: function(){
+                this.inited = true; 
+            },
+            gs1: function(){},
+        },
+        
         // Debug object for: gamestate 1: gs_JSG
         gs_JSG: {
+            parent: null,
             inited: false,
             init: function(){
                 this.inited = true; 
@@ -41,6 +76,7 @@ var _DEBUG2 = {
         
         // Debug object for: gamestate 1: gs_N782
         gs_N782: {
+            parent: null,
             inited: false,
             init: function(){
                 this.inited = true; 
@@ -54,7 +90,16 @@ var _DEBUG2 = {
         },
 
         init: async function(){
+            // DEBUG2 NAV 1
+            _DEBUG2.navBar1.init();
+            // _DEBUG2.navBar1.showOne("view_gs_JSG");
+            // _DEBUG2.navBar1.showOne("view_gs_N782");
+            _DEBUG2.navBar1.showOne("view_gs_TITLE");
 
+            // Set parents.
+            this.gs_TITLE.parent = this;
+            this.gs_JSG.parent = this;
+            this.gs_N782.parent = this;
         }
     },
 };

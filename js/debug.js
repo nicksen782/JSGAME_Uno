@@ -57,6 +57,7 @@ var _DEBUG = {
         let startGameLoop = document.getElementById("debug_test_startGameLoop");
         let restartGS1 = document.getElementById("debug_test_restartGS1");
         let gotoGS_JSG = document.getElementById("debug_test_gotoGS_JSG");
+        let gotoGS_TITLE = document.getElementById("debug_test_gotoGS_TITLE");
         let gotoGS_N782 = document.getElementById("debug_test_gotoGS_N782");
 
         stopGameLoop .addEventListener("click", ()=>{ _APP.game.gameLoop.loop_stop(); }, false);
@@ -68,6 +69,7 @@ var _DEBUG = {
         }, false);
         
         gotoGS_JSG .addEventListener("click", ()=>{ _APP.game.changeGs1("gs_JSG"); }, false);
+        gotoGS_TITLE.addEventListener("click", ()=>{ _APP.game.changeGs1("gs_TITLE"); }, false);
         gotoGS_N782.addEventListener("click", ()=>{ _APP.game.changeGs1("gs_N782"); }, false);
     },
     
@@ -751,22 +753,6 @@ _DEBUG.navBar1 = {
     showOne: _APP.navBar1.showOne,
     init   : _APP.navBar1.init,
 };
-_DEBUG.navBar2 = {
-    // Holds the DOM for the nav buttons and nav views.
-    DOM: {
-        'view_gs_JSG': {
-            'tab' : 'debug_navBar2_tab_gs_JSG',
-            'view': 'debug_navBar2_view_gs_JSG',
-        },
-        'view_gs_N782': {
-            'tab' : 'debug_navBar2_tab_gs_N782',
-            'view': 'debug_navBar2_view_gs_N782',
-        },
-    },
-    hideAll: _APP.navBar1.hideAll,
-    showOne: _APP.navBar1.showOne,
-    init   : _APP.navBar1.init,
-};
 
 _DEBUG.init = async function(){
     const loadFiles = async function(){
@@ -984,11 +970,6 @@ _DEBUG.init = async function(){
         _DEBUG.navBar1.showOne("view_drawStats");
         // _DEBUG.navBar1.showOne("view_fade");
         // _DEBUG.navBar1.showOne("view_buttons1");
-
-        // DEBUG NAV 2
-        _DEBUG.navBar2.init();
-        _DEBUG.navBar2.showOne("view_gs_JSG");
-        // _DEBUG.navBar2.showOne("view_gs_N782");
 
         // Output some timing info.
         // console.log("DEBUG: init:");

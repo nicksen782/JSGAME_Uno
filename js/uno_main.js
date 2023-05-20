@@ -175,9 +175,9 @@ _APP.game = {
             _APP.game.gamestates_list = Object.keys(_APP.game.gamestates);
         
             // Set the first gamestate.
-            _APP.game.changeGs1("gs_JSG");
+            // _APP.game.changeGs1("gs_JSG");
             // _APP.game.changeGs1("gs_N782");
-            // _APP.game.changeGs1("gs_TITLE");
+            _APP.game.changeGs1("gs_TITLE");
             // _APP.game.changeGs1("gs_OPTIONS");
             // _APP.game.changeGs1("gs_RULES");
             // _APP.game.changeGs1("gs_PLAYING");

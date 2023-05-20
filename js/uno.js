@@ -6,11 +6,12 @@ _APP.configObj = {
     // waitUntilFrameDrawn: true,
     waitUntilFrameDrawn: false,
 
-    generateAllCoreImageDataAssets: true,
-    // generateAllCoreImageDataAssets: false,
+    // generateAllCoreImageDataAssets: true,
+    generateAllCoreImageDataAssets: false,
 
     // Offset x and y for all drawings by this number of tiles.
-    useGlobalOffsets: true,
+    // useGlobalOffsets: true,
+    useGlobalOffsets: false,
     globalOffsets:{
         x: 1,
         y: 1,
@@ -18,19 +19,19 @@ _APP.configObj = {
 
     // Relative paths need to be correctly relative to whatever loads this file (the web page or the web worker.)
     tilesetFiles: [
-        "../UAM/JSON/bg_tiles2.json",
-        "../UAM/JSON/bg_tiles.json",
-        "../UAM/JSON/font_tiles.json",
-        "../UAM/JSON/sprite_tiles.json",
+        "../UAM/JSON/bg_tiles1.json",
+        // "../UAM/JSON/bg_tiles2.json",
+        "../UAM/JSON/font_tiles1.json",
+        // "../UAM/JSON/sprite_tiles1.json",
     ],
     
     dimensions: {
         "tileWidth" : 8,
         "tileHeight": 8,
-        // "rows":28, 
-        // "cols":28
-        "rows":30, 
-        "cols":30
+        "rows":28, 
+        "cols":28
+        // "rows":30, 
+        // "cols":30
     },
 
     layers:[
@@ -231,41 +232,90 @@ _APP.utility = {
             };
         });
     },
-    //
-    errorTriggered: false,
-    errorHandler: function(e){
-        e.preventDefault();
-        if(this.errorTriggered){ return false; }
-        this.errorTriggered = true;
+    errorHandler: {
+        //
+        DOM: {
+            error_display:null,
+            errorText_inner:null,
+            error_display_close:null,
+        },
+        errorTriggered: false,
 
-        console.log(
-            `ERRORHANDLER:`+
-            // `\n  e.filename: ${e.filename}`+
-            `\n  e.error   : `, e.error
-        ); 
-
-        try{
-            _APP.game.gameLoop.running = false;
-            _APP.game.gameLoop.loop_stop();
-            _APP.utility.displayError(e.message);
-            console.error(`${_APP.configObj.appName}: STOPPED THE GAMELOOP DUE TO ERROR`);
+        handler: function(e){
+            e.preventDefault();
+            if(this.errorTriggered){ return false; }
+            this.errorTriggered = true;
+    
+            if(e.type == "unhandledrejection"){
+                try{
+                    console.log( `ERRORHANDLER: ${e.type}\n  e.reason.message:`, e.reason ); 
+                } 
+                catch(innerError){
+                    console.log( `ERRORHANDLER: ${e.type}\n  INNERERROR:`, e, innerError ); 
+                }
+            }
+            else if(e.type == "uncaughtException"){
+                console.log( `ERRORHANDLER: ${e.type}`, e.error ?? e.reason); 
+            }
+            else if(e.type == "uncaughtException"){
+                console.log( `ERRORHANDLER: ${e.type}`, e.error ?? e.reason); 
+            }
+            else if(e.type == "error"){
+                console.log( `ERRORHANDLER: ${e.type}`+ `\n  e.error: `, e.error ); 
+            }
+            else{
+                console.log("UNKNOWN:", e);
+            }
             
-            // Open the debugger.
-            // if(_APP.debugActive){ setTimeout(()=>{debugger;}, 250); }
-        }
-        catch(e){
-            console.log(e);
-        }
+            // if(_APP.debugActive){
+            //     console.error( `ERRORHANDLER  ${e.type} (FULL EVENT):`, e.error ?? e.reason ); 
+            // }
+            
+            try{
+                // Stop the game loop.
+                _APP.game.gameLoop.loop_stop();
 
-        return false;
-    },
-    displayError: function(message){
-        let error_display = document.getElementById("error_display")
-        let text = document.getElementById("error_display_text_inner")
-        error_display.style.display = "";
+                // Display the error.
+                this.displayError(e.message ?? e.reason.message);
 
-        text .innerText = message;
-        console.log(message);
+                //
+                console.error(`${_APP.configObj.appName}: STOPPED THE GAMELOOP DUE TO ERROR`);
+                
+                // Open the debugger.
+                // if(_APP.debugActive){ setTimeout(()=>{debugger;}, 250); }
+            }
+            catch(innerError){
+                console.log(e, innerError);
+            }
+    
+            return false;
+        },
+        displayError: function(message){
+            this.DOM.error_display.style.display = "";
+            // this.DOM.errorText_inner.innerText = message + `${_APP.game.gs1 ? `GS1: ${_APP.game.gs1}, GS2: ${_APP.game.gs2}` : ``};
+            if(_APP.debugActive){
+                message += `${_APP.game.gs1 ? `\n\nGS1: ${_APP.game.gs1}\nGS2: ${_APP.game.gs2}` : `` }`;
+            }
+            this.DOM.errorText_inner.innerText = message;
+        },
+    
+        // 
+        closeError: function(){
+            this.errorTriggered = false;
+            this.DOM.error_display.style.display = "none";
+        },
+        
+        init: function(){
+            this.DOM.error_display   = document.getElementById("error_display");
+            this.DOM.errorText_inner = document.getElementById("error_display_text_inner");
+            this.DOM.error_display_close = document.getElementById("error_display_close");
+
+            window.addEventListener('error'                      , (e)=>this.handler(e));
+            window.addEventListener('unhandledrejection'         , (e)=>this.handler(e));
+            window.addEventListener('DOMException'          , (e)=>this.handler(e)); // ?
+            // window.addEventListener('uncaughtException'          , (e)=>this.handler(e)); // ?
+            this.DOM.error_display_close.addEventListener('click', (e)=>this.closeError(e));
+        },
     },
 };
 
@@ -441,7 +491,7 @@ _APP.navBar1 = {
 
 _APP.init_standAlone = async function(){
     return new Promise(async (resolve,reject)=>{
-        window.addEventListener('error', _APP.utility.errorHandler);
+        _APP.utility.errorHandler.init();
 
         await _APP.loader.loadFiles();
 
@@ -455,7 +505,7 @@ _APP.init_standAlone = async function(){
 // JSGAME REQUESTS THIS FUNCTION FIRST.
 _APP.init = async function(){
     return new Promise(async (resolve,reject)=>{
-        window.addEventListener('error', _APP.utility.errorHandler);
+        _APP.utility.errorHandler.init();
 
         // Set flags. 
         _APP.standAlone       = false;

@@ -93,4 +93,84 @@ _APP.shared = {
 
         },
     },
+    border:{
+        createBorder1: function(config){
+            /* 
+            _APP.shared.border.createBorder1({
+                x:1, y:9, w: 26, h: 11, 
+                layerObjKey: `border1`, layerKey: "TX1", xyByGrid: true, tilesetKey: "bg_tiles1"
+            });
+        
+            */
+            // A border uses 6 different tiles.
+            let tile_border_tl   = _GFX.funcs.getTilemap("bg_tiles1", "border1_tl")[2];
+            let tile_border_tr   = _GFX.funcs.getTilemap("bg_tiles1", "border1_tr")[2];
+            let tile_border_bl   = _GFX.funcs.getTilemap("bg_tiles1", "border1_bl")[2];
+            let tile_border_br   = _GFX.funcs.getTilemap("bg_tiles1", "border1_br")[2];
+            let tile_border_vert = _GFX.funcs.getTilemap("bg_tiles1", "border1_row")[2];
+            let tile_border_horz = _GFX.funcs.getTilemap("bg_tiles1", "border1_col")[2];
+        
+            // A border has 4 parts and thus 4 tilemaps
+            _GFX.layerObjs.updateOne(LayerObject, {
+                layerObjKey: `${config.layerObjKey}_top`, 
+                layerKey: config.layerKey ?? "TX1", tilesetKey: config.tilesetKey ?? "bg_tiles1", 
+                xyByGrid: config.xyByGrid ?? false,
+                settings: config.settings, type: "notPrint",
+                removeHashOnRemoval: true, noResort: false,
+                x: config.x, y: config.y, 
+                tmap: new Uint8ClampedArray(
+                    // Dimensions and top-left tile.
+                    [config.w, 1, tile_border_tl ]
+                    // Horizontal tiles.
+                    .concat(Array.from({ length: config.w-2 }, () => tile_border_horz))
+                    // top-right tile.
+                    .concat([tile_border_tr])
+                ),
+            });
+            _GFX.layerObjs.updateOne(LayerObject, {
+                layerObjKey: `${config.layerObjKey}_bottom`, 
+                layerKey: config.layerKey ?? "TX1", tilesetKey: config.tilesetKey ?? "bg_tiles1", 
+                xyByGrid: config.xyByGrid ?? false,
+                settings: config.settings, type: "notPrint",
+                removeHashOnRemoval: true, noResort: false,
+                x: config.x, y: config.y + config.h-1, 
+                tmap: new Uint8ClampedArray(
+                    // Dimensions and bottom-left tile.
+                    [config.w, 1, tile_border_bl ]
+                    // Horizontal tiles.
+                    .concat(Array.from({ length: config.w-2 }, () => tile_border_horz))
+                    // top-right tile.
+                    .concat([tile_border_br])
+                ),
+            });
+            _GFX.layerObjs.updateOne(LayerObject, {
+                layerObjKey: `${config.layerObjKey}_left`, 
+                layerKey: config.layerKey ?? "TX1", tilesetKey: config.tilesetKey ?? "bg_tiles1", 
+                xyByGrid: config.xyByGrid ?? false,
+                settings: config.settings, type: "notPrint",
+                removeHashOnRemoval: true, noResort: false,
+                x: config.x, y: config.y+1, 
+                tmap: new Uint8ClampedArray(
+                    // Dimensions.
+                    [ 1, config.h-2 ]
+                    // Vertical tiles.
+                    .concat(Array.from({ length: config.w-2 }, () => tile_border_vert))
+                ),
+            });
+            _GFX.layerObjs.updateOne(LayerObject, {
+                layerObjKey: `${config.layerObjKey}_right`, 
+                layerKey: config.layerKey ?? "TX1", tilesetKey: config.tilesetKey ?? "bg_tiles1", 
+                xyByGrid: config.xyByGrid ?? false,
+                settings: config.settings, type: "notPrint",
+                removeHashOnRemoval: true, noResort: false,
+                x: config.x+config.w-1, y: config.y+1, 
+                tmap: new Uint8ClampedArray(
+                    // Dimensions.
+                    [ 1, config.h-2 ]
+                    // Vertical tiles.
+                    .concat(Array.from({ length: config.w-2 }, () => tile_border_vert))
+                ),
+            });
+        },
+    },
 };

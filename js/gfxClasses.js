@@ -88,22 +88,6 @@ class LayerObject {
             this.th = _APP.configObj.dimensions.tileHeight;
         }
 
-        // // TODO: Convert x and y.
-        // if(this._xyByGrid){
-        //     // Multiply x by tw.
-        //     this._x *= this.tw;
-            
-        //     // Multiply y by th.
-        //     this._y *= this.th;
-        // }
-        // else{
-        //     // Divide x by tw and round it down to get the new grid x.
-        //     this._x = ~~( this._x / this.tw) * this.tw;
-            
-        //     // Divide y by th and round it down to get the new grid y.
-        //     this._y = ~~( this._y / this.th) * this.th; 
-        // }
-        
         this._xyByGrid = value; 
         this._changed = true; 
     }
@@ -113,11 +97,16 @@ class LayerObject {
 
     constructor(config){
         this.orgConfig  = config;
+        this.isContainer = false; 
 
         // layerObjKey (MapKey), layerKey, and tilesetKey.
+        this.text = config.text ?? "NO_TEXT"
         this.layerObjKey = config.layerObjKey;
         this.layerKey    = config.layerKey;
         this.tilesetKey  = config.tilesetKey;
+        this.type = "notPrint";
+        this.removeHashOnRemoval = config.removeHashOnRemoval ?? false;
+        this.noResort = config.noResort ?? false,
 
         // Tilemap. (It is possible that a tilemap is not provided/required.)
         this.tmap = config.tmap; // ?? new Uint8ClampedArray([1,1,0]);
@@ -165,7 +154,7 @@ class LayerObject {
     
     // TODO: Redundant with hideLayerObject?
     removeLayerObject(){
-        console.log("NOT READY: removeLayerObject", this); return;
+        // console.log("NOT READY: removeLayerObject", this); return;
         
         // NOTE: The object instance will need to be removed from where it was stored.
         
@@ -197,16 +186,38 @@ class LayerObject {
         }
 
         //
-        let layerObjectData = _GFX.funcs.createLayerObjData({ 
-            mapKey  : this.layerObjKey, 
-            x       : x, 
-            y       : y, 
-            ts      : this.tilesetKey, 
-            settings: this.settings, 
-            tmap    : this.tmap, 
-        });
+        let layerObjectData;
+        
+        if(this.type == "notPrint"){
+            layerObjectData = _GFX.funcs.createLayerObjData({ 
+                mapKey  : this.layerObjKey, 
+                x       : x, 
+                y       : y, 
+                ts      : this.tilesetKey, 
+                settings: this.settings, 
+                tmap    : this.tmap,
+                removeHashOnRemoval: this.removeHashOnRemoval,
+                noResort           : this.noResort,
+            });
+        }
+        else if(this.type == "print"){
+            layerObjectData = _GFX.funcs.createPrintLayerObjData({ 
+                mapKey  : this.layerObjKey, 
+                x       : x, 
+                y       : y, 
+                ts      : this.tilesetKey, 
+                settings: this.settings, 
+                tmap    : this.tmap,
+                text    : this.text, 
+                removeHashOnRemoval: this.removeHashOnRemoval,
+                noResort           : this.noResort,
+            });
+        }
+        else{
+            console.log(this.type);
+            throw "INVALID TYPE";
+        }
 
-        //
         if(onlyReturnLayerObjData){ 
             layerObjectData[this.layerObjKey].layerKey = this.layerKey;
             this._changed = false;
@@ -222,7 +233,116 @@ class LayerObject {
         this._changed = false;
     };
 }
-class N782_face_anim extends LayerObject{
+
+// 
+class PrintText extends LayerObject{
+    constructor(config){
+        super(config);
+        this.type = "print";
+        // mapKey  : this.layerObjKey, 
+        
+        this.text = config.text;
+        this.type = "print";
+        this.removeHashOnRemoval = config.removeHashOnRemoval ?? true;
+        this.noResort = config.noResort ?? true;
+
+        if(!this.layerKey)  { this.layerKey = "TX1";}
+        if(!this.tilesetKey){ this.tilesetKey = "font_tiles1"; }
+
+        // This part should be handled already by _GFX.funcs.layerObjs.updateOne.
+        if(!config.layerObjKey){ config.layerObjKey = config.text; }
+    }
+};
+
+class UnoLetter extends LayerObject{
+    // Set named colors.
+    static colors = {
+        base   : [255, 182, 85 , 255], // 
+        blue   : [36 , 72 , 170, 255], // 
+        red    : [218, 0  , 0  , 255], // 
+        green  : [0  , 145, 0  , 255], // 
+    };
+    static colorFrames = [
+        [ UnoLetter.colors.base, UnoLetter.colors.blue  ],
+        [ UnoLetter.colors.base, UnoLetter.colors.red   ],
+        [ UnoLetter.colors.base, UnoLetter.colors.green ],
+    ];
+
+    constructor(config){
+        super(config);
+        
+        if     (config.letter == "u"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_u"); }
+        else if(config.letter == "n"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_n"); }
+        else if(config.letter == "o"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_o"); }
+        else{ console.log("Unmatched letter!"); throw "Unmatched letter"; }
+        
+        this.tilesetKey = "bg_tiles1";
+        this.framesIndex = 0;
+        this.framesCounter = 0;
+        this.framesBeforeIndexChange = 15;
+        this.repeatCount = 0;
+        this.repeats = 0;
+        this.done = false;
+    }
+
+    // Render functions.
+    nextFrame(){
+        // Stop after repeating up to this.repeats.
+        if(this.done){ return; }
+
+        // Time to change frames?
+        if(this.framesCounter < this.framesBeforeIndexChange){ 
+            this.framesCounter += 1; 
+        }
+        else {
+            // Reset the frames counter.
+            this.framesCounter = 0;
+            
+            // Increment the framesIndex
+            if(this.framesIndex < UnoLetter.colorFrames.length -1){ 
+                this.framesIndex += 1; 
+            }
+            else { 
+                // Reset the framesIndex.
+                this.framesIndex = 0; 
+
+                // Increment repeatCount.
+                this.repeatCount += 1; 
+
+                // Stop after repeating up to this.repeats.
+                if(this.repeatCount == this.repeats) { 
+                    this.settings.colorData =  UnoLetter.colorFrames[this.framesIndex] ;
+                    this.done = true; 
+                    this._changed = true; 
+                    return; 
+                }
+                else{
+                }
+
+            }
+        }
+
+        // Set the new colorData.
+        this.settings.colorData = [ UnoLetter.colorFrames[this.framesIndex] ];
+        this._changed = true; 
+    };
+}
+
+class Cursor1 extends LayerObject{
+    constructor(config){
+        super(config);
+    }
+};
+
+
+
+
+
+
+
+
+
+class OLD_N782_face_anim extends LayerObject{
     constructor(config){
         super(config);
         this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
@@ -285,7 +405,7 @@ class N782_face_anim extends LayerObject{
         this.tmap = this.frames[this.framesIndex];
     };
 };
-class N782_text_anim extends LayerObject{
+class OLD_N782_text_anim extends LayerObject{
     constructor(config){
         super(config);
         this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
@@ -353,7 +473,7 @@ class N782_text_anim extends LayerObject{
     };
 };
 
-class N782_oneStar_anim extends LayerObject{
+class OLD_N782_oneStar_anim extends LayerObject{
     constructor(config){
         super(config);
         this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
@@ -421,7 +541,7 @@ class N782_oneStar_anim extends LayerObject{
         this.tmap = this.frames[this.framesIndex];
     };
 };
-class N782_oneStar_animNS extends N782_oneStar_anim{
+class OLD_N782_oneStar_animNS extends OLD_N782_oneStar_anim{
     constructor(config){
         super(config);
         this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
@@ -505,7 +625,7 @@ class N782_oneStar_animNS extends N782_oneStar_anim{
     };
 };
 
-class N782_oneStar_anim2 extends N782_oneStar_anim{
+class OLD_N782_oneStar_anim2 extends OLD_N782_oneStar_anim{
     constructor(config){
         super(config);
 
@@ -524,7 +644,7 @@ class N782_oneStar_anim2 extends N782_oneStar_anim{
         // this.frames[0]
     }
 }
-class N782_oneStar_anim3 extends N782_oneStar_anim2{
+class OLD_N782_oneStar_anim3 extends OLD_N782_oneStar_anim2{
     constructor(config){
         super(config);
 
@@ -539,7 +659,7 @@ class N782_oneStar_anim3 extends N782_oneStar_anim2{
     }
 }
 
-class Card extends LayerObject{
+class OLD_Card extends LayerObject{
     // Set named colors.
     static colors = {
         cardOrange: [182, 72,  0,255], // tile_orange_color
@@ -686,7 +806,7 @@ class Card extends LayerObject{
         }
     };
 };
-class GameBoard extends LayerObject{
+class OLD_GameBoard extends LayerObject{
     constructor(config){
         super(config);
         this.tilesetKey = config.tilesetKey ?? "bg_tiles";
@@ -696,7 +816,7 @@ class GameBoard extends LayerObject{
     }
 
 };
-class Cursor extends LayerObject{
+class OLD_Cursor extends LayerObject{
     constructor(config){
         super(config);
     }

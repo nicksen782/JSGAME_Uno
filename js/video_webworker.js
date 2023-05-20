@@ -302,12 +302,14 @@ const _GFX = {
 };
 const _DEBUG = {
     // TODO: Should this be done with a debug canvas layer on the main thread instead?
-    // Draw 256 tiles displaying all colors in the color palette. (16 rows of 16 at twice the tile dimensions.) 
+    // Draw 256 tiles displaying all colors in the color palette. (16 rows of 16 at tile normal dimensions (to ensure fit.)) 
     // Expects a 256x256 pixel container.
     drawColorPalette: function(){
         let tiles = new Array(16*16);
-        let tw = 8;
-        let th = 8;
+        // let tw = 8;
+        let tw = 4;
+        // let th = 8;
+        let th = 4;
         let thisTile,r,g,b,a;
         let colors = new Array(16*16);
 

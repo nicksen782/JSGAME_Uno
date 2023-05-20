@@ -44,22 +44,31 @@ messageFuncs.sendGfxUpdates.V4 = {
             }
         },
 
-        // UNUSED
         // Deletes a specific map key in the data cache.
         oneMapKey: function(layer, mapKey){
-            if(_GFX.currentData[layer][mapKey]){
-                delete _GFX.currentData[layer][mapKey];
+            let map = _GFX.currentData[layer].tilemaps[mapKey];
+            
+            // Was the map found? 
+            if(map){
+                // Keep or remove the hashCache?
+                if(map.removeHashOnRemoval){
+                    let hashCacheHash = map.hashCacheHash;
+                    if(this.parent.DRAW.hashCacheMap.has(hashCacheHash)){
+                        this.parent.DRAW.hashCacheMap.delete(hashCacheHash);
+                    }
+                }
+
+                // Remove the data from the currentData graphics cache.
+                delete _GFX.currentData[layer].tilemaps[mapKey];
             }
         },
 
-        // Deletes a many specific map key in the data cache.
+        // Deletes a many specific map key in the data cache. (uses oneMapKey)
         manyMapKeys: function(layer, mapKeys=[]){
             let mapKey;
             for(let i=0, len=mapKeys.length; i<len; i+=1){
                 mapKey = mapKeys[i];
-                if(_GFX.currentData[layer][mapKey]){
-                    delete _GFX.currentData[layer][mapKey];
-                }
+                this.oneMapKey(layer, mapKey);
             }
         },
     },
@@ -237,7 +246,26 @@ messageFuncs.sendGfxUpdates.V4 = {
             let ts_drawFromDataCache = performance.now();
             let allMapKeys = Object.keys(_GFX.currentData[layerKey].tilemaps);
             if(allMapKeys.length){
-                this.parent.DRAW.drawImgDataCacheFromDataCache(layerKey, layerData.useFlicker);
+                let part1=[]; // Can be flickered/resorted.
+                let part2=[]; // Must NOT be flickered/resorted.
+                for(let i=0, len=allMapKeys.length; i<len; i+=1){
+                    let map = _GFX.currentData[layerKey].tilemaps[allMapKeys[i]];
+                    if(!map.noResort){ part1.push(allMapKeys[i]); }
+                    else{ part2.push(allMapKeys[i]); }
+                }
+
+                // "Flicker" via resorting of the map keys.
+                if(layerData.useFlicker){
+                    let key = "flickerFlag_" + layerKey
+                    if(this.parent.DRAW[key]){ part1.reverse(); } 
+                    this.parent.DRAW[key] = ! this.parent.DRAW[key];
+                }
+
+                // First draw the images that do not have noResort set. The map key order may have been reversed by flicker.
+                this.parent.DRAW.drawImgDataCacheFromDataCache(layerKey, part1);
+                
+                // Then draw the images that do have have noResort set.
+                this.parent.DRAW.drawImgDataCacheFromDataCache(layerKey, part2);
             }
             ts_drawFromDataCache = performance.now() - ts_drawFromDataCache;
 
@@ -577,32 +605,24 @@ messageFuncs.sendGfxUpdates.V4 = {
                         tmap    : map.tmap,
                         w: map.imgData.width, 
                         h: map.imgData.height
-                        ,mapKey:mapKey // First tilemap key used by this hash.
+                        ,mapKey:mapKey, // First tilemap key used by this hash.
                     });
                 }
-
+                
                 // Save the completed data to the data cache.
                 if(save){
                     _GFX.currentData[layerKey].tilemaps[mapKey] = {
                         ...map,
                         imgData: map.imgData,
+                        hashCacheHash: hash // Used for future hashCache removals.
                     };
+                    // console.log("SAVED:", _GFX.currentData[layerKey].tilemaps[mapKey]);
                 }
             }
         },
 
         // Draw ALL tilemap ImageData from cache.
-        drawImgDataCacheFromDataCache: function(layerKey, flicker=false){
-            let maps    = _GFX.currentData[layerKey].tilemaps;
-            let mapKeys = Object.keys(maps);
-
-            // "Flicker"
-            if(flicker){ 
-                let key = "flickerFlag_" + layerKey
-                if(this[key]){ mapKeys.reverse(); } 
-                this[key] = ! this[key];
-            }
-
+        drawImgDataCacheFromDataCache: function(layerKey, mapKeys){
             for(let i=0, len=mapKeys.length; i<len; i+=1){
                 let mapKey = mapKeys[i];
                 let map = _GFX.currentData[layerKey].tilemaps[mapKey];

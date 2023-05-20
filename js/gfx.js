@@ -214,6 +214,7 @@ var _GFX = {
             if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
 
             // Add/Create the new layer object.
+            if(!config.layerObjKey && config.text){ config.layerObjKey = config.text; }
             this.objs[gamestate][ config.layerObjKey ] = new className(config);
         },
 
@@ -232,11 +233,14 @@ var _GFX = {
             // Create the gamestate key in objs if it does not exist.
             if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
 
+            // If this key was not found then return.
+            if(!this.objs[gamestate][key]){ return {}; }
+
             // If this layer object does not have a render function then assume the layer object is not created yet and skip the render.
             if(!this.objs[gamestate][key].render){ return {}; }
 
             // Remove from the graphics cache. 
-            let config = this.obs[gamestate][key].removeLayerObject();
+            let config = this.objs[gamestate][key].removeLayerObject();
         
             // Clear this key.
             this.objs[gamestate][key] = {}; 
@@ -320,7 +324,10 @@ var _GFX = {
                 
                 // Render the layer objects if it contains the render function.
                 // if(this.objs[gamestate][key].render){ this.objs[gamestate][key].render(); }
-                if(obj.render){ 
+                if(obj.isContainer){
+                    console.log("isContainer:", obj);
+                }
+                else if(obj.render){ 
                     temp = obj.render(true); 
                     layerObjects[temp.layerKey][key] = temp;
                     cnt += 1;
@@ -458,7 +465,8 @@ var _GFX = {
                             settings: tilemap.settings,
                             ts      : tilemap.ts,
                             w       : tilemap.tmap[0] * tw,
-                            h       : tilemap.tmap[1] * th
+                            h       : tilemap.tmap[1] * th,
+                            type    : tilemap.type
                         });
 
                         // isNewTilemaphash = true;
@@ -484,6 +492,9 @@ var _GFX = {
                             w        : tilemap.w,
                             h        : tilemap.h,
                             settings : tilemap.settings,
+                            type     : tilemap.type,
+                            removeHashOnRemoval: tilemap.removeHashOnRemoval ?? true,
+                            noResort: tilemap.noResort ?? false,
                             // isNewTilemaphash : isNewTilemaphash,
                         };
 
@@ -619,12 +630,10 @@ var _GFX = {
 
         // Removes a layer object and sets the changes for that layer to true. 
         removeLayerObj: function(layerKey, mapKey){
-            console.log(`REMOVING: layerKey: ${layerKey}, mapKey: ${mapKey}`);
-            // Remove from REMOVALS.
-            console.log(_GFX.REMOVALS[layerKey]);
+            // TODO: Can this line be improved?
+            // Remove from REMOVALS. (So that the key does not appear more than once.)
             _GFX.REMOVALS[layerKey].filter(d => d != mapKey);
             
-            console.log(_GFX.REMOVALS[layerKey]);
             // Add to REMOVALS.
             _GFX.REMOVALS[layerKey].push(mapKey);
 
@@ -641,8 +650,8 @@ var _GFX = {
             // Correct any missing data in the object.
             if(!obj){ obj = {}; }
             if(!obj.mapKey) { throw `createLayerObjData: Missing mapKey: ${JSON.stringify(obj)}`; }
-            if(!obj.tmap)   { throw `createLayerObjData: Missing tmap: ${JSON.stringify(obj)}`; }
-            if(!obj.ts)     { obj.ts = "bg_tiles" }
+            if(!obj.tmap)   { console.log(obj); throw `createLayerObjData: Missing tmap: ${JSON.stringify(obj)}`; }
+            if(!obj.ts)     { obj.ts = "UNKNOWN" }
             if(!obj.x)      { obj.x  = 0; }
             if(!obj.y)      { obj.y  = 0; }
             obj.settings = this.correctSettings(obj.settings); // Make sure that settings is an object.
@@ -662,6 +671,7 @@ var _GFX = {
                     h       : obj.tmap[1] * _APP.configObj.dimensions.tileHeight,
                     tmap    : obj.tmap,
                     settings: obj.settings,
+                    type: "notPrint"
                 } 
             } ;
         },
@@ -674,7 +684,7 @@ var _GFX = {
             // Correct any missing data in the object.
             if(!obj){ obj = {}; }
             if(!obj.mapKey) { obj.mapKey = "" }
-            if(!obj.ts)     { obj.ts     = "font_tiles" }
+            if(!obj.ts)     { obj.ts     = "font_tiles1" }
             if(!obj.text)   { obj.text   = [""]; }
             if(!obj.x)      { obj.x      = 0; }
             if(!obj.y)      { obj.y      = 0; }
@@ -742,7 +752,8 @@ var _GFX = {
                     w       : newTilemap[0] * _APP.configObj.dimensions.tileWidth,
                     h       : newTilemap[1] * _APP.configObj.dimensions.tileHeight,
                     tmap    : newTilemap,
-                    settings: obj.settings
+                    settings: obj.settings,
+                    type: "print"
                 } 
             } ;
         },

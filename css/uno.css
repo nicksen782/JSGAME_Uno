@@ -34,8 +34,8 @@ body{
     display: inline-block;
 }
 #error_display{
-    width: 500px;
-    height: 200px;
+    width: 60%;
+    height: 60%;
     background-color: indianred;
     position: fixed;
     top: 50%;
@@ -48,6 +48,21 @@ body{
     border-radius: 6px;
     /* overflow: hidden !important; */
 }
+#error_display_close{
+    position: absolute;
+    right: 0;
+    top: 0px;
+    background-color: darkred;
+    color: whitesmoke;
+    border-radius: 5px;
+    padding: 5px;
+    width: 1.5em;
+    height: 1.5em;
+    font-size: 0.75em;
+    line-height: 1em;
+    border: 1px solid whitesmoke;
+    cursor: pointer;
+}
 #error_display_title{
     font-weight: bold;
     text-decoration: underline;
@@ -56,6 +71,7 @@ body{
     background-color: crimson;
     color: black;
     padding: 5px;
+    position: relative;
 }
 #error_display_text{
     font-weight: bold;
