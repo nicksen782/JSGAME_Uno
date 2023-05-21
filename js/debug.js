@@ -53,15 +53,62 @@ var _DEBUG = {
     },
 
     gameLoopControl: function(){
-        let stopGameLoop  = document.getElementById("debug_test_stopGameLoop");
-        let startGameLoop = document.getElementById("debug_test_startGameLoop");
-        let restartGS1 = document.getElementById("debug_test_restartGS1");
+        // TOGGLE: GAMELOOP
+        let toggleGameLoop = document.getElementById("debug_test_toggleGameLoop");
+        toggleGameLoop .addEventListener("click", ()=>{ 
+            if(_APP.game.gameLoop.running){
+                toggleGameLoop.classList.remove("debug_bgColor_on");
+                toggleGameLoop.classList.add("debug_bgColor_off");
+                toggleGameLoop.innerText = "LOOP: OFF";
+                _APP.game.gameLoop.loop_stop(); 
+            } 
+            else {
+                toggleGameLoop.classList.remove("debug_bgColor_off");
+                toggleGameLoop.classList.add("debug_bgColor_on");
+                toggleGameLoop.innerText = "LOOP: ON";
+                _APP.game.gameLoop.loop_start(); 
+            } 
+        }, false);
+
+        // TOGGLE: LOGIC
+        let toggleLogic = document.getElementById("debug_test_toggleLogic");
+        toggleLogic.addEventListener("click", ()=>{
+            _APP.game.gameLoop.skipLogic = !_APP.game.gameLoop.skipLogic;
+            if(_APP.game.gameLoop.skipLogic){
+                toggleLogic.classList.remove("debug_bgColor_on");
+                toggleLogic.classList.add("debug_bgColor_off");
+                toggleLogic.innerText = "LOGIC: OFF";
+            } 
+            else {
+                toggleLogic.classList.remove("debug_bgColor_off");
+                toggleLogic.classList.add("debug_bgColor_on");
+                toggleLogic.innerText = "LOGIC: ON";
+            } 
+        }, false);
+
+        // TOGGLE: ASYNC DRAW
+        let drawAsync = document.getElementById("debug_test_toggleDrawAsync");
+        drawAsync.addEventListener("click", ()=>{ 
+            _APP.configObj.drawAsync = !_APP.configObj.drawAsync;
+            if(_APP.configObj.drawAsync){
+                drawAsync.classList.remove("debug_bgColor_on");
+                drawAsync.classList.add("debug_bgColor_off");
+                drawAsync.innerText = "ASYNC: OFF";
+            } 
+            else {
+                drawAsync.classList.remove("debug_bgColor_off");
+                drawAsync.classList.add("debug_bgColor_on");
+                drawAsync.innerText = "ASYNC: ON";
+            } 
+        }, false);
+
+        // GO TO GAMESTATE
         let gotoGS_JSG = document.getElementById("debug_test_gotoGS_JSG");
         let gotoGS_TITLE = document.getElementById("debug_test_gotoGS_TITLE");
         let gotoGS_N782 = document.getElementById("debug_test_gotoGS_N782");
-
-        stopGameLoop .addEventListener("click", ()=>{ _APP.game.gameLoop.loop_stop(); }, false);
-        startGameLoop.addEventListener("click", ()=>{ _APP.game.gameLoop.loop_start(); }, false);
+        
+        // RESTART THE CURRENT GAMESTATE
+        let restartGS1 = document.getElementById("debug_test_restartGS1");
         restartGS1.addEventListener("click", ()=>{ 
             _APP.game.gameLoop.loop_stop(); 
             _APP.game.gamestates[_APP.game.gs1].inited = false;
@@ -74,10 +121,6 @@ var _DEBUG = {
     },
     
     waitForDrawControl: function(){
-        let waitForDraw = document.getElementById("debug_test_toggleWaitForDraw");
-        waitForDraw .addEventListener("click", ()=>{ 
-            _APP.configObj.waitUntilFrameDrawn = !_APP.configObj.waitUntilFrameDrawn;
-        }, false);
     },
 
     fadeHandler: function(){
@@ -154,11 +197,9 @@ var _DEBUG = {
         frameCounter       : { e: null, t:0 },
         frameDrawCounter   : { e: null, t:0 },
         fpsDisplay         : { e: null, t:0 },
-        waitUntilFrameDrawn: { e: null, t:0 },
         debug_GS1Text      : { e: null, t:0 },
         debug_GS2Text      : { e: null, t:0 },
         DRAWNEEDED: { e: null, t: 0 },
-        skipLogic: { e: null, t: 0 },
         time_LOOP   : { e0: null, e1: null, e2: null, t: 0 },
         time_LOGIC  : { e0: null, e1: null, e2: null, t: 0 },
         time_DRAW   : { e0: null, e1: null, e2: null, t: 0 },
@@ -180,9 +221,7 @@ var _DEBUG = {
         // Table 2.
         this.elemsObj.frameCounter.e        = document.getElementById("debug_frameCounter");
         this.elemsObj.frameDrawCounter.e    = document.getElementById("debug_frameDrawCounter");
-        this.elemsObj.waitUntilFrameDrawn.e = document.getElementById("debug_waitUntilFrameDrawn");
         this.elemsObj.DRAWNEEDED.e          = document.getElementById("debug_DRAWNEEDED");
-        this.elemsObj.skipLogic.e           = document.getElementById("debug_skipLogic");
     },
     applyChange(newText, obj, activeTime, noTrim=false){
         // Trim the text.
@@ -679,11 +718,10 @@ var _DEBUG = {
         let frameCounter        = this.elemsObj["frameCounter"];
         let frameDrawCounter    = this.elemsObj["frameDrawCounter"];
         let fpsDisplay          = this.elemsObj["fpsDisplay"];
-        let waitUntilFrameDrawn = this.elemsObj["waitUntilFrameDrawn"];
         let debug_GS1Text       = this.elemsObj["debug_GS1Text"];
         let debug_GS2Text       = this.elemsObj["debug_GS2Text"];
         let DRAWNEEDED          = this.elemsObj["DRAWNEEDED"];
-        let skipLogic           = this.elemsObj["skipLogic"];
+        // let skipLogic           = this.elemsObj["skipLogic"];
         
         let activeTime = 200;
         let testText = "";
@@ -703,8 +741,8 @@ var _DEBUG = {
 
         // Show the skipLogic flag.
         // testText = (_APP.game.gameLoop.skipLogic ? "1" : "0").toString();
-        testText = (_APP.game.gameLoop.skipLogic).toString();
-        this.applyChange(testText, skipLogic, activeTime);
+        // testText = (_APP.game.gameLoop.skipLogic).toString();
+        // this.applyChange(testText, skipLogic, activeTime);
 
         // Show average FPS, average ms per frame, how much off is the average ms per frame.
         let new_average       = _APP.game.gameLoop.fpsCalc.average.toFixed(0) ?? 0;
@@ -713,10 +751,6 @@ var _DEBUG = {
         // testText = `A: ${new_average} M: ${new_avgMsPerFrame} D: ${msDiff}`;
         testText = `AVG: ${new_average}, MS: ${new_avgMsPerFrame}, DELTA: ${msDiff}`;
         this.applyChange(testText, fpsDisplay, activeTime);
-
-        // Show the waitUntilFrameDrawn flag.
-        testText = (_APP.configObj.waitUntilFrameDrawn ? "true" : "false");
-        this.applyChange(testText, waitUntilFrameDrawn, activeTime);
 
         // Update the displayed gamestate data. (gamestate 1.)
         testText = `'${_APP.game.gs1}' ${_APP.game.changeGs1_triggered?"**":""}`;
@@ -748,6 +782,14 @@ _DEBUG.navBar1 = {
             'tab' : 'debug_navBar1_tab_buttons1',
             'view': 'debug_navBar1_view_buttons1',
         },
+        'view_hashCacheStats1': {
+            'tab' : 'debug_navBar1_tab_hashCacheStats1',
+            'view': 'debug_navBar1_view_hashCacheStats1',
+        },
+        // 'view_hashCacheStats2': {
+        //     'tab' : 'debug_navBar1_tab_hashCacheStats2',
+        //     'view': 'debug_navBar1_view_hashCacheStats2',
+        // },
     },
     hideAll: _APP.navBar1.hideAll,
     showOne: _APP.navBar1.showOne,
@@ -941,27 +983,22 @@ _DEBUG.init = async function(){
         this.gameLoopControl();
         ts_gameLoopControl = performance.now() - ts_gameLoopControl;
 
-        // Init waitForDrawControl.
-        let ts_waitForDrawControl = performance.now(); 
-        this.waitForDrawControl();
-        ts_waitForDrawControl = performance.now() - ts_waitForDrawControl;
+        // // Init waitForDrawControl.
+        // let ts_waitForDrawControl = performance.now(); 
+        // this.waitForDrawControl();
+        // ts_waitForDrawControl = performance.now() - ts_waitForDrawControl;
 
         // Add event listener to the toggle debug button.
         let debug_toggleDebugActive = document.getElementById("debug_toggleDebugFlag");
         debug_toggleDebugActive.addEventListener("click", ()=>{_DEBUG.toggleDebugFlag(); }, false);
         
-        let debug_test_toggleLogic = document.getElementById("debug_test_toggleLogic");
-        debug_test_toggleLogic.addEventListener("click", ()=>{
-            _APP.game.gameLoop.skipLogic = !_APP.game.gameLoop.skipLogic;
-            // console.log("skipLogic value is now:", _APP.game.gameLoop.skipLogic);
-        }, false);
-
         _DEBUG.timingsDisplay.gfx.init()
         _DEBUG.timingsDisplay.loop.init()
 
         // Resize
         let scaleSlider = document.getElementById("scaleSlider");
-        scaleSlider.value = "2.50";
+        // scaleSlider.value = "2.50";
+        scaleSlider.value = "3.00";
         scaleSlider.dispatchEvent(new Event("input"));
 
         // DEBUG NAV 1
@@ -970,6 +1007,8 @@ _DEBUG.init = async function(){
         _DEBUG.navBar1.showOne("view_drawStats");
         // _DEBUG.navBar1.showOne("view_fade");
         // _DEBUG.navBar1.showOne("view_buttons1");
+        // _DEBUG.navBar1.showOne("view_hashCacheStats1");
+        // _DEBUG.navBar1.showOne("view_hashCacheStats2");
 
         // Output some timing info.
         // console.log("DEBUG: init:");

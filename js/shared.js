@@ -173,4 +173,36 @@ _APP.shared = {
             });
         },
     },
+    generateMultipleTextLines: function(config){
+        config.startX;
+        
+        let x = config.x;
+        let y = config.y;
+        let line;
+
+        for(let i=0, len=config.lines.length; i<len; i+=1){
+            line = config.lines[i];
+            if(line.length){
+                _GFX.layerObjs.updateOne(PrintText, { 
+                    text: line, 
+                    x:x, y:y,
+                    // layerObjKey_base: `${config.layerObjKey}`, 
+                    layerObjKey: `${config.layerObjKey}_line_${i}`, 
+                    layerKey  : config.layerKey   ?? "TX1", 
+                    tilesetKey: config.tilesetKey ?? "font_tiles1", 
+                    xyByGrid: true, 
+                });
+            }
+            y+=1;
+        }
+    },
 };
+
+// _GFX.layerObjs.updateOne(PrintText, { 
+//     text: "PROGRAMMING: ", 
+//     x:2, y: 
+//     y+=1,           
+//     layerObjKey: `text1`, 
+//     layerKey: "TX1", 
+//     xyByGrid: true, 
+// });

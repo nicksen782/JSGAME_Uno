@@ -3,6 +3,8 @@
     <div id="debug_navBar1_tab_drawStats" class="controls_navBarTabs ">DrawTimings</div>
     <div id="debug_navBar1_tab_fade" class="controls_navBarTabs ">Fades</div>
     <div id="debug_navBar1_tab_buttons1" class="controls_navBarTabs ">Buttons1</div>
+    <div id="debug_navBar1_tab_hashCacheStats1" class="controls_navBarTabs ">hashCache1</div>
+    <!-- <div id="debug_navBar1_tab_hashCacheStats2" class="controls_navBarTabs ">hashCache2</div> -->
 </div>
 
 <div id="debug_navBarViews">
@@ -126,8 +128,8 @@
             <tr> <td class="debug_td_header">Frames :      </td> <td class="debug_td_short"> <div class="debugLive" id="debug_frameCounter">0</div> </td> </tr>
             <tr> <td class="debug_td_header">Drawn frames :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_frameDrawCounter">0</div> </td> </tr>
             <tr> <td class="debug_td_header">DRAWNEEDED :  </td> <td class="debug_td_short"> <div class="debugLive" id="debug_DRAWNEEDED">false</div> </td> </tr>
-            <tr> <td class="debug_td_header">waitForDraw  :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_waitUntilFrameDrawn">false</div> </td> </tr>
-            <tr> <td class="debug_td_header">Skip logic:   </td> <td class="debug_td_short"> <div class="debugLive" id="debug_skipLogic"></div> </td> </td> </tr>
+            <!-- <tr> <td class="debug_td_header">waitForDraw  :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_waitUntilFrameDrawn">false</div> </td> </tr> -->
+            <!-- <tr> <td class="debug_td_header">Skip logic:   </td> <td class="debug_td_short"> <div class="debugLive" id="debug_skipLogic"></div> </td> </td> </tr> -->
         </table>
         <br>
         <br>
@@ -152,26 +154,36 @@
             <button id="debug_toggleDebugFlag">DEBUG: ON</button>
         </div>
     </div>
+    
+    <!-- HASH CACHE STATS 1 -->
+    <div id="debug_navBar1_view_hashCacheStats1" class="controls_navBarViews">
+        debug_navBar1_view_hashCacheStats1
+    </div>
+
+    <!-- HASH CACHE STATS 2 -->
+    <!-- <div id="debug_navBar1_view_hashCacheStats2" class="controls_navBarViews"> -->
+        <!-- debug_navBar1_view_hashCacheStats2 -->
+    <!-- </div> -->
+
 </div>
 
-<div class="debug_border">
-</div>
+<!-- <div class="debug_border"> -->
+<!-- </div> -->
 
 <!-- DISPLAY ON THE SIDE -->
 <div id="debug_sideDiv">
     <div id="debug_test_alwaysVisible"> 
-        <!-- <label class="debug_title">AlwaysVisible</label> -->
-        <!-- <label class="debug_title">COUNTS!</label> -->
+        <label class="debug_title">TIMING STATS!</label>
     
         <!-- FPS TABLE -->
         <table class="debug_table">
             <tr>
                 <td class="debug_td_header">FPS : </td>
-                <td class="debug_td_long">  
+                <td class="debug_td_longDISABLED">  
                     <div class="debugLive" id="debug_fpsDisplay"></div> 
                 </td>
-                <td class="debug_td_header">GS1 :         </td> <td class="debug_td_short"> <div class="debugLive" id="debug_GS1Text"></div> </td>
-                <td class="debug_td_header">GS2 :         </td> <td class="debug_td_short"> <div class="debugLive" id="debug_GS2Text"></div> </td>
+                <td class="debug_td_header">GS1 :</td> <td class="debug_td_short3DISABLED"> <div class="debugLive" id="debug_GS1Text"></div> </td>
+                <td class="debug_td_header">GS2 :</td> <td class="debug_td_short3DISABLED"> <div class="debugLive" id="debug_GS2Text"></div> </td>
             </tr>
         </table>
         <br>
@@ -180,63 +192,62 @@
         <table class="debug_table" id="debug_progressTable">
             <tr>
                 <td class="debug_td_header2" title="">TOTAL*</td>
-                <td class="debug_td_header2">LOOP</td>
-                <td class="debug_td_header2">DRAW</td>
-            </tr>
-            
-            <tr>
                 <td class="debug_td_progressTable"> 
                     <div id="debug_time_TOTAL" class="debug_progress-bar">
                         <span class="debug_progressBarLabel debug_progress-bar-label">0</span>
                         <div class="debug_innerProgressBar debug_inner-bar"></div>
                     </div>
                 </td>
-    
+            </tr>
+
+            <tr>
+                <td class="debug_td_header2">LOOP</td>
                 <td class="debug_td_progressTable"> 
                     <div id="debug_time_LOOP" class="debug_progress-bar">
                         <span class="debug_progressBarLabel debug_progress-bar-label">0</span>
                         <div class="debug_innerProgressBar debug_inner-bar"></div>
                     </div>
                 </td>
-                
+            </tr>
+
+            <tr>
+                <td class="debug_td_header2">DRAW</td>
                 <td class="debug_td_progressTable"> 
                     <div id="debug_time_DRAW" class="debug_progress-bar">
                         <span class="debug_progressBarLabel debug_progress-bar-label">0</span>
                         <div class="debug_innerProgressBar debug_inner-bar"></div>
                     </div>
                 </td>
-                <!-- <td class="debug_td_header">DEBUG1  </td> <td class="debug_td_short"> <div class="debugLive" id="debug_time_DEBUG1"></div> </td> -->
             </tr>
+            
         </table>
+        <br>
+        <br>
 
-        <!-- GAME FLAGS TABLE -->
-        <!-- <table class="debug_table"> -->
-            <!-- <tr> <td class="debug_td_header">Skip logic:   </td> <td class="debug_td_short"> <div class="debugLive" id="debug_skipLogic"></div> </td> </td> </tr> -->
-        <!-- </table> -->
+        <!-- GAME LOOP CONTROLS -->
+        <label class="debug_title">GAMELOOP CONTROLS!</label>
+        <table class="debug_table">
+            <tr> 
+                <td class="debug_td_header">LOOP</td>
+                <td class="debug_td_header">LOGIC</td>
+                <td class="debug_td_header">DRAW</td>
+            </tr> 
+            <tr> 
+                <td class="debug_td_short3">
+                    <button id="debug_test_toggleGameLoop" class="debug_bgColor_on">LOOP: ON</button>
+                </td> 
+                <td class="debug_td_short3">
+                    <button id="debug_test_toggleLogic" class="debug_bgColor_on">LOGIC: ON</button>
+                </td> 
+                <td class="debug_td_short3">
+                    <button id="debug_test_toggleDrawAsync" class="debug_bgColor_on">ASYNC: ON</button>
+                </td> 
+            </tr>
+        </tr>
+        </table>
         <br>
         <br>
-        
-        <!-- MISC -->
-        <!-- <table class="debug_table"> -->
-            <!-- <tr> <td class="debug_td_header"> RESERVED :</td> <td class="debug_td_short"> <div class="debugLive"></div> </td> </tr> -->
-            <!-- <tr> <td class="debug_td_header"> RESERVED :</td> <td class="debug_td_short"> <div class="debugLive"></div> </td> </tr> -->
-            <!-- <tr> <td class="debug_td_header"> RESERVED :</td> <td class="debug_td_short"> <div class="debugLive"></div> </td> </tr> -->
-        <!-- </table> -->
-    
-        <!-- MISC -->
-        <!-- <table class="debug_table"> -->
-            <!-- <tr> <td class="debug_td_header"> RESERVED :</td> <td class="debug_td_short"> <div class="debugLive"></div> </td> </tr> -->
-            <!-- <tr> <td class="debug_td_header"> RESERVED :</td> <td class="debug_td_short"> <div class="debugLive"></div> </td> </tr> -->
-            <!-- <tr> <td class="debug_td_header"> RESERVED :</td> <td class="debug_td_short"> <div class="debugLive"></div> </td> </tr> -->
-        <!-- </table> -->
-    
-        <!-- <label class="debug_title">BUTTONS!</label> -->
-        <button id="debug_test_startGameLoop">Start loop</button>
-        <button id="debug_test_stopGameLoop">Stop loop</button>
-        <button id="debug_test_toggleLogic">Toggle LOGIC</button>
-        <button id="debug_test_toggleWaitForDraw">Toggle waitForDraw</button>
         <button id="debug_test_restartGS1">Restart GS1</button>
-        <br>
         <button id="debug_test_gotoGS_JSG">gs_JSG</button>
         <button id="debug_test_gotoGS_TITLE">gs_TITLE</button>
         <button id="debug_test_gotoGS_N782">gs_N782</button>
@@ -244,6 +255,7 @@
         <br>
     </div>
     
+    <label class="debug_title">GAMESTATE DEBUG!</label>
     <div id="debug_test_gamestates">
         <div id="debug_navBarTabs2">
             <div id="debug_navBar2_tab_gs_JSG" class="controls_navBarTabs ">gs_JSG</div>
@@ -251,9 +263,9 @@
             <div id="debug_navBar2_tab_gs_TITLE" class="controls_navBarTabs ">gs_TITLE</div>
         </div>
         <div id="debug_navBarViews2">
-            <div id="debug_navBar2_view_gs_JSG" class="controls_navBarViews">gs_JSG</div>
-            <div id="debug_navBar2_view_gs_N782" class="controls_navBarViews">gs_N782</div>
-            <div id="debug_navBar2_view_gs_TITLE" class="controls_navBarViews">gs_TITLE</div>
+            <div id="debug_navBar2_view_gs_JSG" class="controls_navBarViews">view: gs_JSG</div>
+            <div id="debug_navBar2_view_gs_N782" class="controls_navBarViews">view: gs_N782</div>
+            <div id="debug_navBar2_view_gs_TITLE" class="controls_navBarViews">view: gs_TITLE</div>
         </div>
     </div>
 </div>

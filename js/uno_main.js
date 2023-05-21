@@ -177,8 +177,8 @@ _APP.game = {
             // Set the first gamestate.
             // _APP.game.changeGs1("gs_JSG");
             // _APP.game.changeGs1("gs_N782");
-            _APP.game.changeGs1("gs_TITLE");
-            // _APP.game.changeGs1("gs_OPTIONS");
+            // _APP.game.changeGs1("gs_TITLE");
+            _APP.game.changeGs1("gs_OPTIONS");
             // _APP.game.changeGs1("gs_RULES");
             // _APP.game.changeGs1("gs_PLAYING");
         
@@ -310,12 +310,12 @@ _APP.game.gameLoop.loop = async function loop(timestamp){
                 
                 // Send a draw request if there are changes for any layer.
                 if( _GFX.DRAWNEEDED ) { 
-                    // Synchronize the gameLoop with the rendering.
-                    // EXAMPLE USAGE: sendGfxUpdates: (waitForResp=false)
-                    if(_APP.configObj.waitUntilFrameDrawn){ await _GFX.funcs.sendGfxUpdates(true); }
                     
                     // Send the graphics updates without waiting. (This could be a problem where there are many graphics updates.)
-                    else                                  {       _GFX.funcs.sendGfxUpdates(false); }
+                    if(!_APP.configObj.drawAsync)         {             _GFX.funcs.sendGfxUpdates(false); }
+                    
+                    // Synchronize the gameLoop with the rendering.
+                    else                                  {       await _GFX.funcs.sendGfxUpdates(true); }
 
                     this.frameDrawCounter += 1;
                 }

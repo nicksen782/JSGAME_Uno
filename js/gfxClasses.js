@@ -271,15 +271,18 @@ class UnoLetter extends LayerObject{
     constructor(config){
         super(config);
         
-        if     (config.letter == "u"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_u"); }
-        else if(config.letter == "n"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_n"); }
-        else if(config.letter == "o"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_o"); }
+        if     (config.letter == "u") { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_u"); }
+        else if(config.letter == "n") { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_n"); }
+        else if(config.letter == "o") { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_o"); }
+        else if(config.letter == "u2"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno2_u"); }
+        else if(config.letter == "n2"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno2_n"); }
+        else if(config.letter == "o2"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno2_o"); }
         else{ console.log("Unmatched letter!"); throw "Unmatched letter"; }
         
         this.tilesetKey = "bg_tiles1";
-        this.framesIndex = 0;
+        this.framesIndex = config.framesIndex ?? 0;
         this.framesCounter = 0;
-        this.framesBeforeIndexChange = 15;
+        this.framesBeforeIndexChange = config.framesBeforeIndexChange ?? 15;
         this.repeatCount = 0;
         this.repeats = 0;
         this.done = false;
@@ -329,12 +332,164 @@ class UnoLetter extends LayerObject{
 }
 
 class Cursor1 extends LayerObject{
+    // Set named colors.
+    static colors = {
+        inner  : [255, 255, 255, 255], // 
+        white  : [255, 255, 255, 255], // 
+        black  : [0  , 0  , 0  , 255], // 
+        red    : [218, 0  , 0  , 255], // 
+        yellow : [255, 182, 85 , 255], // 
+        blue   : [36 , 72 , 170, 255], // 
+        green  : [0  , 145, 0  , 255], // 
+    };
+
     constructor(config){
         super(config);
-    }
+        this.tilesetKey = "sprite_tiles1";
+
+        this.frames = [
+            _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f1"),
+            _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f2"),
+        ];
+
+        this.framesIndex = 0;
+        this.framesCounter = 0;
+        this.framesBeforeIndexChange = 15;
+        this.repeatCount = 0;
+        this.repeats = 0;
+
+        this.tmap = this.frames[this.framesIndex];
+        this.done = false;
+    };
+
+    // Render functions.
+    nextFrame(){
+        // Stop after repeating up to this.repeats.
+        if(this.done){ return; }
+
+        // Time to change frames?
+        if(this.framesCounter < this.framesBeforeIndexChange){ 
+            this.framesCounter += 1; 
+        }
+        else {
+            // Reset the frames counter.
+            this.framesCounter = 0;
+            
+            // Increment the framesIndex
+            if(this.framesIndex < this.frames.length -1){ 
+                this.framesIndex += 1; 
+            }
+            else { 
+                // Reset the framesIndex.
+                this.framesIndex = 0; 
+
+                // Increment repeatCount.
+                this.repeatCount += 1; 
+
+                // Stop after repeating up to this.repeats.
+                if(this.repeatCount == this.repeats) { 
+                    this.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f1");
+                    this.done = true; 
+                    this._changed = true; 
+                    return; 
+                }
+                else{
+                }
+
+            }
+        }
+
+        // Set the new colorData.
+        this.tmap = this.frames[this.framesIndex];
+        this._changed = true; 
+    };
 };
 
+class Card extends LayerObject{
+    // Set named colors.
+    static colors = {
+        base   : [218, 0  , 0  , 255], // All non-wild cards are initially red.
+        red    : [218, 0  , 0  , 255], // 
+        yellow : [255, 182, 85 , 255], // 
+        blue   : [36 , 72 , 170, 255], // 
+        green  : [0  , 145, 0  , 255], // 
+    };
 
+    // { size: "sm", color:"black", value: "back" }
+    constructor(config){
+        super(config);
+        this.tilesetKey = "bg_tiles1";
+
+        if(config.size=="sm"){
+            // Get the tilemap for black cards.
+            if(config.color == "CARD_BLACK"){
+                if     (config.value == "CARD_WILD")  { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_wild");}
+                else if(config.value == "CARD_WILD_DRAW4"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_wildDraw4");}
+                else if(config.value == "CARD_BACK")  { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_back");}
+                else{ throw `Invalid sm card value: ${config.value}`; }
+            }
+            else{
+                // Change the color.
+                if     (config.color == "CARD_YELLOW"){ this.settings.colorData = [[Card.colors.base, Card.colors.yellow ]]; }
+                else if(config.color == "CARD_BLUE")  { this.settings.colorData = [[Card.colors.base, Card.colors.blue   ]]; }
+                else if(config.color == "CARD_RED")   { this.settings.colorData = [[Card.colors.base, Card.colors.red    ]]; }
+                else if(config.color == "CARD_GREEN") { this.settings.colorData = [[Card.colors.base, Card.colors.green  ]]; }
+                else{ throw `Invalid sm card color: ${config.color}`; }
+    
+                // Set the card tilemap.
+                if     (config.value == "CARD_0"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_0");       }
+                else if(config.value == "CARD_1"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_1");       }
+                else if(config.value == "CARD_2"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_2");       }
+                else if(config.value == "CARD_3"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_3");       }
+                else if(config.value == "CARD_4"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_4");       }
+                else if(config.value == "CARD_5"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_5");       }
+                else if(config.value == "CARD_6"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_6");       }
+                else if(config.value == "CARD_7"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_7");       }
+                else if(config.value == "CARD_8"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_8");       }
+                else if(config.value == "CARD_9"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_9");       }
+                else if(config.value == "CARD_DRAW2"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_draw2");   }
+                else if(config.value == "CARD_SKIP" ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_skip");    }
+                else if(config.value == "CARD_REV"  ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_sm_reverse"); }
+                else{ throw `Invalid sm card value: ${config.value}`; }
+            }
+        }
+        else if(config.size=="lg"){
+            // Get the tilemap for black cards.
+            if(config.color == "CARD_BLACK"){
+                if     (config.value == "CARD_WILD")  { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_wild");}
+                else if(config.value == "CARD_WILD_DRAW4"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_wildDraw4");}
+                else if(config.value == "CARD_BACK")  { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_back");}
+                else{ throw `Invalid lg card value: ${config.value}`; }
+            }
+            else{
+                // Change the color.
+                if     (config.color == "CARD_YELLOW"){ this.settings.colorData = [[Card.colors.base, Card.colors.yellow ]]; }
+                else if(config.color == "CARD_BLUE")  { this.settings.colorData = [[Card.colors.base, Card.colors.blue   ]]; }
+                else if(config.color == "CARD_RED")   { this.settings.colorData = [[Card.colors.base, Card.colors.red    ]]; }
+                else if(config.color == "CARD_GREEN") { this.settings.colorData = [[Card.colors.base, Card.colors.green  ]]; }
+                else{ throw `Invalid lg card color: ${config.color}`; }
+
+                // Set the card tilemap.
+                if     (config.value == "CARD_0"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_0");       }
+                else if(config.value == "CARD_1"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_1");       }
+                else if(config.value == "CARD_2"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_2");       }
+                else if(config.value == "CARD_3"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_3");       }
+                else if(config.value == "CARD_4"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_4");       }
+                else if(config.value == "CARD_5"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_5");       }
+                else if(config.value == "CARD_6"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_6");       }
+                else if(config.value == "CARD_7"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_7");       }
+                else if(config.value == "CARD_8"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_8");       }
+                else if(config.value == "CARD_9"    ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_9");       }
+                else if(config.value == "CARD_DRAW2"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_draw2");   }
+                else if(config.value == "CARD_SKIP" ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_skip");    }
+                else if(config.value == "CARD_REV"  ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "card_lg_reverse"); }
+                else{ throw `Invalid lg card value: ${config.value}`; }
+            }
+        }
+        else{ throw `Invalid card size: ${config.size}`; }
+    };
+    // _GFX.layerObjs.updateOne(Card, { size: "sm", color:"black", value: "back", x:4, y:16, layerObjKey: `card1`, layerKey: "BG1", xyByGrid: true } );
+};
 
 
 
@@ -815,10 +970,5 @@ class OLD_GameBoard extends LayerObject{
         this.y = config.y ?? 0;
     }
 
-};
-class OLD_Cursor extends LayerObject{
-    constructor(config){
-        super(config);
-    }
 };
 

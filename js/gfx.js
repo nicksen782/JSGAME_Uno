@@ -215,7 +215,7 @@ var _GFX = {
 
             // Add/Create the new layer object.
             if(!config.layerObjKey && config.text){ config.layerObjKey = config.text; }
-            this.objs[gamestate][ config.layerObjKey ] = new className(config);
+            return this.objs[gamestate][ config.layerObjKey ] = new className(config);
         },
 
         // Remove one layer object from objs for a gamestate.
@@ -576,14 +576,14 @@ var _GFX = {
         },
 
         // This gathers the data created by the other update functions and sends the values.
-        sendGfxUpdates: async function(waitForResp=false){
+        sendGfxUpdates: async function(drawAsync){
             // Update _GFX.GFX_UPDATE_DATA
             _GFX.create_GFX_UPDATE_DATA();
 
-            // console.log("HEY");
             if(_GFX.GFX_UPDATE_DATA.hasChanges){
                 // Send ASYNC
-                if(!waitForResp){
+                if(!drawAsync){
+                    // console.log("using await: false");
                     _WEBW_V.SEND("sendGfxUpdates", { 
                         data: _GFX.GFX_UPDATE_DATA, 
                         refs:[]
@@ -592,6 +592,7 @@ var _GFX = {
                 
                 // Await for the graphics update to finish.
                 else{
+                    // console.log("using await: true");
                     await _WEBW_V.SEND("sendGfxUpdates", { 
                         data: _GFX.GFX_UPDATE_DATA, 
                         refs:[]

@@ -3,8 +3,8 @@ _APP.debugActive = true;
 _APP.configObj = {
     appName: "UNO!",
 
-    // waitUntilFrameDrawn: true,
-    waitUntilFrameDrawn: false,
+    // drawAsync: true,
+    drawAsync: false,
 
     // generateAllCoreImageDataAssets: true,
     generateAllCoreImageDataAssets: false,
@@ -22,7 +22,7 @@ _APP.configObj = {
         "../UAM/JSON/bg_tiles1.json",
         // "../UAM/JSON/bg_tiles2.json",
         "../UAM/JSON/font_tiles1.json",
-        // "../UAM/JSON/sprite_tiles1.json",
+        "../UAM/JSON/sprite_tiles1.json",
     ],
     
     dimensions: {
@@ -342,8 +342,9 @@ _APP.loader = {
                 _APP.utility.addFile( {f:"js/gs_JSG.js"    , t:"js" }, relPath),
                 _APP.utility.addFile( {f:"js/gs_N782.js"   , t:"js" }, relPath),
                 _APP.utility.addFile( {f:"js/gs_TITLE.js"  , t:"js" }, relPath),
-                _APP.utility.addFile( {f:"js/gs_OPTIONS.js", t:"js" }, relPath),
                 _APP.utility.addFile( {f:"js/gs_RULES.js"  , t:"js" }, relPath),
+                _APP.utility.addFile( {f:"js/gs_CREDITS.js", t:"js" }, relPath),
+                _APP.utility.addFile( {f:"js/gs_OPTIONS.js", t:"js" }, relPath),
                 _APP.utility.addFile( {f:"js/gs_PLAYING.js", t:"js" }, relPath),
             ];
             await Promise.all(files2);

@@ -29,11 +29,13 @@ var _DEBUG2 = {
         // Set the inited false false for the specified debug object.
         uninit: function(gs1, gs2){ 
             // console.log(`Running debugGamestate.uninit for: gs1: '${gs1}', gs2: '${gs2}'`);
+            if(!this[gs1]){ return; }
             this[gs1].inited = false; 
         },
         
         // Run the debug function(s) for the specified gs1 and gs2.
         run: function(gs1, gs2){
+            if(!this[gs1]){ return; }
             if(this[gs1].gs1){
                 // Run gamestate debug init?
                 if(!this[gs1].inited){ this[gs1].init(); }
