@@ -29,8 +29,8 @@ messageFuncs.sendGfxUpdates.V4 = {
             // Clear the cache for this layer.
             _GFX.currentData[layerKey].tilemaps = {};
 
-            // If the layer is BG1 then reset bgColorRgba and bgColor32bit also.
-            if(layerKey == "BG1"){
+            // If the layer is L1 then reset bgColorRgba and bgColor32bit also.
+            if(layerKey == "L1"){
                 _GFX.currentData[layerKey].bgColorRgba = [0,0,0,0];
                 _GFX.currentData[layerKey].bgColor32bit = 0;
             }
@@ -123,8 +123,8 @@ messageFuncs.sendGfxUpdates.V4 = {
         // Replaces the specified color pixels with the replacement bgColor.
         // Also stores the replacement colors for later use.
         setLayerBgColorRgba: function(layer, findColorArray, replaceColorArray){
-            if(layer != "BG1"){ 
-                throw `setLayerBgColorRgba is only available for BG1. You specified: ${layer}`;
+            if(layer != "L1"){ 
+                throw `setLayerBgColorRgba is only available for L1. You specified: ${layer}`;
             }
 
             // Get the 32-bit value for the [r,g,b,a] values provided.
@@ -132,13 +132,13 @@ messageFuncs.sendGfxUpdates.V4 = {
             let replaceColor_32bit = this.rgbaTo32bit(replaceColorArray);
 
             // If the 32-bit value is different than the stored value then update both.
-            if(_GFX.currentData["BG1"].bgColor32bit != replaceColor_32bit){
-                _GFX.currentData["BG1"].bgColorRgba  = replaceColorArray;
-                _GFX.currentData["BG1"].bgColor32bit = replaceColor_32bit;
+            if(_GFX.currentData["L1"].bgColor32bit != replaceColor_32bit){
+                _GFX.currentData["L1"].bgColorRgba  = replaceColorArray;
+                _GFX.currentData["L1"].bgColor32bit = replaceColor_32bit;
             }
 
             // Create a Uint32Array view of the imgDataCache for this layer.
-            let uint32Data = new Uint32Array(_GFX.layers["BG1"].imgDataCache.data.buffer);
+            let uint32Data = new Uint32Array(_GFX.layers["L1"].imgDataCache.data.buffer);
 
             // Find the findColor and replace with the replacementColor.
             for (let p = 0, len = uint32Data.length; p < len; ++p) {
@@ -210,13 +210,13 @@ messageFuncs.sendGfxUpdates.V4 = {
             ts_createTilemaps = performance.now() - ts_createTilemaps;
 
             // ******************************
-            // SET THE BACKGROUND COLOR (BG1)
+            // SET THE BACKGROUND COLOR (L1)
             // ******************************
 
             // Set the background color?
             let ts_setLayerBackgroundColor = performance.now();
             
-            if(layerKey == "BG1" && Array.isArray(layerData.bgColorRgba)){
+            if(layerKey == "L1" && Array.isArray(layerData.bgColorRgba)){
                 // this.parent.SETBG.setLayerBgColorRgba( layerKey, [0,0,0,0], layerData.bgColorRgba );
                 this.parent.SETBG.setImageDataBgColorRgba( _GFX.layers[layerKey].imgDataCache, [0,0,0,0], layerData.bgColorRgba );
             }
@@ -289,10 +289,10 @@ messageFuncs.sendGfxUpdates.V4 = {
     },
     DRAW: {
         parent:null,
-        flickerFlag_BG1: 0,
-        flickerFlag_BG2: 0,
-        flickerFlag_SP1: 0,
-        flickerFlag_TX1: 0,
+        flickerFlag_L1: 0,
+        flickerFlag_L2: 0,
+        flickerFlag_L3: 0,
+        flickerFlag_L4: 0,
 
         // Cache of all generated ImageData tilemaps. (to avoid regeneration.)
         hashCacheMap: new Map(),
@@ -693,7 +693,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             this.CLEAR.allLayersData();
         }
 
-        let layerKeys = ["BG1", "BG2", "SP1", "TX1"];
+        let layerKeys = ["L1", "L2", "L3", "L4"];
         let layerKey;
         for(let i=0, len1=layerKeys.length; i<len1; i+=1){
             // Get this layer key.
@@ -732,7 +732,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             hasChanges: true, // At least one layer has changes.
             gs1       : "gs_JSG", 
             gs2       : "", 
-            BG1:{
+            L1:{
                 // Added or changed.
                 CHANGES       : {
                     "board_28x28": {
@@ -747,17 +747,17 @@ messageFuncs.sendGfxUpdates.V4 = {
                     }
                 },
                 REMOVALS_ONLY : ["p1_card_0"],                   // Previously existing and requiring removal.
-                fade       : _GFX.currentData["BG1"].fade,       // Fade for this layer.
-                changes    : _GFX.currentData["BG1"].changes,    // If this layer has changes
-                bgColorRgba: _GFX.currentData["BG1"].bgColorRgba // Background-color for the layer.
+                fade       : _GFX.currentData["L1"].fade,       // Fade for this layer.
+                changes    : _GFX.currentData["L1"].changes,    // If this layer has changes
+                bgColorRgba: _GFX.currentData["L1"].bgColorRgba // Background-color for the layer.
             }
-            // <OTHER LAYERS> NOTE: Only BG1 has bgColorRgba.
+            // <OTHER LAYERS> NOTE: Only L1 has bgColorRgba.
         };
         */
     },
     init: async function(){
         this.CLEAR.parent = this;
-        let {width, height} = _GFX.layers["BG1"].imgDataCache;
+        let {width, height} = _GFX.layers["L1"].imgDataCache;
         this.CLEAR.fullTransparent_imgDataLayer = new ImageData(width, height);
 
         this.DRAW.parent = this;

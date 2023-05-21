@@ -17,6 +17,9 @@
     margin-bottom: 2px;
 }
 
+.debug_bgColor_on {background-color: #a8ffa8;}
+.debug_bgColor_off{background-color: #ffa8a8;}
+
 #debug_colorFinder{
 }
 /* #debug_colorFinder canvas{
@@ -81,8 +84,8 @@ div#debug_test_alwaysVisible {
     /* display: block; */
 }
 .debug_td_progressTable{
-    width: 210px;
-    /* width: 100%; */
+    /* width: 545px; */
+    width: 100%;
 }
 
 .debug_table{
@@ -95,10 +98,12 @@ div#debug_test_alwaysVisible {
     text-decoration: underline;
     font-weight: bold;
 }
-.debug_td_header2{ 
+.debug_td_header2{
     text-decoration: underline;
     font-weight: bold;
-    text-align:center;
+    /* text-align:center; */
+    min-width: 70px;
+    padding: 5px;
 }
 .debug_td_long{
     width: 260px;
@@ -117,6 +122,10 @@ div#debug_test_alwaysVisible {
 .debug_td_short2{
     width: 85px;
     max-width: 85px;
+}
+.debug_td_short3{
+    width: 100px;
+    max-width: 100px;
 }
 
 .debug_progress-bar {

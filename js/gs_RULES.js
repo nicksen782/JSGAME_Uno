@@ -5,20 +5,20 @@ _APP.game.gamestates["gs_RULES"] = {
         _GFX.funcs.clearAllLayers(true);
         _GFX.layerObjs.clearAll(_APP.game.gs1);
 
-        // Set the BG1 background color.
-        // _GFX.funcs.updateBG1BgColorRgba([0,128,64,255]);
-        // _GFX.funcs.updateBG1BgColorRgba([255,32,48,255]);
-        // _GFX.funcs.updateBG1BgColorRgba([0,255,48,255]);
-        _GFX.funcs.updateBG1BgColorRgba([32,32,48,255]);
+        // Set the L1 background color.
+        // _GFX.funcs.updateL1BgColorRgba([0,128,64,255]);
+        // _GFX.funcs.updateL1BgColorRgba([255,32,48,255]);
+        // _GFX.funcs.updateL1BgColorRgba([0,255,48,255]);
+        _GFX.funcs.updateL1BgColorRgba([32,32,48,255]);
 
         _APP.shared.border.createBorder1({
             x:0, y:0, w: 28, h: 28, 
-            layerObjKey: `border1`, layerKey: "BG2", xyByGrid: true, tilesetKey: "bg_tiles1"
+            layerObjKey: `border1`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1"
         });
 
         let linesConfig = {
             x:1, y:1, 
-            layerObjKey: "rules_text", tilesetKey: "font_tiles1", layerKey: "TX1", 
+            layerObjKey: "rules_text", tilesetKey: "font_tiles1", layerKey: "L4", 
             // settings: {},
             lines: [
                 `BE THE FIRST TO DISCARD `,
@@ -51,7 +51,7 @@ _APP.game.gamestates["gs_RULES"] = {
         };
         let linesConfig2 = {
             x:1, y:1, 
-            layerObjKey: "rules_text", tilesetKey: "font_tiles1", layerKey: "TX1", 
+            layerObjKey: "rules_text", tilesetKey: "font_tiles1", layerKey: "L4", 
             // settings: {},
             lines: [
                 `SKIP    : SKIP NEXT PLAYER`,

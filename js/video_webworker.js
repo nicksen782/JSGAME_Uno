@@ -7,10 +7,10 @@ var debugActive = false;
 const messageFuncs = {
     timings: {
         sendGfxUpdates: {
-            "BG1" : {},
-            "BG2" : {},
-            "SP1" : {},
-            "TX1" : {},
+            "L1" : {},
+            "L2" : {},
+            "L3" : {},
+            "L4" : {},
             "sendGfxUpdates" : 0,
         },
         initConfigAndGraphics: {},
@@ -119,18 +119,18 @@ const _GFX = {
     layers: {},
     defaultSettings: {},
     currentData: {
-        "BG1":{
+        "L1":{
             bgColorRgba: [0,0,0,0],
             bgColor32bit: 0,
             tilemaps   : {},
         },
-        "BG2":{
+        "L2":{
             tilemaps   : {},
         },
-        "SP1":{
+        "L3":{
             tilemaps   : {},
         },
-        "TX1":{
+        "L4":{
             tilemaps   : {},
         },
     },
@@ -342,10 +342,10 @@ const _DEBUG = {
         let index = 0;
         for(let y=0; y<16; y+=1){
             for(let x=0; x<16; x+=1){
-                // _GFX.layers["BG1"].ctx.putImageData(tiles[index], (x)*(tw*2), (y)*(th*2));
-                // _GFX.layers["BG2"].ctx.putImageData(tiles[index], (x)*(tw*2), (y)*(th*2));
-                // _GFX.layers["SP1"].ctx.putImageData(tiles[index], (x)*(tw*2), (y)*(th*2));
-                _GFX.layers["TX1"].ctx.putImageData(tiles[index], (x)*(tw*2), (y)*(th*2));
+                // _GFX.layers["L1"].ctx.putImageData(tiles[index], (x)*(tw*2), (y)*(th*2));
+                // _GFX.layers["L2"].ctx.putImageData(tiles[index], (x)*(tw*2), (y)*(th*2));
+                // _GFX.layers["L3"].ctx.putImageData(tiles[index], (x)*(tw*2), (y)*(th*2));
+                _GFX.layers["L4"].ctx.putImageData(tiles[index], (x)*(tw*2), (y)*(th*2));
                 index+=1;
             }
         }

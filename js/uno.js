@@ -35,10 +35,10 @@ _APP.configObj = {
     },
 
     layers:[
-        { "name": "BG1", "type":"grid"  , "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"105"}, {k:"background-color", v:"#181818"} ] },
-        { "name": "BG2", "type":"grid"  , "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"110"} ] },
-        { "name": "SP1", "type":"sprite", "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"115"} ] },
-        { "name": "TX1", "type":"grid"  , "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"120"} ] },
+        { "name": "L1", "type":"grid"  , "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"105"}, {k:"background-color", v:"#181818"} ] },
+        { "name": "L2", "type":"grid"  , "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"110"} ] },
+        { "name": "L3", "type":"sprite", "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"115"} ] },
+        { "name": "L4", "type":"grid"  , "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"120"} ] },
     ],
     
     inputConfig :{

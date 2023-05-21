@@ -7,14 +7,14 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Screen border and title.
             _APP.shared.border.createBorder1({
                 x:x+0, y:y+0, w: 28, h: 28, 
-                layerObjKey: `border1`, layerKey: "BG2", xyByGrid: true, tilesetKey: "bg_tiles1"
+                layerObjKey: `border1`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1"
             });
-            _GFX.layerObjs.updateOne(PrintText, { text: "OPTIONS", x:x+11, y: y+0, layerObjKey: `screen_title`, layerKey: "TX1", xyByGrid: true, settings: { bgColorRgba: [0,0,0,168] } });
+            _GFX.layerObjs.updateOne(PrintText, { text: "OPTIONS", x:x+11, y: y+0, layerObjKey: `screen_title`, layerKey: "L4", xyByGrid: true, settings: { bgColorRgba: [0,0,0,168] } });
 
             // UNO at the top.
-            _GFX.layerObjs.updateOne(UnoLetter, { letter: "u2", x:x+3 , y: y+2, layerObjKey: `letter_uno2_u`, layerKey: "BG1", xyByGrid: true, framesBeforeIndexChange: 1, framesIndex: 0 });
-            _GFX.layerObjs.updateOne(UnoLetter, { letter: "n2", x:x+11, y: y+2, layerObjKey: `letter_uno2_n`, layerKey: "BG1", xyByGrid: true, framesBeforeIndexChange: 1, framesIndex: 1 });
-            _GFX.layerObjs.updateOne(UnoLetter, { letter: "o2", x:x+19, y: y+2, layerObjKey: `letter_uno2_o`, layerKey: "BG1", xyByGrid: true, framesBeforeIndexChange: 1, framesIndex: 2 });
+            _GFX.layerObjs.updateOne(UnoLetter, { letter: "u2", x:x+3 , y: y+2, layerObjKey: `letter_uno2_u`, layerKey: "L1", xyByGrid: true, framesBeforeIndexChange: 30, framesIndex: 0 });
+            _GFX.layerObjs.updateOne(UnoLetter, { letter: "n2", x:x+11, y: y+2, layerObjKey: `letter_uno2_n`, layerKey: "L1", xyByGrid: true, framesBeforeIndexChange: 30, framesIndex: 1 });
+            _GFX.layerObjs.updateOne(UnoLetter, { letter: "o2", x:x+19, y: y+2, layerObjKey: `letter_uno2_o`, layerKey: "L1", xyByGrid: true, framesBeforeIndexChange: 30, framesIndex: 2 });
         }
         else if(section == "players"){
             let x=2;
@@ -23,25 +23,25 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Border around the players options. 
             _APP.shared.border.createBorder1({
                 x:x+0, y:y+0, w: 12, h: 6, 
-                layerObjKey: `border_playersB`, layerKey: "BG2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `border_playersB`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
 
             // "PLAYERS" text.
-            _GFX.layerObjs.updateOne(PrintText, { text: "PLAYERS" , x:x+1, y: y-1, layerObjKey: `players_title`, layerKey: "TX1", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "PLAYERS" , x:x+1, y: y-1, layerObjKey: `players_title`, layerKey: "L4", xyByGrid: true });
             
             // Border around the "PLAYERS" text.
             _APP.shared.border.createBorder1({
                 x:x+0, y:y-2, w: 9, h: 3, 
-                layerObjKey: `border_playersA`, layerKey: "BG2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `border_playersA`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
 
             // Text for the player options. 
-            _GFX.layerObjs.updateOne(PrintText, { text: "P1 HUMAN", x:x+2, y: y+1, layerObjKey: `P1_text`, layerKey: "TX1", xyByGrid: true });
-            _GFX.layerObjs.updateOne(PrintText, { text: "P2 HUMAN", x:x+2, y: y+2, layerObjKey: `P2_text`, layerKey: "TX1", xyByGrid: true });
-            _GFX.layerObjs.updateOne(PrintText, { text: "P3  NONE", x:x+2, y: y+3, layerObjKey: `P3_text`, layerKey: "TX1", xyByGrid: true });
-            _GFX.layerObjs.updateOne(PrintText, { text: "P4  NONE", x:x+2, y: y+4, layerObjKey: `P4_text`, layerKey: "TX1", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "P1 HUMAN", x:x+2, y: y+1, layerObjKey: `P1_text`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "P2 HUMAN", x:x+2, y: y+2, layerObjKey: `P2_text`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "P3  NONE", x:x+2, y: y+3, layerObjKey: `P3_text`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "P4  NONE", x:x+2, y: y+4, layerObjKey: `P4_text`, layerKey: "L4", xyByGrid: true });
         }
         else if(section == "winStyle"){
             let x=15;
@@ -50,24 +50,24 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Border around the win style options. 
             _APP.shared.border.createBorder1({
                 x:x+0, y:y+0, w: 11, h: 6, 
-                layerObjKey: `border_winStyle_B`, layerKey: "BG2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `border_winStyle_B`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
             
             // "WIN STYLE" text.
-            _GFX.layerObjs.updateOne(PrintText, { text: "WIN STYLE" , x:x+1, y: y-1, layerObjKey: `winStyle_title`, layerKey: "TX1", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "WIN STYLE" , x:x+1, y: y-1, layerObjKey: `winStyle_title`, layerKey: "L4", xyByGrid: true });
             
                 // Border around the "WIN STYLE" text.
             _APP.shared.border.createBorder1({
                 x:x+0, y:y-2, w: 11, h: 3, 
-                layerObjKey: `border_winStyle_A`, layerKey: "BG2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `border_winStyle_A`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
 
             // Text for the player options. 
-            _GFX.layerObjs.updateOne(PrintText, { text: "1ST TO:", x:x+2, y: y+1, layerObjKey: `winStyle_text1`, layerKey: "TX1", xyByGrid: true });
-            _GFX.layerObjs.updateOne(PrintText, { text: "500 PTS", x:x+2, y: y+3, layerObjKey: `winStyle_text2`, layerKey: "TX1", xyByGrid: true });
-            _GFX.layerObjs.updateOne(PrintText, { text: "0 CARDS", x:x+2, y: y+4, layerObjKey: `winStyle_text3`, layerKey: "TX1", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "1ST TO:", x:x+2, y: y+1, layerObjKey: `winStyle_text1`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "500 PTS", x:x+2, y: y+3, layerObjKey: `winStyle_text2`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "0 CARDS", x:x+2, y: y+4, layerObjKey: `winStyle_text3`, layerKey: "L4", xyByGrid: true });
         }
         else if(section == "noPlayableCard"){
             let x=2;
@@ -76,27 +76,27 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Border around the noPlayableCard options. 
             _APP.shared.border.createBorder1({
                 x:x+0, y:y+0, w: 23, h: 4, 
-                layerObjKey: `border_noPlayableCard_B`, layerKey: "BG2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `border_noPlayableCard_B`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
             
             // "IF NO PLAYABLE CARD" text.
-            _GFX.layerObjs.updateOne(PrintText, { text: "IF NO PLAYABLE CARD" , x:x+1, y: y-1, layerObjKey: `noPlayableCard_title`, layerKey: "TX1", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "IF NO PLAYABLE CARD" , x:x+1, y: y-1, layerObjKey: `noPlayableCard_title`, layerKey: "L4", xyByGrid: true });
             
             // Border around the "IF NO PLAYABLE CARD" text.
             _APP.shared.border.createBorder1({
                 x:x+0, y:y-2, w: 21, h: 3, 
-                layerObjKey: `border_noPlayableCard_A`, layerKey: "BG2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `border_noPlayableCard_A`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
 
             // // Text for the player options. 
-            _GFX.layerObjs.updateOne(PrintText, { text: "DRAW ONLY ONE CARD",  x:x+2, y: y+1, layerObjKey: `noPlayableCard_text1`, layerKey: "TX1", xyByGrid: true });
-            _GFX.layerObjs.updateOne(PrintText, { text: "DRAW UNTIL PLAYABLE", x:x+2, y: y+2, layerObjKey: `noPlayableCard_text2`, layerKey: "TX1", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "DRAW ONLY ONE CARD",  x:x+2, y: y+1, layerObjKey: `noPlayableCard_text1`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "DRAW UNTIL PLAYABLE", x:x+2, y: y+2, layerObjKey: `noPlayableCard_text2`, layerKey: "L4", xyByGrid: true });
             
             // Bottom text
-            _GFX.layerObjs.updateOne(PrintText, { text: "A:ACCEPT    DPAD:CHANGE", x:x+0, y: y+5, layerObjKey: `noPlayableCard_text3`, layerKey: "TX1", xyByGrid: true });
-            _GFX.layerObjs.updateOne(PrintText, { text: "B:BACK"                 , x:x+0, y: y+6, layerObjKey: `noPlayableCard_text4`, layerKey: "TX1", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "A:ACCEPT    DPAD:CHANGE", x:x+0, y: y+5, layerObjKey: `noPlayableCard_text3`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "B:BACK"                 , x:x+0, y: y+6, layerObjKey: `noPlayableCard_text4`, layerKey: "L4", xyByGrid: true });
         }
     },
     // Run once upon changing to this game state.
@@ -105,9 +105,9 @@ _APP.game.gamestates["gs_OPTIONS"] = {
         _GFX.funcs.clearAllLayers(true);
         _GFX.layerObjs.clearAll(_APP.game.gs1);
 
-        // Set the BG1 background color.
-        // _GFX.funcs.updateBG1BgColorRgba([0,128,64,255]);
-        _GFX.funcs.updateBG1BgColorRgba([32,32,48,255]);
+        // Set the L1 background color.
+        // _GFX.funcs.updateL1BgColorRgba([0,128,64,255]);
+        _GFX.funcs.updateL1BgColorRgba([32,32,48,255]);
 
         this.genSection("start");
         this.genSection("players");

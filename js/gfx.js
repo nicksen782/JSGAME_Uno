@@ -4,7 +4,7 @@ var _GFX = {
 
     // Holds the graphics data that will be sent to the WebWorker.
     currentData : {
-        "BG1":{
+        "L1":{
             canvas: null,
             bgColorRgba: [0,0,0,255],
             tilemaps   : {},
@@ -16,7 +16,7 @@ var _GFX = {
             },
             useFlicker: false
         },
-        "BG2":{
+        "L2":{
             canvas: null,
             tilemaps  : {},
             changes   : false,
@@ -27,7 +27,7 @@ var _GFX = {
             },
             useFlicker: false
         },
-        "SP1":{
+        "L3":{
             canvas: null,
             tilemaps  : {},
             changes   : false,
@@ -38,7 +38,7 @@ var _GFX = {
             },
             useFlicker: true,
         },
-        "TX1":{
+        "L4":{
             canvas: null,
             tilemaps  : {},
             changes   : false,
@@ -67,10 +67,10 @@ var _GFX = {
     ALLCLEAR: true,         //
     DRAWNEEDED: false,      //
     REMOVALS: {
-        BG1: [],
-        BG2: [],
-        SP1: [],
-        TX1: [],
+        L1: [],
+        L2: [],
+        L3: [],
+        L4: [],
     },      //
     
     GFX_UPDATE_DATA: {
@@ -80,23 +80,23 @@ var _GFX = {
         ALLCLEAR: false,
         hasChanges: false,
 
-        BG1: { 
+        L1: { 
             CHANGES: {}, REMOVALS_ONLY: [],
             fade       : {}, 
             changes    : false, 
             bgColorRgba: [0,0,0,0]
         }, 
-        BG2: { 
+        L2: { 
             CHANGES: {}, REMOVALS_ONLY: [],
             fade       : {}, 
             changes    : false, 
         }, 
-        SP1: { 
+        L3: { 
             CHANGES: {}, REMOVALS_ONLY: [],
             fade       : {}, 
             changes    : false, 
         }, 
-        TX1: { 
+        L4: { 
             CHANGES: {}, REMOVALS_ONLY: [],
             fade       : {}, 
             changes    : false, 
@@ -116,7 +116,7 @@ var _GFX = {
             this.GFX_UPDATE_DATA[layerKey].fade          = layerData.fade;
             this.GFX_UPDATE_DATA[layerKey].changes       = layerData.changes;
             this.GFX_UPDATE_DATA[layerKey].useFlicker    = layerData.useFlicker;
-            if([layerKey] == "BG1"){
+            if([layerKey] == "L1"){
                 this.GFX_UPDATE_DATA[layerKey].bgColorRgba   = layerData.bgColorRgba;
             }
 
@@ -197,7 +197,7 @@ var _GFX = {
             // NOTE: The last argument, gamestate is technically optional and defaults to the current gamestate 1.
 
             _GFX.layerObjs.updateOne(LayerObject, {
-                    layerObjKey: "demo_board", layerKey: "BG1", tilesetKey: "bg_tiles",
+                    layerObjKey: "demo_board", layerKey: "L1", tilesetKey: "bg_tiles",
                     tmap: _GFX.funcs.getTilemap("bg_tiles", "board_28x28"),
                     x: 0, y: 0, xyByGrid: true,
                     settings : {
@@ -303,10 +303,10 @@ var _GFX = {
             if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
 
             let layerObjects = {
-                "BG1": {},
-                "BG2": {},
-                "SP1": {},
-                "TX1": {},
+                "L1": {},
+                "L2": {},
+                "L3": {},
+                "L4": {},
             };
             
             // Get all the layer objects. 
@@ -351,10 +351,10 @@ var _GFX = {
             if(
                 ! (
                     _GFX.ALLCLEAR                   ||
-                    _GFX.currentData["BG1"].changes ||
-                    _GFX.currentData["BG2"].changes ||
-                    _GFX.currentData["SP1"].changes ||
-                    _GFX.currentData["TX1"].changes ||
+                    _GFX.currentData["L1"].changes ||
+                    _GFX.currentData["L2"].changes ||
+                    _GFX.currentData["L3"].changes ||
+                    _GFX.currentData["L4"].changes ||
                     _GFX.DRAWNEEDED
                 )
             )   { _GFX.DRAWNEEDED = false; }
@@ -385,8 +385,8 @@ var _GFX = {
                 // Remove all tilemaps. 
                 _GFX.currentData[layerKey].tilemaps = {};
 
-                // Keep the background color for BG1?
-                if(layerKey == "BG1" && !keepBg1BgColor){
+                // Keep the background color for L1?
+                if(layerKey == "L1" && !keepBg1BgColor){
                     _GFX.currentData[layerKey].bgColorRgba = [0,0,0,0];
                 }
 
@@ -401,10 +401,10 @@ var _GFX = {
             // await _WEBW_V.SEND("clearAllLayers", { data:{}, refs:[] }, true, false);
         },
 
-        // Updates the background color for BG1.
-        updateBG1BgColorRgba: function(bgColorRgba=[0,0,0,255]){
-            // _GFX.funcs.updateBG1BgColorRgba([0,0,255,255]);
-            let layer = "BG1";
+        // Updates the background color for L1.
+        updateL1BgColorRgba: function(bgColorRgba=[0,0,0,255]){
+            // _GFX.funcs.updateL1BgColorRgba([0,0,255,255]);
+            let layer = "L1";
 
             if(bgColorRgba){
                 _GFX.currentData[layer].bgColorRgba = bgColorRgba;
@@ -420,7 +420,7 @@ var _GFX = {
         // Updates the specified layer (locally.) Can accept multiple tilemaps.
         updateLayer: function(layer, tilemaps={}){
             // 
-            if(layer == "BG1" || layer == "BG2" || layer == "SP1" || layer == "TX1"){
+            if(layer == "L1" || layer == "L2" || layer == "L3" || layer == "L4"){
                 let fade = _GFX.currentData[layer].fade;
                 let tilemap, exists, oldHash, newHash, hashMapHash;
                 let tw ;
@@ -509,7 +509,7 @@ var _GFX = {
         // NOTE: Fade uses preGenerated fadeTiles so color replacements will be skipped.
         setFade: function(layer="ALL", level=0){
             // _GFX.funcs.setFade("ALL", 5);
-            // layer can be one of: [ "BG1", "BG2", "SP1", "TXT1", "ALL" ].
+            // layer can be one of: [ "L1", "L2", "L3", "TXT1", "ALL" ].
             // level can be one of: [ null, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
 
             // Affect all layers?
@@ -764,9 +764,9 @@ var _GFX = {
                 _DEBUG.timingsDisplay.gfx.updateCache(data); 
             }
 
-            if(data.newBG1_bgColor){
+            if(data.newL1_bgColor){
                 // Save the new bgColorRgba.
-                // _GFX.currentData["BG1"].bgColorRgba = e.data.data.newBG1_bgColorRgba;
+                // _GFX.currentData["L1"].bgColorRgba = e.data.data.newL1_bgColorRgba;
 
                 // Apply the new bgColorRgba.
                 //

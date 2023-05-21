@@ -31,15 +31,15 @@ _GFX.layerObjs.getOne("N782_text_anim"       , "gs_N782").setSetting("yFlip", tr
 _GFX.layerObjs.getOne("N782_text_anim"       , "gs_N782").setSetting("fade", 5);
 
 // CHANGE LAYER:
-_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "BG1";
-_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "BG2";
-_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "TX1";
-_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "SP1";
+_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "L1";
+_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "L2";
+_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "L4";
+_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "L3";
 
 // TESTING: (TODO: Layer changes leave the old copy on it's previous layer.)
 _GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").setSetting("colorData", [ [ [ 255,182,  0,255], [ 255,72,36,255] ], ]);
-_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "BG1";
-_GFX.layerObjs.getOne("board_28x28", "gs_JSG").layerKey = "BG2";
+_GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "L1";
+_GFX.layerObjs.getOne("board_28x28", "gs_JSG").layerKey = "L2";
 */
 
 // Creates one LayerObject.
@@ -61,11 +61,11 @@ class LayerObject {
     set tmap(value)       { if( this._tmap       !== value){ this._tmap       = value; this._changed = true; } }
     set layerKey(value)   { if( this._layerKey   !== value){ 
         // Remove the existing layerObject from it's previous layer.
-        // _GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "BG1";
+        // _GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "L1";
         if(this._layerKey && this.layerObjKey && _GFX.currentData[this._layerKey].tilemaps[this.layerObjKey]){
             console.log(`REMOVING: layerKey: ${this._layerKey}, layerObjKey: ${this.layerObjKey}`);
             _GFX.funcs.removeLayerObj(this._layerKey, this.layerObjKey);
-            // _GFX.currentData["BG2"].tilemaps["N782_oneStar_anim2_10"];
+            // _GFX.currentData["L2"].tilemaps["N782_oneStar_anim2_10"];
         }
 
         this._layerKey   = value; this._changed = true; 
@@ -246,7 +246,7 @@ class PrintText extends LayerObject{
         this.removeHashOnRemoval = config.removeHashOnRemoval ?? true;
         this.noResort = config.noResort ?? true;
 
-        if(!this.layerKey)  { this.layerKey = "TX1";}
+        if(!this.layerKey)  { this.layerKey = "L4";}
         if(!this.tilesetKey){ this.tilesetKey = "font_tiles1"; }
 
         // This part should be handled already by _GFX.funcs.layerObjs.updateOne.
@@ -488,7 +488,7 @@ class Card extends LayerObject{
         }
         else{ throw `Invalid card size: ${config.size}`; }
     };
-    // _GFX.layerObjs.updateOne(Card, { size: "sm", color:"black", value: "back", x:4, y:16, layerObjKey: `card1`, layerKey: "BG1", xyByGrid: true } );
+    // _GFX.layerObjs.updateOne(Card, { size: "sm", color:"black", value: "back", x:4, y:16, layerObjKey: `card1`, layerKey: "L1", xyByGrid: true } );
 };
 
 

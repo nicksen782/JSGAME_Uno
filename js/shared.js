@@ -98,7 +98,7 @@ _APP.shared = {
             /* 
             _APP.shared.border.createBorder1({
                 x:1, y:9, w: 26, h: 11, 
-                layerObjKey: `border1`, layerKey: "TX1", xyByGrid: true, tilesetKey: "bg_tiles1"
+                layerObjKey: `border1`, layerKey: "L4", xyByGrid: true, tilesetKey: "bg_tiles1"
             });
         
             */
@@ -113,7 +113,7 @@ _APP.shared = {
             // A border has 4 parts and thus 4 tilemaps
             _GFX.layerObjs.updateOne(LayerObject, {
                 layerObjKey: `${config.layerObjKey}_top`, 
-                layerKey: config.layerKey ?? "TX1", tilesetKey: config.tilesetKey ?? "bg_tiles1", 
+                layerKey: config.layerKey ?? "L4", tilesetKey: config.tilesetKey ?? "bg_tiles1", 
                 xyByGrid: config.xyByGrid ?? false,
                 settings: config.settings, type: "notPrint",
                 removeHashOnRemoval: true, noResort: false,
@@ -129,7 +129,7 @@ _APP.shared = {
             });
             _GFX.layerObjs.updateOne(LayerObject, {
                 layerObjKey: `${config.layerObjKey}_bottom`, 
-                layerKey: config.layerKey ?? "TX1", tilesetKey: config.tilesetKey ?? "bg_tiles1", 
+                layerKey: config.layerKey ?? "L4", tilesetKey: config.tilesetKey ?? "bg_tiles1", 
                 xyByGrid: config.xyByGrid ?? false,
                 settings: config.settings, type: "notPrint",
                 removeHashOnRemoval: true, noResort: false,
@@ -145,7 +145,7 @@ _APP.shared = {
             });
             _GFX.layerObjs.updateOne(LayerObject, {
                 layerObjKey: `${config.layerObjKey}_left`, 
-                layerKey: config.layerKey ?? "TX1", tilesetKey: config.tilesetKey ?? "bg_tiles1", 
+                layerKey: config.layerKey ?? "L4", tilesetKey: config.tilesetKey ?? "bg_tiles1", 
                 xyByGrid: config.xyByGrid ?? false,
                 settings: config.settings, type: "notPrint",
                 removeHashOnRemoval: true, noResort: false,
@@ -159,7 +159,7 @@ _APP.shared = {
             });
             _GFX.layerObjs.updateOne(LayerObject, {
                 layerObjKey: `${config.layerObjKey}_right`, 
-                layerKey: config.layerKey ?? "TX1", tilesetKey: config.tilesetKey ?? "bg_tiles1", 
+                layerKey: config.layerKey ?? "L4", tilesetKey: config.tilesetKey ?? "bg_tiles1", 
                 xyByGrid: config.xyByGrid ?? false,
                 settings: config.settings, type: "notPrint",
                 removeHashOnRemoval: true, noResort: false,
@@ -188,7 +188,7 @@ _APP.shared = {
                     x:x, y:y,
                     // layerObjKey_base: `${config.layerObjKey}`, 
                     layerObjKey: `${config.layerObjKey}_line_${i}`, 
-                    layerKey  : config.layerKey   ?? "TX1", 
+                    layerKey  : config.layerKey   ?? "L4", 
                     tilesetKey: config.tilesetKey ?? "font_tiles1", 
                     xyByGrid: true, 
                 });
@@ -203,6 +203,6 @@ _APP.shared = {
 //     x:2, y: 
 //     y+=1,           
 //     layerObjKey: `text1`, 
-//     layerKey: "TX1", 
+//     layerKey: "L4", 
 //     xyByGrid: true, 
 // });

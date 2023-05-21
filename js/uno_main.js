@@ -294,10 +294,10 @@ _APP.game.gameLoop.loop = async function loop(timestamp){
 
                 // -- DEBUG --
                 if(_APP.debugActive && _DEBUG){ 
-                    _DEBUG.cachedData.changes["BG1"] = _GFX.currentData["BG1"].changes;
-                    _DEBUG.cachedData.changes["BG2"] = _GFX.currentData["BG2"].changes;
-                    _DEBUG.cachedData.changes["SP1"] = _GFX.currentData["SP1"].changes;
-                    _DEBUG.cachedData.changes["TX1"] = _GFX.currentData["TX1"].changes;
+                    _DEBUG.cachedData.changes["L1"] = _GFX.currentData["L1"].changes;
+                    _DEBUG.cachedData.changes["L2"] = _GFX.currentData["L2"].changes;
+                    _DEBUG.cachedData.changes["L3"] = _GFX.currentData["L3"].changes;
+                    _DEBUG.cachedData.changes["L4"] = _GFX.currentData["L4"].changes;
                 }
 
                 // GAMESTATE CHANGES

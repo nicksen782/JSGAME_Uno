@@ -2,12 +2,12 @@ var _DEBUG = {
     gridCanvas: null,
     createGridCanvas: function(){
         // Copy the dimensions of the first canvas. 
-        const canvas_src_BG1 = document.querySelector(".canvasLayer[name='BG1']");
+        const canvas_src_L1 = document.querySelector(".canvasLayer[name='L1']");
     
         // Create a canvas for this layer.
         this.gridCanvas = document.createElement("canvas");
-        this.gridCanvas.width  = canvas_src_BG1.width;
-        this.gridCanvas.height = canvas_src_BG1.height;
+        this.gridCanvas.width  = canvas_src_L1.width;
+        this.gridCanvas.height = canvas_src_L1.height;
         this.gridCanvas.id = "debug_grid_canvas";
         this.gridCanvas.style["z-index"] = "300";
         const ctx = this.gridCanvas.getContext('2d');
@@ -125,15 +125,15 @@ var _DEBUG = {
 
     fadeHandler: function(){
         let fadeSliderALL     = document.getElementById("fadeSliderALL");
-        let fadeSliderBG1     = document.getElementById("fadeSliderBG1");
-        let fadeSliderBG2     = document.getElementById("fadeSliderBG2");
-        let fadeSliderSP1     = document.getElementById("fadeSliderSP1");
-        let fadeSliderTX1     = document.getElementById("fadeSliderTX1");
+        let fadeSliderL1     = document.getElementById("fadeSliderL1");
+        let fadeSliderL2     = document.getElementById("fadeSliderL2");
+        let fadeSliderL3     = document.getElementById("fadeSliderL3");
+        let fadeSliderL4     = document.getElementById("fadeSliderL4");
         let fadeSliderALLText = document.getElementById("fadeSliderALLText");
-        let fadeSliderBG1Text = document.getElementById("fadeSliderBG1Text");
-        let fadeSliderBG2Text = document.getElementById("fadeSliderBG2Text");
-        let fadeSliderSP1Text = document.getElementById("fadeSliderSP1Text");
-        let fadeSliderTX1Text = document.getElementById("fadeSliderTX1Text");
+        let fadeSliderL1Text = document.getElementById("fadeSliderL1Text");
+        let fadeSliderL2Text = document.getElementById("fadeSliderL2Text");
+        let fadeSliderL3Text = document.getElementById("fadeSliderL3Text");
+        let fadeSliderL4Text = document.getElementById("fadeSliderL4Text");
 
         function changeFade(layer, sliderElem, sliderTextElem) {
             let level;
@@ -165,16 +165,16 @@ var _DEBUG = {
             sliderTextElem.innerText = sliderElem.title;
         }
         changeFade("ALL", fadeSliderALL, fadeSliderALLText);
-        changeFade("BG1", fadeSliderBG1, fadeSliderBG1Text);
-        changeFade("BG2", fadeSliderBG2, fadeSliderBG2Text);
-        changeFade("SP1", fadeSliderSP1, fadeSliderSP1Text);
-        changeFade("TX1", fadeSliderTX1, fadeSliderTX1Text);
+        changeFade("L1", fadeSliderL1, fadeSliderL1Text);
+        changeFade("L2", fadeSliderL2, fadeSliderL2Text);
+        changeFade("L3", fadeSliderL3, fadeSliderL3Text);
+        changeFade("L4", fadeSliderL4, fadeSliderL4Text);
 
         fadeSliderALL.addEventListener("input", ()=>{ changeFade("ALL", fadeSliderALL, fadeSliderALLText); }, false);
-        fadeSliderBG1.addEventListener("input", ()=>{ changeFade("BG1", fadeSliderBG1, fadeSliderBG1Text); }, false);
-        fadeSliderBG2.addEventListener("input", ()=>{ changeFade("BG2", fadeSliderBG2, fadeSliderBG2Text); }, false);
-        fadeSliderSP1.addEventListener("input", ()=>{ changeFade("SP1", fadeSliderSP1, fadeSliderSP1Text); }, false);
-        fadeSliderTX1.addEventListener("input", ()=>{ changeFade("TX1", fadeSliderTX1, fadeSliderTX1Text); }, false);
+        fadeSliderL1.addEventListener("input", ()=>{ changeFade("L1", fadeSliderL1, fadeSliderL1Text); }, false);
+        fadeSliderL2.addEventListener("input", ()=>{ changeFade("L2", fadeSliderL2, fadeSliderL2Text); }, false);
+        fadeSliderL3.addEventListener("input", ()=>{ changeFade("L3", fadeSliderL3, fadeSliderL3Text); }, false);
+        fadeSliderL4.addEventListener("input", ()=>{ changeFade("L4", fadeSliderL4, fadeSliderL4Text); }, false);
     },
 
     toggleDebugFlag: function(){
@@ -206,10 +206,10 @@ var _DEBUG = {
     },
     cachedData : {
         changes: {
-            "BG1": 0, 
-            "BG2": 0, 
-            "SP1": 0, 
-            "TX1": 0, 
+            "L1": 0, 
+            "L2": 0, 
+            "L3": 0, 
+            "L4": 0, 
         }
     },
     elemsObjInit: function(){
@@ -405,30 +405,30 @@ var _DEBUG = {
 
                 // Add to the data key for each elem.
                 this.elems.TOTAL_ALL.data = (this.values.sendGfxUpdates.toString());
-                this.elems.TOTAL_BG1.data = (this.values.BG1.__TOTAL.toFixed() );
-                this.elems.TOTAL_BG2.data = (this.values.BG2.__TOTAL.toFixed() );
-                this.elems.TOTAL_SP1.data = (this.values.SP1.__TOTAL.toFixed() );
-                this.elems.TOTAL_TX1.data = (this.values.TX1.__TOTAL.toFixed() );
-                this.elems.A_BG1.data     = (this.values.BG1.A_clearLayer.toFixed());
-                this.elems.A_BG2.data     = (this.values.BG2.A_clearLayer.toFixed());
-                this.elems.A_SP1.data     = (this.values.SP1.A_clearLayer.toFixed());
-                this.elems.A_TX1.data     = (this.values.TX1.A_clearLayer.toFixed());
-                this.elems.B_BG1.data     = (this.values.BG1.B_clearRemovedData.toFixed());
-                this.elems.B_BG2.data     = (this.values.BG2.B_clearRemovedData.toFixed());
-                this.elems.B_SP1.data     = (this.values.SP1.B_clearRemovedData.toFixed());
-                this.elems.B_TX1.data     = (this.values.TX1.B_clearRemovedData.toFixed());
-                this.elems.C_BG1.data     = (this.values.BG1.C_createTilemaps.toFixed());
-                this.elems.C_BG2.data     = (this.values.BG2.C_createTilemaps.toFixed());
-                this.elems.C_SP1.data     = (this.values.SP1.C_createTilemaps.toFixed());
-                this.elems.C_TX1.data     = (this.values.TX1.C_createTilemaps.toFixed());
-                this.elems.D_BG1.data     = (this.values.BG1.D_drawFromDataCache.toFixed());
-                this.elems.D_BG2.data     = (this.values.BG2.D_drawFromDataCache.toFixed());
-                this.elems.D_SP1.data     = (this.values.SP1.D_drawFromDataCache.toFixed());
-                this.elems.D_TX1.data     = (this.values.TX1.D_drawFromDataCache.toFixed());
-                this.elems.E_BG1.data     = (this.values.BG1.E_drawImgDataCache.toFixed());
-                this.elems.E_BG2.data     = (this.values.BG2.E_drawImgDataCache.toFixed());
-                this.elems.E_SP1.data     = (this.values.SP1.E_drawImgDataCache.toFixed());
-                this.elems.E_TX1.data     = (this.values.TX1.E_drawImgDataCache.toFixed());
+                this.elems.TOTAL_L1.data = (this.values.L1.__TOTAL.toFixed() );
+                this.elems.TOTAL_L2.data = (this.values.L2.__TOTAL.toFixed() );
+                this.elems.TOTAL_L3.data = (this.values.L3.__TOTAL.toFixed() );
+                this.elems.TOTAL_L4.data = (this.values.L4.__TOTAL.toFixed() );
+                this.elems.A_L1.data     = (this.values.L1.A_clearLayer.toFixed());
+                this.elems.A_L2.data     = (this.values.L2.A_clearLayer.toFixed());
+                this.elems.A_L3.data     = (this.values.L3.A_clearLayer.toFixed());
+                this.elems.A_L4.data     = (this.values.L4.A_clearLayer.toFixed());
+                this.elems.B_L1.data     = (this.values.L1.B_clearRemovedData.toFixed());
+                this.elems.B_L2.data     = (this.values.L2.B_clearRemovedData.toFixed());
+                this.elems.B_L3.data     = (this.values.L3.B_clearRemovedData.toFixed());
+                this.elems.B_L4.data     = (this.values.L4.B_clearRemovedData.toFixed());
+                this.elems.C_L1.data     = (this.values.L1.C_createTilemaps.toFixed());
+                this.elems.C_L2.data     = (this.values.L2.C_createTilemaps.toFixed());
+                this.elems.C_L3.data     = (this.values.L3.C_createTilemaps.toFixed());
+                this.elems.C_L4.data     = (this.values.L4.C_createTilemaps.toFixed());
+                this.elems.D_L1.data     = (this.values.L1.D_drawFromDataCache.toFixed());
+                this.elems.D_L2.data     = (this.values.L2.D_drawFromDataCache.toFixed());
+                this.elems.D_L3.data     = (this.values.L3.D_drawFromDataCache.toFixed());
+                this.elems.D_L4.data     = (this.values.L4.D_drawFromDataCache.toFixed());
+                this.elems.E_L1.data     = (this.values.L1.E_drawImgDataCache.toFixed());
+                this.elems.E_L2.data     = (this.values.L2.E_drawImgDataCache.toFixed());
+                this.elems.E_L3.data     = (this.values.L3.E_drawImgDataCache.toFixed());
+                this.elems.E_L4.data     = (this.values.L4.E_drawImgDataCache.toFixed());
             },
             init: function(){
                 // Progress bar: draw.
@@ -441,30 +441,30 @@ var _DEBUG = {
 
                 // Individual values: draw.
                 // GFX TIMINGS TABLE.
-                this.elems.TOTAL_BG1  = { e: document.getElementById("debug_timings_TOTAL_BG1"),    t: 0, data: 0 } 
-                this.elems.TOTAL_BG2  = { e: document.getElementById("debug_timings_TOTAL_BG2"),    t: 0, data: 0 } 
-                this.elems.TOTAL_SP1  = { e: document.getElementById("debug_timings_TOTAL_SP1"),    t: 0, data: 0 } 
-                this.elems.TOTAL_TX1  = { e: document.getElementById("debug_timings_TOTAL_TX1"),    t: 0, data: 0 } 
-                this.elems.A_BG1      = { e: document.getElementById("debug_timings_A_BG1"),        t: 0, data: 0 } 
-                this.elems.A_BG2      = { e: document.getElementById("debug_timings_A_BG2"),        t: 0, data: 0 } 
-                this.elems.A_SP1      = { e: document.getElementById("debug_timings_A_SP1"),        t: 0, data: 0 } 
-                this.elems.A_TX1      = { e: document.getElementById("debug_timings_A_TX1"),        t: 0, data: 0 } 
-                this.elems.B_BG1      = { e: document.getElementById("debug_timings_B_BG1"),        t: 0, data: 0 } 
-                this.elems.B_BG2      = { e: document.getElementById("debug_timings_B_BG2"),        t: 0, data: 0 } 
-                this.elems.B_SP1      = { e: document.getElementById("debug_timings_B_SP1"),        t: 0, data: 0 } 
-                this.elems.B_TX1      = { e: document.getElementById("debug_timings_B_TX1"),        t: 0, data: 0 } 
-                this.elems.C_BG1      = { e: document.getElementById("debug_timings_C_BG1"),        t: 0, data: 0 } 
-                this.elems.C_BG2      = { e: document.getElementById("debug_timings_C_BG2"),        t: 0, data: 0 } 
-                this.elems.C_SP1      = { e: document.getElementById("debug_timings_C_SP1"),        t: 0, data: 0 } 
-                this.elems.C_TX1      = { e: document.getElementById("debug_timings_C_TX1"),        t: 0, data: 0 } 
-                this.elems.D_BG1      = { e: document.getElementById("debug_timings_D_BG1"),        t: 0, data: 0 } 
-                this.elems.D_BG2      = { e: document.getElementById("debug_timings_D_BG2"),        t: 0, data: 0 } 
-                this.elems.D_SP1      = { e: document.getElementById("debug_timings_D_SP1"),        t: 0, data: 0 } 
-                this.elems.D_TX1      = { e: document.getElementById("debug_timings_D_TX1"),        t: 0, data: 0 } 
-                this.elems.E_BG1      = { e: document.getElementById("debug_timings_E_BG1"),        t: 0, data: 0 } 
-                this.elems.E_BG2      = { e: document.getElementById("debug_timings_E_BG2"),        t: 0, data: 0 } 
-                this.elems.E_SP1      = { e: document.getElementById("debug_timings_E_SP1"),        t: 0, data: 0 } 
-                this.elems.E_TX1      = { e: document.getElementById("debug_timings_E_TX1"),        t: 0, data: 0 } 
+                this.elems.TOTAL_L1  = { e: document.getElementById("debug_timings_TOTAL_L1"),    t: 0, data: 0 } 
+                this.elems.TOTAL_L2  = { e: document.getElementById("debug_timings_TOTAL_L2"),    t: 0, data: 0 } 
+                this.elems.TOTAL_L3  = { e: document.getElementById("debug_timings_TOTAL_L3"),    t: 0, data: 0 } 
+                this.elems.TOTAL_L4  = { e: document.getElementById("debug_timings_TOTAL_L4"),    t: 0, data: 0 } 
+                this.elems.A_L1      = { e: document.getElementById("debug_timings_A_L1"),        t: 0, data: 0 } 
+                this.elems.A_L2      = { e: document.getElementById("debug_timings_A_L2"),        t: 0, data: 0 } 
+                this.elems.A_L3      = { e: document.getElementById("debug_timings_A_L3"),        t: 0, data: 0 } 
+                this.elems.A_L4      = { e: document.getElementById("debug_timings_A_L4"),        t: 0, data: 0 } 
+                this.elems.B_L1      = { e: document.getElementById("debug_timings_B_L1"),        t: 0, data: 0 } 
+                this.elems.B_L2      = { e: document.getElementById("debug_timings_B_L2"),        t: 0, data: 0 } 
+                this.elems.B_L3      = { e: document.getElementById("debug_timings_B_L3"),        t: 0, data: 0 } 
+                this.elems.B_L4      = { e: document.getElementById("debug_timings_B_L4"),        t: 0, data: 0 } 
+                this.elems.C_L1      = { e: document.getElementById("debug_timings_C_L1"),        t: 0, data: 0 } 
+                this.elems.C_L2      = { e: document.getElementById("debug_timings_C_L2"),        t: 0, data: 0 } 
+                this.elems.C_L3      = { e: document.getElementById("debug_timings_C_L3"),        t: 0, data: 0 } 
+                this.elems.C_L4      = { e: document.getElementById("debug_timings_C_L4"),        t: 0, data: 0 } 
+                this.elems.D_L1      = { e: document.getElementById("debug_timings_D_L1"),        t: 0, data: 0 } 
+                this.elems.D_L2      = { e: document.getElementById("debug_timings_D_L2"),        t: 0, data: 0 } 
+                this.elems.D_L3      = { e: document.getElementById("debug_timings_D_L3"),        t: 0, data: 0 } 
+                this.elems.D_L4      = { e: document.getElementById("debug_timings_D_L4"),        t: 0, data: 0 } 
+                this.elems.E_L1      = { e: document.getElementById("debug_timings_E_L1"),        t: 0, data: 0 } 
+                this.elems.E_L2      = { e: document.getElementById("debug_timings_E_L2"),        t: 0, data: 0 } 
+                this.elems.E_L3      = { e: document.getElementById("debug_timings_E_L3"),        t: 0, data: 0 } 
+                this.elems.E_L4      = { e: document.getElementById("debug_timings_E_L4"),        t: 0, data: 0 } 
                 this.elems.TOTAL_ALL  = { e: document.getElementById("debug_timings_TOTAL_ALL"),    t: 0, data: 0 } 
             },
             calcValuesForProgressBars: function(obj){
@@ -612,16 +612,16 @@ var _DEBUG = {
                 };
 
                 // display_tmapCountByLayer: Tilemap counts by layer.
-                this.elems.changesBG1 = { e: document.getElementById("debug_changesBG1"), t: 0 };
-                this.elems.changesBG2 = { e: document.getElementById("debug_changesBG2"), t: 0 };
-                this.elems.changesSP1 = { e: document.getElementById("debug_changesSP1"), t: 0 };
-                this.elems.changesTX1 = { e: document.getElementById("debug_changesTX1"), t: 0 };
+                this.elems.changesL1 = { e: document.getElementById("debug_changesL1"), t: 0 };
+                this.elems.changesL2 = { e: document.getElementById("debug_changesL2"), t: 0 };
+                this.elems.changesL3 = { e: document.getElementById("debug_changesL3"), t: 0 };
+                this.elems.changesL4 = { e: document.getElementById("debug_changesL4"), t: 0 };
                 
                 // display_layerChanges: Display the number of layer objects per layer.
-                this.elems.BG1_tms = { e: document.getElementById("debug_BG1_tms"), t: 0 };
-                this.elems.BG2_tms = { e: document.getElementById("debug_BG2_tms"), t: 0 };
-                this.elems.SP1_tms = { e: document.getElementById("debug_SP1_tms"), t: 0 };
-                this.elems.TX1_tms = { e: document.getElementById("debug_TX1_tms"), t: 0 };
+                this.elems.L1_tms = { e: document.getElementById("debug_L1_tms"), t: 0 };
+                this.elems.L2_tms = { e: document.getElementById("debug_L2_tms"), t: 0 };
+                this.elems.L3_tms = { e: document.getElementById("debug_L3_tms"), t: 0 };
+                this.elems.L4_tms = { e: document.getElementById("debug_L4_tms"), t: 0 };
                 
             },
             // TODO: FIX.
@@ -687,29 +687,29 @@ var _DEBUG = {
                 let activeTime = 200;
                 let testText = "";
     
-                let changesBG1 = this.elems["changesBG1"];
-                let changesBG2 = this.elems["changesBG2"];
-                let changesSP1 = this.elems["changesSP1"];
-                let changesTX1 = this.elems["changesTX1"];
+                let changesL1 = this.elems["changesL1"];
+                let changesL2 = this.elems["changesL2"];
+                let changesL3 = this.elems["changesL3"];
+                let changesL4 = this.elems["changesL4"];
     
-                testText = `${_DEBUG.cachedData.changes["BG1"] ? "BG1" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesBG1, activeTime);
-                testText = `${_DEBUG.cachedData.changes["BG2"] ? "BG2" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesBG2, activeTime);
-                testText = `${_DEBUG.cachedData.changes["SP1"] ? "SP1" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesSP1, activeTime);
-                testText = `${_DEBUG.cachedData.changes["TX1"] ? "TX1" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesTX1, activeTime);
+                testText = `${_DEBUG.cachedData.changes["L1"] ? "L1" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesL1, activeTime);
+                testText = `${_DEBUG.cachedData.changes["L2"] ? "L2" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesL2, activeTime);
+                testText = `${_DEBUG.cachedData.changes["L3"] ? "L3" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesL3, activeTime);
+                testText = `${_DEBUG.cachedData.changes["L4"] ? "L4" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesL4, activeTime);
             },
             display_tmapCountByLayer: function(now){
-                let BG1_tms             = this.elems["BG1_tms"];
-                let BG2_tms             = this.elems["BG2_tms"];
-                let SP1_tms             = this.elems["SP1_tms"];
-                let TX1_tms             = this.elems["TX1_tms"];
+                let L1_tms             = this.elems["L1_tms"];
+                let L2_tms             = this.elems["L2_tms"];
+                let L3_tms             = this.elems["L3_tms"];
+                let L4_tms             = this.elems["L4_tms"];
                 let activeTime = 200;
                 let testText = "";
 
                 // Display the number of layer objects per layer.
-                testText = Object.keys(_GFX.currentData["BG1"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, BG1_tms, activeTime);
-                testText = Object.keys(_GFX.currentData["BG2"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, BG2_tms, activeTime);
-                testText = Object.keys(_GFX.currentData["SP1"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, SP1_tms, activeTime);
-                testText = Object.keys(_GFX.currentData["TX1"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, TX1_tms, activeTime);
+                testText = Object.keys(_GFX.currentData["L1"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, L1_tms, activeTime);
+                testText = Object.keys(_GFX.currentData["L2"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, L2_tms, activeTime);
+                testText = Object.keys(_GFX.currentData["L3"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, L3_tms, activeTime);
+                testText = Object.keys(_GFX.currentData["L4"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, L4_tms, activeTime);
             },
         },
     },
@@ -846,22 +846,22 @@ _DEBUG.init = async function(){
         } );
     };
     const loadColorFinder = function(){
-        const canvas_src_BG1 = document.querySelector(".canvasLayer[name='BG1']");
-        const canvas_src_BG2 = document.querySelector(".canvasLayer[name='BG2']");
-        const canvas_src_SP1 = document.querySelector(".canvasLayer[name='SP1']");
-        const canvas_src_TX1 = document.querySelector(".canvasLayer[name='TX1']");
+        const canvas_src_L1 = document.querySelector(".canvasLayer[name='L1']");
+        const canvas_src_L2 = document.querySelector(".canvasLayer[name='L2']");
+        const canvas_src_L3 = document.querySelector(".canvasLayer[name='L3']");
+        const canvas_src_L4 = document.querySelector(".canvasLayer[name='L4']");
         let copyCanvas    = document.getElementById("debug_colorFinder_src");
-        copyCanvas.width = canvas_src_BG1.width;
-        copyCanvas.height = canvas_src_BG1.height;
+        copyCanvas.width = canvas_src_L1.width;
+        copyCanvas.height = canvas_src_L1.height;
 
         let copyCanvasCtx = copyCanvas.getContext("2d", { willReadFrequently: true } );
         let zoomCanvas = document.getElementById("debug_colorFinder_zoom");
         let zoomCanvasCtx = zoomCanvas.getContext("2d");
         let pixelRGBA = document.getElementById("debug_colorFinder_pixelRGBA");
-        let debug_test_copyLayer_BG1 = document.getElementById("debug_test_copyLayer_BG1");
-        let debug_test_copyLayer_BG2 = document.getElementById("debug_test_copyLayer_BG2");
-        let debug_test_copyLayer_SP1 = document.getElementById("debug_test_copyLayer_SP1");
-        let debug_test_copyLayer_TEXT = document.getElementById("debug_test_copyLayer_TEXT");
+        let debug_test_copyLayer_L1 = document.getElementById("debug_test_copyLayer_L1");
+        let debug_test_copyLayer_L2 = document.getElementById("debug_test_copyLayer_L2");
+        let debug_test_copyLayer_L3 = document.getElementById("debug_test_copyLayer_L3");
+        let debug_test_copyLayer_L4 = document.getElementById("debug_test_copyLayer_L4");
         let debug_test_copyLayer_ALL = document.getElementById("debug_test_copyLayer_ALL");
 
         let replaceCopyCanvas = function(canvas_src){
@@ -871,17 +871,17 @@ _DEBUG.init = async function(){
         };
         let copyAll = function(){
             copyCanvasCtx.clearRect(0, 0, copyCanvasCtx.canvas.width, copyCanvasCtx.canvas.height);
-            copyCanvasCtx.drawImage(canvas_src_BG1, 0, 0);
-            copyCanvasCtx.drawImage(canvas_src_BG2, 0, 0);
-            copyCanvasCtx.drawImage(canvas_src_SP1, 0, 0);
-            copyCanvasCtx.drawImage(canvas_src_TX1, 0, 0);
+            copyCanvasCtx.drawImage(canvas_src_L1, 0, 0);
+            copyCanvasCtx.drawImage(canvas_src_L2, 0, 0);
+            copyCanvasCtx.drawImage(canvas_src_L3, 0, 0);
+            copyCanvasCtx.drawImage(canvas_src_L4, 0, 0);
         };
 
         // Copy buttons: event listeners.
-        debug_test_copyLayer_BG1 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_BG1);  }, false);
-        debug_test_copyLayer_BG2 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_BG2);  }, false);
-        debug_test_copyLayer_SP1 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_SP1);  }, false);
-        debug_test_copyLayer_TEXT.addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_TX1); }, false);
+        debug_test_copyLayer_L1 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_L1);  }, false);
+        debug_test_copyLayer_L2 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_L2);  }, false);
+        debug_test_copyLayer_L3 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_L3);  }, false);
+        debug_test_copyLayer_L4.addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_L4); }, false);
         debug_test_copyLayer_ALL .addEventListener("click", copyAll, false);
 
         // Mousemove event listener.
@@ -943,8 +943,8 @@ _DEBUG.init = async function(){
                 refs:[]
             }, true, false);
         }, false);
-        let debug_test_copyLayer_TEXT = document.getElementById("debug_test_copyLayer_TEXT");
-        debug_test_copyLayer_TEXT.click();
+        let debug_test_copyLayer_L4 = document.getElementById("debug_test_copyLayer_L4");
+        debug_test_copyLayer_L4.click();
     };
 
     return new Promise(async (resolve,reject)=>{
