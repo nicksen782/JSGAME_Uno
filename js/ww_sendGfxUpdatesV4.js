@@ -4,6 +4,7 @@ imageDataTile                     .data.set(tileset[ tmapObj.tmap[index] ].imgDa
 imageDataTile                     .data.set(tileset[ tmapObj.tmap[index] ].imgData.data); // Also a copy, not a reference
 */
 messageFuncs.sendGfxUpdates.V4 = {
+    layerKeys: [],
     CLEAR:{
         parent: null,
 
@@ -18,7 +19,7 @@ messageFuncs.sendGfxUpdates.V4 = {
 
         // Clears ALL layers gfx. (imgDataCache)
         allLayersGfx: function(){
-            let layerKeys = Object.keys(_GFX.layers);
+            let layerKeys = this.parent.layerKeys; 
             for(let i=0, len=layerKeys.length; i<len; i+=1){
                 this.oneLayerGfx(layerKeys[i]);
             }
@@ -38,7 +39,7 @@ messageFuncs.sendGfxUpdates.V4 = {
 
         // Clears ALL layers data. (data cache)
         allLayersData: function(){
-            let layerKeys = Object.keys(_GFX.layers);
+            let layerKeys = this.parent.layerKeys; 
             for(let i=0, len=layerKeys.length; i<len; i+=1){
                 this.oneLayerData(layerKeys[i]);
             }
@@ -75,6 +76,7 @@ messageFuncs.sendGfxUpdates.V4 = {
     SETBG:{
         parent: null,
 
+        // UNUSED
         // Convert JsAlpha (0.0 - 1.0) to Uint8 (0-255) alpha.
         convertJsAlphaToUint8Alpha: function(JsAlpha){
             return  Math.round(JsAlpha * 255);
@@ -85,19 +87,6 @@ messageFuncs.sendGfxUpdates.V4 = {
         convertUint8AlphaToJsAlpha: function(Uint8Alpha){
             // return Number((Uint8Alpha / 255).toFixed(2));
             return ( ( (Uint8Alpha/255) * 100 ) |0 ) / 100;
-        },
-
-        // Convert array having values for r,g,b,a to 32-bit rgba value.
-        rgbaTo32bit: function(rgbaArray){
-            // Break out the values in rgbaArray.
-            let [r, g, b, a] = rgbaArray;
-            
-            // Generate the 32-bit version of the rgbaArray.
-            // let fillColor = (a << 24) | (b << 16) | (g << 8) | r;
-            let fillColor = ((a << 24) | (b << 16) | (g << 8) | r) >>> 0;
-            
-            // Return the result.
-            return fillColor;
         },
 
         // UNUSED
@@ -120,6 +109,19 @@ messageFuncs.sendGfxUpdates.V4 = {
             ];
         },
 
+        // Convert array having values for r,g,b,a to 32-bit rgba value.
+        rgbaTo32bit: function(rgbaArray){
+            // Break out the values in rgbaArray.
+            let [r, g, b, a] = rgbaArray;
+            
+            // Generate the 32-bit version of the rgbaArray.
+            // let fillColor = (a << 24) | (b << 16) | (g << 8) | r;
+            let fillColor = ((a << 24) | (b << 16) | (g << 8) | r) >>> 0;
+            
+            // Return the result.
+            return fillColor;
+        },
+
         // Replaces the specified color pixels with the replacement bgColor.
         // Also stores the replacement colors for later use.
         setLayerBgColorRgba: function(layer, findColorArray, replaceColorArray){
@@ -128,7 +130,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             }
 
             // Get the 32-bit value for the [r,g,b,a] values provided.
-            let findColor_32bit    = this.rgbaTo32bit(findColorArray);
+            // let findColor_32bit    = this.rgbaTo32bit(findColorArray);
             let replaceColor_32bit = this.rgbaTo32bit(replaceColorArray);
 
             // If the 32-bit value is different than the stored value then update both.
@@ -137,13 +139,14 @@ messageFuncs.sendGfxUpdates.V4 = {
                 _GFX.currentData["L1"].bgColor32bit = replaceColor_32bit;
             }
 
-            // Create a Uint32Array view of the imgDataCache for this layer.
-            let uint32Data = new Uint32Array(_GFX.layers["L1"].imgDataCache.data.buffer);
+            // The background-color change is handled by CSS in _GFX.funcs.afterDraw (main thread.)
+            // // Create a Uint32Array view of the imgDataCache for this layer.
+            // let uint32Data = new Uint32Array(_GFX.layers["L1"].imgDataCache.data.buffer);
 
-            // Find the findColor and replace with the replacementColor.
-            for (let p = 0, len = uint32Data.length; p < len; ++p) {
-                if (uint32Data[p] === findColor_32bit) { uint32Data[p] = replaceColor_32bit; }
-            }
+            // // Find the findColor and replace with the replacementColor.
+            // for (let p = 0, len = uint32Data.length; p < len; ++p) {
+            //     if (uint32Data[p] === findColor_32bit) { uint32Data[p] = replaceColor_32bit; }
+            // }
         },
 
         // Replaces the specified color pixels with the replacement bgColor.
@@ -217,8 +220,12 @@ messageFuncs.sendGfxUpdates.V4 = {
             let ts_setLayerBackgroundColor = performance.now();
             
             if(layerKey == "L1" && Array.isArray(layerData.bgColorRgba)){
-                // this.parent.SETBG.setLayerBgColorRgba( layerKey, [0,0,0,0], layerData.bgColorRgba );
-                this.parent.SETBG.setImageDataBgColorRgba( _GFX.layers[layerKey].imgDataCache, [0,0,0,0], layerData.bgColorRgba );
+                this.parent.SETBG.setLayerBgColorRgba( layerKey, [0,0,0,0], layerData.bgColorRgba );
+                // this.parent.SETBG.setImageDataBgColorRgba( _GFX.layers[layerKey].imgDataCache, [0,0,0,0], layerData.bgColorRgba );
+
+                // Determine the new bg color based on the fade level.
+                let newColor = createGraphicsAssets.applyFadeToRgbaArray(layerData.bgColorRgba, layerData.fade.currFade);
+                messageFuncs.timings["sendGfxUpdates"]["newL1_bgColor"] = newColor;
             }
 
             // If the global fade is 10 or 11 then.
@@ -307,7 +314,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             return hash;
         },
 
-        // 
+        // Pre-caches all assets (base assets, not including modificiations.)
         generateAllCoreImageDataAssets: async function(){
             // console.log("RUNNING: generateAllCoreImageDataAssets");
 
@@ -336,7 +343,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             }
         },
 
-        //
+        // Creates ImageData from a tilemap.
         createImageDataFromTilemap: function(tmapObj){
             // Get the tileset and the dimensions for the tileset. 
             let tileset = _GFX.tilesets[ tmapObj.ts ].tileset;
@@ -469,6 +476,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             return { width:width, height:height };
         },
         
+        // Determine if a graphics cache object can be reused.
         canImageDataTilemapBeReused: function(layerKey, newMapKeys, newMapData){
             // The contents of these will determine what maps get new ImageData.
             let filtered_newMapKeys = [];
@@ -555,7 +563,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             };
         },
 
-        //
+        // Creates ImageData as needed or pulls from the hashCache. Updates graphics cache data.
         createImageDataFromTilemapsAndUpdateGraphicsCache: function(layerKey, mapKeys, maps, save=true){
             // console.log(mapKeys, maps);
             // debugger;
@@ -591,6 +599,7 @@ messageFuncs.sendGfxUpdates.V4 = {
                     if(map.imgData && map.imgData.width){ cacheHit = true; }
                 }
 
+                // Hash was not found. The ImageData must be generated.
                 if(!cacheHit){
                     // console.log("Not in cache Generating/Saving:", mapKey, map);
 
@@ -613,7 +622,7 @@ messageFuncs.sendGfxUpdates.V4 = {
                 if(save){
                     _GFX.currentData[layerKey].tilemaps[mapKey] = {
                         ...map,
-                        imgData: map.imgData,
+                        imgData      : map.imgData,
                         hashCacheHash: hash // Used for future hashCache removals.
                     };
                     // console.log("SAVED:", _GFX.currentData[layerKey].tilemaps[mapKey]);
@@ -693,7 +702,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             this.CLEAR.allLayersData();
         }
 
-        let layerKeys = ["L1", "L2", "L3", "L4"];
+        let layerKeys = this.layerKeys;
         let layerKey;
         for(let i=0, len1=layerKeys.length; i<len1; i+=1){
             // Get this layer key.
@@ -756,14 +765,22 @@ messageFuncs.sendGfxUpdates.V4 = {
         */
     },
     init: async function(){
+        // layerKeys
+        this.layerKeys = Object.keys(_GFX.layers);
+
+        // CLEAR
         this.CLEAR.parent = this;
         let {width, height} = _GFX.layers["L1"].imgDataCache;
         this.CLEAR.fullTransparent_imgDataLayer = new ImageData(width, height);
-
+        
+        // DRAW
         this.DRAW.parent = this;
-
+        
+        // SETBG
         this.SETBG.parent = this;
-
+        
+        // UPDATE
         this.UPDATE.parent = this;
+
     }
 };

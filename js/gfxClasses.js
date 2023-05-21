@@ -52,7 +52,7 @@ class LayerObject {
     get y()          { return this._y; } 
     get tmap()       { return this._tmap; } 
     get layerKey()   { return this._layerKey; } 
-    get tilesetKey() { return this._tilesetKey; } 
+    // get tilesetKey() { return this._tilesetKey; } 
     get settings()   { return this._settings; } 
     get xyByGrid()   { return this._xyByGrid; } 
     
@@ -70,8 +70,9 @@ class LayerObject {
 
         this._layerKey   = value; this._changed = true; 
     } }
-    set tilesetKey(value) { if( this._tilesetKey !== value){ this._tilesetKey = value; this._changed = true; } }
+    // set tilesetKey(value) { if( this._tilesetKey !== value){ this._tilesetKey = value; this._changed = true; } }
     set settings(value)   { this._settings = value; this._changed = true; }
+    // TODO: FIX. Works find with gridxy to pixelxy. Need fix for pixelxy to gridxy.
     set xyByGrid(value)   { 
         if(this._xyByGrid == value) { return; }
 
@@ -104,7 +105,6 @@ class LayerObject {
         this.layerObjKey = config.layerObjKey;
         this.layerKey    = config.layerKey;
         this.tilesetKey  = config.tilesetKey;
-        this.type = "notPrint";
         this.removeHashOnRemoval = config.removeHashOnRemoval ?? false;
         this.noResort = config.noResort ?? false,
 
@@ -188,61 +188,44 @@ class LayerObject {
         //
         let layerObjectData;
         
-        if(this.type == "notPrint"){
-            layerObjectData = _GFX.funcs.createLayerObjData({ 
-                mapKey  : this.layerObjKey, 
-                x       : x, 
-                y       : y, 
-                ts      : this.tilesetKey, 
-                settings: this.settings, 
-                tmap    : this.tmap,
-                removeHashOnRemoval: this.removeHashOnRemoval,
-                noResort           : this.noResort,
-            });
-        }
-        else if(this.type == "print"){
-            layerObjectData = _GFX.funcs.createPrintLayerObjData({ 
-                mapKey  : this.layerObjKey, 
-                x       : x, 
-                y       : y, 
-                ts      : this.tilesetKey, 
-                settings: this.settings, 
-                tmap    : this.tmap,
-                text    : this.text, 
-                removeHashOnRemoval: this.removeHashOnRemoval,
-                noResort           : this.noResort,
-            });
-        }
-        else{
-            console.log(this.type);
-            throw "INVALID TYPE";
-        }
+        layerObjectData = _GFX.funcs.createLayerObjData({ 
+            mapKey  : this.layerObjKey, 
+            x       : x, 
+            y       : y, 
+            ts      : this.tilesetKey, 
+            settings: this.settings, 
+            tmap    : this.tmap,
+            removeHashOnRemoval: this.removeHashOnRemoval,
+            noResort           : this.noResort,
+        });
 
         if(onlyReturnLayerObjData){ 
             layerObjectData[this.layerObjKey].layerKey = this.layerKey;
             this._changed = false;
             return layerObjectData[this.layerObjKey]; 
         }
-
-        //
-        _GFX.funcs.updateLayer(this.layerKey, 
-            {
-                ...layerObjectData,
-            }
-        );
-        this._changed = false;
+        else{
+            //
+            _GFX.funcs.updateLayer(this.layerKey, 
+                {
+                    ...layerObjectData,
+                }
+            );
+            this._changed = false;
+        }
     };
 }
 
 // 
 class PrintText extends LayerObject{
+    get text()   { return this._text; } 
+    set text(value){ if( this._text !== value){ this._text = value; this._changed = true; } }
+
     constructor(config){
         super(config);
-        this.type = "print";
         // mapKey  : this.layerObjKey, 
         
         this.text = config.text;
-        this.type = "print";
         this.removeHashOnRemoval = config.removeHashOnRemoval ?? true;
         this.noResort = config.noResort ?? true;
 
@@ -252,6 +235,55 @@ class PrintText extends LayerObject{
         // This part should be handled already by _GFX.funcs.layerObjs.updateOne.
         if(!config.layerObjKey){ config.layerObjKey = config.text; }
     }
+
+    // Render function.
+    render(onlyReturnLayerObjData=false){
+        // Do not render hidden LayerObjects.
+        if(this.hidden){ return; }
+        
+        // Do not render unchanged LayerObjects.
+        if(!this._changed){ return; }
+
+        // Draw by grid or by pixel?
+        let x = this.x; 
+        let y = this.y;
+        if(this.xyByGrid && this.tilesetKey){ 
+            x = x * this.tw; 
+            y = y * this.th;
+        }
+
+        //
+        let layerObjectData;
+        layerObjectData = _GFX.funcs.createPrintLayerObjData({ 
+            mapKey  : this.layerObjKey, 
+            x       : x, 
+            y       : y, 
+            ts      : this.tilesetKey, 
+            settings: this.settings, 
+            tmap    : this.tmap,
+            text    : this.text, 
+            removeHashOnRemoval: this.removeHashOnRemoval,
+            noResort           : this.noResort,
+        });
+
+
+        if(onlyReturnLayerObjData){ 
+            layerObjectData[this.layerObjKey].layerKey = this.layerKey;
+            this._changed = false;
+            return layerObjectData[this.layerObjKey]; 
+        }
+        else{
+            
+            //
+            _GFX.funcs.updateLayer(this.layerKey, 
+                {
+                    ...layerObjectData,
+                }
+            );
+            this._changed = false;
+        }
+    };
+
 };
 
 class UnoLetter extends LayerObject{
@@ -488,7 +520,6 @@ class Card extends LayerObject{
         }
         else{ throw `Invalid card size: ${config.size}`; }
     };
-    // _GFX.layerObjs.updateOne(Card, { size: "sm", color:"black", value: "back", x:4, y:16, layerObjKey: `card1`, layerKey: "L1", xyByGrid: true } );
 };
 
 

@@ -53,11 +53,11 @@ var _GFX = {
 
     // Default values for settings.
     defaultSettings: {
-        fade: null,
-        xFlip: false,
-        yFlip: false,
-        rotation: 0,
-        colorData: [],
+        fade       : null,
+        xFlip      : false,
+        yFlip      : false,
+        rotation   : 0,
+        colorData  : [],
         bgColorRgba: []
     },
 
@@ -81,23 +81,27 @@ var _GFX = {
         hasChanges: false,
 
         L1: { 
-            CHANGES: {}, REMOVALS_ONLY: [],
+            REMOVALS_ONLY: [],
+            CHANGES: {}, 
             fade       : {}, 
             changes    : false, 
             bgColorRgba: [0,0,0,0]
         }, 
         L2: { 
-            CHANGES: {}, REMOVALS_ONLY: [],
+            REMOVALS_ONLY: [],
+            CHANGES: {}, 
             fade       : {}, 
             changes    : false, 
         }, 
         L3: { 
-            CHANGES: {}, REMOVALS_ONLY: [],
+            REMOVALS_ONLY: [],
+            CHANGES: {}, 
             fade       : {}, 
             changes    : false, 
         }, 
         L4: { 
-            CHANGES: {}, REMOVALS_ONLY: [],
+            REMOVALS_ONLY: [],
+            CHANGES: {}, 
             fade       : {}, 
             changes    : false, 
         }, 
@@ -105,7 +109,6 @@ var _GFX = {
     create_GFX_UPDATE_DATA: function(){
         this.GFX_UPDATE_DATA.gs1        = _APP.game.gs1 ;
         this.GFX_UPDATE_DATA.gs2        = _APP.game.gs2 ;
-        // this.GFX_UPDATE_DATA.version    = this.GFX_UPDATE_DATA.version;
         this.GFX_UPDATE_DATA.ALLCLEAR   = _GFX.ALLCLEAR;
         this.GFX_UPDATE_DATA.hasChanges = _GFX.DRAWNEEDED;
 
@@ -346,6 +349,43 @@ var _GFX = {
 
     // Drawing update and drawing functions. 
     funcs:{
+        // Sets all changed data to unchanged.
+        clearChanges: function(){
+            // Clear the special changes flags.
+            _GFX.ALLCLEAR = false;
+            _GFX.DRAWNEEDED = false;
+    
+            // Clear the changes flags and update hashPrev.
+            // NOTE: _GFX.currentData and _GFX.REMOVALS have the same layerKeys.
+            for(let layerKey in _GFX.currentData){ 
+                // Get a handle to this layer.
+                let layer = _GFX.currentData[layerKey];
+                
+                //. Update the hashPrev for all layer objects.
+                for(let mapKey in layer.tilemaps){ 
+                    if(layer.tilemaps[mapKey].hashPrev != layer.tilemaps[mapKey].hash){
+                        layer.tilemaps[mapKey].hashPrev = layer.tilemaps[mapKey].hash;
+                    }
+                }
+
+                // Clear the changes flag.
+                layer.changes = false;
+
+                // Clear the REMOVALS array.
+                _GFX.REMOVALS[layerKey] = [];
+
+                // Clear the CHANGES object in GFX_UPDATE_DATA.
+                // _GFX.GFX_UPDATE_DATA[layerKey].CHANGES = {};
+
+                // Clear the REMOVALS_ONLY array in GFX_UPDATE_DATA.
+                // _GFX.GFX_UPDATE_DATA[layerKey].REMOVALS_ONLY = [];
+
+                // fade
+                // changes
+                // bgColorRgba 
+            }
+        },
+
         // Determines if a draw is needed and updates _GFX.DRAWNEEDED.
         isDrawNeeded: function(){
             if(
@@ -418,10 +458,10 @@ var _GFX = {
         },
 
         // Updates the specified layer (locally.) Can accept multiple tilemaps.
+        // Creates/Updates an entry in _GFX.currentData[layer].tilemaps[tilemapKey].
         updateLayer: function(layer, tilemaps={}){
             // 
             if(layer == "L1" || layer == "L2" || layer == "L3" || layer == "L4"){
-                let fade = _GFX.currentData[layer].fade;
                 let tilemap, exists, oldHash, newHash, hashMapHash;
                 let tw ;
                 let th ;
@@ -466,7 +506,6 @@ var _GFX = {
                             ts      : tilemap.ts,
                             w       : tilemap.tmap[0] * tw,
                             h       : tilemap.tmap[1] * th,
-                            type    : tilemap.type
                         });
 
                         // isNewTilemaphash = true;
@@ -492,9 +531,10 @@ var _GFX = {
                             w        : tilemap.w,
                             h        : tilemap.h,
                             settings : tilemap.settings,
-                            type     : tilemap.type,
+
+                            hashCacheHash      : hashMapHash, // Used for future hashCache removals.
                             removeHashOnRemoval: tilemap.removeHashOnRemoval ?? true,
-                            noResort: tilemap.noResort ?? false,
+                            noResort           : tilemap.noResort ?? false,
                             // isNewTilemaphash : isNewTilemaphash,
                         };
 
@@ -600,22 +640,8 @@ var _GFX = {
                 }
             }
 
-            // Clear the special changes flags.
-            _GFX.ALLCLEAR = false;
-            _GFX.DRAWNEEDED = false;
-
-            // Clear the changes flags and update hashPrev.
-            // NOTE: _GFX.currentData and _GFX.REMOVALS have the same layerKeys.
-            for(let layerKey in _GFX.currentData){ 
-                let layer = _GFX.currentData[layerKey];
-                for(let mapKey in layer.tilemaps){ 
-                    if(layer.tilemaps[mapKey].hashPrev != layer.tilemaps[mapKey].hash){
-                        layer.tilemaps[mapKey].hashPrev = layer.tilemaps[mapKey].hash;
-                    }
-                }
-                layer.changes = false;
-                _GFX.REMOVALS[layerKey] = [];
-            }
+            // Clear the changes.
+            _GFX.funcs.clearChanges();
         },
 
         // Returns a copy of a tilemap.
@@ -631,16 +657,29 @@ var _GFX = {
 
         // Removes a layer object and sets the changes for that layer to true. 
         removeLayerObj: function(layerKey, mapKey){
-            // TODO: Can this line be improved?
-            // Remove from REMOVALS. (So that the key does not appear more than once.)
-            _GFX.REMOVALS[layerKey].filter(d => d != mapKey);
+            // Get a handle to REMOVALS for this layer.
+            const removals = _GFX.REMOVALS[layerKey];
+            
+            // Find the index in REMOVALS for this mapkey.
+            const index = removals.indexOf(mapKey);
+
+            // Remove from REMOVALS if the mapKey was found. (So that the key does not appear more than once.)
+            if (index !== -1) { removals.splice(index, 1); }
             
             // Add to REMOVALS.
-            _GFX.REMOVALS[layerKey].push(mapKey);
+            removals.push(mapKey);
+        
+            // Remove from the hashCache?
+            let map = _GFX.currentData[layer].tilemaps[tilemapKey];
+            if(map.removeHashOnRemoval){
+                if(_GFX.hashCacheMap.has(map.hashMapHash)){
+                    _GFX.hashCacheMap.delete(map.hashMapHash)
+                }
+            }
 
             // Delete from currentData.
             delete _GFX.currentData[layerKey].tilemaps[mapKey];
-
+            
             // Set changes to true so that the canvas output updates.
             _GFX.currentData[layerKey].changes = true;
         }, 
@@ -649,12 +688,12 @@ var _GFX = {
         // NOTE: Output is used with updateLayer.
         createLayerObjData: function(obj={}){
             // Correct any missing data in the object.
-            if(!obj){ obj = {}; }
-            if(!obj.mapKey) { throw `createLayerObjData: Missing mapKey: ${JSON.stringify(obj)}`; }
-            if(!obj.tmap)   { console.log(obj); throw `createLayerObjData: Missing tmap: ${JSON.stringify(obj)}`; }
-            if(!obj.ts)     { obj.ts = "UNKNOWN" }
-            if(!obj.x)      { obj.x  = 0; }
-            if(!obj.y)      { obj.y  = 0; }
+            if(undefined == obj)        { console.log(obj); throw `createLayerObjData: Missing obj: ${JSON.stringify(obj)}`; }
+            if(undefined == obj.mapKey) { console.log(obj); throw `createLayerObjData: Missing mapKey: ${JSON.stringify(obj)}`; }
+            if(undefined == obj.tmap)   { console.log(obj); throw `createLayerObjData: Missing tmap: ${JSON.stringify(obj)}`; }
+            if(undefined == obj.ts)     { console.log(obj); throw `createLayerObjData: Missing ts: ${JSON.stringify(obj)}`; }
+            if(undefined == obj.x)      { console.log(obj); throw `createLayerObjData: Missing x: ${JSON.stringify(obj)}`; }
+            if(undefined == obj.y)      { console.log(obj); throw `createLayerObjData: Missing y: ${JSON.stringify(obj)}`; }
             obj.settings = this.correctSettings(obj.settings); // Make sure that settings is an object.
 
             // Handle tilemap transforms.
@@ -672,23 +711,21 @@ var _GFX = {
                     h       : obj.tmap[1] * _APP.configObj.dimensions.tileHeight,
                     tmap    : obj.tmap,
                     settings: obj.settings,
-                    type: "notPrint"
                 } 
             } ;
         },
 
         // Creates a layer object from a tilemap based on text string(s).
         // NOTE: Output is used with updateLayer.
+        // NOTE: If using an array of strings each line will have the same length as the longest line (padded with spaces.)
         createPrintLayerObjData: function(obj={}){
-            // _GFX.funcs.createPrintTilemap("text1", { x:0, y:0, text:"test"});
-
             // Correct any missing data in the object.
-            if(!obj){ obj = {}; }
-            if(!obj.mapKey) { obj.mapKey = "" }
-            if(!obj.ts)     { obj.ts     = "font_tiles1" }
-            if(!obj.text)   { obj.text   = [""]; }
-            if(!obj.x)      { obj.x      = 0; }
-            if(!obj.y)      { obj.y      = 0; }
+            if(undefined == obj)        { console.log(obj); throw `createPrintLayerObjData: Missing obj: ${JSON.stringify(obj)}`; }
+            if(undefined == obj.mapKey) { console.log(obj); throw `createPrintLayerObjData: Missing mapKey: ${JSON.stringify(obj)}`; }
+            if(undefined == obj.ts)     { console.log(obj); throw `createPrintLayerObjData: Missing ts: ${JSON.stringify(obj)}`; }
+            if(undefined == obj.text)   { console.log(obj); throw `createPrintLayerObjData: Missing text: ${JSON.stringify(obj)}`; }
+            if(undefined == obj.x)      { console.log(obj); throw `createPrintLayerObjData: Missing x: ${JSON.stringify(obj)}`; }
+            if(undefined == obj.y)      { console.log(obj); throw `createPrintLayerObjData: Missing y: ${JSON.stringify(obj)}`; }
             obj.settings = this.correctSettings(obj.settings); // Make sure that settings is an object.
 
             // Get the highest tile. (For handling font tilesets that only have capital letters.)
@@ -754,22 +791,37 @@ var _GFX = {
                     h       : newTilemap[1] * _APP.configObj.dimensions.tileHeight,
                     tmap    : newTilemap,
                     settings: obj.settings,
-                    type: "print"
                 } 
             } ;
         },
 
+        // This is called after each draw completes.
         afterDraw: function(data = {}){
             if(_APP.debugActive && _DEBUG){
                 _DEBUG.timingsDisplay.gfx.updateCache(data); 
             }
 
             if(data.newL1_bgColor){
-                // Save the new bgColorRgba.
-                // _GFX.currentData["L1"].bgColorRgba = e.data.data.newL1_bgColorRgba;
+                // Break out the rgb data.
+                let [r,g,b,a] = data.newL1_bgColor;
+                a = ( ( (a/255) * 100 ) |0 ) / 100;
 
-                // Apply the new bgColorRgba.
-                //
+                // Create strings for comparison
+                let currentString = _GFX.currentData.L1.canvas.style['background-color'];
+                let newString;
+
+                // If the alpha is fully opaque then the browser will set to rgb, otherwise rgba. 
+                if(a==1){ newString = `rgb(${r}, ${g}, ${b})`; }
+                else    { newString = `rgba(${r}, ${g}, ${b}, ${a})`; }
+                
+                // Apply the new bgColorRgba if the currentString and newString do not match.
+                if(currentString!=newString){
+                    _GFX.currentData.L1.canvas.style['background-color'] = newString;
+                    // console.log(`Changed from: ${currentString} to ${newString}`, r,b,g,a);
+                }
+                // else{
+                    // console.log(`SAME: DATA  : ${currentString} to ${newString}`, r,b,g,a);
+                // }
             }
         },
     },

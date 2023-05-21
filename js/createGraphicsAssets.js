@@ -75,6 +75,27 @@
             data[i+3] =  (data[i+3])            | 0;
         }
     };
+
+    // Modifies the supplied rgbaArray and applies a fade to it..
+    function applyFadeToRgbaArray(rgbaArray, fadeLevel){
+        if(fadeLevel === null){ return rgbaArray; }
+        else if(fadeLevel == 10){ return [0,0,0,255]; } // BLACK
+        else if(fadeLevel == 11){ return [0,0,0,0]; }   // CLEAR
+
+        // Need the max values.
+        let fadeColorObj = fadeMasksRGBA[fadeLevel];
+        let maxRed   = fadeColorObj[0] / 100; 
+        let maxGreen = fadeColorObj[1] / 100; 
+        let maxBlue  = fadeColorObj[2] / 100; 
+
+        // Restrict r, g, b, a values and then round down.
+        rgbaArray[0] =  (rgbaArray[0] * maxRed)   | 0;
+        rgbaArray[1] =  (rgbaArray[1] * maxGreen) | 0;
+        rgbaArray[2] =  (rgbaArray[2] * maxBlue)  | 0;
+        rgbaArray[3] =  (rgbaArray[3])            | 0;
+
+        return rgbaArray;
+    };
     
     // UNUSED.
     // Returns a copy of a rgb332 tile that has had the specified fade applied to it.
@@ -529,5 +550,6 @@
         updateRegion        : updateRegion,
         copyRegion          : copyRegion,
         applyFadeToImageData: applyFadeToImageData,
+        applyFadeToRgbaArray: applyFadeToRgbaArray,
     };
 }));
