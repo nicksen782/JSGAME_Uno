@@ -498,18 +498,24 @@ var _GFX = {
                     ]));
 
                     // Save hashMapHash to hashCacheMap. (Map)
-                    if(!_GFX.hashCacheMap.get(hashMapHash)){
-                        // console.log("Saving");
-                        _GFX.hashCacheMap.set(hashMapHash, {
-                            tmap    : tilemap.tmap,
-                            settings: tilemap.settings,
-                            ts      : tilemap.ts,
-                            w       : tilemap.tmap[0] * tw,
-                            h       : tilemap.tmap[1] * th,
-                        });
+                    // if(_GFX.hashCacheMap.has(hashMapHash)){
+                    //     _GFX.hashCacheMap.get(hashMapHash).hits += 1;
+                    // }
 
-                        // isNewTilemaphash = true;
-                    }
+                    // if(!_GFX.hashCacheMap.get(hashMapHash)){
+                    //     // console.log("Saving");
+                    //     _GFX.hashCacheMap.set(hashMapHash, {
+                    //         tmap    : tilemap.tmap,
+                    //         settings: tilemap.settings,
+                    //         ts      : tilemap.ts,
+                    //         w       : tilemap.tmap[0] * tw,
+                    //         h       : tilemap.tmap[1] * th,
+                    //         hits: 0,
+                    //         // tilemapKey: tilemapKey,
+                    //     });
+
+                    //     // isNewTilemaphash = true;
+                    // }
 
                     // Generate a new hash for THIS layerObject. 
                     newHash = _GFX.utilities.djb2Hash( JSON.stringify([

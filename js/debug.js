@@ -262,11 +262,6 @@ var _DEBUG = {
             // Display local settings/values/counts.
             this.loop_display_func();
 
-            // Display the timing for the game loop (canvas draws are separate.)
-            // this.loop_display_progressBarTimings(timings);
-            
-            // Display the canvas draw timings returned from the WebWorker.
-            
             // Display the canvas draw timings data returned from the WebWorker.
             // let v1 = _DEBUG.timingsDisplay.gfx.dataIsUsed;
             // let v2 = _DEBUG.timingsDisplay.gfx.dataIsUsed;;
@@ -284,6 +279,10 @@ var _DEBUG = {
             this.timingsDisplay.loop.display_layerChanges(now);
             this.timingsDisplay.loop.display_tmapCountByLayer(now);
             
+            // displayLayerObjects
+            this.displayLayerObjects();
+            // this.displayHashCacheObjects();
+
             _APP.game.gameLoop.lastDebug1_timestamp =  performance.now() - debugTs;
             // console.log(_APP.game.gameLoop.lastDebug1_timestamp);
 
@@ -761,6 +760,61 @@ var _DEBUG = {
         this.applyChange(testText, debug_GS2Text, activeTime);
     },
 
+    displayLayerObjects: function(){
+        let elem = document.getElementById("layerObjectList1");
+
+        let currentText = elem.innerText;
+        let newText = ``;
+
+        if(! ( _APP.game.gs1 in _GFX.layerObjs.objs ) ){ return; }
+        let data;
+        let maxLen = 0;
+        for(let key in _GFX.layerObjs.objs[_APP.game.gs1]){
+            if(key.length > maxLen){ maxLen = key.length; }
+        }
+        for(let key in _GFX.layerObjs.objs[_APP.game.gs1]){
+            data = _GFX.layerObjs.objs[_APP.game.gs1][key];
+            // console.log(key, data);
+            newText += `${key.padEnd(maxLen, " ")}: (${data.x.toString().padStart(2, " ")}, ${data.y.toString().padStart(2, " ")}) ${data.layerKey}\n`;
+        }
+        if(currentText != newText){
+            // console.log("Changing", maxLen);
+            elem.innerText = newText;
+        }
+        else{
+            // console.log("NOT Changing");
+        }
+    },
+
+    // displayHashCacheObjects: function(){
+    //     let elem = document.getElementById("hashCacheList1");
+
+    //     let currentText = elem.innerText;
+    //     let newText = ``;
+
+    //     if(! ( _GFX.hashCacheMap ) ){ return; }
+    //     let data;
+    //     let maxLen = 0;
+    //     for(let [key,value] of _GFX.hashCacheMap){
+    //         let tmpKey = key.toString();
+    //         if(tmpKey.length > maxLen){ maxLen = tmpKey.length; }
+
+    //         // let tmpTilemapKey = value.tilemapKey.toString();
+    //         // if(tmpTilemapKey.length > maxLen){ maxLen = tmpTilemapKey.length; }
+    //     }
+    //     for(let [key,value] of _GFX.hashCacheMap){
+    //         newText += `${key.toString().padEnd(maxLen, " ")}: hits: ${value.hits}\n`;
+    //         // newText += `${value.tilemapKey.toString().padEnd(maxLen, " ")}: hits: ${value.hits}\n`;
+    //     }
+
+    //     if(currentText != newText){
+    //         // console.log("Changing", maxLen);
+    //         elem.innerText = newText;
+    //     }
+    //     else{
+    //         // console.log("NOT Changing");
+    //     }
+    // },
 };
 
 _DEBUG.navBar1 = {
@@ -782,9 +836,13 @@ _DEBUG.navBar1 = {
             'tab' : 'debug_navBar1_tab_buttons1',
             'view': 'debug_navBar1_view_buttons1',
         },
-        'view_hashCacheStats1': {
-            'tab' : 'debug_navBar1_tab_hashCacheStats1',
-            'view': 'debug_navBar1_view_hashCacheStats1',
+        // 'view_hashCacheStats1': {
+            // 'tab' : 'debug_navBar1_tab_hashCacheStats1',
+            // 'view': 'debug_navBar1_view_hashCacheStats1',
+        // },
+        'view_layerObjects': {
+            'tab' : 'debug_navBar1_tab_layerObjects',
+            'view': 'debug_navBar1_view_layerObjects',
         },
         // 'view_hashCacheStats2': {
         //     'tab' : 'debug_navBar1_tab_hashCacheStats2',
@@ -998,17 +1056,19 @@ _DEBUG.init = async function(){
         // Resize
         let scaleSlider = document.getElementById("scaleSlider");
         // scaleSlider.value = "2.50";
-        scaleSlider.value = "3.00";
+        scaleSlider.value = "2.75";
+        // scaleSlider.value = "3.00";
         scaleSlider.dispatchEvent(new Event("input"));
 
         // DEBUG NAV 1
         _DEBUG.navBar1.init();
         // _DEBUG.navBar1.showOne("view_colorFinder");
-        _DEBUG.navBar1.showOne("view_drawStats");
+        // _DEBUG.navBar1.showOne("view_drawStats");
         // _DEBUG.navBar1.showOne("view_fade");
         // _DEBUG.navBar1.showOne("view_buttons1");
         // _DEBUG.navBar1.showOne("view_hashCacheStats1");
         // _DEBUG.navBar1.showOne("view_hashCacheStats2");
+        _DEBUG.navBar1.showOne("view_layerObjects");
 
         // Output some timing info.
         // console.log("DEBUG: init:");

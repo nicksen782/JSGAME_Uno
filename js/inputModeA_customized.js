@@ -28,7 +28,7 @@ _INPUT.customized = {
         // EXAMPLE USAGE: _INPUT.util.stateByteToObj2("p1");
         let state = {
             "held"   : _INPUT.util.stateByteToObj(_INPUT.states[pKey].held),
-            "_prev"  : _INPUT.util.stateByteToObj(_INPUT.states[pKey]._prev),
+            // "_prev"  : _INPUT.util.stateByteToObj(_INPUT.states[pKey]._prev),
             "press"  : _INPUT.util.stateByteToObj(_INPUT.states[pKey].press),
             "release": _INPUT.util.stateByteToObj(_INPUT.states[pKey].release)
         };

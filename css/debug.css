@@ -198,3 +198,18 @@ div#debug_navBarViews {
 div#debug_navBarViews2 {
     /* background-color: rgba(255,255,255,0.5); */
 }
+
+/* div#hashCacheList1 {
+    font-family:monospace;
+    white-space: pre;
+    height: 500px;
+    max-height: 500px;
+    overflow-y: auto;
+} */
+div#layerObjectList1 {
+    font-family:monospace;
+    white-space: pre;
+    height: 500px;
+    max-height: 500px;
+    overflow-y: auto;
+}
