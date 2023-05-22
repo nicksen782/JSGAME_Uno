@@ -290,7 +290,7 @@ var _DEBUG = {
     },
     timingsDisplay: {
         // prevValue and newValue should be values between 0-100.
-        updateProgressBar2: function(container, bar, label, newValue, mult, label2="") {
+        updateProgressBar2: function(container, bar, label, newValue, mult, label2="", adjusted) {
             // newValue = Math.min( Math.max(newValue, 0), 100);
             let prevValue  = +label.getAttribute("curr");
             let prevValue2 = +label.getAttribute("curr2");
@@ -315,7 +315,8 @@ var _DEBUG = {
             }
             
             let part1 = `${modifiedNewValue}%`.padStart(5, " ");
-            let part2 = `(${parseInt(label2).toFixed(1)}ms)`.padStart(9, " ");
+            // let part2 = `(${parseInt(label2).toFixed(1)}ms)`.padStart(9, " ");
+            let part2 = `(${parseInt(label2).toFixed(1)}ms)`.padStart(9, " ") + `${adjusted ? "*":" "}`;
 
             // if(!same || !same2){
                 // Generate the values for the label.
@@ -544,7 +545,7 @@ var _DEBUG = {
                     bar: bar,
                     label1_new: label1_new, // %
                     label2_new: label2_new, // ms
-                    adjusted: noLabel,
+                    adjusted: adjusted,
                 } = obj;
 
                 ({ canRun: canRun } = obj);
@@ -557,8 +558,8 @@ var _DEBUG = {
                         bar.e1,           // bar
                         bar.e2,           // label
                         label1_new, mult, 
-                        label2_new
-                        // noLabel ? " " : label2_new
+                        label2_new,
+                        adjusted
                     );
                     bar.t = now;
                     return true;
@@ -761,34 +762,50 @@ var _DEBUG = {
     },
 
     displayLayerObjects: function(){
+        // Display the layerObjects for the current gamestate.
+        // Display the layeKeys in reverse order (L4 on top.)
+        // Display the layerObjects in reverse draw order (last on top.)
+
         let elem = document.getElementById("layerObjectList1");
 
+        // If the gamestate key is not in layerObjs then return.
+        if(! ( _APP.game.gs1 in _GFX.layerObjs.objs ) ){ return; }
+
+        // Get the list of layer keys and reverse them. 
+        let layerKeys = Object.keys(_GFX.currentData).reverse();
+        
+        // Get the list of layerObject keys and reverse them. 
+        let layerObjKeys = Object.keys(_GFX.layerObjs.objs[_APP.game.gs1]).reverse();
+
+        // Get the current text.
         let currentText = elem.innerText;
         let newText = ``;
 
-        if(! ( _APP.game.gs1 in _GFX.layerObjs.objs ) ){ return; }
-        let data;
-        let maxLen = 0;
-        for(let [key, value] in _GFX.layerObjs.objs[_APP.game.gs1]){
-            // if(!value.tmap){ continue; }
-            if(key.length > maxLen){ maxLen = key.length; }
-        }
-        for(let key in _GFX.layerObjs.objs[_APP.game.gs1]){
-            data = _GFX.layerObjs.objs[_APP.game.gs1][key];
-            // if(!data.tmap){ continue; }
-            try{
-                newText += `${key.padEnd(maxLen, " ")}: (${data.x.toString().padStart(2, " ")}, ${data.y.toString().padStart(2, " ")}) ${data.layerKey}\n`;
+        // Go through all layer keys.
+        let layerTextSet = false;
+        for(let layerKey of layerKeys){ 
+            layerTextSet = false;
+
+            // Go through all layerObjects for this gamestate.
+            for(let layerObjKey of layerObjKeys){ 
+                // Break-out the data.
+                data = _GFX.layerObjs.objs[_APP.game.gs1][layerObjKey];
+                
+                // Only work with layerObjs on the current layer. 
+                if(data.layerKey == layerKey){
+                    // Display the layer header?
+                    if(!layerTextSet){ newText += `LAYER: ${data.layerKey}:\n`; layerTextSet = true; }
+
+                    // Update the newText string.
+                    newText += `  (${data.x.toString().padStart(2, " ")}, ${data.y.toString().padStart(2, " ")}) ${layerObjKey}\n`;
+                }
             }
-            catch(e){
-                console.log(key, data.x, data.y, data.layerKey, data, e);
-            }
         }
+
+        // If the newText is different than the currentText replace the elem.innerText with the newText.
         if(currentText != newText){
             // console.log("Changing", maxLen);
             elem.innerText = newText;
-        }
-        else{
-            // console.log("NOT Changing");
         }
     },
 
