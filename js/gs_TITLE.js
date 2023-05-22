@@ -19,7 +19,7 @@ _APP.game.gamestates["gs_TITLE"] = {
     init: function(){
         // Clear the screen and the graphics caches.
         _GFX.funcs.clearAllLayers(true);
-        _GFX.layerObjs.clearAll(_APP.game.gs1);
+        _GFX.layerObjs.removeAll(_APP.game.gs1);
 
         // Set the L1 background color.
         // _GFX.funcs.updateL1BgColorRgba([0,128,64,255]);

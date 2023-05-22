@@ -61,9 +61,6 @@ var _GFX = {
         bgColorRgba: []
     },
 
-    // Cache of all generated ImageData tilemaps. (Main thread does NOT include the ImageData.)
-    hashCacheMap: new Map(),
-
     ALLCLEAR: true,         //
     DRAWNEEDED: false,      //
     REMOVALS: {
@@ -247,6 +244,9 @@ var _GFX = {
         
             // Clear this key.
             this.objs[gamestate][key] = {}; 
+            
+            // Delete this key.
+            delete this.objs[gamestate][key]; 
         
             // Return the config to the caller (makes reuse easier.)
             return config;
@@ -497,25 +497,6 @@ var _GFX = {
                         tilemap.ts
                     ]));
 
-                    // Save hashMapHash to hashCacheMap. (Map)
-                    // if(_GFX.hashCacheMap.has(hashMapHash)){
-                    //     _GFX.hashCacheMap.get(hashMapHash).hits += 1;
-                    // }
-
-                    // if(!_GFX.hashCacheMap.get(hashMapHash)){
-                    //     // console.log("Saving");
-                    //     _GFX.hashCacheMap.set(hashMapHash, {
-                    //         tmap    : tilemap.tmap,
-                    //         settings: tilemap.settings,
-                    //         ts      : tilemap.ts,
-                    //         w       : tilemap.tmap[0] * tw,
-                    //         h       : tilemap.tmap[1] * th,
-                    //         hits: 0,
-                    //         // tilemapKey: tilemapKey,
-                    //     });
-
-                    //     // isNewTilemaphash = true;
-                    // }
 
                     // Generate a new hash for THIS layerObject. 
                     newHash = _GFX.utilities.djb2Hash( JSON.stringify([
@@ -675,14 +656,6 @@ var _GFX = {
             // Add to REMOVALS.
             removals.push(mapKey);
         
-            // Remove from the hashCache?
-            let map = _GFX.currentData[layer].tilemaps[tilemapKey];
-            if(map.removeHashOnRemoval){
-                if(_GFX.hashCacheMap.has(map.hashMapHash)){
-                    _GFX.hashCacheMap.delete(map.hashMapHash)
-                }
-            }
-
             // Delete from currentData.
             delete _GFX.currentData[layerKey].tilemaps[mapKey];
             

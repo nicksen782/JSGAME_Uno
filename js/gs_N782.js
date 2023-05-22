@@ -13,7 +13,7 @@ _APP.game.gamestates["gs_N782"] = {
     init: function(){
         // Clear the screen and the graphics caches.
         _GFX.funcs.clearAllLayers(true);
-        _GFX.layerObjs.clearAll(_APP.game.gs1);
+        _GFX.layerObjs.removeAll(_APP.game.gs1);
         this.createLayerObjectPlaceholders();
 
         // _GFX.funcs.updateL1BgColorRgba([32,24,64,255]);

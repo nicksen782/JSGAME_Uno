@@ -128,7 +128,7 @@ _APP.game.gamestates["gs_JSG"] = {
     init: function(){
         // Clear the screen and the graphics caches.
         _GFX.funcs.clearAllLayers(true);
-        _GFX.layerObjs.clearAll(_APP.game.gs1);
+        _GFX.layerObjs.removeAll(_APP.game.gs1);
         this.createLayerObjectPlaceholders();
 
         // _GFX.funcs.setFade("ALL", null);
@@ -291,7 +291,7 @@ _APP.game.gamestates["gs_JSG"] = {
         for (let i = this.config.deck.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [this.config.deck[i], this.config.deck[j]] = [this.config.deck[j], this.config.deck[i]];
-          }
+        }
     },
 
     // Should be called by the game loop.

@@ -769,13 +769,19 @@ var _DEBUG = {
         if(! ( _APP.game.gs1 in _GFX.layerObjs.objs ) ){ return; }
         let data;
         let maxLen = 0;
-        for(let key in _GFX.layerObjs.objs[_APP.game.gs1]){
+        for(let [key, value] in _GFX.layerObjs.objs[_APP.game.gs1]){
+            // if(!value.tmap){ continue; }
             if(key.length > maxLen){ maxLen = key.length; }
         }
         for(let key in _GFX.layerObjs.objs[_APP.game.gs1]){
             data = _GFX.layerObjs.objs[_APP.game.gs1][key];
-            // console.log(key, data);
-            newText += `${key.padEnd(maxLen, " ")}: (${data.x.toString().padStart(2, " ")}, ${data.y.toString().padStart(2, " ")}) ${data.layerKey}\n`;
+            // if(!data.tmap){ continue; }
+            try{
+                newText += `${key.padEnd(maxLen, " ")}: (${data.x.toString().padStart(2, " ")}, ${data.y.toString().padStart(2, " ")}) ${data.layerKey}\n`;
+            }
+            catch(e){
+                console.log(key, data.x, data.y, data.layerKey, data, e);
+            }
         }
         if(currentText != newText){
             // console.log("Changing", maxLen);

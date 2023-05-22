@@ -219,6 +219,7 @@ class LayerObject {
 // 
 class PrintText extends LayerObject{
     get text()   { return this._text; } 
+    // set text(value){ if( this._text !== value){ this._text = value; this._changed = true; } }
     set text(value){ if( this._text !== value){ this._text = value; this._changed = true; } }
 
     constructor(config){
@@ -243,6 +244,9 @@ class PrintText extends LayerObject{
         
         // Do not render unchanged LayerObjects.
         if(!this._changed){ return; }
+
+        // Text with no length? 
+        if(!this.text.length){ this.text = " "; }
 
         // Draw by grid or by pixel?
         let x = this.x; 
@@ -363,6 +367,7 @@ class UnoLetter extends LayerObject{
     };
 }
 
+//
 class Cursor1 extends LayerObject{
     // Set named colors.
     static colors = {
@@ -437,6 +442,7 @@ class Cursor1 extends LayerObject{
     };
 };
 
+//
 class Card extends LayerObject{
     // Set named colors.
     static colors = {
@@ -521,8 +527,6 @@ class Card extends LayerObject{
         else{ throw `Invalid card size: ${config.size}`; }
     };
 };
-
-
 
 
 
