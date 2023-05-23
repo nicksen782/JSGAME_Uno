@@ -1003,7 +1003,7 @@ messageFuncs.sendGfxUpdates.V4 = {
                 // TODO: the fadeLevel set to the map can lag behind a frame.
                 // If this is a changed tilemap that had overlapped another tile then it's fade needs to be done here.
                 if(mapKey == "debugCursor"){
-                    console.log("debugCursor:", JSON.stringify(map.fadeBeforeDraw));
+                    // console.log("debugCursor:", JSON.stringify(map.fadeBeforeDraw));
                 }
                 if(map.fadeBeforeDraw){
                 // if(map.fadeBeforeDraw && layer.fade.currFade != null){
@@ -1087,6 +1087,9 @@ messageFuncs.sendGfxUpdates.V4 = {
             // If the fade has changed then force a redraw.
             if(fade.prevFade != fade.currFade){ forceLayerRedraw = true; }
 
+            // Update the locally stored fade for this layer.
+            _GFX.currentData[layerKey].fade = fade;
+
             // Run the draw updater for this layer if ALLCLEAR is set or there are changes or fade changes.
             if(
                 messageData.ALLCLEAR || 
@@ -1099,9 +1102,6 @@ messageFuncs.sendGfxUpdates.V4 = {
             else{
                 this.clearTimingsValues(layerKey, messageData);
             }
-
-            // Update the locally stored fade for this layer.
-            _GFX.currentData[layerKey].fade = fade;
         }
 
         sendGfxUpdates = performance.now() - sendGfxUpdates;
