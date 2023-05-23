@@ -123,15 +123,18 @@ const _GFX = {
             bgColorRgba: [0,0,0,0],
             bgColor32bit: 0,
             tilemaps   : {},
+            fade: {},
         },
         "L2":{
             tilemaps   : {},
         },
         "L3":{
             tilemaps   : {},
+            fade: {},
         },
         "L4":{
             tilemaps   : {},
+            fade: {},
         },
     },
     utilities: {

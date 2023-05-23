@@ -214,7 +214,7 @@ messageFuncs.sendGfxUpdates.V4 = {
                 _GFX.currentData["L1"].bgColor32bit = replaceColor_32bit;
             }
 
-            // The background-color change is handled by CSS in _GFX.funcs.afterDraw (main thread.)
+            // The background-color change is NOW handled by CSS in _GFX.funcs.afterDraw (main thread.)
             // // Create a Uint32Array view of the imgDataCache for this layer.
             // let uint32Data = new Uint32Array(_GFX.layers["L1"].imgDataCache.data.buffer);
 
@@ -262,7 +262,8 @@ messageFuncs.sendGfxUpdates.V4 = {
                 );
 
                 // Apply existing fade.
-                createGraphicsAssets.applyFadeToImageData(clippedImageData, layerData.fade.currFade);
+                // createGraphicsAssets.applyFadeToImageData(clippedImageData, layerData.fade.currFade);
+                createGraphicsAssets.applyFadeToImageData(clippedImageData, _GFX.currentData[layerKey].fade.currFade);
 
                 // Write the clippedImageData to the imgDataCache.
                 createGraphicsAssets.updateRegion(
@@ -981,8 +982,10 @@ messageFuncs.sendGfxUpdates.V4 = {
                     _GFX.currentData[layerKey].tilemaps[mapKey] = {
                         ...map,
                         imgData      : map.imgData,
-                        hashCacheHash: hash // Used for future hashCache removals.
+                        hashCacheHash: hash, // Used for future hashCache removals.
+                        fadeBeforeDraw: map.fadeBeforeDraw ?? false
                     };
+                    
                     // console.log("SAVED:", _GFX.currentData[layerKey].tilemaps[mapKey]);
                 }
             }
@@ -991,98 +994,62 @@ messageFuncs.sendGfxUpdates.V4 = {
         // Draw ALL tilemap ImageData from cache.
         drawImgDataCacheFromDataCache: function(layerKey, mapKeys, changes=null){
             for(let i=0, len=mapKeys.length; i<len; i+=1){
+                let layer = _GFX.currentData[layerKey];
                 let mapKey = mapKeys[i];
                 let map = _GFX.currentData[layerKey].tilemaps[mapKey];
+                let imgData;
+                imgData = map.imgData;
 
                 // TODO: the fadeLevel set to the map can lag behind a frame.
                 // If this is a changed tilemap that had overlapped another tile then it's fade needs to be done here.
-                if(map.fadeBeforeDraw && map.fadeLevel != null){
-                    console.log("FADE BEFORE DRAW!", map.fadeBeforeDraw, map.fadeLevel);
-                    let fadedImageData = new ImageData(map.w, map.h);
-                    fadedImageData.data.set(
-                        createGraphicsAssets.copyRegion(
-                            map.imgData.data,
-                            map.imgData.width,
-                            0, 
-                            0, 
-                            map.w,
-                            map.h
-                        )
-                    );
+                if(mapKey == "debugCursor"){
+                    console.log("debugCursor:", JSON.stringify(map.fadeBeforeDraw));
+                }
+                if(map.fadeBeforeDraw){
+                // if(map.fadeBeforeDraw && layer.fade.currFade != null){
+                // if(map.fadeBeforeDraw && layer.fade.currFade != null){
+                // if(map.fadeBeforeDraw && layer.prevFade != layer.fade.currFade){
+                    // console.log("FADE BEFORE DRAW!", map.fadeBeforeDraw, map.fadeLevel);
+                    imgData = new ImageData(map.w, map.h);
+                    imgData.data.set( createGraphicsAssets.copyRegion( map.imgData.data, map.imgData.width, 0, 0, map.w, map.h) );
 
                     // Apply fade.
-                    createGraphicsAssets.applyFadeToImageData(fadedImageData, map.fadeLevel);
-
-                    // Use blitDestTransparency.
-                    createGraphicsAssets.updateRegion(
-                        fadedImageData.data,                          // source
-                        fadedImageData.width,                         // srcWidth
-                        _GFX.layers[layerKey].imgDataCache.data,   // destination
-                        _GFX.layers[layerKey].imgDataCache.width,  // destWidth
-                        _GFX.layers[layerKey].imgDataCache.height, // destHeight
-                        map.x,                                     // x
-                        map.y,                                     // y
-                        map.w,                                     // w
-                        map.h,                                     // h
-                        // "onlyToAlpha0"                             // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                        "blitDest"                                 // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                        // "replace"                                  // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                    );
-
-                    // delete map.fadeBeforeDraw;
-                    // delete map.fadeLevel;
+                    // createGraphicsAssets.applyFadeToImageData(imgData, layer.fade.prevFade);
+                    createGraphicsAssets.applyFadeToImageData(imgData, layer.fade.currFade);
                 }
-                else{
-                    // Use blitDestTransparency.
-                    createGraphicsAssets.updateRegion(
-                        map.imgData.data,                          // source
-                        map.imgData.width,                         // srcWidth
-                        _GFX.layers[layerKey].imgDataCache.data,   // destination
-                        _GFX.layers[layerKey].imgDataCache.width,  // destWidth
-                        _GFX.layers[layerKey].imgDataCache.height, // destHeight
-                        map.x,                                     // x
-                        map.y,                                     // y
-                        map.w,                                     // w
-                        map.h,                                     // h
-                        // "onlyToAlpha0"                             // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                        "blitDest"                                 // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                        // "replace"                                  // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                    );
-                }
+
+                // Use blitDestTransparency.
+                createGraphicsAssets.updateRegion(
+                    imgData.data,                          // source
+                    imgData.width,                         // srcWidth
+                    _GFX.layers[layerKey].imgDataCache.data,   // destination
+                    _GFX.layers[layerKey].imgDataCache.width,  // destWidth
+                    _GFX.layers[layerKey].imgDataCache.height, // destHeight
+                    map.x,                                     // x
+                    map.y,                                     // y
+                    map.w,                                     // w
+                    map.h,                                     // h
+                    // "onlyToAlpha0"                             // writeType ["onlyToAlpha0", "blitDest", "replace"]
+                    "blitDest"                                 // writeType ["onlyToAlpha0", "blitDest", "replace"]
+                    // "replace"                                  // writeType ["onlyToAlpha0", "blitDest", "replace"]
+                );
 
             }
         },
 
         // Draw the imgDataCache for a layer to the canvas layer. (Can also apply the global fade.)
-        drawImgDataCacheToCanvas: function(layer, fade){
+        drawImgDataCacheToCanvas: function(layerKey, fade){
+            let layer = _GFX.currentData[layerKey];
             // Get the imgDataCache.
-            let imgDataCache = _GFX.layers[layer].imgDataCache;
-
-            // If there is a global fade then apply it to imgDataCache.
-            // if(fade.fade){
-            //     // fadeLevel (currFade) 10 is all black.
-            //     if(fade.currFade == 10){
-            //         // R,G,B is already 0. Need to set alpha to enable full black.
-            //         for (let i = 3; i < imgDataCache.data.length; i += 4) { imgDataCache.data[i] = 255; }
-            //     }
-            //     // fadeLevel (currFade) 11 is full transparent.
-            //     else if(fade.currFade == 11){
-            //         // R,G,B,A is already 0. Nothing to do.
-            //     }
-            //     // Fade the imgDataCache in it's entirety.
-            //     else if(fade.fade){
-            //         createGraphicsAssets.applyFadeToImageData(imgDataCache, fade.currFade);
-            //     }
-            // }
+            let imgDataCache = _GFX.layers[layerKey].imgDataCache;
 
             // If the global fade is on then fade the imgDataCache in it's entirety.
-            // if(fade.fade && fade.prevFade != fade.currFade){
             if(fade.prevFade != fade.currFade){
-                createGraphicsAssets.applyFadeToImageData(imgDataCache, fade.currFade);
+                createGraphicsAssets.applyFadeToImageData(imgDataCache, layer.fade.currFade);
             }
 
             // Use the imgDataCache to draw to the output canvas.
-            _GFX.layers[layer].ctx.putImageData(imgDataCache, 0, 0);
+            _GFX.layers[layerKey].ctx.putImageData(imgDataCache, 0, 0);
         },
     },
     clearTimingsValues: function(layerKey, messageData){
@@ -1132,6 +1099,9 @@ messageFuncs.sendGfxUpdates.V4 = {
             else{
                 this.clearTimingsValues(layerKey, messageData);
             }
+
+            // Update the locally stored fade for this layer.
+            _GFX.currentData[layerKey].fade = fade;
         }
 
         sendGfxUpdates = performance.now() - sendGfxUpdates;
