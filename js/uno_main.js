@@ -277,7 +277,7 @@ _APP.game.gameLoop.loop = async function loop(timestamp){
                 //
 
                 // -- INPUT --
-                _INPUT.util.getStatesForPlayers();
+                await _INPUT.util.getStatesForPlayers();
                 if(typeof _INPUT.customized.updateLiveGamepadDisplay != "undefined"){
                     _INPUT.customized.updateLiveGamepadDisplay();
                 }

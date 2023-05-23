@@ -500,6 +500,26 @@ _APP.game.gamestates["gs_PLAYING"] = {
         }
     },
 
+    // Get a random card from the draw pile (no assignment, just returns a random card.)
+    getRandomCardFromDrawpile: function(){
+        // Filter out only the available cards.
+        let availableCards = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
+
+        // If no cards are available then return null.
+        if(!availableCards.length){ return false; }
+        
+        // Set the min and max for a range within the available cards. 
+        let min = 0;
+        let max = availableCards.length;
+        
+        // Get a random card from the available cards. 
+        let index = ((Math.random() * (max - min + 1)) | 0) + min;
+        let card = availableCards[index];
+
+        // Return the card object (reference.)
+        return card;
+    },
+
     // Run once upon changing to this game state.
     init: function(){
         // Clear the screen and the graphics caches.
@@ -544,8 +564,10 @@ _APP.game.gamestates["gs_PLAYING"] = {
         if(!this.inited){ this.init(); return; }
 
         // Gamepad input.
-        let state = _INPUT.util.stateByteToObj2("p1"); 
-        if(state.press.BTN_B) { 
+        let gpInput = {}; 
+        let gpInputP1 = _INPUT.util.stateByteToObj2("p1"); 
+        let gpInputP2 = _INPUT.util.stateByteToObj2("p2"); 
+        if(gpInputP1.press.BTN_B) { 
             _APP.game.changeGs1("gs_OPTIONS");
             _APP.game.changeGs2("init");
             return;
@@ -553,14 +575,33 @@ _APP.game.gamestates["gs_PLAYING"] = {
 
         // DEBUG CURSOR.
         _GFX.layerObjs.getOne("debugCursor").nextFrame();
-        if(state.held.BTN_SR && state.press.BTN_UP)   { _GFX.layerObjs.getOne("debugCursor").y--; }
-        if(state.held.BTN_SR && state.press.BTN_DOWN) { _GFX.layerObjs.getOne("debugCursor").y++; }
-        if(state.held.BTN_SR && state.press.BTN_LEFT) { _GFX.layerObjs.getOne("debugCursor").x--; }
-        if(state.held.BTN_SR && state.press.BTN_RIGHT){ _GFX.layerObjs.getOne("debugCursor").x++; }
+        if(gpInputP1.held.BTN_SR && gpInputP1.press.BTN_UP)   { _GFX.layerObjs.getOne("debugCursor").y--; }
+        if(gpInputP1.held.BTN_SR && gpInputP1.press.BTN_DOWN) { _GFX.layerObjs.getOne("debugCursor").y++; }
+        if(gpInputP1.held.BTN_SR && gpInputP1.press.BTN_LEFT) { _GFX.layerObjs.getOne("debugCursor").x--; }
+        if(gpInputP1.held.BTN_SR && gpInputP1.press.BTN_RIGHT){ _GFX.layerObjs.getOne("debugCursor").x++; }
 
-        if(_APP.game.gs2 == "getFirstPlayer"){
-            // Shuffle the deck.
-            this.shuffleDeck();
+        return; 
+        if(_APP.game.gs2 == "gamestart"){
+            // Set flags.
+            //
+
+            _APP.game.gs2 == "getFirstPlayer";
+        }
+        else if(_APP.game.gs2 == "getFirstPlayer"){
+            if(0){
+                // Shuffle the deck.
+                this.shuffleDeck();
+            }
+            else if(0){
+            }
+            else if(0){
+            }
+            else if(0){
+            }
+            else if(0){
+            }
+            else{
+            }
 
             // Deal 1 card to each player. 
 
