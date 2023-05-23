@@ -310,8 +310,10 @@ messageFuncs.sendGfxUpdates.V4 = {
                     rect1 = removedRegions.data[ mapKey1 ];
 
                     // Changes need to be faded individually (Later in drawImgDataCacheFromDataCache.)
-                    layerData["CHANGES"][mapKey1].fadeBeforeDraw = true;
-                    layerData["CHANGES"][mapKey1].fadeLevel = layerData.fade.currFade;
+                    if(layerData["CHANGES"][mapKey1]){
+                        layerData["CHANGES"][mapKey1].fadeBeforeDraw = true;
+                        layerData["CHANGES"][mapKey1].fadeLevel = layerData.fade.currFade;
+                    }
 
                     // Go through each mapKey of the currentMapKeys...
                     for(let mapKey2 of currentMapKeys){

@@ -40,6 +40,11 @@ _APP.game.gamestates["gs_PLAYING"] = {
                     `              ` ,
                     `               `
                 ],
+                tied  : [
+                    `     TIED     ` ,
+                    `  SAME CARDS  ` ,
+                    ` TRYING AGAIN ` ,
+                ],
                 playsFirst  : [
                     `   PLAYER ${playerNum}   `,
                     `              ` ,
@@ -500,6 +505,11 @@ _APP.game.gamestates["gs_PLAYING"] = {
         }
     },
 
+    // Move card to discard pile.
+    moveCardToDiscardPile(card_layerObjKey, card){
+        
+    },
+
     // Get a random card from the draw pile (no assignment, just returns a random card.)
     getRandomCardFromDrawpile: function(){
         // Filter out only the available cards.
@@ -547,7 +557,9 @@ _APP.game.gamestates["gs_PLAYING"] = {
         // _GFX.layerObjs.updateOne(Card, { size: "lg", color:"CARD_BLACK", value: "CARD_BACK", x:10, y:11, layerObjKey: `lg_green_2`, layerKey: "L2", xyByGrid: true } );
         // _GFX.layerObjs.updateOne(Card, { size: "lg", color:"CARD_GREEN", value: "CARD_2", x:16, y:11, layerObjKey: `lg_back_back`, layerKey: "L2", xyByGrid: true } );
 
-        _GFX.layerObjs.updateOne(Cursor1, { x:14, y:14, layerObjKey: `debugCursor`   , layerKey: "L1", xyByGrid: true, settings:{rotation: 90} } );
+        _GFX.layerObjs.updateOne(Cursor1, { x:5, y:4, layerObjKey: `debugCursor`   , layerKey: "L1", xyByGrid: true, settings:{rotation: 90} } );
+        // _GFX.layerObjs.updateOne(Cursor1, { x:14, y:15, layerObjKey: `debugCursor2`  , layerKey: "L1", xyByGrid: true, settings:{rotation: -90} } );
+        // _GFX.layerObjs.updateOne(Cursor1, { x:14, y:15, layerObjKey: `debugCursor3`  , layerKey: "L1", xyByGrid: true, settings:{rotation: 180} } );
 
         // Run the debug init.
         if(_APP.debugActive && _DEBUG2){ _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); }
@@ -575,11 +587,14 @@ _APP.game.gamestates["gs_PLAYING"] = {
 
         // DEBUG CURSOR.
         _GFX.layerObjs.getOne("debugCursor").nextFrame();
+        // _GFX.layerObjs.getOne("debugCursor2").nextFrame();
+        // _GFX.layerObjs.getOne("debugCursor3").nextFrame();
         if(gpInputP1.held.BTN_SR && gpInputP1.press.BTN_UP)   { _GFX.layerObjs.getOne("debugCursor").y--; }
         if(gpInputP1.held.BTN_SR && gpInputP1.press.BTN_DOWN) { _GFX.layerObjs.getOne("debugCursor").y++; }
         if(gpInputP1.held.BTN_SR && gpInputP1.press.BTN_LEFT) { _GFX.layerObjs.getOne("debugCursor").x--; }
         if(gpInputP1.held.BTN_SR && gpInputP1.press.BTN_RIGHT){ _GFX.layerObjs.getOne("debugCursor").x++; }
 
+        if(_APP.debugActive && _DEBUG){ this.debug(); }
         return; 
         if(_APP.game.gs2 == "gamestart"){
             // Set flags.

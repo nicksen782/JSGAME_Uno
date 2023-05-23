@@ -103,10 +103,21 @@ var _DEBUG = {
         }, false);
 
         // GO TO GAMESTATE
-        let gotoGS_JSG = document.getElementById("debug_test_gotoGS_JSG");
-        let gotoGS_TITLE = document.getElementById("debug_test_gotoGS_TITLE");
-        let gotoGS_N782 = document.getElementById("debug_test_gotoGS_N782");
+        let changeGs1Select = document.getElementById("debug_changeGs1Select");
+        let changeGs1Button = document.getElementById("debug_changeGs1Button");
         
+        changeGs1Select.addEventListener("change", ()=>{ 
+            let value = changeGs1Select.value;
+            _APP.game.changeGs1(value);
+        }, false);
+        changeGs1Button.addEventListener("click" , ()=>{ 
+            let value = changeGs1Select.value;
+            _APP.game.changeGs1(value);
+        }, false);
+        let intervalId = setInterval(()=>{ 
+            if(_APP.game.gs1){ changeGs1Select.value = _APP.game.gs1; clearInterval(intervalId);}
+        }, 100);
+
         // RESTART THE CURRENT GAMESTATE
         let restartGS1 = document.getElementById("debug_test_restartGS1");
         restartGS1.addEventListener("click", ()=>{ 
@@ -114,10 +125,6 @@ var _DEBUG = {
             _APP.game.gamestates[_APP.game.gs1].inited = false;
             _APP.game.gameLoop.loop_start(); 
         }, false);
-        
-        gotoGS_JSG .addEventListener("click", ()=>{ _APP.game.changeGs1("gs_JSG"); }, false);
-        gotoGS_TITLE.addEventListener("click", ()=>{ _APP.game.changeGs1("gs_TITLE"); }, false);
-        gotoGS_N782.addEventListener("click", ()=>{ _APP.game.changeGs1("gs_N782"); }, false);
     },
     
     waitForDrawControl: function(){

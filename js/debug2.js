@@ -113,12 +113,19 @@ var _DEBUG2 = {
                 "colorSelect"      : "debug_PLAYING_colorSelect",
                 "colorButton"      : "debug_PLAYING_colorButton",
                 
-                "dirFButton"      : "debug_PLAYING_dirFButton",
-                "dirNButton"      : "debug_PLAYING_dirNButton",
-                "dirRButton"      : "debug_PLAYING_dirRButton",
+                "dirFButton": "debug_PLAYING_dirFButton",
+                "dirNButton": "debug_PLAYING_dirNButton",
+                "dirRButton": "debug_PLAYING_dirRButton",
 
-                "bgColorSelect"      : "debug_PLAYING_bgColorSelect",
-                "bgColorButton"      : "debug_PLAYING_bgColorButton",
+                "bgColorSelect": "debug_PLAYING_bgColorSelect",
+                "bgColorButton": "debug_PLAYING_bgColorButton",
+                
+                "drawCards"   : "debug_drawCards",
+                "discardCards": "debug_discardCards",
+                "P1Cards"     : "debug_P1Cards",
+                "P2Cards"     : "debug_P2Cards",
+                "P3Cards"     : "debug_P3Cards",
+                "P4Cards"     : "debug_P4Cards",
             },
             initOnce: function(){
                 // MESSAGE CHANGE
@@ -164,7 +171,79 @@ var _DEBUG2 = {
             init: function(){
                 this.inited = true; 
             },
+            createCardElem: function(cardObj){
+                let colors = {
+                    "CARD_YELLOW": "yellow",
+                    "CARD_BLUE"  : "blue",
+                    "CARD_RED"   : "red",
+                    "CARD_GREEN" : "green",
+                    "CARD_BLACK" : "black",
+                };
+                let values = {
+                    "CARD_0"         : "0",
+                    "CARD_1"         : "1",
+                    "CARD_2"         : "2",
+                    "CARD_3"         : "3",
+                    "CARD_4"         : "4",
+                    "CARD_5"         : "5",
+                    "CARD_6"         : "6",
+                    "CARD_7"         : "7",
+                    "CARD_8"         : "8",
+                    "CARD_9"         : "9",
+                    "CARD_DRAW2"     : "D2",
+                    "CARD_SKIP"      : "SKIP",
+                    "CARD_REV"       : "REV",
+                    "CARD_WILD"      : "WILD",
+                    "CARD_WILD_DRAW4": "W_D4",
+                    "CARD_BACK"      : "BACK",
+                };
+
+                return `<span class="card ${colors[cardObj.color]}"><span class="label">${values[cardObj.value]}</span></span>`.trim();
+            },
             gs1: function(){
+                // **************************
+                // Update the cards locations
+                // **************************
+
+                // Get the old values. 
+                let drawCards_old    = this.DOM["drawCards"].innerHTML;
+                let discardCards_old = this.DOM["discardCards"].innerHTML;
+                let P1Cards_old      = this.DOM["P1Cards"].innerHTML;
+                let P2Cards_old      = this.DOM["P2Cards"].innerHTML;
+                let P3Cards_old      = this.DOM["P3Cards"].innerHTML;
+                let P4Cards_old      = this.DOM["P4Cards"].innerHTML;
+                
+                // Start new values. 
+                let drawCards_new    = '';
+                let discardCards_new = '';
+                let P1Cards_new      = '';
+                let P2Cards_new      = '';
+                let P3Cards_new      = '';
+                let P4Cards_new      = '';
+
+                // Filter the deck by location.
+                let location_DISCARD = _APP.game.gamestates["gs_PLAYING"].deck.filter(d=>d.location=="CARD_LOCATION_DISCARD");
+                let location_DRAW    = _APP.game.gamestates["gs_PLAYING"].deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
+                let location_PLAYER1 = _APP.game.gamestates["gs_PLAYING"].deck.filter(d=>d.location=="CARD_LOCATION_PLAYER1");
+                let location_PLAYER2 = _APP.game.gamestates["gs_PLAYING"].deck.filter(d=>d.location=="CARD_LOCATION_PLAYER2");
+                let location_PLAYER3 = _APP.game.gamestates["gs_PLAYING"].deck.filter(d=>d.location=="CARD_LOCATION_PLAYER3");
+                let location_PLAYER4 = _APP.game.gamestates["gs_PLAYING"].deck.filter(d=>d.location=="CARD_LOCATION_PLAYER4");
+
+                // Add cards by location.
+                for(let card of location_DISCARD){ discardCards_new += this.createCardElem(card); }
+                for(let card of location_DRAW)   { drawCards_new    += this.createCardElem(card); }
+                for(let card of location_PLAYER1){ P1Cards_new      += this.createCardElem(card); }
+                for(let card of location_PLAYER2){ P2Cards_new      += this.createCardElem(card); }
+                for(let card of location_PLAYER3){ P3Cards_new      += this.createCardElem(card); }
+                for(let card of location_PLAYER4){ P4Cards_new      += this.createCardElem(card); }
+
+                // Update the display if the HTMl has changed.
+                if(drawCards_old    != drawCards_new)   { console.log("CHANGE: drawCards");    this.DOM["drawCards"]   .innerHTML = drawCards_new; }
+                if(discardCards_old != discardCards_new){ console.log("CHANGE: discardCards"); this.DOM["discardCards"].innerHTML = discardCards_new; }
+                if(P1Cards_old      != P1Cards_new)     { console.log("CHANGE: P1Cards");      this.DOM["P1Cards"]     .innerHTML = P1Cards_new; }
+                if(P2Cards_old      != P2Cards_new)     { console.log("CHANGE: P2Cards");      this.DOM["P2Cards"]     .innerHTML = P2Cards_new; }
+                if(P3Cards_old      != P3Cards_new)     { console.log("CHANGE: P3Cards");      this.DOM["P3Cards"]     .innerHTML = P3Cards_new; }
+                if(P4Cards_old      != P4Cards_new)     { console.log("CHANGE: P4Cards");      this.DOM["P4Cards"]     .innerHTML = P4Cards_new; }
             },
             anim1: function(){
             },
