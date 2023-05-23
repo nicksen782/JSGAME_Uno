@@ -89,9 +89,9 @@ _APP.game = {
         lastLoop_timestamp   : 0,
         lastDebug1_timestamp : 0,
 
-        // Starts the game loop (Stops it first if it is already running.)
+        // Starts the game loop after stopping it if it is running. Schedules the next frame.
         loop_start: function(){
-            // Stop the gameLoop if it is running.
+            // Stop the next scheduled gameLoop if the gameLoop is running.
             if(this.running){ this.loop_stop(); }
             
             // Start the gameLoop.
@@ -101,15 +101,15 @@ _APP.game = {
             this.loop_schedule_nextRun();
         },
 
-        // Stops the game loop (Cancels the next loop.)
+        // Stops the game loop (Cancels the next frame.)
         loop_stop: function(){
-            // Cancel the current animation frame. 
+            // Set the gameLoop.running to false. 
+            this.running = false;
+
+            // Cancel the next scheduled animation frame. 
             if     (this.loopType == "raf"){ window.cancelAnimationFrame(this.raf_id);  }
             else if(this.loopType == "to") { window.clearTimeout(this.raf_id); }
             else{ console.error("Invalid loopType:", this.loopType); }
-        
-            // Set the gameLoop.running to false. 
-            this.running = false;
         },
 
         // Requests the next game loop iteration.
@@ -135,6 +135,10 @@ _APP.game = {
                     if(this.lastLoop_timestamp > this.msFrame){ 
                         console.log(`lastLoop: ${100*(this.lastLoop_timestamp/this.msFrame).toFixed(0)} % (${this.lastLoop_timestamp.toFixed(1)} ms) of: ${this.msFrame.toFixed(1)} ms (gs1: '${_APP.game.gs1}' gs2: '${_APP.game.gs2}')`); 
                     }
+
+                    // GAMESTATE CHANGES
+                    if(_APP.game.changeGs2_triggered){ _APP.game._changeGs2(); } 
+                    if(_APP.game.changeGs1_triggered){ _APP.game._changeGs1(); } 
                 }
             }
 
@@ -300,9 +304,9 @@ _APP.game.gameLoop.loop = async function loop(timestamp){
                     _DEBUG.cachedData.changes["L4"] = _GFX.currentData["L4"].changes;
                 }
 
-                // GAMESTATE CHANGES
-                if(_APP.game.changeGs2_triggered){ _APP.game._changeGs2(); } 
-                if(_APP.game.changeGs1_triggered){ _APP.game._changeGs1(); } 
+                // // GAMESTATE CHANGES
+                // if(_APP.game.changeGs2_triggered){ _APP.game._changeGs2(); } 
+                // if(_APP.game.changeGs1_triggered){ _APP.game._changeGs1(); } 
 
                 // -- DRAW --
                 // Determine if there are any draw updates. (Returns true/false and also sets _GFX.DRAWNEEDED.)

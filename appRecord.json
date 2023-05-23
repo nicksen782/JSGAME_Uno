@@ -7,11 +7,11 @@
     "repo":{
         "author_title" : "JSGAME_Uno",
         "author_C"     : true,
-        "author_year"  : "2022",
+        "author_year"  : "2023",
         "author_name"  : "Nickolas Andersen",
         "author_handle": "(nicksen782)",
         "repoType"     : "Github",
         "repoHref"     : "https://github.com/nicksen782/JSGAME_Uno",
-        "repoText"     : "nicksen782/JSGAME_Uno/tree/v2"
+        "repoText"     : "nicksen782/JSGAME_Uno"
     }
 }

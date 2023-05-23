@@ -3,18 +3,11 @@ _APP.game.gamestates["gs_N782"] = {
     This gamestate is an animation with timing.
     */
 
-    // Creates empty object placeholders for this gamestate.
-    createLayerObjectPlaceholders: function(){
-        _GFX.layerObjs.createPlaceholder("N782_face_anim", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("N782_text_anim", _APP.game.gs1);
-    },
-
     // Run once upon changing to this game state.
     init: function(){
         // Clear the screen and the graphics caches.
         _GFX.funcs.clearAllLayers(true);
         _GFX.layerObjs.removeAll(_APP.game.gs1);
-        this.createLayerObjectPlaceholders();
 
         // _GFX.funcs.updateL1BgColorRgba([32,24,64,255]);
         _GFX.funcs.updateL1BgColorRgba([0,0,0,0]);

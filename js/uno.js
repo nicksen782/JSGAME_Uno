@@ -1,5 +1,5 @@
-// _APP.debugActive = false;
-_APP.debugActive = true;
+_APP.debugActive = false;
+// _APP.debugActive = true;
 _APP.configObj = {
     appName: "UNO!",
 
@@ -71,8 +71,6 @@ _APP.initOutputScaleControls = function(){
 _APP.utility = {
     //
     ww_ImageDataAssetsGenerated: false, 
-
-    //
     generateAllCoreImageDataAssets: async function(){
         // _APP.game.gameLoop.loop_stop();
         // _APP.utility.await generateAllCoreImageDataAssets();
@@ -232,6 +230,8 @@ _APP.utility = {
             };
         });
     },
+
+    // Error handler.
     errorHandler: {
         //
         DOM: {
@@ -317,6 +317,13 @@ _APP.utility = {
             this.DOM.error_display_close.addEventListener('click', (e)=>this.closeError(e));
         },
     },
+
+    // Get url params.
+    getUrlParams: function(){
+        const urlSearchParams = new URLSearchParams(window.location.search);
+        const params          = Object.fromEntries(urlSearchParams.entries());
+        return params;
+    },
 };
 
 // For loading customized wrappers for plug-ins.
@@ -326,26 +333,30 @@ _APP.loader = {
             let relPath = ".";
             if(_APP.usingJSGAME){ relPath = "./games/JSGAME_Uno"; }
 
-            // Download these files sequentially.
-            await _APP.utility.addFile( { f:"js/uno_main.js"               , t:"js"  }, relPath);
-            await _APP.utility.addFile( { f:"js/shared.js"                 , t:"js"  }, relPath);
-            await _APP.utility.addFile( { f:"css/uno.css"                  , t:"css" }, relPath);
-            await _APP.utility.addFile( { f:"js/webv.js"                   , t:"js"  }, relPath);
-            await _APP.utility.addFile( { f:"js/gfx.js"                    , t:"js"  }, relPath);
-            await _APP.utility.addFile( { f:"js/gfxClasses.js"             , t:"js"  }, relPath);
-            await _APP.utility.addFile( { f:"js/INPUT_A/inputModeA_core.js", t:"js"  }, relPath);
-            await _APP.utility.addFile( { f:"js/inputModeA_customized.js"  , t:"js"  }, relPath);
+            // URL params can affect app settings.
+            let params = _APP.utility.getUrlParams();
+            _APP.debugActive = ("debug" in params && params.debug=='1') ? true : false;
+
+            // Download these files sequentially as some depend on the others.
+            await _APP.utility.addFile( { f:"css/uno.css"                  , t:"css" }, relPath); // GAME
+            await _APP.utility.addFile( { f:"js/uno_main.js"               , t:"js"  }, relPath); // GAME
+            await _APP.utility.addFile( { f:"js/shared.js"                 , t:"js"  }, relPath); // GAME
+            await _APP.utility.addFile( { f:"js/webv.js"                   , t:"js"  }, relPath); // CORE
+            await _APP.utility.addFile( { f:"js/gfx.js"                    , t:"js"  }, relPath); // CORE
+            await _APP.utility.addFile( { f:"js/gfxClasses.js"             , t:"js"  }, relPath); // GAME
+            await _APP.utility.addFile( { f:"js/INPUT_A/inputModeA_core.js", t:"js"  }, relPath); // CORE
+            await _APP.utility.addFile( { f:"js/inputModeA_customized.js"  , t:"js"  }, relPath); // _INPUT customizer
             if(_APP.debugActive) { await _APP.utility.addFile( { f:"js/debug.js"  , t:"js"  }, relPath); }
 
-            // Download these files in parallel.
+            // Download these files in parallel. The only depend on the previously loaded files.
             let files2 = [
-                _APP.utility.addFile( {f:"js/gs_JSG.js"    , t:"js" }, relPath),
-                _APP.utility.addFile( {f:"js/gs_N782.js"   , t:"js" }, relPath),
-                _APP.utility.addFile( {f:"js/gs_TITLE.js"  , t:"js" }, relPath),
-                _APP.utility.addFile( {f:"js/gs_RULES.js"  , t:"js" }, relPath),
-                _APP.utility.addFile( {f:"js/gs_CREDITS.js", t:"js" }, relPath),
-                _APP.utility.addFile( {f:"js/gs_OPTIONS.js", t:"js" }, relPath),
-                _APP.utility.addFile( {f:"js/gs_PLAYING.js", t:"js" }, relPath),
+                _APP.utility.addFile( {f:"js/gs_JSG.js"    , t:"js" }, relPath), // GAME
+                _APP.utility.addFile( {f:"js/gs_N782.js"   , t:"js" }, relPath), // GAME
+                _APP.utility.addFile( {f:"js/gs_TITLE.js"  , t:"js" }, relPath), // GAME
+                _APP.utility.addFile( {f:"js/gs_RULES.js"  , t:"js" }, relPath), // GAME
+                _APP.utility.addFile( {f:"js/gs_CREDITS.js", t:"js" }, relPath), // GAME
+                _APP.utility.addFile( {f:"js/gs_OPTIONS.js", t:"js" }, relPath), // GAME
+                _APP.utility.addFile( {f:"js/gs_PLAYING.js", t:"js" }, relPath), // GAME
             ];
             await Promise.all(files2);
 
@@ -382,7 +393,7 @@ _APP.loader = {
         }
         
         _APP.initOutputScaleControls();
-        
+
         await _APP.game.gameLoop.init();
     },
 };
@@ -492,9 +503,8 @@ _APP.navBar1 = {
 
 _APP.init_standAlone = async function(){
     return new Promise(async (resolve,reject)=>{
-        _APP.utility.errorHandler.init();
-
         await _APP.loader.loadFiles();
+        _APP.utility.errorHandler.init();
 
         // INITS
         await _APP.loader.inits();
@@ -506,17 +516,16 @@ _APP.init_standAlone = async function(){
 // JSGAME REQUESTS THIS FUNCTION FIRST.
 _APP.init = async function(){
     return new Promise(async (resolve,reject)=>{
-        _APP.utility.errorHandler.init();
-
         // Set flags. 
         _APP.standAlone       = false;
         _APP.usingJSGAME      = true;
         _APP.usingJSGAME_INPUT= false;
 
         await _APP.loader.loadFiles();
-
+        
         // Add the HTML
         await _APP.loader.loadHtml();
+        _APP.utility.errorHandler.init();
 
         // INITS
         await _APP.loader.inits();

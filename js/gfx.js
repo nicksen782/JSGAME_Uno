@@ -171,25 +171,6 @@ var _GFX = {
             return this.objs[gamestate][key];
         },
 
-        // Creates an empty object placeholder for a gamestate layer object.
-        createPlaceholder: function(key, gamestate){
-            /* 
-            // EXAMPLE USAGE:
-            // NOTE: The last argument, gamestate is technically optional and defaults to the current gamestate 1.
-
-            _GFX.layerObjs.createPlaceholder("placeholderKey", _APP.game.gs1);
-            */
-
-            // If the gamestate was not provided use the current gamestate 1.
-            if(gamestate == undefined){ gamestate = _APP.game.gs1; }
-
-            // Create the gamestate key in objs if it does not exist.
-            if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
-
-            // Add/Create the new layer object.
-            this.objs[gamestate][key] = {};
-        },
-
         // Adds or updates one layer object for a gamestate.
         updateOne: function(className, config, gamestate){
             /* 
@@ -318,24 +299,18 @@ var _GFX = {
             for(let key in this.objs[gamestate]){
                 let obj = this.objs[gamestate][key];
 
-                // TODO: test
-                // Skip the rendering of hidden layer objects. 
-                if(obj.hidden){ continue; }
-                
                 // Skip the rendering of unchanged layer objects. 
                 if(!obj._changed){ continue; }
                 
                 // Render the layer objects if it contains the render function.
-                // if(this.objs[gamestate][key].render){ this.objs[gamestate][key].render(); }
-                if(obj.isContainer){
-                    console.log("isContainer:", obj);
-                }
-                else if(obj.render){ 
+                if(obj.render){ 
                     temp = obj.render(true); 
                     layerObjects[temp.layerKey][key] = temp;
                     cnt += 1;
                 }
             }
+
+            // Render the layer object datas.
             if(cnt){ 
                 // console.log(cnt); 
 
@@ -988,7 +963,7 @@ _GFX.init = async function(){
             };
         };
 
-        // Send the config. Await the response.
+        // Send the init request with the config data. Await the response.
         await _WEBW_V.SEND("initConfigAndGraphics", {data: { configObj: _APP.configObj, defaultSettings: _GFX.defaultSettings } }, true, true);
         
         // Generate canvas layers and attach to the DOM.
@@ -1024,4 +999,220 @@ _GFX.init = async function(){
 
         resolve();
     });
+};
+
+// ***********
+// * CLASSES *
+// ***********
+
+// Creates one LayerObject.
+class LayerObject {
+    /* EXAMPLE USAGE:
+    */
+
+    // // Getters and setters:
+    get x()          { return this._x; } 
+    get y()          { return this._y; } 
+    get tmap()       { return this._tmap; } 
+    get layerKey()   { return this._layerKey; } 
+    // get tilesetKey() { return this._tilesetKey; } 
+    get settings()   { return this._settings; } 
+    get xyByGrid()   { return this._xyByGrid; } 
+    
+    set x(value)          { if( this._x          !== value){ this._x          = value; this._changed = true; } }
+    set y(value)          { if( this._y          !== value){ this._y          = value; this._changed = true; } }
+    set tmap(value)       { if( this._tmap       !== value){ this._tmap       = value; this._changed = true; } }
+    set layerKey(value)   { if( this._layerKey   !== value){ 
+        // Remove the existing layerObject from it's previous layer.
+        // _GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "L1";
+        if(this._layerKey && this.layerObjKey && _GFX.currentData[this._layerKey].tilemaps[this.layerObjKey]){
+            console.log(`REMOVING: layerKey: ${this._layerKey}, layerObjKey: ${this.layerObjKey}`);
+            _GFX.funcs.removeLayerObj(this._layerKey, this.layerObjKey);
+            // _GFX.currentData["L2"].tilemaps["N782_oneStar_anim2_10"];
+        }
+
+        this._layerKey   = value; this._changed = true; 
+    } }
+    // set tilesetKey(value) { if( this._tilesetKey !== value){ this._tilesetKey = value; this._changed = true; } }
+    set settings(value)   { this._settings = value; this._changed = true; }
+    // TODO: FIX. Works find with gridxy to pixelxy. Need fix for pixelxy to gridxy.
+    set xyByGrid(value)   { 
+        if(this._xyByGrid == value) { return; }
+
+        // xyByGrid requires tw and th.
+        
+        // Get the tileWidth and tileHeight from the tileset config. 
+        if(this.tilesetKey){
+            this.tw = _GFX.tilesets[this.tilesetKey].config.tileWidth ;
+            this.th = _GFX.tilesets[this.tilesetKey].config.tileHeight;
+        }
+        // Get the tileWidth and tileHeight from the configObj.dimensions config.
+        else{
+            this.tw = _APP.configObj.dimensions.tileWidth ;
+            this.th = _APP.configObj.dimensions.tileHeight;
+        }
+
+        this._xyByGrid = value; 
+        this._changed = true; 
+    }
+    
+    getSetting(key)       { return this._settings[key]; } 
+    setSetting(key, value){ this._settings[key] = value; this._changed = true; }
+
+    constructor(config){
+        this.orgConfig  = config;
+
+        // layerObjKey (MapKey), layerKey, and tilesetKey.
+        this.text = config.text ?? "NO_TEXT"
+        this.layerObjKey = config.layerObjKey;
+        this.layerKey    = config.layerKey;
+        this.tilesetKey  = config.tilesetKey;
+        this.removeHashOnRemoval = config.removeHashOnRemoval ?? false;
+        this.noResort = config.noResort ?? false,
+
+        // Tilemap. (It is possible that a tilemap is not provided/required.)
+        this.tmap = config.tmap; // ?? new Uint8ClampedArray([1,1,0]);
+
+        // X position.
+        this.x = config.x ?? 0;
+        
+        // Y position.
+        this.y = config.y ?? 0;
+
+        // x,y positioning (grid or pixel based.)
+        this.xyByGrid = config.xyByGrid ?? false;
+        
+        // Settings.
+        this.settings = config.settings ?? _GFX.funcs.correctSettings(null);
+
+        // Change detection.
+        this._changed = true;
+    };
+    
+    // Removes the LayerObject from _GFX.layerObj.objs.
+    removeLayerObject(){
+        // console.log("NOT READY: removeLayerObject", this); return;
+        
+        // NOTE: The object instance will need to be removed from where it was stored.
+        
+        // Remove the layer object from the cache.
+        _GFX.funcs.removeLayerObj(this.layerKey, this.layerObjKey);
+        
+        // Return the original config. (Helpful when changing layers.)
+        return this.orgConfig;
+    };
+
+    // Render function.
+    render(onlyReturnLayerObjData=false){
+        // Do not render unchanged LayerObjects.
+        if(!this._changed){ return; }
+
+        // Draw by grid or by pixel?
+        let x = this.x; 
+        let y = this.y;
+        if(this.xyByGrid && this.tilesetKey){ 
+            x = x * this.tw; 
+            y = y * this.th;
+        }
+
+        //
+        let layerObjectData;
+        
+        layerObjectData = _GFX.funcs.createLayerObjData({ 
+            mapKey  : this.layerObjKey, 
+            x       : x, 
+            y       : y, 
+            ts      : this.tilesetKey, 
+            settings: this.settings, 
+            tmap    : this.tmap,
+            removeHashOnRemoval: this.removeHashOnRemoval,
+            noResort           : this.noResort,
+        });
+
+        if(onlyReturnLayerObjData){ 
+            layerObjectData[this.layerObjKey].layerKey = this.layerKey;
+            this._changed = false;
+            return layerObjectData[this.layerObjKey]; 
+        }
+        else{
+            //
+            _GFX.funcs.updateLayer(this.layerKey, 
+                {
+                    ...layerObjectData,
+                }
+            );
+            this._changed = false;
+        }
+    };
+}
+
+// 
+class PrintText extends LayerObject{
+    get text()   { return this._text; } 
+    // set text(value){ if( this._text !== value){ this._text = value; this._changed = true; } }
+    set text(value){ if( this._text !== value){ this._text = value; this._changed = true; } }
+
+    constructor(config){
+        super(config);
+        // mapKey  : this.layerObjKey, 
+        
+        this.text = config.text;
+        this.removeHashOnRemoval = config.removeHashOnRemoval ?? true;
+        this.noResort = config.noResort ?? true;
+
+        if(!this.layerKey)  { this.layerKey = "L4";}
+        if(!this.tilesetKey){ this.tilesetKey = "font_tiles1"; }
+
+        // This part should be handled already by _GFX.funcs.layerObjs.updateOne.
+        if(!config.layerObjKey){ config.layerObjKey = config.text; }
+    }
+
+    // Render function.
+    render(onlyReturnLayerObjData=false){
+        // Do not render unchanged LayerObjects.
+        if(!this._changed){ return; }
+
+        // Text with no length? 
+        if(!this.text.length){ this.text = " "; }
+
+        // Draw by grid or by pixel?
+        let x = this.x; 
+        let y = this.y;
+        if(this.xyByGrid && this.tilesetKey){ 
+            x = x * this.tw; 
+            y = y * this.th;
+        }
+
+        //
+        let layerObjectData;
+        layerObjectData = _GFX.funcs.createPrintLayerObjData({ 
+            mapKey  : this.layerObjKey, 
+            x       : x, 
+            y       : y, 
+            ts      : this.tilesetKey, 
+            settings: this.settings, 
+            tmap    : this.tmap,
+            text    : this.text, 
+            removeHashOnRemoval: this.removeHashOnRemoval,
+            noResort           : this.noResort,
+        });
+
+
+        if(onlyReturnLayerObjData){ 
+            layerObjectData[this.layerObjKey].layerKey = this.layerKey;
+            this._changed = false;
+            return layerObjectData[this.layerObjKey]; 
+        }
+        else{
+            
+            //
+            _GFX.funcs.updateLayer(this.layerKey, 
+                {
+                    ...layerObjectData,
+                }
+            );
+            this._changed = false;
+        }
+    };
+
 };

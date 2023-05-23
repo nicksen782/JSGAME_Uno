@@ -1,37 +1,4 @@
 _APP.game.gamestates["gs_JSG"] = {
-    // Creates empty object placeholders for this gamestate.
-    createLayerObjectPlaceholders: function(){
-        _GFX.layerObjs.createPlaceholder("board_28x28", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p1_card_0", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p1_card_1", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p1_card_2", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p1_card_3", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p1_card_4", _APP.game.gs1);
-        
-        _GFX.layerObjs.createPlaceholder("p2_card_0", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p2_card_1", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p2_card_2", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p2_card_3", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p2_card_4", _APP.game.gs1);
-        
-        _GFX.layerObjs.createPlaceholder("p3_card_0", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p3_card_1", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p3_card_2", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p3_card_3", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p3_card_4", _APP.game.gs1);
-        
-        _GFX.layerObjs.createPlaceholder("p4_card_0", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p4_card_1", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p4_card_2", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p4_card_3", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("p4_card_4", _APP.game.gs1);
-
-        _GFX.layerObjs.createPlaceholder("discardPileHeight", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("discardPileFaceUpCard", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("drawPileHeight", _APP.game.gs1);
-        _GFX.layerObjs.createPlaceholder("drawPileFaceDownCard", _APP.game.gs1);
-    },
-
     // Holds static config for this game state.
     staticConfig: {
         enums: {
@@ -129,7 +96,6 @@ _APP.game.gamestates["gs_JSG"] = {
         // Clear the screen and the graphics caches.
         _GFX.funcs.clearAllLayers(true);
         _GFX.layerObjs.removeAll(_APP.game.gs1);
-        this.createLayerObjectPlaceholders();
 
         // _GFX.funcs.setFade("ALL", null);
         // _GFX.funcs.setFade("ALL", 0);
