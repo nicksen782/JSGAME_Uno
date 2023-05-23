@@ -12,7 +12,7 @@ var _GFX = {
             fade:{
                 fade    : false,
                 currFade: null,
-                // prevFade: null,
+                prevFade: null,
             },
             useFlicker: false
         },
@@ -23,7 +23,7 @@ var _GFX = {
             fade:{
                 fade    : false,
                 currFade: null,
-                // prevFade: null,
+                prevFade: null,
             },
             useFlicker: false
         },
@@ -34,7 +34,7 @@ var _GFX = {
             fade:{
                 fade    : false,
                 currFade: null,
-                // prevFade: null,
+                prevFade: null,
             },
             useFlicker: true,
         },
@@ -45,7 +45,7 @@ var _GFX = {
             fade:{
                 fade    : false,
                 currFade: null,
-                // prevFade: null,
+                prevFade: null,
             },
             useFlicker: false,
         },
@@ -348,6 +348,13 @@ var _GFX = {
 
                 // Clear the REMOVALS array.
                 _GFX.REMOVALS[layerKey] = [];
+
+                // Update prevFade to currFade.
+                // if(layer.fade.fade && layer.fade.prevFade != layer.fade.currFade){
+                if(layer.fade.prevFade != layer.fade.currFade){
+                    // console.log("Updating prevFade");
+                    layer.fade.prevFade = layer.fade.currFade;
+                }
 
                 // Clear the CHANGES object in GFX_UPDATE_DATA.
                 // _GFX.GFX_UPDATE_DATA[layerKey].CHANGES = {};

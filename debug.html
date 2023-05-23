@@ -280,6 +280,7 @@
                         <td class="debug_td_header">MESSAGE</td>
                         <td class="debug_td_header">COLOR</td>
                         <td class="debug_td_header">DIRECTION</td>
+                        <td class="debug_td_header">L1 BGCOLOR</td>
                     </tr> 
                     <tr> 
                         <td class="debug_td_short3">
@@ -296,6 +297,7 @@
                                 <option value = "passCancel"  >passCancel</option>
                                 <option value = "wrongCard"   >wrongCard</option>
                             </select>
+                            <br>
                             <br>
                             <button id="debug_PLAYING_messageButton">SET</button>
                         </td> 
@@ -323,6 +325,21 @@
                             <button id="debug_PLAYING_dirNButton">NONE</button>
                             <br>
                             <button id="debug_PLAYING_dirRButton">REVERSE</button>
+                            <br>
+                        </td> 
+                        <td> 
+                            <select id="debug_PLAYING_bgColorSelect">
+                                <option value="0,0,0,0"        >CLEAR</option>
+                                <option value="0,0,0,255"      >BLACK</option>
+                                <option value="32,32,48,255"   >BLACK-ISH</option>
+                                <option value="255,255,255,255">WHITE</option>
+                                <option value="255,0,0,255"    >RED</option>
+                                <option value="0,255,0,255"    >GREEN</option>
+                                <option value="0,0,255,255"    >BLUE</option>
+                            </select>
+                            <br>
+                            <br>
+                            <button id="debug_PLAYING_bgColorButton">SET</button>
                             <br>
                         </td> 
                     </tr>

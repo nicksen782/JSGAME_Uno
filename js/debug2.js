@@ -108,6 +108,7 @@ var _DEBUG2 = {
             DOM: {
                 "messageSelect": "debug_PLAYING_messageSelect",
                 "messageButton": "debug_PLAYING_messageButton",
+                
                 "colorPlayerSelect": "debug_PLAYING_colorPlayerSelect",
                 "colorSelect"      : "debug_PLAYING_colorSelect",
                 "colorButton"      : "debug_PLAYING_colorButton",
@@ -115,11 +116,14 @@ var _DEBUG2 = {
                 "dirFButton"      : "debug_PLAYING_dirFButton",
                 "dirNButton"      : "debug_PLAYING_dirNButton",
                 "dirRButton"      : "debug_PLAYING_dirRButton",
+
+                "bgColorSelect"      : "debug_PLAYING_bgColorSelect",
+                "bgColorButton"      : "debug_PLAYING_bgColorButton",
             },
             initOnce: function(){
                 // MESSAGE CHANGE
                 this.DOM["messageSelect"].addEventListener("change", function(){ 
-                    _APP.game.gamestates["gs_PLAYING"].gameBoard.displayMessage(this.value, "P1", false)
+                    _APP.game.gamestates["gs_PLAYING"].gameBoard.displayMessage(this.value, "P1", false);
                 }, false);
                 this.DOM["messageButton"].addEventListener("click" , ()=>{ 
                     _APP.game.gamestates["gs_PLAYING"].gameBoard.displayMessage(this.DOM["messageSelect"].value, "P1", false);
@@ -146,6 +150,16 @@ var _DEBUG2 = {
                 this.DOM["dirFButton"].addEventListener("click", ()=>{ _APP.game.gamestates["gs_PLAYING"].gameBoard.setDirectionIndicators("F"); }, false);
                 this.DOM["dirNButton"].addEventListener("click", ()=>{ _APP.game.gamestates["gs_PLAYING"].gameBoard.setDirectionIndicators("N"); }, false);
                 this.DOM["dirRButton"].addEventListener("click", ()=>{ _APP.game.gamestates["gs_PLAYING"].gameBoard.setDirectionIndicators("R"); }, false);
+
+                // BGCOLOR CHANGE
+                this.DOM["bgColorSelect"].addEventListener("change", ()=>{ 
+                    let value = this.DOM["bgColorSelect"].value.split(",");
+                    _GFX.funcs.updateL1BgColorRgba(value);
+                }, false);
+                this.DOM["bgColorButton"].addEventListener("click" , ()=>{ 
+                    let value = this.DOM["bgColorSelect"].value.split(",");
+                    _GFX.funcs.updateL1BgColorRgba(value);
+                }, false);
             },
             init: function(){
                 this.inited = true; 

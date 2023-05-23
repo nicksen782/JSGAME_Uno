@@ -55,30 +55,50 @@
 
     // Modifies the supplied ImageData  and applies a fade to it..
     function applyFadeToImageData(imageData, fadeLevel){
-        // Need the max values.
-        let fadeColorObj = fadeMasksRGBA[fadeLevel];
-        let maxRed   = fadeColorObj[0] / 100; 
-        let maxGreen = fadeColorObj[1] / 100; 
-        let maxBlue  = fadeColorObj[2] / 100; 
-
-        // Restrict each pixel r,g,b color to a max value.
         let data = imageData.data;
         let len  = data.length;
-        for(let i=0; i<len; i+=4){
-            // Don't operate on transparent pixels.
-            if(data[i+3] != 255){ continue; } 
 
-            // Restrict r,g,b values and then round down.
-            data[i+0] =  (data[i+0] * maxRed)   | 0;
-            data[i+1] =  (data[i+1] * maxGreen) | 0;
-            data[i+2] =  (data[i+2] * maxBlue)  | 0;
-            data[i+3] =  (data[i+3])            | 0;
+        // FADE: OFF
+        if(fadeLevel == null){ return; }
+
+        // FADE: BLACK
+        if(fadeLevel == 10){
+            for(let i=0; i<len; i+=4){
+                data[i+0] =  0;
+                data[i+1] =  0;
+                data[i+2] =  0;
+                data[i+3] =  255;
+            }
+        }
+
+        // FADE: CLEAR
+        else if(fadeLevel == 11){ imageData.data.fill(0); }
+        
+        // FADE: LEVEL
+        else{
+            // Need the max values.
+            let fadeColorObj = fadeMasksRGBA[fadeLevel];
+            let maxRed   = fadeColorObj[0] / 100; 
+            let maxGreen = fadeColorObj[1] / 100; 
+            let maxBlue  = fadeColorObj[2] / 100; 
+
+            // Restrict each pixel r,g,b color to a max value.
+            for(let i=0; i<len; i+=4){
+                // Don't operate on transparent pixels.
+                if(data[i+3] != 255){ continue; } 
+
+                // Restrict r,g,b values and then round down.
+                data[i+0] =  (data[i+0] * maxRed)   | 0;
+                data[i+1] =  (data[i+1] * maxGreen) | 0;
+                data[i+2] =  (data[i+2] * maxBlue)  | 0;
+                data[i+3] =  (data[i+3])            | 0;
+            }
         }
     };
 
     // Modifies the supplied rgbaArray and applies a fade to it..
     function applyFadeToRgbaArray(rgbaArray, fadeLevel){
-        if(fadeLevel === null){ return rgbaArray; }
+        if(fadeLevel === null){ return rgbaArray; }     // OFF
         else if(fadeLevel == 10){ return [0,0,0,255]; } // BLACK
         else if(fadeLevel == 11){ return [0,0,0,0]; }   // CLEAR
 
@@ -311,7 +331,7 @@
         return finishedTilesets;
     }
 
-    // Copy a region from the source (Uint8ClampedArray).
+    // Copy a region from the source to a new (Uint8ClampedArray).
     function copyRegion(source, srcWidth, x, y, w, h) {
         let resultData = new Uint8ClampedArray(w * h * 4);
         let resultIndex = 0;
@@ -330,93 +350,6 @@
 
         return resultData;
     }
-
-    // Update a region in the destination with the source data.
-    function prev_updateRegion3(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h, writeType="replace") {
-        // writeType: 
-        // [
-        //     "onlyToAlpha0", // onlyWriteToTransparentDest
-        //     "blitDest",     // blitDestTransparency
-        //     "replace"       // Write by row instead of pixel.
-        // ];
-
-        let srcIndex;
-        let destIndex;
-        let x_current;
-        let diff;
-        
-        // Quick fail test. (Are the destination coordinates outside of the destination?
-        if( 
-            (dx < 0 -w)           // Fully offscreen to the left?
-            || (dx >= destWidth)  // Fully offscreen to the right?
-            || (dy < 0 -h)        // Fully offscreen to the top?
-            || (dy >= destHeight) // Fully offscreen to the bottom?
-        ){
-            // console.log("totally offscreen");
-            return; 
-        }
-
-        for (let y = 0; y < h; y++) {
-            // Out of bounds check on rows.
-            if (y + dy >= destHeight){
-                // console.log(`TOO LOW : Out of bounds: dy: ${dy}, y: ${y}, h: ${h}`);
-                break; 
-            }
-            if(y + dy < 0) {
-                // console.log(`TOO HIGH: Out of bounds: dy: ${dy}, y: ${y}, h: ${h}`);
-                continue; 
-            }
-
-            // Calculate the starting source and destination indexes for this row.
-            srcIndex  = y * srcWidth * 4;
-            destIndex = ( (y + dy) * destWidth + dx ) * 4;
-
-            // Limit the rowLength (in rgba pixels) to ensure that we can not go out of bounds on x.
-            rowLength = Math.min( (w * 4), ((destWidth - dx) * 4) );
-            
-            switch(writeType){
-                case "blitDest": 
-                case "onlyToAlpha0":
-                    for (let i = 0; i < rowLength; i += 4) {
-                        // If the source pixel is fully transparent , the destination pixel is preserved.
-                        if (writeType=="blitDest"     && source[srcIndex + i + 3] == 0) { continue; }
-                        
-                        // If the destination pixel is transparent then write the source pixel.
-                        if (writeType=="onlyToAlpha0" && destination[destIndex + i + 3] !== 0) { continue; }
-                        
-                        // Bounds check.
-                        x_current = dx + (i / 4);
-                        if(x_current < 0 || x_current >= destWidth) { continue; }
-                        
-                        // Write the data.
-                        destination.set(source.subarray(srcIndex + i, srcIndex + i + 4), destIndex + i);
-                    }
-                    break;
-                    
-                // The source pixel overwrites the destination pixel.
-                // One whole row at a time.
-                case "replace":
-                    // Bounds check.
-                    if(dx < 0){ 
-                        diff = (dx * -1);    // Diff will be a positive version of dx.
-                        srcIndex  += diff*4; // Add pixels to srcIndex (read ahead.)
-                        destIndex += diff*4; // Add pixels to destIndex (read ahead.)
-                        rowLength -= diff*4; // Reduce rowLength since we will be reading "diff" pixels less than before.
-                        // console.log("FIXED: x is too far left:");
-                    }
-                    if(dx >= destWidth){
-                        // console.log("CANNOT FIX: IGNORE: x too far right");
-                        continue;
-                    }
-                    
-                    destination.set( source.subarray(srcIndex, srcIndex + rowLength), destIndex);
-                    break;
-
-                default: 
-                    throw new Error(`Unsupported writeType: ${writeType}`);
-            }
-        }
-    };
 
     // Update a region in the destination with the source data.
     function updateRegion(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h, writeType="replace") {
