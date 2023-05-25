@@ -792,7 +792,15 @@ var _GFX = {
         afterDraw: function(data = {}){
             if(_APP.debugActive && _DEBUG){
                 _DEBUG.timingsDisplay.gfx.updateCache(data); 
-                _DEBUG.hashCacheStats1 = data.hashCacheStats; 
+
+                // Sort so that the removeHashOnRemoval entries appear first.
+                _DEBUG.hashCacheStats1 = data.hashCacheStats
+                .sort((a, b) => {
+                    if(a.removeHashOnRemoval.toString() >  b.removeHashOnRemoval.toString()){ return -1; }
+                    if(a.removeHashOnRemoval.toString() <  b.removeHashOnRemoval.toString()){ return  1; }
+                    if(a.removeHashOnRemoval.toString() == b.removeHashOnRemoval.toString()){ return  0; }
+                }); 
+                // .sort((a, b) => a.mapKey.localeCompare(b.mapKey));
             }
 
             if(data.newL1_bgColor){

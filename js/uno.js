@@ -6,8 +6,8 @@ _APP.configObj = {
     // drawAsync: true,
     drawAsync: false,
 
-    // generateAllCoreImageDataAssets: true,
-    generateAllCoreImageDataAssets: false,
+    generateCoreImageDataAssets: true,
+    // generateCoreImageDataAssets: false,
 
     // Offset x and y for all drawings by this number of tiles.
     // useGlobalOffsets: true,
@@ -71,15 +71,15 @@ _APP.initOutputScaleControls = function(){
 _APP.utility = {
     //
     ww_ImageDataAssetsGenerated: false, 
-    generateAllCoreImageDataAssets: async function(){
+    generateCoreImageDataAssets: async function(){
         // _APP.game.gameLoop.loop_stop();
-        // _APP.utility.await generateAllCoreImageDataAssets();
+        // _APP.utility.await generateCoreImageDataAssets();
         // _APP.game.gameLoop.loop_start();
 
         if(this.ww_ImageDataAssetsGenerated){ console.log("Already done!"); return; }
         this.ww_ImageDataAssetsGenerated = true;
         
-        await _WEBW_V.SEND("generateAllCoreImageDataAssets", {
+        await _WEBW_V.SEND("generateCoreImageDataAssets", {
             data:{            },
             refs:[]
         }, true, false);
@@ -272,6 +272,13 @@ _APP.utility = {
             // }
             
             try{
+                // if(_APP.debugActive){
+                //     let toggleGameLoop = document.getElementById("debug_test_toggleGameLoop");
+                //     toggleGameLoop.classList.remove("debug_bgColor_on");
+                //     toggleGameLoop.classList.add("debug_bgColor_off");
+                //     toggleGameLoop.innerText = "LOOP: OFF";
+                // }
+
                 // Stop the game loop.
                 _APP.game.gameLoop.loop_stop();
 

@@ -14,6 +14,18 @@ var _DEBUG2 = {
                 'tab' : 'debug_navBar2_tab_gs_TITLE',
                 'view': 'debug_navBar2_view_gs_TITLE',
             },
+            'view_gs_RULES': {
+                'tab' : 'debug_navBar2_tab_gs_RULES',
+                'view': 'debug_navBar2_view_gs_RULES',
+            },
+            'view_gs_CREDITS': {
+                'tab' : 'debug_navBar2_tab_gs_CREDITS',
+                'view': 'debug_navBar2_view_gs_CREDITS',
+            },
+            'view_gs_OPTIONS': {
+                'tab' : 'debug_navBar2_tab_gs_OPTIONS',
+                'view': 'debug_navBar2_view_gs_OPTIONS',
+            },
             'view_gs_PLAYING': {
                 'tab' : 'debug_navBar2_tab_gs_PLAYING',
                 'view': 'debug_navBar2_view_gs_PLAYING',
@@ -67,6 +79,59 @@ var _DEBUG2 = {
             DOM: {},
             initOnce: function(){},
             init: function(){
+                _DEBUG2.navBar1.showOne("view_gs_TITLE");
+                this.inited = true; 
+            },
+            gs1: function(){},
+        },
+
+        // Debug object for: gamestate 1: gs_RULES
+        gs_RULES: {
+            parent: null,
+            inited: false,
+            DOM: {},
+            initOnce: function(){},
+            init: function(){
+                _DEBUG2.navBar1.showOne("view_gs_RULES");
+                this.inited = true; 
+            },
+            gs1: function(){},
+        },
+
+        // Debug object for: gamestate 1: gs_CREDITS
+        gs_CREDITS: {
+            parent: null,
+            inited: false,
+            DOM: {},
+            initOnce: function(){},
+            init: function(){
+                _DEBUG2.navBar1.showOne("view_gs_CREDITS");
+                this.inited = true; 
+            },
+            gs1: function(){},
+        },
+
+        // Debug object for: gamestate 1: gs_TITLE
+        gs_TITLE: {
+            parent: null,
+            inited: false,
+            DOM: {},
+            initOnce: function(){},
+            init: function(){
+                _DEBUG2.navBar1.showOne("view_gs_TITLE");
+                this.inited = true; 
+            },
+            gs1: function(){},
+        },
+
+        // Debug object for: gamestate 1: gs_OPTIONS
+        gs_OPTIONS: {
+            parent: null,
+            inited: false,
+            DOM: {},
+            initOnce: function(){},
+            init: function(){
+                _DEBUG2.navBar1.showOne("view_gs_OPTIONS");
                 this.inited = true; 
             },
             gs1: function(){},
@@ -79,6 +144,7 @@ var _DEBUG2 = {
             DOM: {},
             initOnce: function(){},
             init: function(){
+                _DEBUG2.navBar1.showOne("view_gs_JSG");
                 this.inited = true; 
             },
             gs1: function(){},
@@ -91,6 +157,7 @@ var _DEBUG2 = {
             DOM: {},
             initOnce: function(){},
             init: function(){
+                _DEBUG2.navBar1.showOne("view_gs_N782");
                 this.inited = true; 
             },
             gs1: function(){
@@ -165,6 +232,7 @@ var _DEBUG2 = {
                 this.deckControl.init(this);
             },
             init: function(){
+                _DEBUG2.navBar1.showOne("view_gs_PLAYING");
                 this.inited = true; 
             },
             deckControl: {

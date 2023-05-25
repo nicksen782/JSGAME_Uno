@@ -344,3 +344,8 @@ div#debug_hashCacheList1 {
     max-height: 500px;
     overflow-y: auto;
 }
+
+.controls_navBarTabs2{
+  width: 80px;
+  /* font-size: 14px; */
+}

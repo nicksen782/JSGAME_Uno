@@ -51,9 +51,10 @@ class UnoLetter extends LayerObject{
         green  : [0  , 145, 0  , 255], // 
     };
     static colorFrames = [
-        [ UnoLetter.colors.base, UnoLetter.colors.blue  ],
-        [ UnoLetter.colors.base, UnoLetter.colors.red   ],
-        [ UnoLetter.colors.base, UnoLetter.colors.green ],
+        [],
+        [ [ UnoLetter.colors.base, UnoLetter.colors.blue  ] ],
+        [ [ UnoLetter.colors.base, UnoLetter.colors.red   ] ],
+        [ [ UnoLetter.colors.base, UnoLetter.colors.green ] ],
     ];
 
     constructor(config){
@@ -102,7 +103,9 @@ class UnoLetter extends LayerObject{
 
                 // Stop after repeating up to this.repeats.
                 if(this.repeatCount == this.repeats) { 
-                    this.settings.colorData =  UnoLetter.colorFrames[this.framesIndex] ;
+                    // if(!UnoLetter.colorFrames[this.framesIndex]){ this.settings.colorData = []; }
+                    // else                                        { this.settings.colorData =  UnoLetter.colorFrames[this.framesIndex]; }
+                    this.settings.colorData = UnoLetter.colorFrames[0];
                     this.done = true; 
                     this._changed = true; 
                     return; 
@@ -114,7 +117,7 @@ class UnoLetter extends LayerObject{
         }
 
         // Set the new colorData.
-        this.settings.colorData = [ UnoLetter.colorFrames[this.framesIndex] ];
+        this.settings.colorData = UnoLetter.colorFrames[this.framesIndex] ;
         this._changed = true; 
     };
 }
@@ -141,9 +144,16 @@ class Cursor1 extends LayerObject{
             _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f2"),
         ];
 
+        // DEBUG
+        // let tileId1 = this.frames[0][2];
+        // let tileId2 = this.frames[1][2];
+        // this.frames[0] = [ 3, 1, tileId1, tileId1, tileId1, tileId1 ];
+        // this.frames[1] = [ 3, 1, tileId2, tileId2, tileId2, tileId2 ];
+
         this.framesIndex = 0;
         this.framesCounter = 0;
         this.framesBeforeIndexChange = 15;
+        // this.framesBeforeIndexChange = 60;
         this.repeatCount = 0;
         this.repeats = 0;
 
@@ -222,7 +232,8 @@ class Card extends LayerObject{
                 // Change the color.
                 if     (config.color == "CARD_YELLOW"){ this.settings.colorData = [[Card.colors.base, Card.colors.yellow ]]; }
                 else if(config.color == "CARD_BLUE")  { this.settings.colorData = [[Card.colors.base, Card.colors.blue   ]]; }
-                else if(config.color == "CARD_RED")   { this.settings.colorData = [[Card.colors.base, Card.colors.red    ]]; }
+                // else if(config.color == "CARD_RED")   { this.settings.colorData = [[Card.colors.base, Card.colors.red    ]]; }
+                else if(config.color == "CARD_RED")   { this.settings.colorData = []; }
                 else if(config.color == "CARD_GREEN") { this.settings.colorData = [[Card.colors.base, Card.colors.green  ]]; }
                 else{ throw `Invalid sm card color: ${config.color}`; }
     
@@ -255,7 +266,8 @@ class Card extends LayerObject{
                 // Change the color.
                 if     (config.color == "CARD_YELLOW"){ this.settings.colorData = [[Card.colors.base, Card.colors.yellow ]]; }
                 else if(config.color == "CARD_BLUE")  { this.settings.colorData = [[Card.colors.base, Card.colors.blue   ]]; }
-                else if(config.color == "CARD_RED")   { this.settings.colorData = [[Card.colors.base, Card.colors.red    ]]; }
+                // else if(config.color == "CARD_RED")   { this.settings.colorData = [[Card.colors.base, Card.colors.red    ]]; }
+                else if(config.color == "CARD_RED")   { this.settings.colorData = []; }
                 else if(config.color == "CARD_GREEN") { this.settings.colorData = [[Card.colors.base, Card.colors.green  ]]; }
                 else{ throw `Invalid lg card color: ${config.color}`; }
 

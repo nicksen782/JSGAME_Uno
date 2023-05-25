@@ -272,10 +272,19 @@ const _GFX = {
 
         // Replaces colors in ImageData. (By reference, changes source imageData.)
         replaceColors: function(imageData, colorReplacements) {
+            if(!colorReplacements || !colorReplacements.length){ 
+                console.log("replaceColors: level 1: No colors specified:", colorReplacements); 
+                return; 
+            }
             for (let i = 0; i < imageData.data.length; i += 4) {
                 const pixelColor = imageData.data.slice(i, i + 4);
     
                 for (let j = 0; j < colorReplacements.length; j++) {
+                    if(!colorReplacements[j] || !colorReplacements[j].length){ 
+                        // console.log("replaceColors: level 2: No colors specified:", j, colorReplacements[j], colorReplacements); 
+                        continue; 
+                    }
+                    
                     const [sourceColor, targetColor] = colorReplacements[j];
     
                     // Compare colors.
@@ -436,9 +445,9 @@ self.onmessage = async function(event) {
                 await messageFuncs.initLayers(data); 
                 break; 
             }
-            case "generateAllCoreImageDataAssets"           : { 
-                if(!flags.dataRequest){              await messageFuncs.sendGfxUpdates.V4.DRAW.generateAllCoreImageDataAssets(); }
-                else                  { returnData = await messageFuncs.sendGfxUpdates.V4.DRAW.generateAllCoreImageDataAssets(); }
+            case "generateCoreImageDataAssets"           : { 
+                if(!flags.dataRequest){              await messageFuncs.sendGfxUpdates.V4.DRAW.generateCoreImageDataAssets(data.list); }
+                else                  { returnData = await messageFuncs.sendGfxUpdates.V4.DRAW.generateCoreImageDataAssets(data.list); }
                 break; 
             }
             case "sendGfxUpdates"       : { 

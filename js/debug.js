@@ -109,10 +109,12 @@ var _DEBUG = {
         changeGs1Select.addEventListener("change", ()=>{ 
             let value = changeGs1Select.value;
             _APP.game.changeGs1(value);
+            _APP.game._changeGs1(value);
         }, false);
         changeGs1Button.addEventListener("click" , ()=>{ 
             let value = changeGs1Select.value;
             _APP.game.changeGs1(value);
+            _APP.game._changeGs1(value);
         }, false);
         let intervalId = setInterval(()=>{ 
             if(_APP.game.gs1){ changeGs1Select.value = _APP.game.gs1; clearInterval(intervalId);}
@@ -121,6 +123,7 @@ var _DEBUG = {
         // RESTART THE CURRENT GAMESTATE
         let restartGS1 = document.getElementById("debug_test_restartGS1");
         restartGS1.addEventListener("click", ()=>{ 
+            console.log("_APP.game.gs1:", _APP.game.gs1);
             _APP.game.gameLoop.loop_stop(); 
             _APP.game.gamestates[_APP.game.gs1].inited = false;
             _APP.game.gameLoop.loop_start(); 
@@ -485,15 +488,6 @@ var _DEBUG = {
                 this.elems.C_L4.data      = ( data.ALLTIMINGS["L4_C_createTilemaps"]   .toFixed(1) );
                 this.elems.D_L4.data      = ( data.ALLTIMINGS["L4_D_drawFromDataCache"].toFixed(1) );
                 this.elems.E_L4.data      = ( data.ALLTIMINGS["L4_E_drawImgDataCache"] .toFixed(1) );
-
-                // console.log(
-                //     `A_clearLayer:` +
-                //     `    part1: ${ (data.ALLTIMINGS["L1_A_clearLayer_part1"] ?? 0) .toFixed(1).padStart(4, " ")}, ` +
-                //     `    part2: ${ (data.ALLTIMINGS["L1_A_clearLayer_part2"] ?? 0) .toFixed(1).padStart(4, " ")}, ` +
-                //     `    part3: ${ (data.ALLTIMINGS["L1_A_clearLayer_part3"] ?? 0) .toFixed(1).padStart(4, " ")}, ` +
-                //     // `    part4: ${ (data.ALLTIMINGS["L1_A_clearLayer_part4"] ?? 0) .toFixed(1).padStart(4, " ")}  ` +
-                //     `` 
-                // );
             },
             init: function(){
                 // Progress bar: draw.
@@ -1030,11 +1024,11 @@ var _DEBUG = {
         let elem3 = document.getElementById("debug_hashCacheStats1_hashCacheMapSize2");
 
         if(elem2.innerText != this.hashCacheStats_size1.toString()){ 
-            // console.log("1"); 
+            // console.log("display_hashCacheStats1: CHANGE: hashCacheStats_size1"); 
             elem2.innerText = this.hashCacheStats_size1.toString(); 
         }
         if(elem3.innerText != this.hashCacheStats_size2.toString()){ 
-            // console.log("2"); 
+            // console.log("display_hashCacheStats1: CHANGE: hashCacheStats_size2"); 
             elem3.innerText = this.hashCacheStats_size2.toString(); 
         }
 
@@ -1055,13 +1049,9 @@ var _DEBUG = {
             // Break-out the data.
             data = this.hashCacheStats1[index];
             
-            // if(!data.removeHashOnRemoval){
-            //     console.log("+-+-+*+*+*+/*/*/* removeHashOnRemoval:", data.removeHashOnRemoval); 
-            // }
-
             // Update the newText string.
             newText += `` +
-                `${data.removeHashOnRemoval?"T":"F"} ` +
+                `${data.removeHashOnRemoval?".":"F"} ` +
                 `${data.mapKey.toString().padEnd(maxLen1, " ")} ` + 
                 `${data.ts    .toString().padEnd(maxLen2, " ")} ` +
                 `${(data["hashCacheDataLength"]/1000).toFixed(0).padStart(6, " ")} KB` +
@@ -1071,43 +1061,10 @@ var _DEBUG = {
 
         // If the newText is different than the currentText replace the elem.innerText with the newText.
         if(currentText != newText.trim()){
-            // console.log("Changing: display_hashCacheStats1");
+            // console.log("display_hashCacheStats1: CHANGE: display_hashCacheStats1"); 
             elem.innerText = newText.trim();
         }
-        // else{
-            // console.log("NOT Changing");
-        // }
     },
-
-    // displayHashCacheObjects: function(){
-    //     let elem = document.getElementById("hashCacheList1");
-
-    //     let currentText = elem.innerText;
-    //     let newText = ``;
-
-    //     if(! ( _GFX.hashCacheMap ) ){ return; }
-    //     let data;
-    //     let maxLen = 0;
-    //     for(let [key,value] of _GFX.hashCacheMap){
-    //         let tmpKey = key.toString();
-    //         if(tmpKey.length > maxLen){ maxLen = tmpKey.length; }
-
-    //         // let tmpTilemapKey = value.tilemapKey.toString();
-    //         // if(tmpTilemapKey.length > maxLen){ maxLen = tmpTilemapKey.length; }
-    //     }
-    //     for(let [key,value] of _GFX.hashCacheMap){
-    //         newText += `${key.toString().padEnd(maxLen, " ")}: hits: ${value.hits}\n`;
-    //         // newText += `${value.tilemapKey.toString().padEnd(maxLen, " ")}: hits: ${value.hits}\n`;
-    //     }
-
-    //     if(currentText != newText){
-    //         // console.log("Changing", maxLen);
-    //         elem.innerText = newText;
-    //     }
-    //     else{
-    //         // console.log("NOT Changing");
-    //     }
-    // },
 };
 
 _DEBUG.navBar1 = {
