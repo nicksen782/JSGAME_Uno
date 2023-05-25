@@ -113,7 +113,49 @@ const messageFuncs = {
 // Import the graphics module.
 importScripts("createGraphicsAssets.js");
 importScripts("ww_sendGfxUpdatesV4.js");
+importScripts("ww_sendGfxUpdatesV4_OLD.js");
 
+const timeItData = {};
+function timeIt(key, func){
+    // timeIt("KEY_NAME", "start");
+    // timeIt("KEY_NAME", "stop");
+    // timeIt("KEY_NAME", "get");
+    // timeIt("KEY_NAME", "reset");
+    // timeIt("", "getAll");
+
+    if     (func == "start"){
+        if(!timeItData[key]){ 
+            timeItData[key] = { t:0, s:0, e:0 }; 
+        }
+        timeItData[key].s = performance.now();
+        timeItData[key].e = performance.now();
+        timeItData[key].t = performance.now();
+        return timeItData[key].t;
+    }
+    else if(func == "stop"){
+        timeItData[key].t = performance.now() - timeItData[key].s;
+        timeItData[key].s = 0;
+        timeItData[key].e = 0;
+        return timeItData[key].t;
+    }
+    else if(func == "get"){
+        return timeItData[key].t;
+    }
+    else if(func == "getAll"){
+        let data = {};
+        for(let key in timeItData){
+            data[key] = timeItData[key].t;
+        }
+        return data;
+    }
+    else if(func == "reset"){
+        if(!timeItData[key]){ timeItData[key] = { t:0, s:0, e:0 };  }
+        timeItData[key].t = 0;
+        timeItData[key].s = 0;
+        timeItData[key].e = 0;
+        return timeItData[key].t;
+    }
+};
 const _GFX = {
     configObj: {},
     layers: {},
@@ -263,7 +305,7 @@ const _GFX = {
                 }
 
                 // Fade the tile (RGBA version of the fade table.)
-                createGraphicsAssets.applyFadeToImageData(imageData, fadeLevel);
+                createGraphicsAssets.applyFadeToImageDataArray(imageData.data, fadeLevel);
             }
         },
 

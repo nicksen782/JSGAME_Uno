@@ -3,7 +3,7 @@
     <div id="debug_navBar1_tab_drawStats" class="controls_navBarTabs ">DrawTimings</div>
     <div id="debug_navBar1_tab_fade" class="controls_navBarTabs ">Fades</div>
     <div id="debug_navBar1_tab_buttons1" class="controls_navBarTabs ">Buttons1</div>
-    <!-- <div id="debug_navBar1_tab_hashCacheStats1" class="controls_navBarTabs ">hashCache1</div> -->
+    <div id="debug_navBar1_tab_hashCacheStats1" class="controls_navBarTabs ">hashCache1</div>
     <!-- <div id="debug_navBar1_tab_hashCacheStats2" class="controls_navBarTabs ">hashCache2</div> -->
     <div id="debug_navBar1_tab_layerObjects" class="controls_navBarTabs ">layerObjects</div>
 </div>
@@ -73,13 +73,6 @@
                 <td class="debug_td_short">L3</td> 
                 <td class="debug_td_short">L4</td> 
             </tr>
-            <tr>
-                <td class="debug_td_header">_:TOTAL PER LAYER</td> 
-                <td class="debug_td_short"> <div class="debugLive" id="debug_timings_TOTAL_L1">0</div></td> 
-                <td class="debug_td_short"> <div class="debugLive" id="debug_timings_TOTAL_L2">0</div></td> 
-                <td class="debug_td_short"> <div class="debugLive" id="debug_timings_TOTAL_L3">0</div></td> 
-                <td class="debug_td_short"> <div class="debugLive" id="debug_timings_TOTAL_L4">0</div></td> 
-            </tr>
             <tr> 
                 <td class="debug_td_header">A:clearLayer</td> 
                 <td class="debug_td_short"> <div class="debugLive" id="debug_timings_A_L1">0</div></td> 
@@ -115,9 +108,24 @@
                 <td class="debug_td_short"> <div class="debugLive" id="debug_timings_E_L3">0</div></td> 
                 <td class="debug_td_short"> <div class="debugLive" id="debug_timings_E_L4">0</div></td> 
             </tr>
+
             <tr>
-                <td class="debug_td_header">_:TOTAL ALL LAYERS</td> 
+                <td class="debug_td_header">TOTAL PER LAYER</td> 
+                <td class="debug_td_short"> <div class="debugLive" id="debug_timings_TOTAL_L1">0</div></td> 
+                <td class="debug_td_short"> <div class="debugLive" id="debug_timings_TOTAL_L2">0</div></td> 
+                <td class="debug_td_short"> <div class="debugLive" id="debug_timings_TOTAL_L3">0</div></td> 
+                <td class="debug_td_short"> <div class="debugLive" id="debug_timings_TOTAL_L4">0</div></td> 
+            </tr>
+
+            <tr> <td colspan="5">_</td> </tr>
+            <tr>
+                <td class="debug_td_header">TOTAL ALL LAYERS</td> 
                 <td class="debug_td_short" colspan="4"> <div class="debugLive" id="debug_timings_TOTAL_ALL">0</div></td> 
+            </tr>
+            <tr>
+                <td class="debug_td_header">hashCache</td> 
+                <td class="debug_td_short" colspan="1"> <div class="debugLive" id="debug_timings_hashCacheMapSize1">0</div></td> 
+                <td class="debug_td_short" colspan="3"> <div class="debugLive" id="debug_timings_hashCacheMapSize2">0</div></td> 
             </tr>
         </table>
         <br>
@@ -157,9 +165,24 @@
     </div>
     
     <!-- HASH CACHE STATS 1 -->
-    <!-- <div id="debug_navBar1_view_hashCacheStats1" class="controls_navBarViews"> -->
-        <!-- <div id="hashCacheList1"></div> -->
-    <!-- </div> -->
+    <div id="debug_navBar1_view_hashCacheStats1" class="controls_navBarViews">
+        <label class="debug_title">HASHCACHE DATA:</label>
+        <table class="debug_table">
+            <tr>
+                <td></td>
+                <td>Entries</td>
+                <td>Total Size</td>
+            </tr>
+            <tr>
+                <td class="debug_td_header">hashCache</td> 
+                <td class=""> <div id="debug_hashCacheStats1_hashCacheMapSize1">0</div></td> 
+                <td class=""> <div id="debug_hashCacheStats1_hashCacheMapSize2">0</div></td> 
+            </tr>
+        </table>
+        <br>
+        <br>
+        <div id="debug_hashCacheList1"></div>
+    </div>
 
     <!-- HASH CACHE STATS 2 -->
     <!-- <div id="debug_navBar1_view_hashCacheStats2" class="controls_navBarViews"> -->
@@ -182,9 +205,9 @@
         <!-- PROGRESS BAR TABLE -->
         <table class="debug_table" id="debug_progressTable">
             <tr>
-                <td class="debug_td_header2" title="">TOTAL*</td>
+                <td class="debug_td_header2" title="">DEBUG*</td>
                 <td class="debug_td_progressTable"> 
-                    <div id="debug_time_TOTAL" class="debug_progress-bar">
+                    <div id="debug_time_DEBUG" class="debug_progress-bar">
                         <span class="debug_progressBarLabel debug_progress-bar-label">0</span>
                         <div class="debug_innerProgressBar debug_inner-bar"></div>
                     </div>
@@ -224,6 +247,7 @@
             </tr>
         </table>
         <br>
+
         <!-- CURRENT GAMESTATES -->
         <table class="debug_table">
             <tr>
@@ -348,6 +372,9 @@
                 </tr>
                 </table>
                 
+                <div id="debug_cardAssignment_contextMenu">
+                </div>
+
                 <table class="debug_table">
                     <!-- <tr> 
                         <td class="debug_td_header">DRAW</td>

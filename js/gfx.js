@@ -160,6 +160,7 @@ var _GFX = {
             */
 
             // If the gamestate was not provided use the current gamestate 1.
+            if(gamestate === ""){ return; }
             if(gamestate == undefined){ gamestate = _APP.game.gs1; }
 
             // Create the gamestate key in objs if it does not exist.
@@ -189,6 +190,7 @@ var _GFX = {
             */
 
             // If the gamestate was not provided use the current gamestate 1.
+            if(gamestate === ""){ return; }
             if(gamestate == undefined){ gamestate = _APP.game.gs1; }
 
             // Create the gamestate key in objs if it does not exist.
@@ -209,6 +211,7 @@ var _GFX = {
             */
 
             // If the gamestate was not provided use the current gamestate 1.
+            if(gamestate === ""){ return; }
             if(gamestate == undefined){ gamestate = _APP.game.gs1; }
 
             // Create the gamestate key in objs if it does not exist.
@@ -227,12 +230,17 @@ var _GFX = {
             this.objs[gamestate][key] = {}; 
             
             // Delete this key.
-            delete this.objs[gamestate][key]; 
-        
+            delete this.objs[gamestate][key];
+
             // Return the config to the caller (makes reuse easier.)
             return config;
         },
         
+        // Removes the specified key from all gamestate keys in objs.
+        removeOneAllGamestates: function(key){
+            for(let gs in this.objs){ this.removeOne(key, gs); }
+        },
+
         // Clear ALL layer objects in objs for a gamestate.
         clearAll : function(gamestate){
             /* 
@@ -243,6 +251,7 @@ var _GFX = {
             */
 
             // If the gamestate was not provided use the current gamestate 1.
+            if(gamestate === ""){ return; }
             if(gamestate == undefined){ gamestate = _APP.game.gs1; }
 
             // Create the gamestate key in objs if it does not exist.
@@ -258,10 +267,12 @@ var _GFX = {
             // EXAMPLE USAGE:
             // NOTE: The last argument, gamestate is technically optional and defaults to the current gamestate 1.
 
+            _GFX.layerObjs.removeAll(_APP.game.gs1_prev);
             _GFX.layerObjs.removeAll(_APP.game.gs1);
             */
 
             // If the gamestate was not provided use the current gamestate 1.
+            if(gamestate === ""){ return; }
             if(gamestate == undefined){ gamestate = _APP.game.gs1; }
 
             // Create the gamestate key in objs if it does not exist.
@@ -281,6 +292,7 @@ var _GFX = {
             */
 
             // If the gamestate was not provided use the current gamestate 1.
+            if(gamestate === ""){ return; }
             if(gamestate == undefined){ gamestate = _APP.game.gs1; }
 
             // Create the gamestate key in objs if it does not exist.
@@ -357,10 +369,10 @@ var _GFX = {
                 }
 
                 // Clear the CHANGES object in GFX_UPDATE_DATA.
-                // _GFX.GFX_UPDATE_DATA[layerKey].CHANGES = {};
+                _GFX.GFX_UPDATE_DATA[layerKey].CHANGES = {};
 
                 // Clear the REMOVALS_ONLY array in GFX_UPDATE_DATA.
-                // _GFX.GFX_UPDATE_DATA[layerKey].REMOVALS_ONLY = [];
+                _GFX.GFX_UPDATE_DATA[layerKey].REMOVALS_ONLY = [];
 
                 // fade
                 // changes
@@ -405,7 +417,12 @@ var _GFX = {
                 for(let mapKey in _GFX.currentData[layerKey].tilemaps){ _GFX.REMOVALS[layerKey].push(mapKey); }
 
                 // Remove all tilemaps. 
-                _GFX.currentData[layerKey].tilemaps = {};
+                for(let layerObjKey in _GFX.currentData[layerKey].tilemaps){
+                    // console.log("CLEAR ALL LAYERS:", layerKey, layerObjKey, _GFX.currentData[layerKey].tilemaps[layerObjKey]);
+                    // _GFX.layerObjs.removeOneAllGamestates(layerObjKey);
+                    _GFX.funcs.removeLayerObj(layerKey, layerObjKey);
+                }
+                // _GFX.currentData[layerKey].tilemaps = {};
 
                 // Keep the background color for L1?
                 if(layerKey == "L1" && !keepBg1BgColor){
@@ -444,7 +461,7 @@ var _GFX = {
         updateLayer: function(layer, tilemaps={}){
             // 
             if(layer == "L1" || layer == "L2" || layer == "L3" || layer == "L4"){
-                let tilemap, exists, oldHash, newHash, hashMapHash;
+                let tilemap, exists, oldHash, newHash, hashCacheHash, hashCacheHash_BASE;
                 let tw ;
                 let th ;
                 // let isNewTilemaphash;
@@ -473,18 +490,27 @@ var _GFX = {
 
                     // Cache of all generated ImageData tilemaps. (to avoid regeneration.)
                     // HASHCACHEHMAP: Create a unique hash for some of the tilemap data.
-                    hashMapHash = _GFX.utilities.djb2Hash( JSON.stringify([
-                        [...tilemap.tmap],
-                        [Object.values(tilemap.settings)], 
-                        tilemap.ts
-                    ]));
+                    hashCacheHash = _GFX.utilities.djb2Hash( JSON.stringify(
+                        {
+                            ts      : tilemap.ts,
+                            settings: JSON.stringify(tilemap.settings),
+                            tmap    : Array.from(tilemap.tmap),
+                        }
+                    ));
 
+                    // Create another hash but without settings. This would be the base hash of this image.
+                    hashCacheHash_BASE = _GFX.utilities.djb2Hash( JSON.stringify(
+                        {
+                            ts      : tilemap.ts,
+                            tmap    : Array.from(tilemap.tmap),
+                        }
+                    ));
 
                     // Generate a new hash for THIS layerObject. 
                     newHash = _GFX.utilities.djb2Hash( JSON.stringify([
                         tilemap.x, 
                         tilemap.y, 
-                        hashMapHash
+                        hashCacheHash
                     ]));
 
                     // Is this a changed object?
@@ -501,7 +527,8 @@ var _GFX = {
                             h        : tilemap.h,
                             settings : tilemap.settings,
 
-                            hashCacheHash      : hashMapHash, // Used for future hashCache removals.
+                            hashCacheHash      : hashCacheHash, // Used for future hashCache removals.
+                            hashCacheHash_BASE   : hashCacheHash_BASE, // Used for future hashCache removals.
                             removeHashOnRemoval: tilemap.removeHashOnRemoval ?? true,
                             noResort           : tilemap.noResort ?? false,
                             // isNewTilemaphash : isNewTilemaphash,
@@ -626,6 +653,11 @@ var _GFX = {
 
         // Removes a layer object and sets the changes for that layer to true. 
         removeLayerObj: function(layerKey, mapKey){
+            if(!_GFX.currentData[layerKey].tilemaps[mapKey]){
+                // console.log("removeLayerObj: Could not find:", layerKey, mapKey);
+                return; 
+            }
+
             // Get a handle to REMOVALS for this layer.
             const removals = _GFX.REMOVALS[layerKey];
             
@@ -760,6 +792,7 @@ var _GFX = {
         afterDraw: function(data = {}){
             if(_APP.debugActive && _DEBUG){
                 _DEBUG.timingsDisplay.gfx.updateCache(data); 
+                _DEBUG.hashCacheStats1 = data.hashCacheStats; 
             }
 
             if(data.newL1_bgColor){

@@ -1,206 +1,236 @@
-#debug{
-    /* border:1px solid white; */
-    padding:5px;
-    /* background-color: rgb(255 255 255 / 25%); */
-    /* background-color: rgb(113 143 233); */
-    background-color: rgba(255,255,255,0.5);
+#debug {
+  /* border:1px solid white; */
+  padding: 5px;
+  /* background-color: rgb(255 255 255 / 25%); */
+  /* background-color: rgb(113 143 233); */
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
-.debug_title{
-    display:block;
-    text-align:center;
-    text-decoration:underline;
+.debug_title {
+  display: block;
+  text-align: center;
+  text-decoration: underline;
 }
-.debug_border{
-    border: 1px solid black;
-    padding:2px;
-    margin-bottom: 2px;
+.debug_border {
+  border: 1px solid black;
+  padding: 2px;
+  margin-bottom: 2px;
 }
 
-.debug_bgColor_on {background-color: #a8ffa8;}
-.debug_bgColor_off{background-color: #ffa8a8;}
+.debug_bgColor_on {
+  background-color: #a8ffa8;
+}
+.debug_bgColor_off {
+  background-color: #ffa8a8;
+}
 
-#debug_colorFinder{
+#debug_colorFinder {
 }
 /* #debug_colorFinder canvas{
     border: 1px solid white;
 } */
-#debug_colorFinder_canvases{
-    /* display:flex; */
-    /* align-items: center; */
-    /* width: 100%; */
-    /* justify-content: space-evenly; */
+#debug_colorFinder_canvases {
+  /* display:flex; */
+  /* align-items: center; */
+  /* width: 100%; */
+  /* justify-content: space-evenly; */
 }
-#debug_colorFinder_src{
-    /* background-color: #181818; */
-    width: 96%;
-    border:1px solid white;
+#debug_colorFinder_src {
+  /* background-color: #181818; */
+  width: 96%;
+  border: 1px solid white;
 }
-#debug_colorFinder_zoom{
-    width: 48px;
-    height: 48px;
-    border: 1px solid white;
-    /* width: 20%; */
+#debug_colorFinder_zoom {
+  width: 48px;
+  height: 48px;
+  border: 1px solid white;
+  /* width: 20%; */
 }
-#debug_colorFinder_pixelRGBA{
-    /* border:1px solid white; */
-    font-family: monospace;
-    white-space: pre;
-    display:inline-block;
-    min-width: 255px;
-    max-width: 255px;
-    /* width: 100%; */
-    min-height: 48px;
-    max-height: 48px;
-    vertical-align: top;
-    font-size: 12px;
-    overflow: scroll;
-    overflow-x: auto;
-    overflow-y: auto;
-    background-color: antiquewhite;
+#debug_colorFinder_pixelRGBA {
+  /* border:1px solid white; */
+  font-family: monospace;
+  white-space: pre;
+  display: inline-block;
+  min-width: 255px;
+  max-width: 255px;
+  /* width: 100%; */
+  min-height: 48px;
+  max-height: 48px;
+  vertical-align: top;
+  font-size: 12px;
+  overflow: scroll;
+  overflow-x: auto;
+  overflow-y: auto;
+  background-color: antiquewhite;
 }
 
-.debug_fadeSlider{width: 210px;}
-.debug_fadeSliderText{width: 85px;display: inline-block;background-color: rgb(0 0 0 / 6%);font-family: monospace;}
+.debug_fadeSlider {
+  width: 210px;
+}
+.debug_fadeSliderText {
+  width: 85px;
+  display: inline-block;
+  background-color: rgb(0 0 0 / 6%);
+  font-family: monospace;
+}
 
 div#debug_test_alwaysVisible {
-    border-bottom: 1px solid blue;
-    /* background-color: rgba(255,255,255,0.5); */
-    /* margin-top: 5px; */
-    /* width: 650px; */
-    /* margin: auto; */
-    width: 100%;
+  border-bottom: 1px solid blue;
+  /* background-color: rgba(255,255,255,0.5); */
+  /* margin-top: 5px; */
+  /* width: 650px; */
+  /* margin: auto; */
+  width: 100%;
 }
 
-.debugLive{
-    transition: background-color 175ms ease-out;
-    display:inline;
-    white-space: pre;
+.debugLive {
+  transition: background-color 175ms ease-out;
+  display: inline;
+  white-space: pre;
 }
-.debugLive.active{ background-color:yellow; }
-
-#debug_progressTable{
-    width: 100%;
-    /* display: block; */
-}
-.debug_td_progressTable{
-    /* width: 545px; */
-    width: 100%;
+.debugLive.active {
+  background-color: yellow;
 }
 
-.debug_table{
-    border-collapse: collapse;
-    display:inline-block;
-    vertical-align: top;
+#debug_progressTable {
+  width: 100%;
+  /* display: block; */
 }
-.debug_table td{border:1px solid black;/* padding: 5px; */font-family: monospace;}
-.debug_td_header{ 
-    text-decoration: underline;
-    font-weight: bold;
+.debug_td_progressTable {
+  /* width: 545px; */
+  width: 100%;
 }
-.debug_td_header2{
-    text-decoration: underline;
-    font-weight: bold;
-    /* text-align:center; */
-    min-width: 70px;
-    padding: 5px;
+
+.debug_table {
+  border-collapse: collapse;
+  display: inline-block;
+  vertical-align: top;
 }
-.debug_td_long{
-    width: 260px;
-    max-width: 260px;
+.debug_table td {
+  border: 1px solid black; /* padding: 5px; */
+  font-family: monospace;
 }
-.debug_td_long2{
-    width: 140px;
-    max-width: 140px;
+.debug_td_header {
+  text-decoration: underline;
+  font-weight: bold;
 }
-.debug_td_short{
-    text-align: center;
-    width: 65px;
-    max-width: 65px;
-    /* white-space: pre; */
+.debug_td_header2 {
+  text-decoration: underline;
+  font-weight: bold;
+  /* text-align:center; */
+  min-width: 70px;
+  padding: 5px;
 }
-.debug_td_short2{
-    width: 85px;
-    max-width: 85px;
+.debug_td_long {
+  width: 260px;
+  max-width: 260px;
 }
-.debug_td_short3{
-    width: 100px;
-    max-width: 100px;
+.debug_td_long2 {
+  width: 140px;
+  max-width: 140px;
 }
-.debug_td_short4{
-    /* width: 100px; */
-    /* max-width: 100px; */
+.debug_td_short {
+  text-align: center;
+  width: 65px;
+  max-width: 65px;
+  /* white-space: pre; */
+}
+.debug_td_short2 {
+  width: 85px;
+  max-width: 85px;
+}
+.debug_td_short3 {
+  width: 100px;
+  max-width: 100px;
+}
+.debug_td_short4 {
+  /* width: 100px; */
+  /* max-width: 100px; */
 }
 
 .debug_progress-bar {
-    width: 100%;
-    background-color: #ddd;
-    position: relative;
-    height: 30px;
-    border-radius: 5px;
-    overflow: hidden;
-    border: 1px solid black;
-}
-  
-.debug_inner-bar {
-    background-color: #4CAF50;
-    width: 0;
-    height: 100%;
-    position: relative;
-    /* transition: width 150ms ease-in-out; */
-    transition: width 250ms;
-    will-change: width;
+  width: 100%;
+  background-color: #ddd;
+  position: relative;
+  height: 20px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid black;
 }
 
-.debug_progress-bar.level1, .debug_inner-bar.level1{background-color: #00cb0e;}
-.debug_progress-bar.level2, .debug_inner-bar.level2{ background-color: #023dff; }
-.debug_progress-bar.level3, .debug_inner-bar.level3{ background-color: #ffe200; }
-.debug_progress-bar.level4, .debug_inner-bar.level4{ background-color: #da9c32; }
-.debug_progress-bar.level5, .debug_inner-bar.level5{background-color: #ff0000;}
-  
-.debug_progress-bar-label {
-    position: absolute;
-    /* color: white; */
-    color: black;
-    width: 100%;
-    text-align: center;
-    line-height: 30px;
-    font-family: monospace;
-    white-space: pre;
-    z-index: 1;
-    /* border: 1px solid black; */
+.debug_inner-bar {
+  background-color: #4caf50;
+  width: 0;
+  height: 100%;
+  position: relative;
+  /* transition: width 150ms ease-in-out; */
+  transition: width 250ms;
+  will-change: width;
 }
-  
+
+.debug_progress-bar.level1,
+.debug_inner-bar.level1 {
+  background-color: #00cb0e;
+}
+.debug_progress-bar.level2,
+.debug_inner-bar.level2 {
+  background-color: #023dff;
+}
+.debug_progress-bar.level3,
+.debug_inner-bar.level3 {
+  background-color: #ffe200;
+}
+.debug_progress-bar.level4,
+.debug_inner-bar.level4 {
+  background-color: #da9c32;
+}
+.debug_progress-bar.level5,
+.debug_inner-bar.level5 {
+  background-color: #ff0000;
+}
+
+.debug_progress-bar-label {
+  position: absolute;
+  /* color: white; */
+  color: black;
+  width: 100%;
+  text-align: center;
+  /* line-height: 200%; */
+  font-family: monospace;
+  white-space: pre;
+  z-index: 1;
+  /* border: 1px solid black; */
+}
 
 #debug_navBarTabs1 {
-    border-bottom: 1px solid black;
-    /* min-width: 335px; */
-    /* background-color: #00d4ff36; */
-    /* background-color: rgba(255,255,255,0.5); */
+  border-bottom: 1px solid black;
+  /* min-width: 335px; */
+  /* background-color: #00d4ff36; */
+  /* background-color: rgba(255,255,255,0.5); */
 }
 #debug_navBarTabs2 {
-    border-bottom: 1px solid black;
-    /* min-width: 335px; */
-    /* background-color: #00d4ff36; */
-    /* background-color: rgba(255,255,255,0.5); */
+  border-bottom: 1px solid black;
+  /* min-width: 335px; */
+  /* background-color: #00d4ff36; */
+  /* background-color: rgba(255,255,255,0.5); */
 }
 
 div#debug_sideDiv {
-    width: 650px;
-    margin: auto;
-    background-color: rgba(255,255,255,0.5);
-    height: 100%;
-    padding: 5px;
-    /* border: 1px solid white; */
-    border: 2px solid white;
-    margin-left: 2px;
+  width: 650px;
+  margin: auto;
+  background-color: rgba(255, 255, 255, 0.5);
+  height: 100%;
+  padding: 5px;
+  /* border: 1px solid white; */
+  border: 2px solid white;
+  margin-left: 2px;
 }
 
 div#debug_navBarViews {
-    /* background-color: rgba(255,255,255,0.5); */
+  /* background-color: rgba(255,255,255,0.5); */
 }
 div#debug_navBarViews2 {
-    /* background-color: rgba(255,255,255,0.5); */
+  /* background-color: rgba(255,255,255,0.5); */
 }
 
 /* div#hashCacheList1 {
@@ -211,40 +241,106 @@ div#debug_navBarViews2 {
     overflow-y: auto;
 } */
 div#layerObjectList1 {
-    font-family:monospace;
+  font-family: monospace;
+  white-space: pre;
+  height: 500px;
+  max-height: 450px;
+  overflow-y: auto;
+}
+
+/* DEBUG CARD DISPLAY */
+.debug_cardDisplay {
+  height: 40px;
+  overflow-y: scroll;
+  font-family: monospace;
+}
+.debug_cardDisplay .card {
+  margin: 1px;
+  padding: 1px;
+  display: inline-block;
+  text-align: center;
+  width: 50px;
+  border-radius: 5px;
+}
+.debug_cardDisplay .card .label {
+  padding: 1px;
+  color: white;
+  background-color: rgb(64 64 64 / 70%);
+  border-radius: 5px;
+  white-space: break-spaces;
+  text-align: center;
+  width: 100%;
+  display: inline-block;
+  border: 1px dotted white;
+  font-size: 16px;
+}
+.debug_cardDisplay .card.black {
+  background-color: black;
+  border: 1px solid black;
+}
+.debug_cardDisplay .card.yellow {
+  background-color: yellow;
+  border: 1px solid yellow;
+}
+.debug_cardDisplay .card.blue {
+  background-color: blue;
+  border: 1px solid blue;
+}
+.debug_cardDisplay .card.red {
+  background-color: red;
+  border: 1px solid red;
+}
+.debug_cardDisplay .card.green {
+  background-color: green;
+  border: 1px solid green;
+}
+
+#debug_cardAssignment_contextMenu {
+  display: none;
+  position: absolute;
+  background-color: rgb(240 240 240 / 90%);
+  border: 1px solid #ddd;
+  padding: 10px;
+  z-index: 1;
+  width: 305px;
+  font-family: monospace;
+  white-space: pre;
+  z-index: 200;
+}
+
+#debug_cardAssignment_contextMenu div.option {
+  margin: 2px;
+  padding: 2px;
+  cursor: pointer;
+  background-color: #fff;
+  display: inline-block;
+  width: 120px;
+  border-radius: 5px;
+  border: 1px solid #777;
+  text-align: center;
+}
+
+#debug_cardAssignment_contextMenu div.option.notVisible {
+  visibility: hidden;
+}
+
+#debug_cardAssignment_contextMenu div.option:hover {
+  background-color: #ddd;
+}
+#debug_cardAssignment_contextMenu button {
+  width:100%;background-color:#ffb9b9;border:2px solid red;
+}
+#debug_cardAssignment_contextMenu button:hover {
+  background-color: #ff7878;
+}
+
+div#debug_hashCacheList1 {
+    /* font-family: monospace; */
+    /* white-space: pre; */
+    font-size: 12px;
+    font-family: monospace;
     white-space: pre;
-    height: 500px;
+    height: 420px;
     max-height: 500px;
     overflow-y: auto;
 }
-
-.debug_cardDisplay{
-    height: 35px;
-    overflow-y: scroll;
-    font-family: monospace;
-}
-.debug_cardDisplay .card{
-    margin: 1px;
-    padding: 1px;
-    display: inline-block;
-    text-align: center;
-    width: 50px;
-    border-radius: 5px;
-}
-.debug_cardDisplay .card .label{
-    padding: 1px;
-    color:white;
-    background-color: rgb(64 64 64 / 70%);
-    border-radius: 5px;
-    white-space: break-spaces;
-    text-align: center;
-    width: 100%;
-    display: inline-block;
-    border: 1px dotted white;
-    font-size: 16px;
-}
-.debug_cardDisplay .card.black { background-color: black;  border: 1px solid black; }
-.debug_cardDisplay .card.yellow{ background-color: yellow; border: 1px solid yellow;}
-.debug_cardDisplay .card.blue  { background-color: blue;   border: 1px solid blue;  }
-.debug_cardDisplay .card.red   { background-color: red;    border: 1px solid red;   }
-.debug_cardDisplay .card.green { background-color: green;  border: 1px solid green; }

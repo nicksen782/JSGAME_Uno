@@ -123,18 +123,9 @@ _APP.game = {
         endOfLoopTasks: function(timestamp){
             // Update the 
             if(timestamp){
-                // DEBUG (Cannot time and display this one.)
+                // DEBUG.
                 if(_APP.debugActive && _DEBUG){ 
-                    // let ts1 = performance.now();
                     _DEBUG.endOfLoopDraw_funcs(); 
-                    // await _DEBUG.endOfLoopDraw_funcs(); 
-                    // ts1 = performance.now() - ts1;
-                    // console.log(ts1.toFixed(1));
-
-                    // Log to the console if the loop took too long.
-                    if(this.lastLoop_timestamp > this.msFrame){ 
-                        console.log(`lastLoop: ${100*(this.lastLoop_timestamp/this.msFrame).toFixed(0)} % (${this.lastLoop_timestamp.toFixed(1)} ms) of: ${this.msFrame.toFixed(1)} ms (gs1: '${_APP.game.gs1}' gs2: '${_APP.game.gs2}')`); 
-                    }
 
                     // GAMESTATE CHANGES
                     if(_APP.game.changeGs2_triggered){ _APP.game._changeGs2(); } 

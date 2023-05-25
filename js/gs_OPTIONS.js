@@ -20,7 +20,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Screen border and title.
             _APP.shared.border.createBorder1({
                 x:x+0, y:y+0, w: 28, h: 28, 
-                layerObjKey: `borderAll`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1"
+                layerObjKey: `brdr_All`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1"
             });
             _GFX.layerObjs.updateOne(PrintText, { text: "OPTIONS", x:x+11, y: y+0, layerObjKey: `screen_title`, layerKey: "L4", xyByGrid: true, settings: { bgColorRgba: [0,0,0,168] } });
 
@@ -36,7 +36,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Border around the players options. 
             _APP.shared.border.createBorder1({
                 x:x+0, y:y+0, w: 12, h: 6, 
-                layerObjKey: `border_playersB`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `brdr_playersB`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
 
@@ -46,31 +46,35 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Border around the "PLAYERS" text.
             _APP.shared.border.createBorder1({
                 x:x+0, y:y-2, w: 9, h: 3, 
-                layerObjKey: `border_playersA`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `brdr_playersA`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
 
             // Text for the player options. 
             let text = "";
-            if     (this.gameSettings["P1"] == "HUMAN"){ text = "P1 HUMAN"; }
-            else if(this.gameSettings["P1"] == "CPU")  { text = "P1   CPU"; }
-            else if(this.gameSettings["P1"] == "NONE") { text = "P1  NONE"; }
-            _GFX.layerObjs.updateOne(PrintText, { text: text, x:x+2, y: y+1, layerObjKey: `P1_text`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "P1", x:x+2, y: y+1, layerObjKey: `P1_text`, layerKey: "L4", xyByGrid: true });
+            if     (this.gameSettings["P1"] == "HUMAN"){ text = "HUMAN"; }
+            else if(this.gameSettings["P1"] == "CPU")  { text = "  CPU"; }
+            else if(this.gameSettings["P1"] == "NONE") { text = " NONE"; }
+            _GFX.layerObjs.updateOne(PrintText, { text: text, x:x+2+3, y: y+1, layerObjKey: `P1_text2`, layerKey: "L4", xyByGrid: true });
             
-            if     (this.gameSettings["P2"] == "HUMAN"){ text = "P2 HUMAN"; }
-            else if(this.gameSettings["P2"] == "CPU")  { text = "P2   CPU"; }
-            else if(this.gameSettings["P2"] == "NONE") { text = "P2  NONE"; }
-            _GFX.layerObjs.updateOne(PrintText, { text: text, x:x+2, y: y+2, layerObjKey: `P2_text`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "P2", x:x+2, y: y+2, layerObjKey: `P2_text`, layerKey: "L4", xyByGrid: true });
+            if     (this.gameSettings["P2"] == "HUMAN"){ text = "HUMAN"; }
+            else if(this.gameSettings["P2"] == "CPU")  { text = "  CPU"; }
+            else if(this.gameSettings["P2"] == "NONE") { text = " NONE"; }
+            _GFX.layerObjs.updateOne(PrintText, { text: text, x:x+2+3, y: y+2, layerObjKey: `P2_text2`, layerKey: "L4", xyByGrid: true });
 
-            if     (this.gameSettings["P3"] == "HUMAN"){ text = "P3 HUMAN"; }
-            else if(this.gameSettings["P3"] == "CPU")  { text = "P3   CPU"; }
-            else if(this.gameSettings["P3"] == "NONE") { text = "P3  NONE"; }
-            _GFX.layerObjs.updateOne(PrintText, { text: text, x:x+2, y: y+3, layerObjKey: `P3_text`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "P3",  x:x+2, y: y+3, layerObjKey: `P3_text`, layerKey: "L4", xyByGrid: true });
+            if     (this.gameSettings["P3"] == "HUMAN"){ text = "HUMAN"; }
+            else if(this.gameSettings["P3"] == "CPU")  { text = "  CPU"; }
+            else if(this.gameSettings["P3"] == "NONE") { text = " NONE"; }
+            _GFX.layerObjs.updateOne(PrintText, { text: text, x:x+2+3, y: y+3, layerObjKey: `P3_text2`, layerKey: "L4", xyByGrid: true });
             
-            if     (this.gameSettings["P4"] == "HUMAN"){ text = "P4 HUMAN"; }
-            else if(this.gameSettings["P4"] == "CPU")  { text = "P4   CPU"; }
-            else if(this.gameSettings["P4"] == "NONE") { text = "P4  NONE"; }
-            _GFX.layerObjs.updateOne(PrintText, { text: text, x:x+2, y: y+4, layerObjKey: `P4_text`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.updateOne(PrintText, { text: "P4", x:x+2, y: y+4, layerObjKey: `P4_text`, layerKey: "L4", xyByGrid: true });
+            if     (this.gameSettings["P4"] == "HUMAN"){ text = "HUMAN"; }
+            else if(this.gameSettings["P4"] == "CPU")  { text = "  CPU"; }
+            else if(this.gameSettings["P4"] == "NONE") { text = " NONE"; }
+            _GFX.layerObjs.updateOne(PrintText, { text: text, x:x+2+3, y: y+4, layerObjKey: `P4_text4`, layerKey: "L4", xyByGrid: true });
         }
         else if(section == "winStyle"){
             let x=15;
@@ -79,7 +83,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Border around the win style options. 
             _APP.shared.border.createBorder1({
                 x:x+0, y:y+0, w: 11, h: 6, 
-                layerObjKey: `border_winStyle_B`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `brdr_winStyle_B`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
             
@@ -89,7 +93,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
                 // Border around the "WIN STYLE" text.
             _APP.shared.border.createBorder1({
                 x:x+0, y:y-2, w: 11, h: 3, 
-                layerObjKey: `border_winStyle_A`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `brdr_winStyle_A`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
 
@@ -105,7 +109,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Border around the noPlayableCard options. 
             _APP.shared.border.createBorder1({
                 x:x+0, y:y+0, w: 23, h: 4, 
-                layerObjKey: `border_npc_B`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `brdr_npc_B`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
             
@@ -115,7 +119,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Border around the "IF NO PLAYABLE CARD" text.
             _APP.shared.border.createBorder1({
                 x:x+0, y:y-2, w: 21, h: 3, 
-                layerObjKey: `border_npc_A`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `brdr_npc_A`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
 
@@ -235,6 +239,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
     init: function(){
         // Clear the screen and the graphics caches.
         _GFX.funcs.clearAllLayers(true);
+        _GFX.layerObjs.removeAll(_APP.game.gs1_prev);
         _GFX.layerObjs.removeAll(_APP.game.gs1);
 
         // Set the L1 background color.

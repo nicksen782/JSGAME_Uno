@@ -52,51 +52,49 @@
         }
         fadeMasksRGBA.reverse();
     };
+    // Modifies the supplied Uint8ClampedArray and applies a fade to each pixel (Uint8ClampedArray) (by reference.)
+    function applyFadeToImageDataArray(typedData, fadeLevel){
+        let len  = typedData.length;
 
-    // Modifies the supplied ImageData  and applies a fade to it..
-    function applyFadeToImageData(imageData, fadeLevel){
-        let data = imageData.data;
-        let len  = data.length;
+        // OFF
+        if(fadeLevel === null){ return; }
 
-        // FADE: OFF
-        if(fadeLevel == null){ return; }
-
-        // FADE: BLACK
-        if(fadeLevel == 10){
+        // BLACK
+        else if(fadeLevel == 10){ 
             for(let i=0; i<len; i+=4){
-                data[i+0] =  0;
-                data[i+1] =  0;
-                data[i+2] =  0;
-                data[i+3] =  255;
+                typedData[i+0] =  0;
+                typedData[i+1] =  0;
+                typedData[i+2] =  0;
+                typedData[i+3] =  255;
             }
-        }
+            return;
+        } 
 
-        // FADE: CLEAR
-        else if(fadeLevel == 11){ imageData.data.fill(0); }
-        
-        // FADE: LEVEL
+        // CLEAR
+        else if(fadeLevel == 11){ typedData.fill(0); return; }
+
+        // Convert each pixel's color to the max level as specified by the fadeLevel.
         else{
             // Need the max values.
             let fadeColorObj = fadeMasksRGBA[fadeLevel];
             let maxRed   = fadeColorObj[0] / 100; 
             let maxGreen = fadeColorObj[1] / 100; 
             let maxBlue  = fadeColorObj[2] / 100; 
-
-            // Restrict each pixel r,g,b color to a max value.
+            
+            // Restrict r, g, b, a values and then round down.
             for(let i=0; i<len; i+=4){
                 // Don't operate on transparent pixels.
-                if(data[i+3] != 255){ continue; } 
+                if(typedData[i+3] != 255){ continue; } 
 
-                // Restrict r,g,b values and then round down.
-                data[i+0] =  (data[i+0] * maxRed)   | 0;
-                data[i+1] =  (data[i+1] * maxGreen) | 0;
-                data[i+2] =  (data[i+2] * maxBlue)  | 0;
-                data[i+3] =  (data[i+3])            | 0;
+                typedData[i+0] =  (typedData[i+0] * maxRed)   | 0;
+                typedData[i+1] =  (typedData[i+1] * maxGreen) | 0;
+                typedData[i+2] =  (typedData[i+2] * maxBlue)  | 0;
+                typedData[i+3] =  (typedData[i+3])            | 0;
             }
         }
-    };
+    }
 
-    // Modifies the supplied rgbaArray and applies a fade to it..
+    // Modifies the supplied rgbaArray and applies a fade to it.
     function applyFadeToRgbaArray(rgbaArray, fadeLevel){
         if(fadeLevel === null){ return rgbaArray; }     // OFF
         else if(fadeLevel == 10){ return [0,0,0,255]; } // BLACK
@@ -116,7 +114,17 @@
 
         return rgbaArray;
     };
-    
+
+    // UNUSED
+    // Sets pixelated values on the specified ctx.
+    function setPixelated(ctx){
+        ctx.mozImageSmoothingEnabled    = false; // Firefox
+        ctx.imageSmoothingEnabled       = false; // Firefox
+        ctx.oImageSmoothingEnabled      = false; //
+        ctx.webkitImageSmoothingEnabled = false; //
+        ctx.msImageSmoothingEnabled     = false; //
+    }
+
     // UNUSED.
     // Returns a copy of a rgb332 tile that has had the specified fade applied to it.
     function rgb332TileToFadedRgb332Tile(tileData, config, fadeLevel){
@@ -202,16 +210,6 @@
             // isFullyTransparent: transparentPixelCounter == tileData.length, 
             tileDataRgb32     : tileDataRgb32,
         }
-    }
-
-    // UNUSED
-    // Sets pixelated values on the specified ctx.
-    function setPixelated(ctx){
-        ctx.mozImageSmoothingEnabled    = false; // Firefox
-        ctx.imageSmoothingEnabled       = false; // Firefox
-        ctx.oImageSmoothingEnabled      = false; //
-        ctx.webkitImageSmoothingEnabled = false; //
-        ctx.msImageSmoothingEnabled     = false; //
     }
 
     // Downloads each tileset json file and performs the initial parsing.
@@ -331,7 +329,18 @@
         return finishedTilesets;
     }
 
-    // Copy a region from the source to a new (Uint8ClampedArray).
+    // Clear a region from the source (Uint8ClampedArray).
+    function clearRegion(source, srcWidth, dx, dy, w, h) {
+        for (let y = dy; y < dy + h; y++) {
+            let rowStartIndex = y * srcWidth * 4;
+            for (let x = dx; x < dx + w; x++) {
+                let srcIndex = rowStartIndex + x * 4;
+                source[srcIndex] = source[srcIndex + 1] = source[srcIndex + 2] = source[srcIndex + 3] = 0;
+            }
+        }
+    }
+
+    // Copy a region from the source to a new Uint8ClampedArray.
     function copyRegion(source, srcWidth, x, y, w, h) {
         let resultData = new Uint8ClampedArray(w * h * 4);
         let resultIndex = 0;
@@ -351,7 +360,7 @@
         return resultData;
     }
 
-    // Update a region in the destination with the source data.
+    // Update a region in the destination with the source data (Uint8ClampedArray.)
     function updateRegion(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h, writeType="replace") {
         // source and destination should both be Uint8ClampedArray. 
         // The bitwise math: x_start << 2; x_end << 2 are multipling by 4.
@@ -479,10 +488,16 @@
     }
 
     return {
-        process             : process,
-        updateRegion        : updateRegion,
-        copyRegion          : copyRegion,
-        applyFadeToImageData: applyFadeToImageData,
-        applyFadeToRgbaArray: applyFadeToRgbaArray,
+        // Init processing.
+        process : process,
+
+        // Copy, update, clear of regions (Uint8ClampedArray.)
+        updateRegion : updateRegion,
+        copyRegion   : copyRegion,
+        clearRegion  : clearRegion,
+
+        // Fades (Uint8ClampedArray.)
+        applyFadeToRgbaArray    : applyFadeToRgbaArray,
+        applyFadeToImageDataArray : applyFadeToImageDataArray,
     };
 }));

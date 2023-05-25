@@ -28,7 +28,8 @@ messageFuncs.sendGfxUpdates.V4 = {
         // Clears ONE layer data. (data cache)
         oneLayerData: function(layerKey){
             // Clear the cache for this layer.
-            _GFX.currentData[layerKey].tilemaps = {};
+            let mapKeys = Object.keys(_GFX.currentData[layerKey].tilemaps);
+            this.manyMapKeys(layerKey, mapKeys, "oneLayerData");
 
             // If the layer is L1 then reset bgColorRgba and bgColor32bit also.
             if(layerKey == "L1"){
@@ -48,28 +49,51 @@ messageFuncs.sendGfxUpdates.V4 = {
         // Deletes a specific map key in the data cache.
         oneMapKey: function(layer, mapKey){
             let map = _GFX.currentData[layer].tilemaps[mapKey];
+            // let count = 0;
             
             // Was the map found? 
             if(map){
+                // console.log("map found:", mapKey);
                 // Keep or remove the hashCache?
                 if(map.removeHashOnRemoval){
-                    let hashCacheHash = map.hashCacheHash;
-                    if(this.parent.DRAW.hashCacheMap.has(hashCacheHash)){
-                        this.parent.DRAW.hashCacheMap.delete(hashCacheHash);
+                    // console.log("    removeHashOnRemoval:", map.removeHashOnRemoval);
+                    if(this.parent.DRAW.hashCacheMap.has(map.hashCacheHash)){
+                        // console.log("    ", "REMOVING FROM HASHCACHE");
+
+                        // Remove THIS entry from the hashCacheMap.
+                        this.parent.DRAW.hashCacheMap.delete(map.hashCacheHash);
+                        // console.log(`mapKey: ${mapKey}: Removed ACTIVE: ${map.hashCacheHash} BASE: (${map.hashCacheHash_BASE})`);
+                        // count +=1;
+                        
+                        // Find other entries that have the same hashCacheHash_BASE and remove them as well.
+                        for (let [key, value] of this.parent.DRAW.hashCacheMap.entries()) {
+                            if (value.hashCacheHash_BASE === map.hashCacheHash_BASE) {
+                                // console.log(`     : ${mapKey}: Removed ACTIVE: ${map.hashCacheHash} BASE: (${map.hashCacheHash_BASE})`);
+                                this.parent.DRAW.hashCacheMap.delete(key);
+                                // count +=1;
+                            }
+                        }
+                        // if(count > 1){
+                            // console.log(`Removed '${count}' hashCache entries for mapKey: '${mapKey}'`);
+                        // }
                     }
                 }
+                // else{
+                    // console.log("removeHashOnRemoval:", map.removeHashOnRemoval, map.mapKey);
+                // }
 
                 // Remove the data from the currentData graphics cache.
                 delete _GFX.currentData[layer].tilemaps[mapKey];
             }
+            // else{
+                // console.log("map NOT found?", mapKey, src);
+            // }
         },
 
         // Deletes a many specific map key in the data cache. (uses oneMapKey)
         manyMapKeys: function(layer, mapKeys=[]){
-            let mapKey;
             for(let i=0, len=mapKeys.length; i<len; i+=1){
-                mapKey = mapKeys[i];
-                this.oneMapKey(layer, mapKey);
+                this.oneMapKey(layer, mapKeys[i]);
             }
         },
 
@@ -108,7 +132,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             // Go through the supplied mapKeys...
             let removedRegions = {};
             let hasRemovedRegions = false;
-            let clearImageData;
+            // let clearImageData;
             for(let mapKey of mapKeys){
                 // Get the map from the graphics cache.
                 let map = _GFX.currentData[layerKey].tilemaps[mapKey]; 
@@ -116,24 +140,11 @@ messageFuncs.sendGfxUpdates.V4 = {
                 // If it was not found then skip.
                 if(!map){ continue; }
 
-                // Create new ImageData based on the dimensions of the old map.
-                clearImageData =  new ImageData(map.w, map.h);
-                
-                // console.log(mapKey, map, mapKeys);
-                // Replace the region occupied by the old map with the new clear ImageData.
-                createGraphicsAssets.updateRegion(
-                    clearImageData.data,                       // source
-                    clearImageData.width,                      // srcWidth
-                    _GFX.layers[layerKey].imgDataCache.data,   // destination
-                    _GFX.layers[layerKey].imgDataCache.width,  // destWidth
-                    _GFX.layers[layerKey].imgDataCache.height, // destHeight
-                    map.x,                                     // x
-                    map.y,                                     // y
-                    map.w,                                     // w
-                    map.h,                                     // h
-                    // "onlyToAlpha0"                             // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                    // "blitDest"                                 // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                    "replace"                                  // writeType ["onlyToAlpha0", "blitDest", "replace"]
+                // Clear the region that was occupied by this image.
+                createGraphicsAssets.clearRegion(
+                    _GFX.layers[layerKey].imgDataCache.data, 
+                    _GFX.layers[layerKey].imgDataCache.width,
+                    map.x, map.y, map.w, map.h
                 );
 
                 // Store rectangle dimensions for the region occupied by the old map.
@@ -248,27 +259,25 @@ messageFuncs.sendGfxUpdates.V4 = {
             
             // Get the overlapped graphic clips and write them to imgDataCache.
             for(let region of regions){
-                // Create the clippedImageData by copying the overlapped region from the source ImageData.
-                let clippedImageData = new ImageData(region.src_img.w, region.src_img.h);
-                clippedImageData.data.set(
-                    createGraphicsAssets.copyRegion(
-                        map.imgData.data,
-                        map.imgData.width,
-                        region.src_img.x,
-                        region.src_img.y,
-                        region.src_img.w,
-                        region.src_img.h
-                    )
+                // Create a copy of the overlapped region from the source ImageData.
+                let overlappedCopy = createGraphicsAssets.copyRegion(
+                    map.imgData.data,
+                    map.imgData.width,
+                    region.src_img.x,
+                    region.src_img.y,
+                    region.src_img.w,
+                    region.src_img.h
                 );
 
                 // Apply existing fade.
-                // createGraphicsAssets.applyFadeToImageData(clippedImageData, layerData.fade.currFade);
-                createGraphicsAssets.applyFadeToImageData(clippedImageData, _GFX.currentData[layerKey].fade.currFade);
+                // createGraphicsAssets.applyFadeToImageDataArray(overlappedCopy, layerData.fade.currFade);
+                createGraphicsAssets.applyFadeToImageDataArray(overlappedCopy, _GFX.currentData[layerKey].fade.currFade);
+                // createGraphicsAssets.applyFadeToImageDataArray(overlappedCopy, _GFX.currentData[layerKey].fade.prevFade);
 
                 // Write the clippedImageData to the imgDataCache.
                 createGraphicsAssets.updateRegion(
-                    clippedImageData.data,                     // source
-                    clippedImageData.width,                    // srcWidth
+                    overlappedCopy,                     // source
+                    region.src_img.w,                    // srcWidth
                     _GFX.layers[layerKey].imgDataCache.data,   // destination
                     _GFX.layers[layerKey].imgDataCache.width,  // destWidth
                     _GFX.layers[layerKey].imgDataCache.height, // destHeight
@@ -282,7 +291,7 @@ messageFuncs.sendGfxUpdates.V4 = {
                 );
             }
         },
-        clear                        : function(layerKey, layerData){
+        clear                        : function(layerKey, layerData, messageData){
             // Clear the entire layer (overwrite with transparent pixels.)
             // this.parent.CLEAR.oneLayerGfx(layerKey);
 
@@ -310,9 +319,8 @@ messageFuncs.sendGfxUpdates.V4 = {
                     rect1 = removedRegions.data[ mapKey1 ];
 
                     // Changes need to be faded individually (Later in drawImgDataCacheFromDataCache.)
-                    if(layerData["CHANGES"][mapKey1]){
+                    if(layerData["CHANGES"][mapKey1] && layerData.fade.currFade != null){
                         layerData["CHANGES"][mapKey1].fadeBeforeDraw = true;
-                        layerData["CHANGES"][mapKey1].fadeLevel = layerData.fade.currFade;
                     }
 
                     // Go through each mapKey of the currentMapKeys...
@@ -391,7 +399,7 @@ messageFuncs.sendGfxUpdates.V4 = {
     
             // return { newMapKeys, newMapData };
         },
-        setBackgroundColor            : function(layerKey, layerData, forceLayerRedraw, timings){
+        setBackgroundColor            : function(layerKey, layerData, forceLayerRedraw){
             let canContinue = true;
             if(layerKey == "L1" && Array.isArray(layerData.bgColorRgba)){
                 this.parent.SETBG.setLayerBgColorRgba( layerKey, [0,0,0,0], layerData.bgColorRgba );
@@ -404,17 +412,10 @@ messageFuncs.sendGfxUpdates.V4 = {
 
             // If the global fade is 10 or 11 then.
             if(layerData.fade.fade && (layerData.fade.currFade == 10 || layerData.fade.currFade == 11)){
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["__TOTAL"]            = + (timings.ts_clearLayer+timings.ts_clearRemovedData).toFixed(3);
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["A_clearLayer"]       = + timings.ts_clearLayer.toFixed(3);
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["B_clearRemovedData"] = + timings.ts_clearRemovedData.toFixed(3);
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["C_createTilemaps"]   = + 0;
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["D_drawFromDataCache"]= + 0;
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["E_drawImgDataCache"] = + 0;
-
                 // Redraw the layer from the cache data to imgDataCache.
-                let ts_drawImgDataCache = performance.now();
+                timeIt("E_drawImgDataCache"       , "start");
                 this.parent.DRAW.drawImgDataCacheToCanvas(layerKey, layerData.fade);
-                ts_drawImgDataCache = performance.now() - ts_drawImgDataCache;
+                timeIt("E_drawImgDataCache"       , "stop");
 
                 //
                 if(forceLayerRedraw){ canContinue = true; }
@@ -449,21 +450,32 @@ messageFuncs.sendGfxUpdates.V4 = {
                 }
 
                 // First draw the images that do not have noResort set. The map key order may have been reversed by flicker.
-                this.parent.DRAW.drawImgDataCacheFromDataCache(layerKey, part1, layerData.CHANGES);
+                if(part1.length){
+                    this.parent.DRAW.drawImgDataCacheFromDataCache(layerKey, part1, layerData.CHANGES);
+                }
                 
                 // Then draw the images that do have have noResort set.
-                this.parent.DRAW.drawImgDataCacheFromDataCache(layerKey, part2, layerData.CHANGES);
+                if(part2.length){
+                    this.parent.DRAW.drawImgDataCacheFromDataCache(layerKey, part2, layerData.CHANGES);
+                }
             }
         },
         drawFromImgDataCache          : function(layerKey, layerData){
             // Redraw the layer from the cache data to imgDataCache.
-            let ts_drawImgDataCache = performance.now();
             this.parent.DRAW.drawImgDataCacheToCanvas(layerKey, layerData.fade);
-            ts_drawImgDataCache = performance.now() - ts_drawImgDataCache;
         },
 
         // Does not clear the screen for any change to a layer. Instead it selectively removes and draws regions.
         ANYLAYER2: function(layerKey, messageData, forceLayerRedraw){
+            timeIt(layerKey+"___TOTAL"            , "reset");
+            timeIt(layerKey+"_A_clearLayer"       , "reset"); 
+            timeIt(layerKey+"_B_clearRemovedData" , "reset"); 
+            timeIt(layerKey+"_C_createTilemaps"   , "reset"); 
+            timeIt(layerKey+"_D_drawFromDataCache", "reset"); 
+            timeIt(layerKey+"_E_drawImgDataCache" , "reset"); 
+
+            timeIt(layerKey+"___TOTAL"       , "start");
+
             let layerData = messageData[layerKey];
             let resp;
             
@@ -471,187 +483,70 @@ messageFuncs.sendGfxUpdates.V4 = {
             // CLEAR LAYER
             // ***********
 
-            let ts_clearLayer = performance.now();
-            if(forceLayerRedraw){ this.parent.CLEAR.oneLayerGfx(layerKey); }
-            else                 { this.clear(layerKey, layerData); }
-            ts_clearLayer = performance.now() - ts_clearLayer;
+            timeIt(layerKey+"_A_clearLayer"       , "start");
+            if(forceLayerRedraw){ 
+                if(!messageData.ALLCLEAR){
+                    // Clear the imgDataCache for this layer. 
+                    this.parent.CLEAR.oneLayerGfx(layerKey); 
+                    
+                    // Remove all graphics cache keys for this layer.
+                    // this.parent.CLEAR.manyMapKeys(layerKey, Object.keys(_GFX.currentData[layerKey].tilemaps));
+                }
+            }
+            else                 { 
+                // "Smarter clear"
+                if(!messageData.ALLCLEAR){
+                    this.clear(layerKey, layerData, messageData); 
+                    this.parent.CLEAR.manyMapKeys(layerKey, layerData["REMOVALS_ONLY"]);
+                }
+            }
+            timeIt(layerKey+"_A_clearLayer"       , "stop");
             
             // ***************************
             // CLEAR REMOVED GRAPHICS DATA
             // ***************************
             
-            let ts_clearRemovedData = performance.now();
-            this.removeRemovedGraphicsData(layerKey, layerData);
-            ts_clearRemovedData = performance.now() - ts_clearRemovedData;
+            timeIt(layerKey+"_B_clearRemovedData"       , "start");
+            if(!messageData.ALLCLEAR){
+                this.removeRemovedGraphicsData(layerKey, layerData);
+            }
+            timeIt(layerKey+"_B_clearRemovedData"       , "stop");
             
             // *******************************
             // CREATE/REUSE IMAGEDATA TILEMAPS
             // *******************************
             
-            let ts_createTilemaps = performance.now();
+            timeIt(layerKey+"_C_createTilemaps"       , "start");
             this.createOrReuseImageDataTilemaps(layerKey, layerData);
-            ts_createTilemaps = performance.now() - ts_createTilemaps;
+            timeIt(layerKey+"_C_createTilemaps"       , "stop");
             
             // ******************************
             // SET THE BACKGROUND COLOR (L1)
             // ******************************
             
-            let ts_setLayerBackgroundColor = performance.now();
-            resp = this.setBackgroundColor(layerKey, layerData, forceLayerRedraw, {ts_clearLayer: ts_clearLayer, ts_clearRemovedData:ts_clearRemovedData});
-            ts_setLayerBackgroundColor = performance.now() - ts_setLayerBackgroundColor;
-            if(!resp.canContinue){ return; }
+            resp = this.setBackgroundColor(layerKey, layerData, forceLayerRedraw);
+            if(!resp.canContinue){ 
+                timeIt(layerKey+"___TOTAL"            , "stop");
+                return; 
+            }
             
             // ********************
             // DRAW TO IMGDATACACHE
             // ********************
             
-            let ts_drawImgDataCache = performance.now();
+            timeIt(layerKey+"_D_drawFromDataCache"       , "start");
             this.drawToImgDataCache(layerKey, layerData, forceLayerRedraw);
-            ts_drawImgDataCache = performance.now() - ts_drawImgDataCache;
+            timeIt(layerKey+"_D_drawFromDataCache"       , "stop");
             
             // ***************************************
             // DRAW FROM IMGDATACACHE TO OUTPUT CANVAS
             // ***************************************
             
-            let ts_drawFromDataCache = performance.now();
+            timeIt(layerKey+"_E_drawImgDataCache"       , "start");
             this.drawFromImgDataCache(layerKey, layerData);
-            ts_drawFromDataCache = performance.now() - ts_drawFromDataCache;
+            timeIt(layerKey+"_E_drawImgDataCache"       , "stop");
 
-            // Save the timings.
-            messageFuncs.timings["sendGfxUpdates"][layerKey]["__TOTAL"]            = + (ts_clearLayer+ts_clearRemovedData+ts_createTilemaps+ts_drawFromDataCache+ts_drawImgDataCache).toFixed(3);
-            messageFuncs.timings["sendGfxUpdates"][layerKey]["A_clearLayer"]       = + ts_clearLayer.toFixed(3);
-            messageFuncs.timings["sendGfxUpdates"][layerKey]["B_clearRemovedData"] = + ts_clearRemovedData.toFixed(3);
-            messageFuncs.timings["sendGfxUpdates"][layerKey]["C_createTilemaps"]   = + ts_createTilemaps.toFixed(3);
-            messageFuncs.timings["sendGfxUpdates"][layerKey]["D_drawFromDataCache"]= + ts_drawFromDataCache.toFixed(3);
-            messageFuncs.timings["sendGfxUpdates"][layerKey]["E_drawImgDataCache"] = + ts_drawImgDataCache.toFixed(3);
-        },
-
-        // Performs a screen clear and full redraw for any changed layer.
-        ANYLAYER: function(layerKey, messageData){
-            let layerData = messageData[layerKey];
-
-            // ***********
-            // CLEAR LAYER
-            // ***********
-
-            // Clear the layer. (imgDataCache)
-            let ts_clearLayer = performance.now();
-            this.parent.CLEAR.oneLayerGfx(layerKey);
-            ts_clearLayer = performance.now() - ts_clearLayer;
-
-            // **************************
-            // CLEAR REMOVED GRAPHICS DATA
-            // ***************************
-
-            // Clear graphics cache data mapKeys indicated by the REMOVALS_ONLY array.
-            let ts_clearRemovedData = performance.now();
-            this.parent.CLEAR.manyMapKeys(layerKey, layerData["REMOVALS_ONLY"]);
-            ts_clearRemovedData = performance.now() - ts_clearRemovedData;
-
-            // *******************************
-            // CREATE/REUSE IMAGEDATA TILEMAPS
-            // *******************************
-
-            // Create or reuse ImageData tilemaps.
-            let ts_createTilemaps = performance.now();
-            let newMapKeys = [ ...Object.keys(layerData["CHANGES"]) ];
-            let newMapData = { ...layerData["CHANGES"] };
-            
-            // Go through CHANGES and see if the existing ImageData tilemap can be reused (EX: Only a change to x or y.)
-            // x/y changes will be updated in the graphics data cache.
-            // Non-reusable keys and data will be replace newMapKeys and newMapData.
-            ({newMapKeys, newMapData} = this.parent.DRAW.canImageDataTilemapBeReused(layerKey, newMapKeys, newMapData));
-            // ({newMapKeys, newMapData, reasons} = this.parent.DRAW.canImageDataTilemapBeReused(layerKey, newMapKeys, newMapData));
-            
-            // Create ImageData tilemaps as needed and update the graphics data cache. 
-            if(newMapKeys.length){
-                // console.log("These tilemaps were not in the graphics cache:", reasons);
-                this.parent.DRAW.createImageDataFromTilemapsAndUpdateGraphicsCache(
-                    layerKey, newMapKeys, newMapData
-                );
-            }
-            ts_createTilemaps = performance.now() - ts_createTilemaps;
-
-            // ******************************
-            // SET THE BACKGROUND COLOR (L1)
-            // ******************************
-
-            // Set the background color?
-            let ts_setLayerBackgroundColor = performance.now();
-            
-            if(layerKey == "L1" && Array.isArray(layerData.bgColorRgba)){
-                this.parent.SETBG.setLayerBgColorRgba( layerKey, [0,0,0,0], layerData.bgColorRgba );
-                // this.parent.SETBG.setImageDataBgColorRgba( _GFX.layers[layerKey].imgDataCache, [0,0,0,0], layerData.bgColorRgba );
-
-                // Determine the new bg color based on the fade level.
-                let newColor = createGraphicsAssets.applyFadeToRgbaArray(layerData.bgColorRgba, layerData.fade.currFade);
-                messageFuncs.timings["sendGfxUpdates"]["newL1_bgColor"] = newColor;
-            }
-
-            // If the global fade is 10 or 11 then.
-            if(layerData.fade.fade && (layerData.fade.currFade == 10 || layerData.fade.currFade == 11)){
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["__TOTAL"]            = + (ts_clearLayer+ts_clearRemovedData).toFixed(3);
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["A_clearLayer"]       = + ts_clearLayer.toFixed(3);
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["B_clearRemovedData"] = + ts_clearRemovedData.toFixed(3);
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["C_createTilemaps"]   = + 0;
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["D_drawFromDataCache"]= + 0;
-                messageFuncs.timings["sendGfxUpdates"][layerKey]["E_drawImgDataCache"] = + 0;
-
-                // Redraw the layer from the cache data to imgDataCache.
-                let ts_drawImgDataCache = performance.now();
-                this.parent.DRAW.drawImgDataCacheToCanvas(layerKey, layerData.fade);
-                ts_drawImgDataCache = performance.now() - ts_drawImgDataCache;
-                return;
-            }
-            ts_setLayerBackgroundColor = performance.now() - ts_setLayerBackgroundColor;
-
-            // ********************
-            // DRAW TO IMGDATACACHE
-            // ********************
-
-            // Redraw the imgDataCache from the graphics data cache.
-            let ts_drawFromDataCache = performance.now();
-            let allMapKeys = Object.keys(_GFX.currentData[layerKey].tilemaps);
-            if(allMapKeys.length){
-                let part1=[]; // Can be flickered/resorted.
-                let part2=[]; // Must NOT be flickered/resorted.
-                for(let i=0, len=allMapKeys.length; i<len; i+=1){
-                    let map = _GFX.currentData[layerKey].tilemaps[allMapKeys[i]];
-                    if(!map.noResort){ part1.push(allMapKeys[i]); }
-                    else{ part2.push(allMapKeys[i]); }
-                }
-
-                // "Flicker" via resorting of the map keys.
-                if(layerData.useFlicker){
-                    let key = "flickerFlag_" + layerKey
-                    if(this.parent.DRAW[key]){ part1.reverse(); } 
-                    this.parent.DRAW[key] = ! this.parent.DRAW[key];
-                }
-
-                // First draw the images that do not have noResort set. The map key order may have been reversed by flicker.
-                this.parent.DRAW.drawImgDataCacheFromDataCache(layerKey, part1);
-                
-                // Then draw the images that do have have noResort set.
-                this.parent.DRAW.drawImgDataCacheFromDataCache(layerKey, part2);
-            }
-            ts_drawFromDataCache = performance.now() - ts_drawFromDataCache;
-
-            // ***************************************
-            // DRAW FROM IMGDATACACHE TO OUTPUT CANVAS
-            // ***************************************
-
-            // Redraw the layer from the cache data to imgDataCache.
-            let ts_drawImgDataCache = performance.now();
-            this.parent.DRAW.drawImgDataCacheToCanvas(layerKey, layerData.fade);
-            ts_drawImgDataCache = performance.now() - ts_drawImgDataCache;
-
-            // Save the timings.
-            messageFuncs.timings["sendGfxUpdates"][layerKey]["__TOTAL"]            = + (ts_clearLayer+ts_clearRemovedData+ts_createTilemaps+ts_drawFromDataCache+ts_drawImgDataCache).toFixed(3);
-            messageFuncs.timings["sendGfxUpdates"][layerKey]["A_clearLayer"]       = + ts_clearLayer.toFixed(3);
-            messageFuncs.timings["sendGfxUpdates"][layerKey]["B_clearRemovedData"] = + ts_clearRemovedData.toFixed(3);
-            messageFuncs.timings["sendGfxUpdates"][layerKey]["C_createTilemaps"]   = + ts_createTilemaps.toFixed(3);
-            messageFuncs.timings["sendGfxUpdates"][layerKey]["D_drawFromDataCache"]= + ts_drawFromDataCache.toFixed(3);
-            messageFuncs.timings["sendGfxUpdates"][layerKey]["E_drawImgDataCache"] = + ts_drawImgDataCache.toFixed(3);
+            timeIt(layerKey+"___TOTAL"       , "stop");
         },
     },
     DRAW: {
@@ -806,7 +701,7 @@ messageFuncs.sendGfxUpdates.V4 = {
                 if(fadeLevel){
                     // Fade the tile (RGBA version of the fade table.)
                     // _GFX.utilities.replaceColors(imageData, fadeLevel); 
-                    createGraphicsAssets.applyFadeToImageData(imageData, fadeLevel);
+                    createGraphicsAssets.applyFadeToImageDataArray(imageData.data, fadeLevel);
                 }
             }
 
@@ -932,7 +827,8 @@ messageFuncs.sendGfxUpdates.V4 = {
             let cacheHit = false; 
             let tw;
             let th;
-            let hash;
+            let hashCacheHash;
+            let hashCacheHash_BASE;
             for(let i=0, len=mapKeys.length; i<len; i+=1){
                 cacheHit = false;
                 // Get the mapKey and the map;
@@ -944,18 +840,31 @@ messageFuncs.sendGfxUpdates.V4 = {
                 th = _GFX.tilesets[ map.ts ].config.tileHeight;
 
                 // Create a unique hash for some of the tilemap data.
-                hash = this.djb2Hash(JSON.stringify({
-                    ts      : map.ts,
-                    settings: JSON.stringify(map.settings),
-                    tmap    : Array.from(map.tmap),
-                    w: map.tmap[0] * tw,
-                    h: map.tmap[1] * th,
-                }));
+                // hashCacheHash = this.djb2Hash(
+                //     JSON.stringify({
+                //         ts      : map.ts,
+                //         settings: JSON.stringify(map.settings),
+                //         tmap    : Array.from(map.tmap),
+                //     })
+                // );
+
+                // // Create another hash but without settings. This would be the base hash of this image.
+                // hashCacheHash_BASE = this.djb2Hash(
+                //     JSON.stringify({
+                //         ts      : map.ts,
+                //         tmap    : Array.from(map.tmap),
+                //     })
+                // );
+
+                // Use the supplied hashCacheHash and hashMapHash_BASE.
+                hashCacheHash      = map.hashCacheHash;
+                hashCacheHash_BASE = map.hashCacheHash_BASE;
 
                 // Use existing ImageData cache (Map)
-                if(this.hashCacheMap.has(hash)){
+                if(this.hashCacheMap.has(hashCacheHash)){
                     // console.log("Cache hit: Map", mapKey, map);
-                    map.imgData = this.hashCacheMap.get(hash).imgData;
+                    // console.log("Cache hit: Map", mapKey, map, `HASH TEST: ${hashCacheHash == map.hashCacheHash}`);
+                    map.imgData = this.hashCacheMap.get(hashCacheHash).imgData;
                     if(map.imgData && map.imgData.width){ cacheHit = true; }
                 }
 
@@ -966,15 +875,30 @@ messageFuncs.sendGfxUpdates.V4 = {
                     // Create the ImageData for this tilemap since it does not exist in the cache.
                     map.imgData = this.createImageDataFromTilemap( map );
                     
-                    // Save to hashCacheMap. (Map)
-                    this.hashCacheMap.set(hash, {
+                    // Get the number of bytes for the new hashCache entry (approximate.)
+                    let hashCacheDataLength = JSON.stringify({
                         imgData : map.imgData,
                         ts      : map.ts,
                         settings: map.settings,
                         tmap    : map.tmap,
                         w: map.imgData.width, 
-                        h: map.imgData.height
-                        ,mapKey:mapKey, // First tilemap key used by this hash.
+                        h: map.imgData.height,
+                        mapKey:mapKey, 
+                    }).length;
+
+                    // Save to hashCacheMap. (Map)
+                    this.hashCacheMap.set(hashCacheHash, {
+                        imgData : map.imgData,
+                        ts      : map.ts,
+                        settings: map.settings,
+                        tmap    : map.tmap,
+                        w       : map.imgData.width, 
+                        h       : map.imgData.height,
+                        mapKey             : mapKey, // First tilemap key used by this hashCacheHash.
+                        hashCacheDataLength: hashCacheDataLength,
+                        removeHashOnRemoval: map.removeHashOnRemoval ?? false,
+                        hashCacheHash      : hashCacheHash,
+                        hashCacheHash_BASE : hashCacheHash_BASE,
                     });
                 }
                 
@@ -983,9 +907,15 @@ messageFuncs.sendGfxUpdates.V4 = {
                 if(save){
                     _GFX.currentData[layerKey].tilemaps[mapKey] = {
                         ...map,
-                        imgData      : map.imgData,
-                        hashCacheHash: hash, // Used for future hashCache removals.
-                        fadeBeforeDraw: map.fadeBeforeDraw ?? false
+                        // imgData       : map.imgData,
+                        removeHashOnRemoval: map.removeHashOnRemoval ?? false,
+                        fadeBeforeDraw: map.fadeBeforeDraw ?? false,
+                        hashCacheHash : hashCacheHash, // Used for future hashCache removals.
+                        hashCacheHash_BASE : hashCacheHash_BASE, // Used for future hashCache removals.
+                        mapKey: mapKey, // First tilemap key used by this hash.
+                        // hash          : The current hash
+                        // hashPrev      : The previous hash
+                        // hashCacheHash : The hash for the hashCache.
                     };
                     
                     // console.log("SAVED:", _GFX.currentData[layerKey].tilemaps[mapKey]);
@@ -1000,30 +930,33 @@ messageFuncs.sendGfxUpdates.V4 = {
                 let mapKey = mapKeys[i];
                 let map = _GFX.currentData[layerKey].tilemaps[mapKey];
                 let imgData;
-                imgData = map.imgData;
-
-                // TODO: the fadeLevel set to the map can lag behind a frame.
-                // If this is a changed tilemap that had overlapped another tile then it's fade needs to be done here.
-                if(mapKey == "debugCursor"){
-                    // console.log("debugCursor:", JSON.stringify(map.fadeBeforeDraw));
+                
+                // If there is no need for fading just use use the existing ImageData.
+                if( !(layer.fade.prevFade != layer.fade.currFade || map.fadeBeforeDraw) ){
+                    imgData = map.imgData;
                 }
-                if(map.fadeBeforeDraw){
-                // if(map.fadeBeforeDraw && layer.fade.currFade != null){
-                // if(map.fadeBeforeDraw && layer.fade.currFade != null){
-                // if(map.fadeBeforeDraw && layer.prevFade != layer.fade.currFade){
-                    // console.log("FADE BEFORE DRAW!", map.fadeBeforeDraw, map.fadeLevel);
-                    imgData = new ImageData(map.w, map.h);
-                    imgData.data.set( createGraphicsAssets.copyRegion( map.imgData.data, map.imgData.width, 0, 0, map.w, map.h) );
 
-                    // Apply fade.
-                    // createGraphicsAssets.applyFadeToImageData(imgData, layer.fade.prevFade);
-                    createGraphicsAssets.applyFadeToImageData(imgData, layer.fade.currFade);
+                // This image requires fading. Make a copy, fade it, and draw it instead of the existing ImageData for this map.
+                else{
+                    // Create new "ImageData" of the map's ImageData..
+                    imgData = {
+                        width: map.imgData.width, 
+                        height: map.imgData.height, 
+                        data: createGraphicsAssets.copyRegion( 
+                            map.imgData.data, 
+                            map.imgData.width, 
+                            0, 0, map.w, map.h
+                        )
+                    };
+    
+                    // Apply the fade to the "ImageData".
+                    createGraphicsAssets.applyFadeToImageDataArray(imgData.data, layer.fade.currFade);
                 }
 
                 // Use blitDestTransparency.
                 createGraphicsAssets.updateRegion(
                     imgData.data,                          // source
-                    imgData.width,                         // srcWidth
+                    imgData.width, // imgData.width,                         // srcWidth
                     _GFX.layers[layerKey].imgDataCache.data,   // destination
                     _GFX.layers[layerKey].imgDataCache.width,  // destWidth
                     _GFX.layers[layerKey].imgDataCache.height, // destHeight
@@ -1035,48 +968,40 @@ messageFuncs.sendGfxUpdates.V4 = {
                     "blitDest"                                 // writeType ["onlyToAlpha0", "blitDest", "replace"]
                     // "replace"                                  // writeType ["onlyToAlpha0", "blitDest", "replace"]
                 );
-
             }
         },
 
         // Draw the imgDataCache for a layer to the canvas layer. (Can also apply the global fade.)
         drawImgDataCacheToCanvas: function(layerKey, fade){
-            let layer = _GFX.currentData[layerKey];
             // Get the imgDataCache.
             let imgDataCache = _GFX.layers[layerKey].imgDataCache;
-
-            // If the global fade is on then fade the imgDataCache in it's entirety.
-            if(fade.prevFade != fade.currFade){
-                createGraphicsAssets.applyFadeToImageData(imgDataCache, layer.fade.currFade);
-            }
 
             // Use the imgDataCache to draw to the output canvas.
             _GFX.layers[layerKey].ctx.putImageData(imgDataCache, 0, 0);
         },
     },
     clearTimingsValues: function(layerKey, messageData){
-        messageFuncs.timings["sendGfxUpdates"][layerKey]["__TOTAL"]            = 0;
-        messageFuncs.timings["sendGfxUpdates"][layerKey]["B_clearRemovedData"] = 0;
-        messageFuncs.timings["sendGfxUpdates"][layerKey]["C_createTilemaps"]   = 0;
-        messageFuncs.timings["sendGfxUpdates"][layerKey]["D_drawFromDataCache"]= 0;
-        messageFuncs.timings["sendGfxUpdates"][layerKey]["E_drawImgDataCache"] = 0;
-        messageFuncs.timings["sendGfxUpdates"][layerKey]["E_drawImgDataCache"] = 0;
-        messageFuncs.timings["sendGfxUpdates"].gs1        = messageData.gs1;
-        messageFuncs.timings["sendGfxUpdates"].gs2        = messageData.gs2;
-        messageFuncs.timings["sendGfxUpdates"].hasChanges = messageData.hasChanges;
-        messageFuncs.timings["sendGfxUpdates"].version    = messageData.version;
-        messageFuncs.timings["sendGfxUpdates"].ALLCLEAR   = messageData.ALLCLEAR;
+        timeIt(layerKey+"___TOTAL"            , "reset");
+        timeIt(layerKey+"_A_clearLayer"       , "reset"); 
+        timeIt(layerKey+"_B_clearRemovedData" , "reset"); 
+        timeIt(layerKey+"_C_createTilemaps"   , "reset"); 
+        timeIt(layerKey+"_D_drawFromDataCache", "reset"); 
+        timeIt(layerKey+"_E_drawImgDataCache" , "reset"); 
     },
     run: function(messageData){
-        let sendGfxUpdates = performance.now();
+        timeIt("sendGfxUpdates", "reset");
+        timeIt("sendGfxUpdates", "start");
 
+        let layerKeys = this.layerKeys;
         // Handle the ALLCLEAR. (Clears imgDataCache and the data cache.)
         if(messageData.ALLCLEAR){
-            this.CLEAR.allLayersGfx();
-            this.CLEAR.allLayersData();
+            this.CLEAR.allLayersGfx();  // Clears the imgDataCache for all layers.
+            this.CLEAR.allLayersData(); // Clears the graphics cache for all layers and removes from hashCache if the map's flag is set. 
+            // for(let i=0, len1=layerKeys.length; i<len1; i+=1){
+            // }
         }
         
-        let layerKeys = this.layerKeys;
+        
         let layerKey;
         let forceLayerRedraw;
         let fade;
@@ -1106,15 +1031,58 @@ messageFuncs.sendGfxUpdates.V4 = {
             }
         }
 
-        sendGfxUpdates = performance.now() - sendGfxUpdates;
+        timeIt("sendGfxUpdates", "stop");
 
         // Save the timings.
-        messageFuncs.timings["sendGfxUpdates"]["sendGfxUpdates"] = + sendGfxUpdates.toFixed(3);
         messageFuncs.timings["sendGfxUpdates"].gs1        = messageData.gs1;
         messageFuncs.timings["sendGfxUpdates"].gs2        = messageData.gs2;
         messageFuncs.timings["sendGfxUpdates"].hasChanges = messageData.hasChanges;
         messageFuncs.timings["sendGfxUpdates"].version    = messageData.version;
         messageFuncs.timings["sendGfxUpdates"].ALLCLEAR   = messageData.ALLCLEAR;
+        messageFuncs.timings["sendGfxUpdates"].hashCacheMapSize1 = messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.size;
+
+        let totalSum = Array.from(messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.values()).reduce((acc, rec) => acc + rec.hashCacheDataLength, 0);
+        messageFuncs.timings["sendGfxUpdates"]["hashCacheMapSize2"] = totalSum;
+        
+        // 
+        // let hashCacheStats = Array.from(messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.values()).map(d=>{
+        //     return {
+        //         mapKey: d.mapKey,
+        //         ts: d.ts,
+        //         w: d.w, 
+        //         h: d.h, 
+        //         hashCacheDataLength: d.hashCacheDataLength,
+        //         removeHashOnRemoval: d.removeHashOnRemoval,
+        //         hashCacheHash: d.hashCacheHash,
+        //     };
+        // });
+        let hashCacheStats = Array.from(messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.values()).map(d=>{
+            return {
+                mapKey: d.mapKey,
+                ts: d.ts,
+                w: d.w, 
+                h: d.h, 
+                hashCacheDataLength: d.hashCacheDataLength,
+                removeHashOnRemoval: d.removeHashOnRemoval,
+                hashCacheHash: d.hashCacheHash,
+            };
+        }).sort((a, b) => a.mapKey.localeCompare(b.mapKey));
+
+        messageFuncs.timings["sendGfxUpdates"]["hashCacheStats"] = hashCacheStats;
+        messageFuncs.timings["sendGfxUpdates"].ALLTIMINGS = timeIt("", "getAll");
+        messageFuncs.timings["sendGfxUpdates"]["sendGfxUpdates"] = + timeIt("sendGfxUpdates", "get").toFixed(3);
+
+        // DEBUG: TIMINGS
+        // let tmp = messageFuncs.timings["sendGfxUpdates"].ALLTIMINGS;
+        // let l1ChangesCount = Object.keys(messageData.L1.CHANGES).length + (messageData.L1.REMOVALS_ONLY.length)
+        // console.log(
+        //     `A_clearLayer: gs1: ${messageData.gs1}: changes/removals: ${l1ChangesCount}:` +
+        //     `    part1: ${ (tmp["L1_A_clearLayer_part1"] ?? 0) .toFixed(1).padStart(4, " ")}, ` +
+        //     `    part2: ${ (tmp["L1_A_clearLayer_part2"] ?? 0) .toFixed(1).padStart(4, " ")}, ` +
+        //     `    part3: ${ (tmp["L1_A_clearLayer_part3"] ?? 0) .toFixed(1).padStart(4, " ")}, ` +
+        //     // `    part4: ${ (data.ALLTIMINGS["L1_A_clearLayer_part4"] ?? 0) .toFixed(1).padStart(4, " ")}  ` +
+        //     `` 
+        // );
 
         // Return the timings.
         return messageFuncs.timings["sendGfxUpdates"];

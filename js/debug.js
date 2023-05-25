@@ -262,37 +262,76 @@ var _DEBUG = {
             obj.e.classList.remove("active"); 
         }
     },
+
+    lastDebugRun: performance.now(),
+    lastDebugDelay: 200,
     endOfLoopDraw_funcs: function(timings){
+        if(performance.now() - this.lastDebugRun < this.lastDebugDelay){ return; }
+        this.lastDebugRun = performance.now();
+
         window.requestAnimationFrame((now)=>{
             let debugTs = now;
             
             // Display local settings/values/counts.
+            _APP.utility.timeIt("loop_display_func", "start");
             this.loop_display_func();
-
+            _APP.utility.timeIt("loop_display_func", "stop");
+            
             // Display the canvas draw timings data returned from the WebWorker.
-            // let v1 = _DEBUG.timingsDisplay.gfx.dataIsUsed;
-            // let v2 = _DEBUG.timingsDisplay.gfx.dataIsUsed;;
+            _APP.utility.timeIt("gfx.barsChanges", "start");
             if(
                 this.timingsDisplay.gfx.display_progressBars(now) &&
                 this.timingsDisplay.gfx.display_layerChanges(now) 
             ){ 
                 _DEBUG.timingsDisplay.gfx.dataIsUsed = true;
-                // v2 = _DEBUG.timingsDisplay.gfx.dataIsUsed;
             }
-            // console.log("dataIsUsed was:", v1, ", now:", v2);
-            
+            _APP.utility.timeIt("gfx.barsChanges", "stop");
+
             // Display the timing for the game loop (canvas draws are separate.)
-            this.timingsDisplay.loop.display_progressBars(now);
-            this.timingsDisplay.loop.display_layerChanges(now);
-            this.timingsDisplay.loop.display_tmapCountByLayer(now);
+            _APP.utility.timeIt("loop.display_progressBars", "start"); this.timingsDisplay.loop.display_progressBars(now); _APP.utility.timeIt("loop.display_progressBars", "stop");
+            _APP.utility.timeIt("loop.display_layerChanges", "start"); this.timingsDisplay.loop.display_layerChanges(now); _APP.utility.timeIt("loop.display_layerChanges", "stop");
+            _APP.utility.timeIt("loop.display_tmapCountByLayer", "start"); this.timingsDisplay.loop.display_tmapCountByLayer(now); _APP.utility.timeIt("loop.display_tmapCountByLayer", "stop");
             
             // displayLayerObjects
+            _APP.utility.timeIt("displayLayerObjects", "start");
             this.displayLayerObjects();
-            // this.displayHashCacheObjects();
+            _APP.utility.timeIt("displayLayerObjects", "stop");
+            
+            // display_hashCacheStats1
+            _APP.utility.timeIt("display_hashCacheStats1", "start");
+            this.display_hashCacheStats1();
+            _APP.utility.timeIt("display_hashCacheStats1", "stop");
 
-            _APP.game.gameLoop.lastDebug1_timestamp =  performance.now() - debugTs;
             // console.log(_APP.game.gameLoop.lastDebug1_timestamp);
+            
+            // Display the timing for the DEBUG (Always at least 1 frame behind.)
+            this.timingsDisplay.debug.display_progressBars(now);
 
+            // 
+            _APP.game.gameLoop.lastDebug1_timestamp =  performance.now() - debugTs;
+
+            // Total of loop and gfx.
+            let total = +this.lastLoop_timestamp +
+            +_DEBUG.timingsDisplay.gfx.elems.TOTAL_ALL.data;
+            
+            // Total of loop and gfx and DEBUG.
+            // let total2 = 
+            // +this.lastLoop_timestamp +
+            //     +_APP.game.gameLoop.lastDebug1_timestamp +
+            //     +_DEBUG.timingsDisplay.gfx.elems.TOTAL_ALL.data;
+
+            // Log to the console if the loop took too long.
+            if(total > this.msFrame){ 
+                console.log(
+                    `OVER TIME: ${100*(total/this.msFrame).toFixed(0)} % (${total.toFixed(1)} ms) of: ${this.msFrame.toFixed(1)} ms` +
+                    `\n gs1: '${_APP.game.gs1}'` +
+                    `\n gs2: '${_APP.game.gs2}')` +
+                    `\n LOOP   : ${ +(+this.lastLoop_timestamp).toFixed(2)} ms` +
+                    `\n GFX    : ${ +(+_DEBUG.timingsDisplay.gfx.elems.TOTAL_ALL.data).toFixed(2)} ms` +
+                    `\n (DEBUG): ${ +(+_APP.game.gameLoop.lastDebug1_timestamp).toFixed(2)} ms` +
+                    ``
+                ); 
+            }
         });
     },
     timingsDisplay: {
@@ -323,7 +362,7 @@ var _DEBUG = {
             
             let part1 = `${modifiedNewValue}%`.padStart(5, " ");
             // let part2 = `(${parseInt(label2).toFixed(1)}ms)`.padStart(9, " ");
-            let part2 = `(${parseInt(label2).toFixed(1)}ms)`.padStart(9, " ") + `${adjusted ? "*":" "}`;
+            let part2 = `(${parseFloat(label2).toFixed(1)}ms)`.padStart(9, " ") + `${adjusted ? "*":" "}`;
 
             // if(!same || !same2){
                 // Generate the values for the label.
@@ -411,31 +450,50 @@ var _DEBUG = {
                 this.lastUpdate1 = performance.now();
 
                 // Add to the data key for each elem.
-                this.elems.TOTAL_ALL.data = (this.values.sendGfxUpdates.toString());
-                this.elems.TOTAL_L1.data = (this.values.L1.__TOTAL.toFixed() );
-                this.elems.TOTAL_L2.data = (this.values.L2.__TOTAL.toFixed() );
-                this.elems.TOTAL_L3.data = (this.values.L3.__TOTAL.toFixed() );
-                this.elems.TOTAL_L4.data = (this.values.L4.__TOTAL.toFixed() );
-                this.elems.A_L1.data     = (this.values.L1.A_clearLayer.toFixed());
-                this.elems.A_L2.data     = (this.values.L2.A_clearLayer.toFixed());
-                this.elems.A_L3.data     = (this.values.L3.A_clearLayer.toFixed());
-                this.elems.A_L4.data     = (this.values.L4.A_clearLayer.toFixed());
-                this.elems.B_L1.data     = (this.values.L1.B_clearRemovedData.toFixed());
-                this.elems.B_L2.data     = (this.values.L2.B_clearRemovedData.toFixed());
-                this.elems.B_L3.data     = (this.values.L3.B_clearRemovedData.toFixed());
-                this.elems.B_L4.data     = (this.values.L4.B_clearRemovedData.toFixed());
-                this.elems.C_L1.data     = (this.values.L1.C_createTilemaps.toFixed());
-                this.elems.C_L2.data     = (this.values.L2.C_createTilemaps.toFixed());
-                this.elems.C_L3.data     = (this.values.L3.C_createTilemaps.toFixed());
-                this.elems.C_L4.data     = (this.values.L4.C_createTilemaps.toFixed());
-                this.elems.D_L1.data     = (this.values.L1.D_drawFromDataCache.toFixed());
-                this.elems.D_L2.data     = (this.values.L2.D_drawFromDataCache.toFixed());
-                this.elems.D_L3.data     = (this.values.L3.D_drawFromDataCache.toFixed());
-                this.elems.D_L4.data     = (this.values.L4.D_drawFromDataCache.toFixed());
-                this.elems.E_L1.data     = (this.values.L1.E_drawImgDataCache.toFixed());
-                this.elems.E_L2.data     = (this.values.L2.E_drawImgDataCache.toFixed());
-                this.elems.E_L3.data     = (this.values.L3.E_drawImgDataCache.toFixed());
-                this.elems.E_L4.data     = (this.values.L4.E_drawImgDataCache.toFixed());
+                this.elems.hashCacheMapSize1.data = ( `${data["hashCacheMapSize1"]}` );
+                this.elems.hashCacheMapSize2.data = ( `${(data["hashCacheMapSize2"]/1000).toFixed(2)} KB` );
+
+                _DEBUG.hashCacheStats_size1 = this.elems.hashCacheMapSize1.data;
+                _DEBUG.hashCacheStats_size2 = this.elems.hashCacheMapSize2.data;
+
+                this.elems.TOTAL_ALL.data = ( data.ALLTIMINGS["sendGfxUpdates"]        .toFixed(1) );
+                
+                this.elems.TOTAL_L1.data  = ( data.ALLTIMINGS["L1___TOTAL"]            .toFixed(1) );
+                this.elems.A_L1.data      = ( data.ALLTIMINGS["L1_A_clearLayer"]       .toFixed(1) );
+                this.elems.B_L1.data      = ( data.ALLTIMINGS["L1_B_clearRemovedData"] .toFixed(1) );
+                this.elems.C_L1.data      = ( data.ALLTIMINGS["L1_C_createTilemaps"]   .toFixed(1) );
+                this.elems.D_L1.data      = ( data.ALLTIMINGS["L1_D_drawFromDataCache"].toFixed(1) );
+                this.elems.E_L1.data      = ( data.ALLTIMINGS["L1_E_drawImgDataCache"] .toFixed(1) );
+                
+                this.elems.TOTAL_L2.data  = ( data.ALLTIMINGS["L2___TOTAL"]            .toFixed(1) );
+                this.elems.A_L2.data      = ( data.ALLTIMINGS["L2_A_clearLayer"]       .toFixed(1) );
+                this.elems.B_L2.data      = ( data.ALLTIMINGS["L2_B_clearRemovedData"] .toFixed(1) );
+                this.elems.C_L2.data      = ( data.ALLTIMINGS["L2_C_createTilemaps"]   .toFixed(1) );
+                this.elems.D_L2.data      = ( data.ALLTIMINGS["L2_D_drawFromDataCache"].toFixed(1) );
+                this.elems.E_L2.data      = ( data.ALLTIMINGS["L2_E_drawImgDataCache"] .toFixed(1) );
+                
+                this.elems.TOTAL_L3.data  = ( data.ALLTIMINGS["L3___TOTAL"]            .toFixed(1) );
+                this.elems.A_L3.data      = ( data.ALLTIMINGS["L3_A_clearLayer"]       .toFixed(1) );
+                this.elems.B_L3.data      = ( data.ALLTIMINGS["L3_B_clearRemovedData"] .toFixed(1) );
+                this.elems.C_L3.data      = ( data.ALLTIMINGS["L3_C_createTilemaps"]   .toFixed(1) );
+                this.elems.D_L3.data      = ( data.ALLTIMINGS["L3_D_drawFromDataCache"].toFixed(1) );
+                this.elems.E_L3.data      = ( data.ALLTIMINGS["L3_E_drawImgDataCache"] .toFixed(1) );
+                
+                this.elems.TOTAL_L4.data  = ( data.ALLTIMINGS["L4___TOTAL"]            .toFixed(1) );
+                this.elems.A_L4.data      = ( data.ALLTIMINGS["L4_A_clearLayer"]       .toFixed(1) );
+                this.elems.B_L4.data      = ( data.ALLTIMINGS["L4_B_clearRemovedData"] .toFixed(1) );
+                this.elems.C_L4.data      = ( data.ALLTIMINGS["L4_C_createTilemaps"]   .toFixed(1) );
+                this.elems.D_L4.data      = ( data.ALLTIMINGS["L4_D_drawFromDataCache"].toFixed(1) );
+                this.elems.E_L4.data      = ( data.ALLTIMINGS["L4_E_drawImgDataCache"] .toFixed(1) );
+
+                // console.log(
+                //     `A_clearLayer:` +
+                //     `    part1: ${ (data.ALLTIMINGS["L1_A_clearLayer_part1"] ?? 0) .toFixed(1).padStart(4, " ")}, ` +
+                //     `    part2: ${ (data.ALLTIMINGS["L1_A_clearLayer_part2"] ?? 0) .toFixed(1).padStart(4, " ")}, ` +
+                //     `    part3: ${ (data.ALLTIMINGS["L1_A_clearLayer_part3"] ?? 0) .toFixed(1).padStart(4, " ")}, ` +
+                //     // `    part4: ${ (data.ALLTIMINGS["L1_A_clearLayer_part4"] ?? 0) .toFixed(1).padStart(4, " ")}  ` +
+                //     `` 
+                // );
             },
             init: function(){
                 // Progress bar: draw.
@@ -448,6 +506,8 @@ var _DEBUG = {
 
                 // Individual values: draw.
                 // GFX TIMINGS TABLE.
+                this.elems.hashCacheMapSize1 = { e: document.getElementById("debug_timings_hashCacheMapSize1"),    t: 0, data: 0 } 
+                this.elems.hashCacheMapSize2 = { e: document.getElementById("debug_timings_hashCacheMapSize2"),    t: 0, data: 0 } 
                 this.elems.TOTAL_L1  = { e: document.getElementById("debug_timings_TOTAL_L1"),    t: 0, data: 0 } 
                 this.elems.TOTAL_L2  = { e: document.getElementById("debug_timings_TOTAL_L2"),    t: 0, data: 0 } 
                 this.elems.TOTAL_L3  = { e: document.getElementById("debug_timings_TOTAL_L3"),    t: 0, data: 0 } 
@@ -575,6 +635,8 @@ var _DEBUG = {
                 return false;
             },
             display_layerChanges: function(now){
+                let tab = document.getElementById("debug_navBar1_tab_drawStats");
+                if(!tab.classList.contains("active")){ return; }
                 if(!this.values["sendGfxUpdates"] || this.values["sendGfxUpdates"] == 0){ 
                     // console.log("No timings yet.");
                     return false; 
@@ -610,14 +672,6 @@ var _DEBUG = {
                     t: 0
                 };
 
-                // display_progressBars: Progress bar: loop + draw.
-                this.elems.time_TOTAL = {
-                    e0 : document.getElementById("debug_time_TOTAL"),
-                    e1 : document.getElementById("debug_time_TOTAL").querySelector(".debug_innerProgressBar"),
-                    e2 : document.getElementById("debug_time_TOTAL").querySelector(".debug_progressBarLabel"),
-                    t: 0
-                };
-
                 // display_tmapCountByLayer: Tilemap counts by layer.
                 this.elems.changesL1 = { e: document.getElementById("debug_changesL1"), t: 0 };
                 this.elems.changesL2 = { e: document.getElementById("debug_changesL2"), t: 0 };
@@ -631,66 +685,103 @@ var _DEBUG = {
                 this.elems.L4_tms = { e: document.getElementById("debug_L4_tms"), t: 0 };
                 
             },
-            // TODO: FIX.
-            display_progressBars: function(now){
-                let mult = 1;
-                let newVal;
-                let oldVal;
-                let activeTime = 200;
-                let t;
-                let canRun;
-    
-                // LOOP
-                newVal = +(100*(_APP.game.gameLoop.lastLoop_timestamp/_APP.game.gameLoop.msFrame)).toFixed(1);
-                newVal = _DEBUG.timingsDisplay.forceToRange(newVal, 0, 999);
-                newVal = _DEBUG.timingsDisplay.roundToNearestMultiple(newVal, mult, "D");
-                oldVal = +this.elems.time_LOOP.e2.getAttribute("curr");
-                if(newVal == oldVal){
-                    // if(newVal > 10){
-                        let value = +newVal;
-                        // console.log(newVal, oldVal, value, _APP.game.gameLoop.lastLoop_timestamp.toFixed(1));
-                        value = Math.round(value - (value/8));
-                        newVal = _DEBUG.timingsDisplay.forceToRange(newVal, 0, 999);
-                        newVal = _DEBUG.timingsDisplay.roundToNearestMultiple(newVal, mult, "D");
-                    // }
-                    // else{
-                        // newVal = 0;
-                    // }
+            calcValuesForProgressBars: function(obj){
+                let mult         = obj.mult;
+                let activeTime   = obj.activeTime;
+                let elems        = obj.elems;
+                let now          = obj.now;
+                
+                let label1_new   = "";
+                let label1_old   = "";
+                let label2_new   = "";
+                let label2_old   = "";
+                let tmpValue     = "";
+                let adjusted     = false;
+
+                // Determine if enough time has occurred for the next update.
+                let lastDrawTime = elems.bar.t;
+                let canRun = ((now - lastDrawTime) > activeTime) || lastDrawTime == 0 ; 
+
+                if(canRun){
+                    // (%) Generate label1 (reduce the value if the data is stale.)
+                    label1_new = (100*(elems.new.data / _APP.game.gameLoop.msFrame));
+                    if(this.dataIsUsed || (now - this.lastUpdate1 > activeTime)){
+                        tmpValue = +elems.new.data;
+                        tmpValue = + (tmpValue - (tmpValue/2)) .toFixed(1);
+                        // tmpValue = _DEBUG.timingsDisplay.roundToNearestMultiple(tmpValue, 1, "D");
+                        if(tmpValue <= 0.1) { tmpValue = 0; }
+                        elems.new.data = tmpValue;
+                        label1_new = (100*(tmpValue / _APP.game.gameLoop.msFrame));
+                        adjusted = true;
+                    }
+
+                    label1_new = _DEBUG.timingsDisplay.roundToNearestMultiple(label1_new, mult, "D");
+                    label1_new = _DEBUG.timingsDisplay.forceToRange(label1_new, 0, 999);
+                    label1_old = +elems.bar.e2.getAttribute("curr");
+                    
+                    // (ms) Generate label2.
+                    label2_new = +elems.new.data || "0";
+                    label2_old = +elems.bar.e2.getAttribute("curr2");
+                    
+                    // Determine if there should be an update.
+                    canRun = (label1_new != label1_old || label2_new != label2_old);
                 }
-                t = this.elems.time_LOOP.t;
-                canRun = ((now - t) > activeTime) || t == 0;
-                if(newVal != oldVal && ( canRun )){
+                
+                return {
+                    canRun    : canRun,
+                    label1_new: label1_new,
+                    label2_new: label2_new,
+                    bar       : elems.bar,
+                    adjusted  : adjusted,
+                };
+            },
+            display_progressBars: function(now){
+                let lastDrawTime = this.elems.time_LOOP.t;
+                let activeTime = 200;
+                let mult = 1;
+                
+                // Determine if enough time has occurred for the next update.
+                let canRun = ((now - lastDrawTime) > activeTime) || lastDrawTime == 0 ; 
+                if(!canRun){ return false; }
+
+                // Calculate the values for the progress bar.
+                let obj = this.calcValuesForProgressBars({
+                    elems: { 
+                        new: {data: _APP.game.gameLoop.lastLoop_timestamp }, 
+                        bar: this.elems.time_LOOP 
+                    },
+                    activeTime: activeTime,
+                    mult      : mult,
+                    now       : now,
+                });
+                let {
+                    bar: bar,
+                    label1_new: label1_new, // %
+                    label2_new: label2_new, // ms
+                    adjusted: adjusted,
+                } = obj;
+
+                ({ canRun: canRun } = obj);
+                // console.log(obj);
+
+                // Run the update.
+                if(canRun){
                     _DEBUG.timingsDisplay.updateProgressBar2(
-                        this.elems.time_LOOP.e0,           // container
-                        this.elems.time_LOOP.e1,           // bar
-                        this.elems.time_LOOP.e2,           // label
-                        newVal,
-                        mult
-                        , `${_APP.game.gameLoop.lastLoop_timestamp.toFixed(1)}`
+                        bar.e0,           // container
+                        bar.e1,           // bar
+                        bar.e2,           // label
+                        label1_new, mult, 
+                        label2_new,
+                        adjusted
                     );
-                    this.elems.time_LOOP.t = now;
+                    bar.t = now;
+                    return true;
                 }
 
-                // TOTAL (LOOP AND DRAW)
-                newVal = +newVal + +_DEBUG.timingsDisplay.gfx.elems.time_DRAW.e2.getAttribute("curr");
-                oldVal = +this.elems.time_TOTAL.e2.getAttribute("curr");
-                let drawVal = (+_DEBUG.timingsDisplay.gfx.elems.TOTAL_ALL.data).toFixed(1);
-                t = this.elems.time_TOTAL.t;
-                canRun = ((now - t) > activeTime) || t == 0;
-                if(newVal != oldVal && ( canRun )){
-                    _DEBUG.timingsDisplay.updateProgressBar2(
-                        this.elems.time_TOTAL.e0,           // container
-                        this.elems.time_TOTAL.e1,           // bar
-                        this.elems.time_TOTAL.e2,           // label
-                        newVal,
-                        mult
-                        , `${(_APP.game.gameLoop.lastLoop_timestamp + +drawVal).toFixed(1)}`
-                    );
-                    this.elems.time_TOTAL.t = now;
-                }
+                return false;
             },
             display_layerChanges: function(now){
-                // // Display which layers have changes on this frame. 
+                // Display which layers have changes on this frame. 
                 let activeTime = 200;
                 let testText = "";
     
@@ -717,6 +808,118 @@ var _DEBUG = {
                 testText = Object.keys(_GFX.currentData["L2"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, L2_tms, activeTime);
                 testText = Object.keys(_GFX.currentData["L3"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, L3_tms, activeTime);
                 testText = Object.keys(_GFX.currentData["L4"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, L4_tms, activeTime);
+            },
+        },
+        debug: {
+            elems: {},
+            init:function(){
+                // display_progressBars: DEBUG
+                this.elems.time_DEBUG = {
+                    e0 : document.getElementById("debug_time_DEBUG"),
+                    e1 : document.getElementById("debug_time_DEBUG").querySelector(".debug_innerProgressBar"),
+                    e2 : document.getElementById("debug_time_DEBUG").querySelector(".debug_progressBarLabel"),
+                    t: 0
+                };
+            },
+            calcValuesForProgressBars: function(obj){
+                let mult         = obj.mult;
+                let activeTime   = obj.activeTime;
+                let elems        = obj.elems;
+                let now          = obj.now;
+                
+                let label1_new   = "";
+                let label1_old   = "";
+                let label2_new   = "";
+                let label2_old   = "";
+                let tmpValue     = "";
+                let adjusted     = false;
+
+                // Determine if enough time has occurred for the next update.
+                let lastDrawTime = elems.bar.t;
+                let canRun = ((now - lastDrawTime) > activeTime) || lastDrawTime == 0 ; 
+
+                if(canRun){
+                    // (%) Generate label1 (reduce the value if the data is stale.)
+                    label1_new = (100*(elems.new.data / _APP.game.gameLoop.msFrame));
+                    if(this.dataIsUsed || (now - this.lastUpdate1 > activeTime)){
+                        tmpValue = +elems.new.data;
+                        tmpValue = + (tmpValue - (tmpValue/2)) .toFixed(1);
+                        // tmpValue = _DEBUG.timingsDisplay.roundToNearestMultiple(tmpValue, 1, "D");
+                        if(tmpValue <= 0.1) { tmpValue = 0; }
+                        elems.new.data = tmpValue;
+                        label1_new = (100*(tmpValue / _APP.game.gameLoop.msFrame));
+                        adjusted = true;
+                    }
+
+                    // label1_new = _DEBUG.timingsDisplay.roundToNearestMultiple(label1_new, mult, "D");
+                    label1_new = _DEBUG.timingsDisplay.forceToRange(label1_new, 0, 999);
+                    label1_old = +elems.bar.e2.getAttribute("curr");
+                    
+                    // (ms) Generate label2.
+                    label2_new = +elems.new.data || "0";
+                    label2_old = +elems.bar.e2.getAttribute("curr2");
+                    
+                    // Determine if there should be an update.
+                    canRun = (label1_new != label1_old || label2_new != label2_old);
+                }
+                
+                return {
+                    canRun    : canRun,
+                    label1_new: label1_new,
+                    label2_new: label2_new,
+                    bar       : elems.bar,
+                    adjusted  : adjusted,
+                };
+            },
+            display_progressBars: function(now){
+                // if(!this.values["sendGfxUpdates"] || this.values["sendGfxUpdates"] == 0){ 
+                //     // console.log("No timings yet.");
+                //     return false; 
+                // }
+
+                let lastDrawTime = this.elems.time_DEBUG.t;
+                let activeTime = 200;
+                let mult = 1;
+                
+                // Determine if enough time has occurred for the next update.
+                let canRun = ((now - lastDrawTime) > activeTime) || lastDrawTime == 0 ; 
+                if(!canRun){ return false; }
+
+                // Calculate the values for the progress bar.
+                let obj = this.calcValuesForProgressBars({
+                    elems: { 
+                        new: {data: _APP.game.gameLoop.lastDebug1_timestamp }, 
+                        bar: this.elems.time_DEBUG 
+                    },
+                    activeTime: activeTime,
+                    mult      : mult,
+                    now       : now,
+                });
+                let {
+                    bar: bar,
+                    label1_new: label1_new, // %
+                    label2_new: label2_new, // ms
+                    adjusted: adjusted,
+                } = obj;
+
+                ({ canRun: canRun } = obj);
+                // console.log(obj);
+
+                // Run the update.
+                if(canRun){
+                    _DEBUG.timingsDisplay.updateProgressBar2(
+                        bar.e0,           // container
+                        bar.e1,           // bar
+                        bar.e2,           // label
+                        label1_new, mult, 
+                        label2_new,
+                        adjusted
+                    );
+                    bar.t = now;
+                    return true;
+                }
+
+                return false;
             },
         },
     },
@@ -772,7 +975,8 @@ var _DEBUG = {
         // Display the layerObjects for the current gamestate.
         // Display the layeKeys in reverse order (L4 on top.)
         // Display the layerObjects in reverse draw order (last on top.)
-
+        let tab = document.getElementById("debug_navBar1_tab_layerObjects");
+        if(!tab.classList.contains("active")){ return; }
         let elem = document.getElementById("layerObjectList1");
 
         // If the gamestate key is not in layerObjs then return.
@@ -814,6 +1018,65 @@ var _DEBUG = {
             // console.log("Changing", maxLen);
             elem.innerText = newText;
         }
+    },
+    hashCacheStats1:{},
+    hashCacheStats_size1:0,
+    hashCacheStats_size2:0,
+    display_hashCacheStats1: function(){
+        let tab = document.getElementById("debug_navBar1_tab_hashCacheStats1");
+        if(!tab.classList.contains("active")){ return; }
+        let elem = document.getElementById("debug_hashCacheList1");
+        let elem2 = document.getElementById("debug_hashCacheStats1_hashCacheMapSize1");
+        let elem3 = document.getElementById("debug_hashCacheStats1_hashCacheMapSize2");
+
+        if(elem2.innerText != this.hashCacheStats_size1.toString()){ 
+            // console.log("1"); 
+            elem2.innerText = this.hashCacheStats_size1.toString(); 
+        }
+        if(elem3.innerText != this.hashCacheStats_size2.toString()){ 
+            // console.log("2"); 
+            elem3.innerText = this.hashCacheStats_size2.toString(); 
+        }
+
+        // Get the current text.
+        let currentText = elem.innerText.trim();
+        let newText = ``;
+
+        // Go through all layerObjects for this gamestate.
+        let data;
+        let maxLen1 = 0;
+        let maxLen2 = 0;
+        for(let index in this.hashCacheStats1){ 
+            data = this.hashCacheStats1[index];
+            if(data.mapKey.length > maxLen1){ maxLen1 = data.mapKey.length; }
+            if(data.ts.length > maxLen2){ maxLen2 = data.ts.length; }
+        }
+        for(let index in this.hashCacheStats1){ 
+            // Break-out the data.
+            data = this.hashCacheStats1[index];
+            
+            // if(!data.removeHashOnRemoval){
+            //     console.log("+-+-+*+*+*+/*/*/* removeHashOnRemoval:", data.removeHashOnRemoval); 
+            // }
+
+            // Update the newText string.
+            newText += `` +
+                `${data.removeHashOnRemoval?"T":"F"} ` +
+                `${data.mapKey.toString().padEnd(maxLen1, " ")} ` + 
+                `${data.ts    .toString().padEnd(maxLen2, " ")} ` +
+                `${(data["hashCacheDataLength"]/1000).toFixed(0).padStart(6, " ")} KB` +
+                // `${data.hashCacheHash} ` +
+                `\n`;
+        }
+
+        // If the newText is different than the currentText replace the elem.innerText with the newText.
+        if(currentText != newText.trim()){
+            // console.log("Changing: display_hashCacheStats1");
+            elem.innerText = newText.trim();
+        }
+        // else{
+            // console.log("NOT Changing");
+        // }
     },
 
     // displayHashCacheObjects: function(){
@@ -866,10 +1129,10 @@ _DEBUG.navBar1 = {
             'tab' : 'debug_navBar1_tab_buttons1',
             'view': 'debug_navBar1_view_buttons1',
         },
-        // 'view_hashCacheStats1': {
-            // 'tab' : 'debug_navBar1_tab_hashCacheStats1',
-            // 'view': 'debug_navBar1_view_hashCacheStats1',
-        // },
+        'view_hashCacheStats1': {
+            'tab' : 'debug_navBar1_tab_hashCacheStats1',
+            'view': 'debug_navBar1_view_hashCacheStats1',
+        },
         'view_layerObjects': {
             'tab' : 'debug_navBar1_tab_layerObjects',
             'view': 'debug_navBar1_view_layerObjects',
@@ -1080,8 +1343,9 @@ _DEBUG.init = async function(){
         let debug_toggleDebugActive = document.getElementById("debug_toggleDebugFlag");
         debug_toggleDebugActive.addEventListener("click", ()=>{_DEBUG.toggleDebugFlag(); }, false);
         
-        _DEBUG.timingsDisplay.gfx.init()
-        _DEBUG.timingsDisplay.loop.init()
+        _DEBUG.timingsDisplay.gfx.init();
+        _DEBUG.timingsDisplay.loop.init();
+        _DEBUG.timingsDisplay.debug.init();
 
         // Resize
         let scaleSlider = document.getElementById("scaleSlider");
@@ -1096,9 +1360,9 @@ _DEBUG.init = async function(){
         // _DEBUG.navBar1.showOne("view_drawStats");
         // _DEBUG.navBar1.showOne("view_fade");
         // _DEBUG.navBar1.showOne("view_buttons1");
-        // _DEBUG.navBar1.showOne("view_hashCacheStats1");
+        _DEBUG.navBar1.showOne("view_hashCacheStats1");
         // _DEBUG.navBar1.showOne("view_hashCacheStats2");
-        _DEBUG.navBar1.showOne("view_layerObjects");
+        // _DEBUG.navBar1.showOne("view_layerObjects");
 
         // Output some timing info.
         // console.log("DEBUG: init:");

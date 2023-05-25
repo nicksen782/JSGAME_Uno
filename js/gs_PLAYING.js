@@ -534,6 +534,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
     init: function(){
         // Clear the screen and the graphics caches.
         _GFX.funcs.clearAllLayers(true);
+        _GFX.layerObjs.removeAll(_APP.game.gs1_prev);
         _GFX.layerObjs.removeAll(_APP.game.gs1);
 
         // Set the L1 background color.
@@ -557,7 +558,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         // _GFX.layerObjs.updateOne(Card, { size: "lg", color:"CARD_BLACK", value: "CARD_BACK", x:10, y:11, layerObjKey: `lg_green_2`, layerKey: "L2", xyByGrid: true } );
         // _GFX.layerObjs.updateOne(Card, { size: "lg", color:"CARD_GREEN", value: "CARD_2", x:16, y:11, layerObjKey: `lg_back_back`, layerKey: "L2", xyByGrid: true } );
 
-        _GFX.layerObjs.updateOne(Cursor1, { x:5, y:4, layerObjKey: `debugCursor`   , layerKey: "L1", xyByGrid: true, settings:{rotation: 90} } );
+        _GFX.layerObjs.updateOne(Cursor1, { x:5, y:5, layerObjKey: `debugCursor`   , layerKey: "L1", xyByGrid: true, settings:{rotation: 90} } );
         // _GFX.layerObjs.updateOne(Cursor1, { x:14, y:15, layerObjKey: `debugCursor2`  , layerKey: "L1", xyByGrid: true, settings:{rotation: -90} } );
         // _GFX.layerObjs.updateOne(Cursor1, { x:14, y:15, layerObjKey: `debugCursor3`  , layerKey: "L1", xyByGrid: true, settings:{rotation: 180} } );
 

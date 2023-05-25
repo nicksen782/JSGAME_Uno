@@ -130,22 +130,22 @@ _APP.shared = {
             // A border has 4 parts and thus 4 tilemaps.
             let tilemaps = {
                 top   : { 
-                    layerObjKey: `${config.layerObjKey}_top`, 
+                    layerObjKey: `${config.layerObjKey}_T`, 
                     layerKey   : config.layerKey   ?? "L4", 
                     tilesetKey : config.tilesetKey ?? "bg_tiles1"
                 },
                 bottom: { 
-                    layerObjKey: `${config.layerObjKey}_bottom`,
+                    layerObjKey: `${config.layerObjKey}_B`,
                     layerKey   : config.layerKey   ?? "L4", 
                     tilesetKey : config.tilesetKey ?? "bg_tiles1"
                 },
                 left  : { 
-                    layerObjKey: `${config.layerObjKey}_left`,
+                    layerObjKey: `${config.layerObjKey}_L`,
                     layerKey   : config.layerKey   ?? "L4", 
                     tilesetKey : config.tilesetKey ?? "bg_tiles1"
                 },
                 right : { 
-                    layerObjKey: `${config.layerObjKey}_right`,
+                    layerObjKey: `${config.layerObjKey}_R`,
                     layerKey   : config.layerKey   ?? "L4", 
                     tilesetKey : config.tilesetKey ?? "bg_tiles1"
                 },

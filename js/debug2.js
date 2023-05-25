@@ -119,13 +119,6 @@ var _DEBUG2 = {
 
                 "bgColorSelect": "debug_PLAYING_bgColorSelect",
                 "bgColorButton": "debug_PLAYING_bgColorButton",
-                
-                "drawCards"   : "debug_drawCards",
-                "discardCards": "debug_discardCards",
-                "P1Cards"     : "debug_P1Cards",
-                "P2Cards"     : "debug_P2Cards",
-                "P3Cards"     : "debug_P3Cards",
-                "P4Cards"     : "debug_P4Cards",
             },
             initOnce: function(){
                 // MESSAGE CHANGE
@@ -167,83 +160,214 @@ var _DEBUG2 = {
                     let value = this.DOM["bgColorSelect"].value.split(",");
                     _GFX.funcs.updateL1BgColorRgba(value);
                 }, false);
+
+                // DECK CONTROL.
+                this.deckControl.init(this);
             },
             init: function(){
                 this.inited = true; 
             },
-            createCardElem: function(cardObj){
-                let colors = {
-                    "CARD_YELLOW": "yellow",
-                    "CARD_BLUE"  : "blue",
-                    "CARD_RED"   : "red",
-                    "CARD_GREEN" : "green",
-                    "CARD_BLACK" : "black",
-                };
-                let values = {
-                    "CARD_0"         : "0",
-                    "CARD_1"         : "1",
-                    "CARD_2"         : "2",
-                    "CARD_3"         : "3",
-                    "CARD_4"         : "4",
-                    "CARD_5"         : "5",
-                    "CARD_6"         : "6",
-                    "CARD_7"         : "7",
-                    "CARD_8"         : "8",
-                    "CARD_9"         : "9",
-                    "CARD_DRAW2"     : "D2",
-                    "CARD_SKIP"      : "SKIP",
-                    "CARD_REV"       : "REV",
-                    "CARD_WILD"      : "WILD",
-                    "CARD_WILD_DRAW4": "W_D4",
-                    "CARD_BACK"      : "BACK",
-                };
+            deckControl: {
+                parent:null,
+                DOM: { 
+                    "contextMenu"   : "debug_cardAssignment_contextMenu",
+                    "drawCards"   : "debug_drawCards",
+                    "discardCards": "debug_discardCards",
+                    "P1Cards"     : "debug_P1Cards",
+                    "P2Cards"     : "debug_P2Cards",
+                    "P3Cards"     : "debug_P3Cards",
+                    "P4Cards"     : "debug_P4Cards",
+                },
+                init: function(parent){
+                    this.parent = parent;
+                    for(let elemKey in this.DOM){
+                        this.DOM[elemKey] = document.getElementById(this.DOM[elemKey]);
+                    }
+                },
+                lastRun: 0,
+                runDelay: 2000,
+                checkForDeckChanges: function(){
+                    if( this.lastRun != 0 && (performance.now() - this.lastRun < this.runDelay) ){ 
+                        // console.log("not running"); 
+                        return; 
+                    }
+                    this.lastRun = performance.now();
+                    // console.log("running");
 
-                return `<span class="card ${colors[cardObj.color]}"><span class="label">${values[cardObj.value]}</span></span>`.trim();
+                    // **************************
+                    // Update the cards locations
+                    // **************************
+
+                    // Get the old values. 
+                    let drawCards_old_hash    = this.DOM["drawCards"].getAttribute("hash");
+                    let discardCards_old_hash = this.DOM["discardCards"].getAttribute("hash");
+                    let P1Cards_old_hash      = this.DOM["P1Cards"].getAttribute("hash");
+                    let P2Cards_old_hash      = this.DOM["P2Cards"].getAttribute("hash");
+                    let P3Cards_old_hash      = this.DOM["P3Cards"].getAttribute("hash");
+                    let P4Cards_old_hash      = this.DOM["P4Cards"].getAttribute("hash");
+                    
+                    // Start new values. 
+                    let drawCards_new    = '';
+                    let discardCards_new = '';
+                    let P1Cards_new      = '';
+                    let P2Cards_new      = '';
+                    let P3Cards_new      = '';
+                    let P4Cards_new      = '';
+
+                    // Filter the deck by location.
+                    let tmpDeck = _APP.game.gamestates["gs_PLAYING"].deck.map((d, i) => ({ index: i, value: d }));
+                    let location_DISCARD = tmpDeck.filter(d => d.value.location == "CARD_LOCATION_DISCARD");
+                    let location_DRAW    = tmpDeck.filter(d => d.value.location == "CARD_LOCATION_DRAW");
+                    let location_PLAYER1 = tmpDeck.filter(d => d.value.location == "CARD_LOCATION_PLAYER1");
+                    let location_PLAYER2 = tmpDeck.filter(d => d.value.location == "CARD_LOCATION_PLAYER2");
+                    let location_PLAYER3 = tmpDeck.filter(d => d.value.location == "CARD_LOCATION_PLAYER3");
+                    let location_PLAYER4 = tmpDeck.filter(d => d.value.location == "CARD_LOCATION_PLAYER4");
+
+                    // Add cards by location.
+                    for(let card of location_DISCARD){ discardCards_new += this.createCardElem(card.index, card.value); }
+                    for(let card of location_DRAW)   { drawCards_new    += this.createCardElem(card.index, card.value); }
+                    for(let card of location_PLAYER1){ P1Cards_new      += this.createCardElem(card.index, card.value); }
+                    for(let card of location_PLAYER2){ P2Cards_new      += this.createCardElem(card.index, card.value); }
+                    for(let card of location_PLAYER3){ P3Cards_new      += this.createCardElem(card.index, card.value); }
+                    for(let card of location_PLAYER4){ P4Cards_new      += this.createCardElem(card.index, card.value); }
+
+                    // Update the display if the HTMl has changed.
+                    let discardCards_new_hash = _GFX.utilities.djb2Hash( discardCards_new );
+                    let drawCards_new_hash    = _GFX.utilities.djb2Hash( drawCards_new );
+                    let P1Cards_new_hash      = _GFX.utilities.djb2Hash( P1Cards_new );
+                    let P2Cards_new_hash      = _GFX.utilities.djb2Hash( P2Cards_new );
+                    let P3Cards_new_hash      = _GFX.utilities.djb2Hash( P3Cards_new );
+                    let P4Cards_new_hash      = _GFX.utilities.djb2Hash( P4Cards_new );
+
+                    let changes = [];
+                    if(discardCards_new_hash != discardCards_old_hash){ 
+                        // console.log("CHANGE: discardCards"); 
+                        this.DOM["discardCards"].setAttribute("hash", discardCards_new_hash); 
+                        this.DOM["discardCards"].innerHTML = discardCards_new; 
+                        changes.push("discardCards");
+                    }
+                    if(drawCards_new_hash    != drawCards_old_hash)   { 
+                        // console.log("CHANGE: drawCards");
+                        this.DOM["drawCards"].setAttribute("hash", drawCards_new_hash); 
+                        this.DOM["drawCards"]   .innerHTML = drawCards_new; 
+                        changes.push("drawCards");
+                    }
+                    if(P1Cards_new_hash != P1Cards_old_hash) { 
+                        // console.log("CHANGE: P1Cards"); 
+                        this.DOM["P1Cards"].setAttribute("hash", P1Cards_new_hash); 
+                        this.DOM["P1Cards"] .innerHTML = P1Cards_new; 
+                        changes.push("P1Cards");
+                    }
+                    if(P2Cards_new_hash != P2Cards_old_hash) { 
+                        // console.log("CHANGE: P2Cards"); 
+                        this.DOM["P2Cards"].setAttribute("hash", P2Cards_new_hash); 
+                        this.DOM["P2Cards"] .innerHTML = P2Cards_new; 
+                        changes.push("P2Cards");
+                    }
+                    if(P3Cards_new_hash != P3Cards_old_hash) { 
+                        // console.log("CHANGE: P3Cards"); 
+                        this.DOM["P3Cards"].setAttribute("hash", P3Cards_new_hash); 
+                        this.DOM["P3Cards"] .innerHTML = P3Cards_new; 
+                        changes.push("P3Cards");
+                    }
+                    if(P4Cards_new_hash != P4Cards_old_hash) { 
+                        // console.log("CHANGE: P4Cards"); 
+                        this.DOM["P4Cards"].setAttribute("hash", P4Cards_new_hash); 
+                        this.DOM["P4Cards"] .innerHTML = P4Cards_new; 
+                        changes.push("P4Cards");
+                    }
+
+                    if(changes.length){ console.log("deckControl: changes:", changes); }
+
+                },
+                contextMenu1_open: function(e, elem){
+                    e.preventDefault();
+                    let cardIndex   = elem.getAttribute("cardIndex"); 
+                    let cardColor   = elem.getAttribute("cardcolor"); 
+                    let cardlocation= elem.getAttribute("cardlocation"); 
+                    let cardvalue   = elem.getAttribute("cardvalue"); 
+    
+                    // Get the contextMenu element
+                    let contextMenu = this.DOM["contextMenu"];
+    
+                    // Create the contents of the menu.
+                    contextMenu.innerHTML = `` +
+                    `<u>CARD:</u><br>` +
+                    `  INDEX : ${cardIndex.replace(/CARD_/g, "")} (card index in deck)<br>` +
+                    `  TYPE  : ${cardvalue.replace(/CARD_/g, "")} (${cardColor.replace(/CARD_/g, "")})<br>` +
+                    `  OWNER : ${cardlocation.replace(/CARD_LOCATION_/g, "")}<br>` +
+                    `<br>`+
+                    `<u>ASSIGN TO:</u><br><br>` +
+                    ` <div class="option ${cardlocation=="CARD_LOCATION_DRAW"   ?"notVisible":""}" onclick="_DEBUG2.debugGamestate.gs_PLAYING.deckControl.contextMenu1_select(${+cardIndex}, 'CARD_LOCATION_DRAW'   );">DRAW PILE</div>`+
+                    ` <div class="option ${cardlocation=="CARD_LOCATION_DISCARD"?"notVisible":""}" onclick="_DEBUG2.debugGamestate.gs_PLAYING.deckControl.contextMenu1_select(${+cardIndex}, 'CARD_LOCATION_DISCARD');">DISCARD PILE</div>`+
+                    `<br>`+
+                    ` <div class="option ${cardlocation=="CARD_LOCATION_PLAYER1"?"notVisible":""}" onclick="_DEBUG2.debugGamestate.gs_PLAYING.deckControl.contextMenu1_select(${+cardIndex}, 'CARD_LOCATION_PLAYER1');">P1 HAND</div>`+
+                    ` <div class="option ${cardlocation=="CARD_LOCATION_PLAYER2"?"notVisible":""}" onclick="_DEBUG2.debugGamestate.gs_PLAYING.deckControl.contextMenu1_select(${+cardIndex}, 'CARD_LOCATION_PLAYER2');">P2 HAND</div>`+
+                    `<br>`+
+                    ` <div class="option ${cardlocation=="CARD_LOCATION_PLAYER3"?"notVisible":""}" onclick="_DEBUG2.debugGamestate.gs_PLAYING.deckControl.contextMenu1_select(${+cardIndex}, 'CARD_LOCATION_PLAYER3');">P3 HAND</div>`+
+                    ` <div class="option ${cardlocation=="CARD_LOCATION_PLAYER4"?"notVisible":""}" onclick="_DEBUG2.debugGamestate.gs_PLAYING.deckControl.contextMenu1_select(${+cardIndex}, 'CARD_LOCATION_PLAYER4');">P4 HAND</div>`+
+                    `<br><br>`+
+                    `<button onclick="_DEBUG2.debugGamestate.gs_PLAYING.deckControl.contextMenu1_close();">CANCEL</button>`+
+                    ``;
+    
+                    // Set the position of the context menu and display it
+                    contextMenu.style.top  = (e.clientY - 100) + 'px';
+                    contextMenu.style.left = (e.clientX - 150) + 'px';
+                    contextMenu.style.display = 'block';
+                },
+                contextMenu1_select: function(cardIndex, location){
+                    // Update the card object.
+                    _APP.game.gamestates["gs_PLAYING"].deck[cardIndex].location = location;
+                    
+                    // Set lastRun to 0 so that it runs again immediately.
+                    this.lastRun = 0;
+                    // this.lastRun = performance.now();
+
+                    // Close the contextMenu.
+                    this.contextMenu1_close();
+                },
+                contextMenu1_close: function(){
+                    // Get the contextMenu element
+                    let contextMenu = this.DOM["contextMenu"];
+    
+                    // Close the contextMenu.
+                    contextMenu.style.display = 'none';
+                },
+                createCardElem: function(index, card){
+                    let colors = {
+                        "CARD_YELLOW": "yellow",
+                        "CARD_BLUE"  : "blue",
+                        "CARD_RED"   : "red",
+                        "CARD_GREEN" : "green",
+                        "CARD_BLACK" : "black",
+                    };
+                    let values = {
+                        "CARD_0"         : "0",
+                        "CARD_1"         : "1",
+                        "CARD_2"         : "2",
+                        "CARD_3"         : "3",
+                        "CARD_4"         : "4",
+                        "CARD_5"         : "5",
+                        "CARD_6"         : "6",
+                        "CARD_7"         : "7",
+                        "CARD_8"         : "8",
+                        "CARD_9"         : "9",
+                        "CARD_DRAW2"     : "D2",
+                        "CARD_SKIP"      : "SKIP",
+                        "CARD_REV"       : "REV",
+                        "CARD_WILD"      : "WILD",
+                        "CARD_WILD_DRAW4": "W_D4",
+                        "CARD_BACK"      : "BACK",
+                    };
+    
+                    let contextmenu = `oncontextmenu="event.preventDefault(); _DEBUG2.debugGamestate.gs_PLAYING.deckControl.contextMenu1_open(event, this);"`;
+                    let attrs = `cardIndex="${index}" cardColor="${card.color}" cardLocation="${card.location}" cardValue="${card.value}"`.trim();
+                    let html = `<span ${attrs} ${contextmenu} class="card ${colors[card.color]}"><span class="label">${values[card.value]}</span></span>`.trim();
+                    return html
+                },
             },
             gs1: function(){
-                // **************************
-                // Update the cards locations
-                // **************************
-
-                // Get the old values. 
-                let drawCards_old    = this.DOM["drawCards"].innerHTML;
-                let discardCards_old = this.DOM["discardCards"].innerHTML;
-                let P1Cards_old      = this.DOM["P1Cards"].innerHTML;
-                let P2Cards_old      = this.DOM["P2Cards"].innerHTML;
-                let P3Cards_old      = this.DOM["P3Cards"].innerHTML;
-                let P4Cards_old      = this.DOM["P4Cards"].innerHTML;
-                
-                // Start new values. 
-                let drawCards_new    = '';
-                let discardCards_new = '';
-                let P1Cards_new      = '';
-                let P2Cards_new      = '';
-                let P3Cards_new      = '';
-                let P4Cards_new      = '';
-
-                // Filter the deck by location.
-                let location_DISCARD = _APP.game.gamestates["gs_PLAYING"].deck.filter(d=>d.location=="CARD_LOCATION_DISCARD");
-                let location_DRAW    = _APP.game.gamestates["gs_PLAYING"].deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
-                let location_PLAYER1 = _APP.game.gamestates["gs_PLAYING"].deck.filter(d=>d.location=="CARD_LOCATION_PLAYER1");
-                let location_PLAYER2 = _APP.game.gamestates["gs_PLAYING"].deck.filter(d=>d.location=="CARD_LOCATION_PLAYER2");
-                let location_PLAYER3 = _APP.game.gamestates["gs_PLAYING"].deck.filter(d=>d.location=="CARD_LOCATION_PLAYER3");
-                let location_PLAYER4 = _APP.game.gamestates["gs_PLAYING"].deck.filter(d=>d.location=="CARD_LOCATION_PLAYER4");
-
-                // Add cards by location.
-                for(let card of location_DISCARD){ discardCards_new += this.createCardElem(card); }
-                for(let card of location_DRAW)   { drawCards_new    += this.createCardElem(card); }
-                for(let card of location_PLAYER1){ P1Cards_new      += this.createCardElem(card); }
-                for(let card of location_PLAYER2){ P2Cards_new      += this.createCardElem(card); }
-                for(let card of location_PLAYER3){ P3Cards_new      += this.createCardElem(card); }
-                for(let card of location_PLAYER4){ P4Cards_new      += this.createCardElem(card); }
-
-                // Update the display if the HTMl has changed.
-                if(drawCards_old    != drawCards_new)   { console.log("CHANGE: drawCards");    this.DOM["drawCards"]   .innerHTML = drawCards_new; }
-                if(discardCards_old != discardCards_new){ console.log("CHANGE: discardCards"); this.DOM["discardCards"].innerHTML = discardCards_new; }
-                if(P1Cards_old      != P1Cards_new)     { console.log("CHANGE: P1Cards");      this.DOM["P1Cards"]     .innerHTML = P1Cards_new; }
-                if(P2Cards_old      != P2Cards_new)     { console.log("CHANGE: P2Cards");      this.DOM["P2Cards"]     .innerHTML = P2Cards_new; }
-                if(P3Cards_old      != P3Cards_new)     { console.log("CHANGE: P3Cards");      this.DOM["P3Cards"]     .innerHTML = P3Cards_new; }
-                if(P4Cards_old      != P4Cards_new)     { console.log("CHANGE: P4Cards");      this.DOM["P4Cards"]     .innerHTML = P4Cards_new; }
+                this.deckControl.checkForDeckChanges();
             },
             anim1: function(){
             },
@@ -271,15 +395,13 @@ var _DEBUG2 = {
                 for(let elemKey in this[key].DOM){
                     this[key].DOM[elemKey] = document.getElementById(this[key].DOM[elemKey]);
                 }
-                if(this[key].initOnce){
-                    this[key].initOnce();
-                }
+                if(this[key].initOnce){ this[key].initOnce(); }
             }
 
             // Set parents.
-            this.gs_TITLE.parent = this;
-            this.gs_JSG.parent = this;
-            this.gs_N782.parent = this;
+            this.gs_TITLE.parent   = this;
+            this.gs_JSG.parent     = this;
+            this.gs_N782.parent    = this;
             this.gs_PLAYING.parent = this;
         }
     },

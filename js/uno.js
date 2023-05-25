@@ -324,6 +324,50 @@ _APP.utility = {
         const params          = Object.fromEntries(urlSearchParams.entries());
         return params;
     },
+
+    timeItData: {},
+    timeIt: function(key, func){
+        // _APP.utility.timeIt("KEY_NAME", "start");
+        // _APP.utility.timeIt("KEY_NAME", "stop");
+        // _APP.utility.timeIt("KEY_NAME", "get");
+        // _APP.utility.timeIt("KEY_NAME", "reset");
+        // _APP.utility.timeIt("", "getAll");
+        
+        if     (func == "start"){
+            if(!this.timeItData[key]){ 
+                this.timeItData[key] = { t:0, s:0, e:0 }; 
+            }
+            this.timeItData[key].s = performance.now();
+            this.timeItData[key].e = performance.now();
+            this.timeItData[key].t = performance.now();
+            return this.timeItData[key].t;
+        }
+        else if(func == "stop"){
+            this.timeItData[key].t = performance.now() - this.timeItData[key].s;
+            this.timeItData[key].s = 0;
+            this.timeItData[key].e = 0;
+            return this.timeItData[key].t;
+        }
+        else if(func == "get"){
+            return this.timeItData[key].t;
+        }
+        else if(func == "getAll"){
+            let data = {};
+            for(let key in this.timeItData){
+                data[key] = this.timeItData[key].t;
+            }
+            return data;
+        }
+        else if(func == "reset"){
+            if(!this.timeItData[key]){ 
+                this.timeItData[key] = { t:0, s:0, e:0 }; 
+            }
+            this.timeItData[key].t = 0;
+            this.timeItData[key].s = 0;
+            this.timeItData[key].e = 0;
+            return this.timeItData[key].t;
+        }
+    },
 };
 
 // For loading customized wrappers for plug-ins.

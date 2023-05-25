@@ -95,6 +95,7 @@ _APP.game.gamestates["gs_JSG"] = {
     init: function(){
         // Clear the screen and the graphics caches.
         _GFX.funcs.clearAllLayers(true);
+        _GFX.layerObjs.removeAll(_APP.game.gs1_prev);
         _GFX.layerObjs.removeAll(_APP.game.gs1);
 
         // _GFX.funcs.setFade("ALL", null);
