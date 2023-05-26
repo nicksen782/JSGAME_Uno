@@ -345,7 +345,9 @@ var _DEBUG2 = {
                         changes.push("P4Cards");
                     }
 
-                    if(changes.length){ console.log("deckControl: changes:", changes); }
+                    if(changes.length){ 
+                        // console.log("deckControl: changes:", changes);
+                    }
 
                 },
                 contextMenu1_open: function(e, elem){

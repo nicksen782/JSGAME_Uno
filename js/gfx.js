@@ -502,15 +502,21 @@ var _GFX = {
                     hashCacheHash_BASE = _GFX.utilities.djb2Hash( JSON.stringify(
                         {
                             ts      : tilemap.ts,
+                            settings: JSON.stringify(_GFX.defaultSettings),
                             tmap    : Array.from(tilemap.tmap),
                         }
                     ));
 
                     // Generate a new hash for THIS layerObject. 
                     newHash = _GFX.utilities.djb2Hash( JSON.stringify([
+                        // Location.
                         tilemap.x, 
                         tilemap.y, 
-                        hashCacheHash
+
+                        // Uniqueness of this tilemap.
+                        tilemap.ts,                       // Tileset
+                        JSON.stringify(tilemap.settings), // Settings
+                        Array.from(tilemap.tmap),         // Tmap
                     ]));
 
                     // Is this a changed object?
@@ -526,9 +532,11 @@ var _GFX = {
                             w        : tilemap.w,
                             h        : tilemap.h,
                             settings : tilemap.settings,
+                            mapKey : tilemapKey,
 
-                            hashCacheHash      : hashCacheHash, // Used for future hashCache removals.
-                            hashCacheHash_BASE   : hashCacheHash_BASE, // Used for future hashCache removals.
+                            hashCacheHash      : hashCacheHash,      // Used for future hashCache removals.
+                            hashCacheHash_BASE : hashCacheHash_BASE, // Used for future hashCache removals.
+
                             removeHashOnRemoval: tilemap.removeHashOnRemoval ?? true,
                             noResort           : tilemap.noResort ?? false,
                             // isNewTilemaphash : isNewTilemaphash,
@@ -970,6 +978,9 @@ var _GFX = {
         },
         // Performs required transforms to a tilemap and returns the new tilemap.
         tilemapTransform: function(tmap, settings){
+            // DISABLED:
+            return tmap;
+            
             // Handle rotation.
             // NOTE: If a tilemap is NOT a square then the tilemap will have swapped new width and height values.
             if(settings.rotation){ tmap = _GFX.utilities.tilemap_rotate(tmap, settings.rotation); }

@@ -79,12 +79,188 @@ _APP.utility = {
         if(this.ww_ImageDataAssetsGenerated){ console.log("Already done!"); return; }
         this.ww_ImageDataAssetsGenerated = true;
         
+        let list = {
+            "bg_tiles1":{
+                "mapObjs"  : {},
+                "mapKeys"  : [],
+                "mapsArray": [
+                    // UNO LETTERS large
+                    { "baseMapKey": "letter_uno_u",         "mapKey": "letter_uno_u_C1", "settings": { } },
+                    { "baseMapKey": "letter_uno_n",         "mapKey": "letter_uno_n_C1", "settings": { } },
+                    { "baseMapKey": "letter_uno_o",         "mapKey": "letter_uno_o_C1", "settings": { } },
+
+                    { "baseMapKey": "letter_uno_u",         "mapKey": "letter_uno_u_C2", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.blue ]] } },
+                    { "baseMapKey": "letter_uno_n",         "mapKey": "letter_uno_n_C2", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.blue ]] } },
+                    { "baseMapKey": "letter_uno_o",         "mapKey": "letter_uno_o_C2", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.blue ]] } },
+                    
+                    { "baseMapKey": "letter_uno_u",         "mapKey": "letter_uno_u_C3", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.red ]] } },
+                    { "baseMapKey": "letter_uno_n",         "mapKey": "letter_uno_n_C3", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.red ]] } },
+                    { "baseMapKey": "letter_uno_o",         "mapKey": "letter_uno_o_C3", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.red ]] } },
+                    
+                    { "baseMapKey": "letter_uno_u",         "mapKey": "letter_uno_u_C4", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.green ]] } },
+                    { "baseMapKey": "letter_uno_n",         "mapKey": "letter_uno_n_C4", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.green ]] } },
+                    { "baseMapKey": "letter_uno_o",         "mapKey": "letter_uno_o_C4", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.green ]] } },
+                    
+                    // // UNO LETTERS small
+                    { "baseMapKey": "letter_uno2_u",         "mapKey": "letter_uno_u2_C1", "settings": { } },
+                    { "baseMapKey": "letter_uno2_n",         "mapKey": "letter_uno_n2_C1", "settings": { } },
+                    { "baseMapKey": "letter_uno2_o",         "mapKey": "letter_uno_o2_C1", "settings": { } },
+
+                    { "baseMapKey": "letter_uno2_u",         "mapKey": "letter_uno_u2_C2", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.blue ]] } },
+                    { "baseMapKey": "letter_uno2_n",         "mapKey": "letter_uno_n2_C2", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.blue ]] } },
+                    { "baseMapKey": "letter_uno2_o",         "mapKey": "letter_uno_o2_C2", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.blue ]] } },
+                    
+                    { "baseMapKey": "letter_uno2_u",         "mapKey": "letter_uno_u2_C3", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.red ]] } },
+                    { "baseMapKey": "letter_uno2_n",         "mapKey": "letter_uno_n2_C3", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.red ]] } },
+                    { "baseMapKey": "letter_uno2_o",         "mapKey": "letter_uno_o2_C3", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.red ]] } },
+                    
+                    { "baseMapKey": "letter_uno2_u",         "mapKey": "letter_uno_u2_C4", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.green ]] } },
+                    { "baseMapKey": "letter_uno2_n",         "mapKey": "letter_uno_n2_C4", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.green ]] } },
+                    { "baseMapKey": "letter_uno2_o",         "mapKey": "letter_uno_o2_C4", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.green ]] } },
+
+                    // RED: Small cards
+                    { "baseMapKey": "card_sm_0",         "mapKey": "RED_card_sm_0",          "settings": {}  },
+                    { "baseMapKey": "card_sm_1",         "mapKey": "RED_card_sm_1",          "settings": {}  },
+                    { "baseMapKey": "card_sm_2",         "mapKey": "RED_card_sm_2",          "settings": {}  },
+                    { "baseMapKey": "card_sm_3",         "mapKey": "RED_card_sm_3",          "settings": {}  },
+                    { "baseMapKey": "card_sm_4",         "mapKey": "RED_card_sm_4",          "settings": {}  },
+                    { "baseMapKey": "card_sm_5",         "mapKey": "RED_card_sm_5",          "settings": {}  },
+                    { "baseMapKey": "card_sm_6",         "mapKey": "RED_card_sm_6",          "settings": {}  },
+                    { "baseMapKey": "card_sm_7",         "mapKey": "RED_card_sm_7",          "settings": {}  },
+                    { "baseMapKey": "card_sm_8",         "mapKey": "RED_card_sm_8",          "settings": {}  },
+                    { "baseMapKey": "card_sm_9",         "mapKey": "RED_card_sm_9",          "settings": {}  },
+                    { "baseMapKey": "card_sm_draw2",     "mapKey": "RED_card_sm_draw2",      "settings": {}  },
+                    { "baseMapKey": "card_sm_skip",      "mapKey": "RED_card_sm_skip",       "settings": {}  },
+                    { "baseMapKey": "card_sm_reverse",   "mapKey": "RED_card_sm_reverse",    "settings": {}  },
+                    
+                    // YELLOW: Small cards
+                    { "baseMapKey": "card_sm_0",         "mapKey": "YEL_card_sm_0",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_sm_1",         "mapKey": "YEL_card_sm_1",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_sm_2",         "mapKey": "YEL_card_sm_2",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_sm_3",         "mapKey": "YEL_card_sm_3",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_sm_4",         "mapKey": "YEL_card_sm_4",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_sm_5",         "mapKey": "YEL_card_sm_5",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_sm_6",         "mapKey": "YEL_card_sm_6",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_sm_7",         "mapKey": "YEL_card_sm_7",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_sm_8",         "mapKey": "YEL_card_sm_8",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_sm_9",         "mapKey": "YEL_card_sm_9",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_sm_draw2",     "mapKey": "YEL_card_sm_draw2",      "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_sm_skip",      "mapKey": "YEL_card_sm_skip",       "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_sm_reverse",   "mapKey": "YEL_card_sm_reverse",    "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    
+                    // BLUE: Small cards
+                    { "baseMapKey": "card_sm_0",         "mapKey": "BLU_card_sm_0",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_sm_1",         "mapKey": "BLU_card_sm_1",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_sm_2",         "mapKey": "BLU_card_sm_2",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_sm_3",         "mapKey": "BLU_card_sm_3",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_sm_4",         "mapKey": "BLU_card_sm_4",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_sm_5",         "mapKey": "BLU_card_sm_5",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_sm_6",         "mapKey": "BLU_card_sm_6",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_sm_7",         "mapKey": "BLU_card_sm_7",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_sm_8",         "mapKey": "BLU_card_sm_8",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_sm_9",         "mapKey": "BLU_card_sm_9",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_sm_draw2",     "mapKey": "BLU_card_sm_draw2",      "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_sm_skip",      "mapKey": "BLU_card_sm_skip",       "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_sm_reverse",   "mapKey": "BLU_card_sm_reverse",    "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    
+                    // GREEN: Small cards
+                    { "baseMapKey": "card_sm_0",         "mapKey": "GRE_card_sm_0",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_sm_1",         "mapKey": "GRE_card_sm_1",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_sm_2",         "mapKey": "GRE_card_sm_2",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_sm_3",         "mapKey": "GRE_card_sm_3",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_sm_4",         "mapKey": "GRE_card_sm_4",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_sm_5",         "mapKey": "GRE_card_sm_5",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_sm_6",         "mapKey": "GRE_card_sm_6",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_sm_7",         "mapKey": "GRE_card_sm_7",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_sm_8",         "mapKey": "GRE_card_sm_8",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_sm_9",         "mapKey": "GRE_card_sm_9",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_sm_draw2",     "mapKey": "GRE_card_sm_draw2",      "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_sm_skip",      "mapKey": "GRE_card_sm_skip",       "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_sm_reverse",   "mapKey": "GRE_card_sm_reverse",    "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    
+                    // BLACK: Small cards
+                    { "baseMapKey": "card_sm_back",      "mapKey": "BLA_card_sm_back",       "settings": {}  },
+                    { "baseMapKey": "card_sm_wild",      "mapKey": "BLA_card_sm_wild",       "settings": {}  },
+                    { "baseMapKey": "card_sm_wildDraw4", "mapKey": "BLA_card_sm_wildDraw4",  "settings": {}  },
+
+                    // RED: Large cards
+                    { "baseMapKey": "card_lg_0",         "mapKey": "RED_card_lg_0",          "settings": {}  },
+                    { "baseMapKey": "card_lg_1",         "mapKey": "RED_card_lg_1",          "settings": {}  },
+                    { "baseMapKey": "card_lg_2",         "mapKey": "RED_card_lg_2",          "settings": {}  },
+                    { "baseMapKey": "card_lg_3",         "mapKey": "RED_card_lg_3",          "settings": {}  },
+                    { "baseMapKey": "card_lg_4",         "mapKey": "RED_card_lg_4",          "settings": {}  },
+                    { "baseMapKey": "card_lg_5",         "mapKey": "RED_card_lg_5",          "settings": {}  },
+                    { "baseMapKey": "card_lg_6",         "mapKey": "RED_card_lg_6",          "settings": {}  },
+                    { "baseMapKey": "card_lg_7",         "mapKey": "RED_card_lg_7",          "settings": {}  },
+                    { "baseMapKey": "card_lg_8",         "mapKey": "RED_card_lg_8",          "settings": {}  },
+                    { "baseMapKey": "card_lg_9",         "mapKey": "RED_card_lg_9",          "settings": {}  },
+                    { "baseMapKey": "card_lg_draw2",     "mapKey": "RED_card_lg_draw2",      "settings": {}  },
+                    { "baseMapKey": "card_lg_skip",      "mapKey": "RED_card_lg_skip",       "settings": {}  },
+                    { "baseMapKey": "card_lg_reverse",   "mapKey": "RED_card_lg_reverse",    "settings": {}  },
+                    
+                    // YELLOW: Large cards
+                    { "baseMapKey": "card_lg_0",         "mapKey": "YEL_card_lg_0",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_lg_1",         "mapKey": "YEL_card_lg_1",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_lg_2",         "mapKey": "YEL_card_lg_2",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_lg_3",         "mapKey": "YEL_card_lg_3",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_lg_4",         "mapKey": "YEL_card_lg_4",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_lg_5",         "mapKey": "YEL_card_lg_5",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_lg_6",         "mapKey": "YEL_card_lg_6",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_lg_7",         "mapKey": "YEL_card_lg_7",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_lg_8",         "mapKey": "YEL_card_lg_8",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_lg_9",         "mapKey": "YEL_card_lg_9",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_lg_draw2",     "mapKey": "YEL_card_lg_draw2",      "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_lg_skip",      "mapKey": "YEL_card_lg_skip",       "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    { "baseMapKey": "card_lg_reverse",   "mapKey": "YEL_card_lg_reverse",    "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
+                    
+                    // BLUE: Large cards
+                    { "baseMapKey": "card_lg_0",         "mapKey": "BLU_card_lg_0",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_lg_1",         "mapKey": "BLU_card_lg_1",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_lg_2",         "mapKey": "BLU_card_lg_2",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_lg_3",         "mapKey": "BLU_card_lg_3",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_lg_4",         "mapKey": "BLU_card_lg_4",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_lg_5",         "mapKey": "BLU_card_lg_5",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_lg_6",         "mapKey": "BLU_card_lg_6",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_lg_7",         "mapKey": "BLU_card_lg_7",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_lg_8",         "mapKey": "BLU_card_lg_8",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_lg_9",         "mapKey": "BLU_card_lg_9",          "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_lg_draw2",     "mapKey": "BLU_card_lg_draw2",      "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_lg_skip",      "mapKey": "BLU_card_lg_skip",       "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    { "baseMapKey": "card_lg_reverse",   "mapKey": "BLU_card_lg_reverse",    "settings": { colorData: [[Card.colors.base, Card.colors.blue ]] } },
+                    
+                    // GREEN: Large cards
+                    { "baseMapKey": "card_lg_0",         "mapKey": "GRE_card_lg_0",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_lg_1",         "mapKey": "GRE_card_lg_1",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_lg_2",         "mapKey": "GRE_card_lg_2",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_lg_3",         "mapKey": "GRE_card_lg_3",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_lg_4",         "mapKey": "GRE_card_lg_4",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_lg_5",         "mapKey": "GRE_card_lg_5",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_lg_6",         "mapKey": "GRE_card_lg_6",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_lg_7",         "mapKey": "GRE_card_lg_7",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_lg_8",         "mapKey": "GRE_card_lg_8",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_lg_9",         "mapKey": "GRE_card_lg_9",          "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_lg_draw2",     "mapKey": "GRE_card_lg_draw2",      "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_lg_skip",      "mapKey": "GRE_card_lg_skip",       "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    { "baseMapKey": "card_lg_reverse",   "mapKey": "GRE_card_lg_reverse",    "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
+                    
+                    // BLACK: Large cards
+                    { "baseMapKey": "card_lg_back",      "mapKey": "BLA_card_lg_back",       "settings": {}  },
+                    { "baseMapKey": "card_lg_wild",      "mapKey": "BLA_card_lg_wild",       "settings": {}  },
+                    { "baseMapKey": "card_lg_wildDraw4", "mapKey": "BLA_card_lg_wildDraw4",  "settings": {}  },
+                ]
+            },
+        };
+        for(let tilesetKey in list){ 
+            for(let rec of list[tilesetKey].mapsArray){ 
+                rec.ts = tilesetKey;
+                list[tilesetKey].mapKeys.push(rec.mapKey);
+            }
+        }
+        // list = null;
         await _WEBW_V.SEND("generateCoreImageDataAssets", {
-            data:{            },
+            data:{ list:list },
             refs:[]
         }, true, false);
-
-        
     },
 
     // Adds the specified file.

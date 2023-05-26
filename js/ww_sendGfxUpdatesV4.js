@@ -279,9 +279,8 @@ messageFuncs.sendGfxUpdates.V4 = {
                     region.dest_layer.y, // dy
                     region.dest_layer.w, // dw
                     region.dest_layer.h, // dh
-                    // "onlyToAlpha0"       // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                    "blitDest"           // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                    // "replace"            // writeType ["onlyToAlpha0", "blitDest", "replace"]
+                    "blitDest"           // writeType ["blitDest", "replace"]
+                    // "replace"            // writeType ["blitDest", "replace"]
                 );
             }
         },
@@ -604,13 +603,14 @@ messageFuncs.sendGfxUpdates.V4 = {
 
             // Pre-generate all ImageData tilemaps to cache?
             if(!list){
-                console.log("generateCoreImageDataAssets: a list was not specified. Generating a list for ALL tilemaps.");
+                console.log("generateCoreImageDataAssets: A list was NOT provided.. Generating a list for ALL tilemaps.");
                 list = {};
                 for(let tilesetKey in _GFX.tilesets){
                     if(!list[tilesetKey]){ 
                         list[tilesetKey] = {
-                            mapKeys: [],
-                            maps   : {},
+                            mapObjs  : {},
+                            mapKeys  : [],
+                            mapsArray: [],
                         }
                     }
 
@@ -619,68 +619,96 @@ messageFuncs.sendGfxUpdates.V4 = {
 
                         tilemap = _GFX.tilesets[tilesetKey].tilemaps[tilemapKey];
 
-                        list[tilesetKey].maps[tilemapKey] = {
+                        list[tilesetKey].mapsArray.push( {
+                            "mapKey"             : tilemapKey,
+                            "baseMapKey"         : tilemapKey,
                             "ts"                 : tilesetKey,
-                            // "settings"           : null, // _GFX.defaultSettings,
                             "tmap"               : tilemap,
                             "removeHashOnRemoval": false,
                             "hashCacheHash"      : null, // hashCacheHash ,
                             "hashCacheHash_BASE" : null, // hashCacheHash_BASE 
-                        };
+                            // "settings"           : null, // _GFX.defaultSettings,
+                        } );
                     }
                 }
+            }
+            else{
+                console.log("generateCoreImageDataAssets: A list WAS specified.");
             }
             
             // Use the list to create the tilemap data.
             for(let tilesetKey in list){ 
-                for(let tilemapKey of list[tilesetKey].mapKeys){ 
-                    // Use the supplied tilemap if it was specified.
-                    if(list[tilesetKey].maps[tilemapKey].tmap){
-                        tilemap = list[tilesetKey].maps[tilemapKey].tmap;
+                for(let rec of list[tilesetKey].mapsArray){ 
+                    // Does this entry have tilemapKey?
+                    if(!rec.mapKey){ 
+                        console.log(`generateCoreImageDataAssets: Error. Missing mapKey:`, rec);
+                        throw `generateCoreImageDataAssets: Error. Missing mapKey.`; 
                     }
-                    // Or use the existing tilemap.
-                    else{
-                        tilemap = _GFX.tilesets[tilesetKey].tilemaps[tilemapKey];
+                    
+                    // Does this entry have tmap?
+                    if(!rec.tmap){
+                        // console.log("missing tmap. using default.", rec.baseMapKey, rec.mapKey);
+                        if(!rec.baseMapKey){
+                            console.log(`generateCoreImageDataAssets: Error. Missing baseMapKey:`, rec);
+                            throw `generateCoreImageDataAssets: Error. Missing baseMapKey.`; 
+                        }
+                        rec.tmap = _GFX.tilesets[rec.ts].tilemaps[rec.baseMapKey];
                     }
 
-                    // Use the settings value or use the defaults. 
-                    //  Also make sure that all settings keys exist and at least have their default values.
-                    settings = Object.assign({}, _GFX.defaultSettings, list[tilesetKey].maps[tilemapKey].settings ?? {});
-                    // console.log(settings);
-                    // settings = _GFX.defaultSettings;
+                    //  Make sure that all settings keys exist and at least have their default values.
+                    rec.settings = Object.assign({}, _GFX.defaultSettings, rec.settings ?? {});
 
+                    // Generate hashCacheHash.
                     hashCacheHash      = this.djb2Hash( JSON.stringify(
                         {
-                            ts      : tilesetKey,
-                            settings: JSON.stringify(settings),
-                            tmap    : Array.from(tilemap),
+                            ts      : rec.ts,
+                            settings: JSON.stringify(rec.settings),
+                            tmap    : Array.from(rec.tmap),
                         }
                     ));
 
+                    // Generate hashCacheHash_BASE.
                     hashCacheHash_BASE = this.djb2Hash( JSON.stringify(
                         {
-                            ts      : tilesetKey,
-                            tmap    : Array.from(tilemap),
+                            ts      : rec.ts,
+                            settings: JSON.stringify(_GFX.defaultSettings),
+                            tmap    : Array.from(rec.tmap),
                         }
                     ));
 
                     // Add the remaining keys. 
-                    list[tilesetKey].maps[tilemapKey].settings           = settings;
-                    list[tilesetKey].maps[tilemapKey].hashCacheHash      = hashCacheHash;
-                    list[tilesetKey].maps[tilemapKey].hashCacheHash_BASE = hashCacheHash_BASE;
+                    rec.hashCacheHash      = hashCacheHash;
+                    rec.hashCacheHash_BASE = hashCacheHash_BASE;
+
+                    list[rec.ts].mapObjs[rec.mapKey] = rec;
                 }
             }
 
-            // Use the list to pre-generate ImageData tilemaps to cache.
+            // // Use the list to pre-generate ImageData tilemaps to cache.
             for(let tilesetKey in list){ 
                 // Create tilemaps and hashCache entries for any missing tilemaps.
-                this.createImageDataFromTilemapsAndUpdateGraphicsCache("", list[tilesetKey].mapKeys, list[tilesetKey].maps, false);
+                // console.log(list, " *** ", list[tilesetKey].mapKeys, list[tilesetKey].mapObjs);
+                this.createImageDataFromTilemapsAndUpdateGraphicsCache("", list[tilesetKey].mapKeys, list[tilesetKey].mapObjs, false);
             }
 
         },
 
+        findRelatedMapKey: function(ts, tmap){
+            let tmap_same;
+            let tmap2;
+            for(let mapKey in _GFX.tilesets[ts].tilemaps){
+                tmap2 = _GFX.tilesets[ts].tilemaps[mapKey];
+                tmap_same = _GFX.utilities.areArraysEqual(tmap, tmap2);
+                if(tmap_same){ return mapKey; };
+            }
+            return "";
+        },
+
         // Creates ImageData from a tilemap.
         createImageDataFromTilemap: function(tmapObj){
+            // Check if the base image for this tilemap exists.
+            let useCachedBase = false;
+
             // Get the tileset and the dimensions for the tileset. 
             let tileset = _GFX.tilesets[ tmapObj.ts ].tileset;
             let tw      = _GFX.tilesets[ tmapObj.ts ].config.tileWidth;
@@ -689,23 +717,38 @@ messageFuncs.sendGfxUpdates.V4 = {
             // Get the dimensions of the tilemap.
             let mapW = tmapObj.tmap[0];
             let mapH = tmapObj.tmap[1];
+            let width  = tw;
+            let height = th;
             
             // Start at index 2 since the first two indexs are the map dimensions in tiles. 
             let index=2;
             let missingTile = false;
 
             // Create new ImageData for the tilemap.
-            let imageData = new ImageData(mapW * tw, mapH * th); // The width and height come from the tilemap and should be correct.
-            
-            // Create new ImageData to be reused for each tilemap tile.
-            let imageDataTile = new ImageData(tw, th);
-            let width  = imageDataTile.width;
-            let height = imageDataTile.height;
+            let imageData;
+            if(this.hashCacheMap.has(tmapObj.hashCacheHash_BASE)){
+                // The width and height come from the tilemap and should be correct.
+                imageData = new ImageData(mapW * tw, mapH * th); 
+                imageData.data.set( this.hashCacheMap.get(tmapObj.hashCacheHash_BASE).imgData.data );
+                useCachedBase = true;
+            }
+            else{
+                // The width and height come from the tilemap and should be correct.
+                imageData = new ImageData(mapW * tw, mapH * th); 
+            }
+
+            // let imageData = {
+            //     width : mapW * tw,
+            //     height: mapH * th,
+            //     data : new Uint8ClampedArray(
+            //         (mapW * tw) *  (mapH * th) * 4
+            //     )
+            // }; // The width and height come from the tilemap and should be correct.
             
             // Break-out settings.
             let settings  = tmapObj.settings;
-            let colorData = settings.colorData;
             let fadeLevel = null;
+            let tile; 
 
             // Determine the fade level for this specific tilemap.
             if( settings.fade != null){ fadeLevel = settings.fade; }
@@ -721,92 +764,91 @@ messageFuncs.sendGfxUpdates.V4 = {
                 // R,G,B,A is already 0. Nothing to do.
             }
 
-            // No. Process the tilemap tile-by-tile.
+            // No. Write the image tilemap tile-by-tile.
             else{
-                // Create the ImageData version of the tilemap.
-                for(let y=0; y<mapH; y+=1){
-                    for(let x=0; x<mapW; x+=1){
-                        // Replace the imageDataTile.data with the tile ImageData.data specified by the tilemap.
-                        try{ 
-                            // imageDataTile.data.set(tileset[ tmapObj.tmap[index] ].imgData.data.slice()); // A copy then copied. 
-                            imageDataTile.data.set(tileset[ tmapObj.tmap[index] ].imgData.data); // One copy.
-                            missingTile = false; 
-                        }
-                        
-                        // Missing tile. (Wrong tileset?) 
-                        // Create a transparent tile and set the missingTile flag to skip any transforms from settings.
-                        catch(e){ 
-                            imageDataTile.data.fill(0); 
-                            missingTile = true; 
-                            ({width, height} = imageDataTile);
-                        }
-                        
-                        // Apply tile transforms using rotation, xFlip, yFlip. (by reference)
-                        // Skip the transforms if the tile was not found. 
-                        if(!missingTile){
-                            ({width, height} = this.performTransformsOnImageData(imageDataTile, settings));
-                        }
+                if(!useCachedBase){
+                    // console.log("    generating:", tmapObj.mapKey);
+                    // Create the ImageData version of the tilemap.
+                    for(let y=0; y<mapH; y+=1){
+                        for(let x=0; x<mapW; x+=1){
+                            // Determine if this tile is missing.
+                            missingTile = !tileset.hasOwnProperty(tmapObj.tmap[index]) ;
 
-                        // Update the imageData with the completed imageDataTile.
-                        createGraphicsAssets.updateRegion(
-                            imageDataTile.data,  // source
-                            width,               // srcWidth
-                            imageData.data,      // destination
-                            imageData.width,     // destWidth
-                            imageData.height,    // destHeight
-                            x * tw,              // x
-                            y * th,              // y
-                            width,               // w
-                            height,              // h
-                            // "onlyToAlpha0"       // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                            // "blitDest"           // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                            "replace"            // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                        );
+                            // Update the imageData with the completed imageDataTile.
+                            if(!missingTile){
+                                // Get the tile object.
+                                tile = tileset[ tmapObj.tmap[index] ];
 
-                        // Increment the tile index in the tilemap.
-                        index++;
+                                // Adjust width and height if there is a rotation that would require the change.
+                                width  = (settings.rotation % 180 === 0) ? width : height;
+                                height = (settings.rotation % 180 === 0) ? height : width;
+
+                                // Write the tile to the imageData.
+                                createGraphicsAssets.updateRegion(
+                                    tile.imgData.data,   // source
+                                    width,               // srcWidth
+                                    imageData.data,      // destination
+                                    imageData.width,     // destWidth
+                                    imageData.height,    // destHeight
+                                    x * tw,              // x
+                                    y * th,              // y
+                                    width,               // w
+                                    height,              // h
+                                    // "blitDest"           // writeType ["blitDest", "replace"]
+                                    "replace"            // writeType ["blitDest", "replace"]
+                                );
+                            }
+
+                            // Increment the tile index in the tilemap.
+                            index++;
+                        }
                     }
                 }
+                // else{
+                    // console.log("Not generating:", tmapObj.mapKey);
+                // }
 
-                // Handle adding a background?  (by reference.)
-                if(settings.bgColorRgba){
-                    this.parent.SETBG.setImageDataBgColorRgba(imageData, [0,0,0,0], settings.bgColorRgba);
-                }
-
-                // Handle color replacements. (by reference.)
-                if(colorData && colorData.length){
-                    _GFX.utilities.replaceColors(imageData, colorData); 
-                }
-
+                // Apply image transforms using rotation, xFlip, yFlip, color replacements, bgColorRgba, fade. (by reference)
+                this.performTransformsOnImageData(imageData, settings);
+                
                 // Handle per-tilemap fade? (by reference.)
-                if(fadeLevel){
-                    // Fade the tile (RGBA version of the fade table.)
-                    // _GFX.utilities.replaceColors(imageData, fadeLevel); 
-                    createGraphicsAssets.applyFadeToImageDataArray(imageData.data, fadeLevel);
-                }
+                // if(fadeLevel){
+                //     // Fade the tile (RGBA version of the fade table.)
+                //     createGraphicsAssets.applyFadeToImageDataArray(imageData.data, fadeLevel);
+                // }
             }
 
             // Return the completed ImageData version of the tilemap.
             return imageData;
         },
-        
+
         // Transforms using rotation, xFlip, yFlip (no recoloring.) (By reference.)
         performTransformsOnImageData: function(imageData, settings){
             let width  = imageData.width;
             let height = imageData.height;
 
-            // Handle rotation.
+            // Handle rotation (Uses temp copy up updates the ImageData by reference.)
             // NOTE: If a tilemap is NOT a square then the tilemap will have swapped new width and height values.
             if(settings.rotation)        { ({width, height} = _GFX.utilities.rotateImageData(imageData, settings.rotation)); }
             
             // Handle xFlip.
-            if(settings.xFlip)           { imageData = _GFX.utilities.flipImageDataHorizontally(imageData); }
+            if(settings.xFlip)           { _GFX.utilities.flipImageDataHorizontally(imageData); }
             
             // Handle yFlip.
-            if(settings.yFlip)           { imageData = _GFX.utilities.flipImageDataVertically(imageData); }
+            if(settings.yFlip)           { _GFX.utilities.flipImageDataVertically(imageData); }
             
             // Handle color replacements. (by reference.)
-            // if(settings.colorData.length){ imageData = _GFX.utilities.replaceColors(imageData, settings.colorData); }
+            if(settings.colorData.length){ _GFX.utilities.replaceColors(imageData, settings.colorData); }
+
+            // Handle adding a background?  (by reference.)
+            if(settings.bgColorRgba){
+                this.parent.SETBG.setImageDataBgColorRgba(imageData, [0,0,0,0], settings.bgColorRgba);
+            }
+
+            // Handle per image fades (by reference.)
+            if(settings.fade != null){
+                createGraphicsAssets.applyFadeToImageDataArray(imageData.data, fadeLevel);
+            }
 
             // Return the width and height (only useful for non-square image data.)
             return { width:width, height:height };
@@ -823,6 +865,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             for(let i=0, len=newMapKeys.length; i<len; i+=1){
                 let newMapKey = newMapKeys[i];
                 let newMap = newMapData[newMapKey];
+                let curr_map = _GFX.currentData[layerKey].tilemaps[newMapKey];
 
                 // If this is a new map then currentData won't have it. Add it.
                 if(!_GFX.currentData[layerKey].tilemaps[newMapKey]){
@@ -832,23 +875,21 @@ messageFuncs.sendGfxUpdates.V4 = {
                     continue; 
                 }
                 
-                let curr_map = _GFX.currentData[layerKey].tilemaps[newMapKey];
-                
-                let curr_tmap = JSON.stringify(Array.from(curr_map.tmap));
-                let new_tmap  = JSON.stringify(Array.from(newMap.tmap));
-                if(curr_tmap != new_tmap){ 
+                let settings_same = _GFX.utilities.areSettingsObjectsEqual(curr_map.settings, newMap.settings);
+                if(!settings_same){ 
                     filtered_newMapKeys.push(newMapKey);
                     filtered_newMapData[newMapKey] = newMap;
-                    // filtered_reasons[newMapKey] = `${newMapKey}: Changed tmap: curr: ${curr_tmap}, new: ${new_tmap}`;
+                    // console.log(`${newMapKey}: Changed settings: curr: ${JSON.stringify(curr_map.settings)}, new: ${JSON.stringify(newMap.settings)}`)
+                    // filtered_reasons[newMapKey] = `${newMapKey}: Changed settings: curr: ${JSON.stringify(curr_map.settings)}, new: ${JSON.stringify(newMap.settings)}`;
                     continue; 
                 }
 
-                let curr_settings = JSON.stringify(curr_map.settings);
-                let new_settings  = JSON.stringify(newMap.settings);
-                if(curr_settings != new_settings){ 
+                let tmap_same = _GFX.utilities.areArraysEqual(curr_map.tmap, newMap.tmap);
+                if(!tmap_same){ 
                     filtered_newMapKeys.push(newMapKey);
                     filtered_newMapData[newMapKey] = newMap;
-                    // filtered_reasons[newMapKey] = `${newMapKey}: Changed settings: curr: ${curr_settings}, new: ${new_settings}`;
+                    // console.log(`${newMapKey}: Changed tmap: curr: ${curr_map.tmap}, new: ${newMap.tmap}`);
+                    // filtered_reasons[newMapKey] = `${newMapKey}: Changed tmap: curr: ${curr_map.tmap}, new: ${newMap.tmap}`;
                     continue; 
                 }
 
@@ -861,29 +902,12 @@ messageFuncs.sendGfxUpdates.V4 = {
                     continue; 
                 }
 
-                // let curr_w = curr_map.w;
-                // let new_w = newMap.w;
-                // if(curr_w != new_w){ 
-                //     filtered_newMapKeys.push(newMapKey);
-                //     filtered_newMapData[newMapKey] = newMap;
-                //     // filtered_reasons[newMapKey] = `${newMapKey}: Changed w: curr: ${curr_w}, new: ${new_w}`;
-                //     continue; 
-                // }
-
-                // let curr_h = curr_map.h;
-                // let new_h = newMap.h;
-                // if(curr_h != new_h){ 
-                //     filtered_newMapKeys.push(newMapKey);
-                //     filtered_newMapData[newMapKey] = newMap;
-                //     // filtered_reasons[newMapKey] = `${newMapKey}: Changed h: curr: ${curr_h}, new: ${new_h}`;
-                //     continue; 
-                // }
-
                 // Save the updated data to the data cache.
-                _GFX.currentData[layerKey].tilemaps[newMapKey].x = newMap.x;
-                _GFX.currentData[layerKey].tilemaps[newMapKey].y = newMap.y;
-                _GFX.currentData[layerKey].tilemaps[newMapKey].tmap = newMap.tmap;
-                _GFX.currentData[layerKey].tilemaps[newMapKey].hash = newMap.hash;
+                _GFX.currentData[layerKey].tilemaps[newMapKey].x        = newMap.x;
+                _GFX.currentData[layerKey].tilemaps[newMapKey].y        = newMap.y;
+                _GFX.currentData[layerKey].tilemaps[newMapKey].tmap     = newMap.tmap;
+                _GFX.currentData[layerKey].tilemaps[newMapKey].settings = newMap.settings;
+                _GFX.currentData[layerKey].tilemaps[newMapKey].hash     = newMap.hash;
                 _GFX.currentData[layerKey].tilemaps[newMapKey].hashPrev = newMap.hashPrev;
             }
 
@@ -906,27 +930,65 @@ messageFuncs.sendGfxUpdates.V4 = {
             let cacheHit = false; 
             let tw;
             let th;
-            let hashCacheHash;
-            let hashCacheHash_BASE;
+            let genTime
+            let relatedMapKey;
             for(let i=0, len=mapKeys.length; i<len; i+=1){
                 cacheHit = false;
 
                 // Get the mapKey and the map;
                 mapKey = mapKeys[i];
                 map = maps[mapKey];
-                
+
+                // If the tmap was not supplied use the default tmap.
+                if(!map.tmap){
+                    console.log("No tmap supplied. Using the default tmap.");
+                    if     (_GFX.tilesets[map.ts].tilemaps[mapKey])        { map.tmap = _GFX.tilesets[map.ts].tilemaps[mapKey]; }
+                    else if(_GFX.tilesets[map.ts].tilemaps[map.mapKey])    { map.tmap = _GFX.tilesets[map.ts].tilemaps[map.mapKey]; }
+                    else if(_GFX.tilesets[map.ts].tilemaps[map.baseMapKey]){ map.tmap = _GFX.tilesets[map.ts].tilemaps[map.baseMapKey]; }
+                    else{
+                        console.log("ERROR: map:", map, _GFX.tilesets[map.ts].tilemaps); 
+                        throw `createImageDataFromTilemapsAndUpdateGraphicsCache: tmap not found.`;
+                    }
+                }
+
                 // Get the tileWidth and tileHeight
                 tw = _GFX.tilesets[ map.ts ].config.tileWidth;
                 th = _GFX.tilesets[ map.ts ].config.tileHeight;
 
                 // Use the supplied hashCacheHash and hashMapHash_BASE.
-                hashCacheHash      = map.hashCacheHash;
-                hashCacheHash_BASE = map.hashCacheHash_BASE;
+                if(map.hashCacheHash && map.hashCacheHash_BASE){
+                    // console.log(`Using supplied hashCacheHash_BASE and hashCacheHash for ${mapKey}`);
+                    map.hashCacheHash      = map.hashCacheHash;
+                    map.hashCacheHash_BASE = map.hashCacheHash_BASE;
+                }
+                
+                else{
+                    // console.log(`hashCacheHash_BASE and hashCacheHash where not supplied for: ${mapKey}. Generating.`);
+                    
+                    // Generate hashCacheHash and hashMapHash_BASE (not including settings.)
+                    // Create a hash for the base of this tilemap.
+                    map.hashCacheHash_BASE = this.djb2Hash( JSON.stringify(
+                        {
+                            ts      : map.ts,
+                            settings: JSON.stringify(_GFX.defaultSettings),
+                            tmap    : Array.from(map.tmap),
+                        }
+                    ));
+
+                    // Create a unique hash for the tilemap data including settings.
+                    map.hashCacheHash = this.djb2Hash( JSON.stringify(
+                        {
+                            ts      : map.ts,
+                            settings: JSON.stringify(map.settings),
+                            tmap    : Array.from(map.tmap),
+                        }
+                    ));
+                }
 
                 // Use existing ImageData cache (Map)
-                if(this.hashCacheMap.has(hashCacheHash)){
+                if(this.hashCacheMap.has(map.hashCacheHash)){
                     // console.log("Cache hit: Map", mapKey, map);
-                    map.imgData = this.hashCacheMap.get(hashCacheHash).imgData;
+                    map.imgData = this.hashCacheMap.get(map.hashCacheHash).imgData;
                     if(map.imgData && map.imgData.width){ cacheHit = true; }
                 }
 
@@ -935,7 +997,9 @@ messageFuncs.sendGfxUpdates.V4 = {
                     // console.log("Not in cache Generating/Saving:", mapKey, map);
 
                     // Create the ImageData for this tilemap since it does not exist in the cache.
+                    genTime = performance.now();
                     map.imgData = this.createImageDataFromTilemap( map );
+                    genTime = performance.now() - genTime;
                     
                     // Get the number of bytes for the new hashCache entry (approximate.)
                     let hashCacheDataLength = JSON.stringify({
@@ -949,7 +1013,8 @@ messageFuncs.sendGfxUpdates.V4 = {
                     }).length;
 
                     // Save to hashCacheMap. (Map)
-                    this.hashCacheMap.set(hashCacheHash, {
+                    relatedMapKey = this.findRelatedMapKey(map.ts, map.tmap);
+                    this.hashCacheMap.set(map.hashCacheHash, {
                         imgData : map.imgData,
                         ts      : map.ts,
                         settings: map.settings,
@@ -957,24 +1022,45 @@ messageFuncs.sendGfxUpdates.V4 = {
                         w       : map.imgData.width, 
                         h       : map.imgData.height,
                         mapKey             : mapKey, // First tilemap key used by this hashCacheHash.
+                        relatedMapKey: relatedMapKey,
                         hashCacheDataLength: hashCacheDataLength,
                         removeHashOnRemoval: map.removeHashOnRemoval ?? false,
-                        hashCacheHash      : hashCacheHash,
-                        hashCacheHash_BASE : hashCacheHash_BASE,
+
+                        hashCacheHash      : map.hashCacheHash,
+                        hashCacheHash_BASE : map.hashCacheHash_BASE,
+                        
+                        genTime : genTime,
                     });
                 }
                 
                 // Save the completed data to the data cache.
                 // if(map.fadeBeforeDraw){ console.log("****"); }
                 if(save){
+                    // Ensure that all keys exist.
+                    if( !("mapKey"              in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: mapKey`; }
+                    if( !("hash"                in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: hash`; }
+                    if( !("hashPrev"            in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: hashPrev`; }
+                    if( !("ts"                  in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: ts`; }
+                    if( !("tmap"                in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: tmap`; }
+                    if( !("x"                   in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: x`; }
+                    if( !("y"                   in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: y`; }
+                    if( !("w"                   in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: w`; }
+                    if( !("h"                   in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: h`; }
+                    if( !("settings"            in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: settings`; }
+                    if( !("hashCacheHash"       in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: hashCacheHash`; }
+                    if( !("hashCacheHash_BASE"  in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: hashCacheHash_BASE`; }
+                    if( !("removeHashOnRemoval" in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: removeHashOnRemoval`; }
+                    if( !("noResort"            in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: noResort`; }
+
+                    // Save the data.
                     _GFX.currentData[layerKey].tilemaps[mapKey] = {
                         ...map,
                         // imgData       : map.imgData,
-                        removeHashOnRemoval: map.removeHashOnRemoval ?? false,
-                        fadeBeforeDraw: map.fadeBeforeDraw ?? false,
-                        hashCacheHash : hashCacheHash, // Used for future hashCache removals.
-                        hashCacheHash_BASE : hashCacheHash_BASE, // Used for future hashCache removals.
-                        mapKey: mapKey, // First tilemap key used by this hash.
+                        // removeHashOnRemoval: map.removeHashOnRemoval ?? false,
+                        // fadeBeforeDraw     : map.fadeBeforeDraw ?? false,
+                        // hashCacheHash      : map.hashCacheHash, // Used for future hashCache removals.
+                        // hashCacheHash_BASE : map.hashCacheHash_BASE, // Used for future hashCache removals.
+                        // mapKey: mapKey, // First tilemap key used by this hash.
                         // hash          : The current hash
                         // hashPrev      : The previous hash
                         // hashCacheHash : The hash for the hashCache.
@@ -1028,9 +1114,8 @@ messageFuncs.sendGfxUpdates.V4 = {
                     map.y,               // y
                     map.w,               // w
                     map.h,               // h
-                    // "onlyToAlpha0"       // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                    "blitDest"           // writeType ["onlyToAlpha0", "blitDest", "replace"]
-                    // "replace"            // writeType ["onlyToAlpha0", "blitDest", "replace"]
+                    "blitDest"           // writeType ["blitDest", "replace"]
+                    // "replace"            // writeType ["blitDest", "replace"]
                 );
             }
         },
@@ -1113,14 +1198,18 @@ messageFuncs.sendGfxUpdates.V4 = {
             let hashCacheStats = Array.from(messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.values()).map(d=>{
                 return {
                     mapKey: d.mapKey,
+                    relatedMapKey: d.relatedMapKey,
                     ts: d.ts,
-                    w: d.w, 
-                    h: d.h, 
+                    // w: d.w, 
+                    // h: d.h, 
+                    genTime            : d.genTime,
                     hashCacheDataLength: d.hashCacheDataLength,
                     removeHashOnRemoval: d.removeHashOnRemoval,
-                    hashCacheHash: d.hashCacheHash,
+                    hashCacheHash      : d.hashCacheHash,
+                    hashCacheHash_BASE : d.hashCacheHash_BASE,
+                    isBase             : d.hashCacheHash_BASE == d.hashCacheHash_BASE,
                 };
-            })
+            });
 
             messageFuncs.timings["sendGfxUpdates"]["hashCacheStats"] = hashCacheStats;
             messageFuncs.timings["sendGfxUpdates"].ALLTIMINGS = timeIt("", "getAll");

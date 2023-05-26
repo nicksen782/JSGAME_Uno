@@ -27,7 +27,10 @@ const messageFuncs = {
         let results = await createGraphicsAssets.process( 
             _GFX.configObj.tilesetFiles, 
             _GFX.configObj.createFadeTilesets
-        )
+        );
+
+        // Create image tilemaps for each tilemap and store to the hashCacheMap.
+        //
 
         // Save the converted tilesets.
         _GFX.tilesets = results.finishedTilesets;
@@ -113,7 +116,7 @@ const messageFuncs = {
 // Import the graphics module.
 importScripts("createGraphicsAssets.js");
 importScripts("ww_sendGfxUpdatesV4.js");
-importScripts("ww_sendGfxUpdatesV4_OLD.js");
+// importScripts("ww_sendGfxUpdatesV4_OLD.js");
 
 const timeItData = {};
 function timeIt(key, func){
@@ -318,7 +321,7 @@ const _GFX = {
             }
         },
 
-        // UNUSED: Axis-Aligned Bounding Box. (Determine if two rectangles are intersecting.)
+        // Axis-Aligned Bounding Box. (Determine if two rectangles are intersecting.)
         aabb_collisionDetection: function(rect1, rect2){
             // EXAMPLE USAGE:
             // aabb_collisionDetection({x:0,y:0,w:16,h:16}, {x:8,y:8,w:16,h:16});
@@ -350,6 +353,65 @@ const _GFX = {
                 w: overlapWidth,
                 h: overlapHeight
             };
+        },
+
+        // 
+        areArraysEqual: function(array1, array2) {
+            // Check if the arrays are the same length. If they are then there is nothing more that needs to be checked.
+            if (array1.length !== array2.length) { return false; }
+        
+            // Check if all items exist and are in the same order
+            for (let i = 0; i < array1.length; i++) {
+                // Handle arrays using recursion.
+                if (
+                    Array.isArray(array1[i]) && 
+                    Array.isArray(array2[i])
+                ) {
+                    if (!this.areArraysEqual(array1[i], array2[i])) {
+                        return false;
+                    }
+                } 
+                // Handle normal properties. Are these properties that same value?
+                else if (array1[i] !== array2[i]) {
+                    return false;
+                }
+            }
+        
+            // If we have not returned false by this point then the arrays are equal.
+            return true;
+        },
+        
+        //
+        areSettingsObjectsEqual: function(compareObj1, compareObj2=_GFX.defaultSettings) {
+            // These are the keys that are required.
+            let settingsKeys = Object.keys(_GFX.defaultSettings);
+            
+            // Check that obj1 and obj2 have all keys of settingsKeys.
+            for (let key in settingsKeys) {
+                if(!key in compareObj1){ 
+                    throw `areSettingsObjectsEqual: missing key in compareObj1: ${key}`; 
+                }
+                if(!key in compareObj2){ 
+                    throw `areSettingsObjectsEqual: missing key in compareObj2: ${key}`; 
+                }
+            }
+
+            for (let key in compareObj1) {
+                if (compareObj1.hasOwnProperty(key)) {
+                    if (
+                        Array.isArray(compareObj1[key]) && 
+                        Array.isArray(compareObj2[key])
+                    ) {
+                        if (!this.areArraysEqual(compareObj1[key], compareObj2[key])) {
+                            return false;
+                        }
+                    } 
+                    else if (compareObj1[key] !== compareObj2[key]) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         },
     
     },

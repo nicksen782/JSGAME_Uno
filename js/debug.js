@@ -59,13 +59,13 @@ var _DEBUG = {
             if(_APP.game.gameLoop.running){
                 toggleGameLoop.classList.remove("debug_bgColor_on");
                 toggleGameLoop.classList.add("debug_bgColor_off");
-                toggleGameLoop.innerText = "LOOP: OFF";
+                toggleGameLoop.innerText = "OFF";
                 _APP.game.gameLoop.loop_stop(); 
             } 
             else {
                 toggleGameLoop.classList.remove("debug_bgColor_off");
                 toggleGameLoop.classList.add("debug_bgColor_on");
-                toggleGameLoop.innerText = "LOOP: ON";
+                toggleGameLoop.innerText = "ON";
                 _APP.game.gameLoop.loop_start(); 
             } 
         }, false);
@@ -77,12 +77,12 @@ var _DEBUG = {
             if(_APP.game.gameLoop.skipLogic){
                 toggleLogic.classList.remove("debug_bgColor_on");
                 toggleLogic.classList.add("debug_bgColor_off");
-                toggleLogic.innerText = "LOGIC: OFF";
+                toggleLogic.innerText = "OFF";
             } 
             else {
                 toggleLogic.classList.remove("debug_bgColor_off");
                 toggleLogic.classList.add("debug_bgColor_on");
-                toggleLogic.innerText = "LOGIC: ON";
+                toggleLogic.innerText = "ON";
             } 
         }, false);
 
@@ -93,13 +93,34 @@ var _DEBUG = {
             if(_APP.configObj.drawAsync){
                 drawAsync.classList.remove("debug_bgColor_on");
                 drawAsync.classList.add("debug_bgColor_off");
-                drawAsync.innerText = "ASYNC: OFF";
+                drawAsync.innerText = "OFF";
             } 
             else {
                 drawAsync.classList.remove("debug_bgColor_off");
                 drawAsync.classList.add("debug_bgColor_on");
-                drawAsync.innerText = "ASYNC: ON";
+                drawAsync.innerText = "ON";
             } 
+        }, false);
+
+        // TOGGLE: DEBUG
+        let debugButton = document.getElementById("debug_toggleDebugFlag");
+        debugButton.addEventListener("click", ()=>{ 
+            _APP.debugActive = !_APP.debugActive;
+            console.log("debug", _APP.debugActive);
+            if(_APP.debugActive){
+                debugButton.classList.remove("debug_bgColor_off");
+                debugButton.classList.add("debug_bgColor_on");
+                debugButton.innerText = "ON";
+            } 
+            else {
+                debugButton.classList.remove("debug_bgColor_on");
+                debugButton.classList.add("debug_bgColor_off");
+                debugButton.innerText = "OFF";
+            } 
+            _WEBW_V.SEND("_DEBUG.toggleDebugFlag", { 
+                data: { debugActive: _APP.debugActive }, 
+                refs:[]
+            }, false, false);
         }, false);
 
         // GO TO GAMESTATE
@@ -130,9 +151,6 @@ var _DEBUG = {
         }, false);
     },
     
-    waitForDrawControl: function(){
-    },
-
     fadeHandler: function(){
         let fadeSliderALL     = document.getElementById("fadeSliderALL");
         let fadeSliderL1     = document.getElementById("fadeSliderL1");
@@ -1022,6 +1040,7 @@ var _DEBUG = {
         let elem = document.getElementById("debug_hashCacheList1");
         let elem2 = document.getElementById("debug_hashCacheStats1_hashCacheMapSize1");
         let elem3 = document.getElementById("debug_hashCacheStats1_hashCacheMapSize2");
+        let elem4 = document.getElementById("debug_hashCacheStats1_hashCache_genTime");
 
         if(elem2.innerText != this.hashCacheStats_size1.toString()){ 
             // console.log("display_hashCacheStats1: CHANGE: hashCacheStats_size1"); 
@@ -1040,22 +1059,43 @@ var _DEBUG = {
         let data;
         let maxLen1 = 0;
         let maxLen2 = 0;
+        let maxLen3 = 0;
+        let totalTempGenTime = 0;
         for(let index in this.hashCacheStats1){ 
             data = this.hashCacheStats1[index];
             if(data.mapKey.length > maxLen1){ maxLen1 = data.mapKey.length; }
-            if(data.ts.length > maxLen2){ maxLen2 = data.ts.length; }
+            if(data.relatedMapKey.length > maxLen2){ maxLen2 = data.relatedMapKey.length; }
+            if(data.ts.length > maxLen2){ maxLen3 = data.ts.length; }
+            if(data.removeHashOnRemoval){
+                totalTempGenTime += data.genTime;
+            }
         }
+
+        if(elem4.innerText != totalTempGenTime.toFixed(2)+" ms"){ 
+            // console.log("display_hashCacheStats1: CHANGE: totalTempGenTime"); 
+            elem4.innerText = totalTempGenTime.toFixed(2)+" ms"; 
+        }
+
         for(let index in this.hashCacheStats1){ 
             // Break-out the data.
             data = this.hashCacheStats1[index];
             
+            // let hashText = `${data.hashCacheHash == data.hashCacheHash_BASE ? "BASE" : "copy"} ${data.hashCacheHash}`;
+            let hashText = `${data.hashCacheHash == data.hashCacheHash_BASE ? "BASE" : "copy"}`;
+            // let hashText = `${data.hashCacheHash_BASE} : ${data.hashCacheHash == data.hashCacheHash_BASE ? "BASE" : data.hashCacheHash}`;
+
             // Update the newText string.
             newText += `` +
-                `${data.removeHashOnRemoval?".":"F"} ` +
+                `${data.removeHashOnRemoval?"(TEMP)":"(PERM)"} ` +
                 `${data.mapKey.toString().padEnd(maxLen1, " ")} ` + 
-                `${data.ts    .toString().padEnd(maxLen2, " ")} ` +
+                // `(${ (data.relatedMapKey ? data.relatedMapKey+")" : "<custom>)" ).padEnd(maxLen2, " ")} ` +
+                `(${ (data.relatedMapKey ? data.relatedMapKey+")" : "<custom>)" )} ` +
+                `\n  ${hashText}, ` +
+                `${data.ts    .toString().padEnd(maxLen3, " ")}, ` +
                 `${(data["hashCacheDataLength"]/1000).toFixed(0).padStart(6, " ")} KB` +
-                // `${data.hashCacheHash} ` +
+                `\n  ${data.hashCacheHash} B: ${data.hashCacheHash_BASE} ` +
+                `\n  genTime: ${data.genTime.toFixed(2)} ms` +
+                `\n` +
                 `\n`;
         }
 
@@ -1291,15 +1331,6 @@ _DEBUG.init = async function(){
         this.gameLoopControl();
         ts_gameLoopControl = performance.now() - ts_gameLoopControl;
 
-        // // Init waitForDrawControl.
-        // let ts_waitForDrawControl = performance.now(); 
-        // this.waitForDrawControl();
-        // ts_waitForDrawControl = performance.now() - ts_waitForDrawControl;
-
-        // Add event listener to the toggle debug button.
-        let debug_toggleDebugActive = document.getElementById("debug_toggleDebugFlag");
-        debug_toggleDebugActive.addEventListener("click", ()=>{_DEBUG.toggleDebugFlag(); }, false);
-        
         _DEBUG.timingsDisplay.gfx.init();
         _DEBUG.timingsDisplay.loop.init();
         _DEBUG.timingsDisplay.debug.init();
@@ -1330,7 +1361,6 @@ _DEBUG.init = async function(){
         // console.log("  ts_fadeHandler              :", ts_fadeHandler.toFixed(3));
         // console.log("  ts_elemsObjInit             :", ts_elemsObjInit.toFixed(3));
         // console.log("  ts_gameLoopControl          :", ts_gameLoopControl.toFixed(3));
-        // console.log("  ts_waitForDrawControl       :", ts_waitForDrawControl.toFixed(3));
         
         // Init init2.
         let ts_init2 = performance.now(); 

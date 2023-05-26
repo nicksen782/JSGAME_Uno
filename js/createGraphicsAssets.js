@@ -368,7 +368,6 @@
 
         // writeType: 
         // [
-        //     "onlyToAlpha0", // onlyWriteToTransparentDest
         //     "blitDest",     // blitDestTransparency
         //     "replace"       // Write by row instead of pixel.
         // ];
@@ -377,6 +376,9 @@
         let srcOffset, destOffset;
         let x_start = Math.max(0, -dx);
         let x_end = Math.min(w, destWidth - dx);
+
+        let offset;
+        let dest;
     
         // Quick fail test. (Are the destination coordinates outside of the destination?
         if( 
@@ -408,24 +410,16 @@
     
             switch(writeType){
                 case "blitDest": 
-                case "onlyToAlpha0":
-                    // for (let i = x_start * 4; i < x_end * 4; i += 4) {
                     for (let i = x_start << 2; i < x_end << 2; i += 4) {
                         // If the source pixel is fully transparent , the destination pixel is preserved.
-                        // if (writeType=="blitDest"     && source[srcIndex + i + 3] == 0) { continue; }
-                        if (writeType == "blitDest"     && source[srcOffset + i + 3] == 0) continue;
+                        if(source[srcOffset + i + 3] == 0) { continue; }
+                        offset = srcOffset + i;
+                        dest   = destOffset + i;
 
-                        // If the destination pixel is transparent then write the source pixel.
-                        // if (writeType=="onlyToAlpha0" && destination[destIndex + i + 3] !== 0) { continue; }
-                        if (writeType == "onlyToAlpha0" && destination[destOffset + i + 3] !== 0) continue;
-
-                        // Write the data.
-                        // destination.set(source.subarray(srcIndex + i, srcIndex + i + 4), destIndex + i);
-                        // destination.set(source.subarray(srcOffset + i, srcOffset + i + 4), destOffset + i);
-                        destination[destOffset + i + 0] = source[srcOffset + i + 0];
-                        destination[destOffset + i + 1] = source[srcOffset + i + 1];
-                        destination[destOffset + i + 2] = source[srcOffset + i + 2];
-                        destination[destOffset + i + 3] = source[srcOffset + i + 3];
+                        destination[dest] = source[offset];       // R
+                        destination[dest + 1] = source[offset + 1]; // G
+                        destination[dest + 2] = source[offset + 2]; // B
+                        destination[dest + 3] = source[offset + 3]; // A
                     }
                     break;
 

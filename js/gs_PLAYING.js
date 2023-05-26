@@ -1,3 +1,21 @@
+/*
+MAX CARDS EXPECTED TO BE ON SCREEN DURING PLAY:
+    DRAW PILE (UNO BACK)
+    DISCARD PILE FACE-UP CARD.
+    PLAYER1 CARDS 0-4 (5 total displayed)
+    PLAYER2 CARDS 0-4 (5 total displayed)
+    PLAYER3 CARDS 0-4 (5 total displayed)
+    PLAYER4 CARDS 0-4 (5 total displayed)
+    Non-active players only show the back card.
+    
+MAX CARDS EXPECTED TO BE ON SCREEN DURING END OF ROUND:
+    PLAYER1 CARDS 0-4 (5 total displayed)
+    PLAYER2 CARDS 0-4 (5 total displayed)
+    PLAYER3 CARDS 0-4 (5 total displayed)
+    PLAYER4 CARDS 0-4 (5 total displayed)
+    LARGE CARD: 1
+    Players not actively adding to the score only show the back card.
+*/
 _APP.game.gamestates["gs_PLAYING"] = {
     gameSettings: {
         P1  : "HUMAN",
@@ -371,143 +389,196 @@ _APP.game.gamestates["gs_PLAYING"] = {
         }
     },
 
-    // The deck (every card.)
-    deck: new Array(108), 
+    anims: {
+        objs:{},
+        // add: function(){ console.log("add :", this.parent); },
+    },
 
-    // Resets the deck to it's unshuffled state with all cards in the DRAW_PILE
-    // Also sets the initial states for each card in the deck.
-    resetDeck: function(){
+    // The deck (every card.)
+    deck: [
         // WILD
-        this.deck[0] = { location: "CARD_LOCATION_DRAW", value: "CARD_WILD", color: "CARD_BLACK" };
-        this.deck[1] = { location: "CARD_LOCATION_DRAW", value: "CARD_WILD", color: "CARD_BLACK" };
-        this.deck[2] = { location: "CARD_LOCATION_DRAW", value: "CARD_WILD", color: "CARD_BLACK" };
-        this.deck[3] = { location: "CARD_LOCATION_DRAW", value: "CARD_WILD", color: "CARD_BLACK" };
+        { location: "CARD_LOCATION_DRAW", value: "CARD_WILD", color: "CARD_BLACK" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_WILD", color: "CARD_BLACK" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_WILD", color: "CARD_BLACK" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_WILD", color: "CARD_BLACK" },
 
         // WILD DRAW FOUR
-        this.deck[4] = { location: "CARD_LOCATION_DRAW", value: "CARD_WILD_DRAW4", color: "CARD_BLACK" };
-        this.deck[5] = { location: "CARD_LOCATION_DRAW", value: "CARD_WILD_DRAW4", color: "CARD_BLACK" };
-        this.deck[6] = { location: "CARD_LOCATION_DRAW", value: "CARD_WILD_DRAW4", color: "CARD_BLACK" };
-        this.deck[7] = { location: "CARD_LOCATION_DRAW", value: "CARD_WILD_DRAW4", color: "CARD_BLACK" };
+        { location: "CARD_LOCATION_DRAW", value: "CARD_WILD_DRAW4", color: "CARD_BLACK" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_WILD_DRAW4", color: "CARD_BLACK" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_WILD_DRAW4", color: "CARD_BLACK" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_WILD_DRAW4", color: "CARD_BLACK" },
 
         // YELLOW
-        this.deck[8]  = { location: "CARD_LOCATION_DRAW", value: "CARD_0"    , color: "CARD_YELLOW" }; 
-        this.deck[9]  = { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_YELLOW" }; 
-        this.deck[10] = { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_YELLOW" }; 
-        this.deck[11] = { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_YELLOW" }; 
-        this.deck[12] = { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_YELLOW" }; 
-        this.deck[13] = { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_YELLOW" }; 
-        this.deck[14] = { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_YELLOW" }; 
-        this.deck[15] = { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_YELLOW" }; 
-        this.deck[16] = { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_YELLOW" }; 
-        this.deck[17] = { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_YELLOW" }; 
-        this.deck[18] = { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_YELLOW" }; 
-        this.deck[19] = { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_YELLOW" }; 
-        this.deck[20] = { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_YELLOW" }; 
-        this.deck[21] = { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_YELLOW" }; 
-        this.deck[22] = { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_YELLOW" }; 
-        this.deck[23] = { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_YELLOW" }; 
-        this.deck[24] = { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_YELLOW" }; 
-        this.deck[25] = { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_YELLOW" }; 
-        this.deck[26] = { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_YELLOW" }; 
-        this.deck[27] = { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_YELLOW" }; 
-        this.deck[28] = { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_YELLOW" }; 
-        this.deck[29] = { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_YELLOW" }; 
-        this.deck[30] = { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_YELLOW" }; 
-        this.deck[31] = { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_YELLOW" }; 
-        this.deck[32] = { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_YELLOW" }; 
-        
+        { location: "CARD_LOCATION_DRAW", value: "CARD_0"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_YELLOW" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_YELLOW" },
+
         // BLUE
-        this.deck[33] = { location: "CARD_LOCATION_DRAW", value: "CARD_0"    , color: "CARD_BLUE" }; 
-        this.deck[34] = { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_BLUE" }; 
-        this.deck[35] = { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_BLUE" }; 
-        this.deck[36] = { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_BLUE" }; 
-        this.deck[37] = { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_BLUE" }; 
-        this.deck[38] = { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_BLUE" }; 
-        this.deck[39] = { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_BLUE" }; 
-        this.deck[40] = { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_BLUE" }; 
-        this.deck[41] = { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_BLUE" }; 
-        this.deck[42] = { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_BLUE" }; 
-        this.deck[43] = { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_BLUE" }; 
-        this.deck[44] = { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_BLUE" }; 
-        this.deck[45] = { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_BLUE" }; 
-        this.deck[46] = { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_BLUE" }; 
-        this.deck[47] = { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_BLUE" }; 
-        this.deck[48] = { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_BLUE" }; 
-        this.deck[49] = { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_BLUE" }; 
-        this.deck[50] = { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_BLUE" }; 
-        this.deck[51] = { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_BLUE" }; 
-        this.deck[52] = { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_BLUE" }; 
-        this.deck[53] = { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_BLUE" }; 
-        this.deck[54] = { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_BLUE" }; 
-        this.deck[55] = { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_BLUE" }; 
-        this.deck[56] = { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_BLUE" }; 
-        this.deck[57] = { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_BLUE" }; 
+        { location: "CARD_LOCATION_DRAW", value: "CARD_0"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_BLUE" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_BLUE" },
 
-        this.deck[58] = { location: "CARD_LOCATION_DRAW", value: "CARD_0"    , color: "CARD_RED" }; 
-        this.deck[59] = { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_RED" }; 
-        this.deck[60] = { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_RED" }; 
-        this.deck[61] = { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_RED" }; 
-        this.deck[62] = { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_RED" }; 
-        this.deck[63] = { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_RED" }; 
-        this.deck[64] = { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_RED" }; 
-        this.deck[65] = { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_RED" }; 
-        this.deck[66] = { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_RED" }; 
-        this.deck[67] = { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_RED" }; 
-        this.deck[68] = { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_RED" }; 
-        this.deck[69] = { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_RED" }; 
-        this.deck[70] = { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_RED" }; 
-        this.deck[71] = { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_RED" }; 
-        this.deck[72] = { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_RED" }; 
-        this.deck[73] = { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_RED" }; 
-        this.deck[74] = { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_RED" }; 
-        this.deck[75] = { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_RED" }; 
-        this.deck[76] = { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_RED" }; 
-        this.deck[77] = { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_RED" }; 
-        this.deck[78] = { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_RED" }; 
-        this.deck[79] = { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_RED" }; 
-        this.deck[80] = { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_RED" }; 
-        this.deck[81] = { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_RED" }; 
-        this.deck[82] = { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_RED" }; 
+        // RED
+        { location: "CARD_LOCATION_DRAW", value: "CARD_0"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_RED" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_RED" },
 
-        this.deck[83] = { location: "CARD_LOCATION_DRAW", value: "CARD_0"    , color: "CARD_GREEN" }; 
-        this.deck[84] = { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_GREEN" }; 
-        this.deck[85] = { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_GREEN" }; 
-        this.deck[86] = { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_GREEN" }; 
-        this.deck[87] = { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_GREEN" }; 
-        this.deck[88] = { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_GREEN" }; 
-        this.deck[89] = { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_GREEN" }; 
-        this.deck[90] = { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_GREEN" }; 
-        this.deck[91] = { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_GREEN" }; 
-        this.deck[92] = { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_GREEN" }; 
-        this.deck[93] = { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_GREEN" }; 
-        this.deck[94] = { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_GREEN" }; 
-        this.deck[95] = { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_GREEN" }; 
-        this.deck[96] = { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_GREEN" }; 
-        this.deck[97] = { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_GREEN" }; 
-        this.deck[98] = { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_GREEN" }; 
-        this.deck[99] = { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_GREEN" }; 
-        this.deck[100] ={ location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_GREEN" }; 
-        this.deck[101] ={ location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_GREEN" }; 
-        this.deck[102] ={ location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_GREEN" }; 
-        this.deck[103] ={ location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_GREEN" }; 
-        this.deck[104] ={ location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_GREEN" }; 
-        this.deck[105] ={ location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_GREEN" }; 
-        this.deck[106] ={ location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_GREEN" }; 
-        this.deck[107] ={ location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_GREEN" }; 
+        // GREEN
+        { location: "CARD_LOCATION_DRAW", value: "CARD_0"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_1"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_2"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_3"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_4"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_5"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_6"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_7"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_8"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_9"    , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_DRAW2", color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_SKIP" , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_GREEN" },
+        { location: "CARD_LOCATION_DRAW", value: "CARD_REV"  , color: "CARD_GREEN" },
+    ], 
+
+    cardPoints: {
+        "CARD_WILD"      : 50,
+        "CARD_WILD_DRAW4": 50,
+        "CARD_DRAW2"     : 20,
+        "CARD_SKIP"      : 20,
+        "CARD_REV"       : 20,
+        "CARD_0": 0,
+        "CARD_1": 1,
+        "CARD_2": 2,
+        "CARD_3": 3,
+        "CARD_4": 4,
+        "CARD_5": 5,
+        "CARD_6": 6,
+        "CARD_7": 7,
+        "CARD_8": 8,
+        "CARD_9": 9,
+    },
+
+    // Sets the location of each card to the DRAW_PILE.
+    resetDeck: function(){
+        for(let card of this.deck){
+            card.location = "CARD_LOCATION_DRAW";
+        }
     },
 
     // Randomly shuffles the deck.
     shuffleDeck: function(){
         // Based on: Fisher-Yates (also known as Knuth) shuffle algorithm.
-        for (let i = this.deck.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
+        let times = 2;
+
+        // Do it X times.
+        // let ts = performance.now();
+        for(let c=0; c<times; c+=1){
+            for (let i = this.deck.length - 1; i > 0; i--) {
+                // const j = Math.floor(Math.random() * (i + 1));
+                const j = (Math.random() * (i + 1)) | 0;
+                [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
+            }
         }
+        // console.log("Shuffle time:", performance.now() -ts);
+    },
+
+    // UNUSED
+    // Randomly shuffles an array of cards.
+    shuffleArray: function(cards){
+        // Based on: Fisher-Yates (also known as Knuth) shuffle algorithm.
+        let times = 2;
+
+        // Do it X times.
+        // let ts = performance.now();
+        for(let c=0; c<times; c+=1){
+            for (let i = cards.length - 1; i > 0; i--) {
+                // const j = Math.floor(Math.random() * (i + 1));
+                const j = (Math.random() * (i + 1)) | 0;
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+            }
+        }
+        // console.log("Shuffle time:", performance.now() -ts);
     },
 
     // Move card to discard pile.
     moveCardToDiscardPile(card_layerObjKey, card){
-        
     },
 
     // Get a random card from the draw pile (no assignment, just returns a random card.)
@@ -530,6 +601,41 @@ _APP.game.gamestates["gs_PLAYING"] = {
         return card;
     },
 
+    // Get the next card from the draw pile (no assignment, just returns a card.)
+    getNextCardFromDrawpile: function(){
+        // Filter out only the available cards.
+        let availableCards = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
+
+        // Are there any available cards in the draw pile?
+        if(availableCards.length == 0){
+            // No cards left. Convert the discard pile to the draw pile and shuffle those cards.
+            for(let card of this.deck){
+                if(card.location == "CARD_LOCATION_DISCARD"){
+                    card.location = "CARD_LOCATION_DRAW"
+                };
+            }
+    
+            // Filter out only the available cards.
+            // availableCards = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
+            
+            // Shuffle these cards.
+            // this.shuffleArray(availableCards);
+            
+            // Shuffle the deck.
+            this.shuffleDeck();
+            
+            // Filter out only the available cards.
+            availableCards = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
+
+            // Return the next card.
+            return availableCards[0];
+        }
+        else{
+            // Return the next card.
+            return availableCards[0];
+        }
+    },
+
     // Run once upon changing to this game state.
     init: function(){
         // Clear the screen and the graphics caches.
@@ -543,6 +649,9 @@ _APP.game.gamestates["gs_PLAYING"] = {
         // Create the gameboard graphics.
         this.gameBoard.parent = this;
         this.gameBoard.createGameBoard();
+        
+        // Set parent for anims.
+        this.anims.parent = this;
 
         // Determine which players are to be set as active and show their default texts.
         this.gameBoard.initPlayers();
@@ -550,6 +659,18 @@ _APP.game.gamestates["gs_PLAYING"] = {
         // Reset the deck and shuffle the deck.
         this.resetDeck();
         this.shuffleDeck();
+
+        // console.log( this.getNextCardFromDrawpile().location="CARD_LOCATION_PLAYER1" );
+        // console.log( this.getNextCardFromDrawpile().location="CARD_LOCATION_PLAYER1" );
+
+        // setTimeout(()=>{
+        //     this.getNextCardFromDrawpile().location="CARD_LOCATION_PLAYER1"
+        //     this.getNextCardFromDrawpile().location="CARD_LOCATION_PLAYER2"
+        //     this.getNextCardFromDrawpile().location="CARD_LOCATION_PLAYER3"
+        //     this.getNextCardFromDrawpile().location="CARD_LOCATION_PLAYER4"
+        //     this.getNextCardFromDrawpile().location="CARD_LOCATION_DISCARD"
+        //     this.getNextCardFromDrawpile().location="CARD_LOCATION_DRAW"
+        // }, 2000);
 
         // Set gamestate 2.
         _APP.game.changeGs2("getFirstPlayer");
@@ -595,11 +716,27 @@ _APP.game.gamestates["gs_PLAYING"] = {
         if(gpInputP1.held.BTN_SR && gpInputP1.press.BTN_LEFT) { _GFX.layerObjs.getOne("debugCursor").x--; }
         if(gpInputP1.held.BTN_SR && gpInputP1.press.BTN_RIGHT){ _GFX.layerObjs.getOne("debugCursor").x++; }
 
+        // let card;
+        // card = this.getNextCardFromDrawpile();
+        // _GFX.layerObjs.updateOne(Card, { size: "sm", color:card.color, value: card.value , x:0, y:0, layerObjKey: "p1card", layerKey: "L1", xyByGrid: true } );
+        // card.location = "CARD_LOCATION_PLAYER1";
+
+        // this.getNextCardFromDrawpile().location="CARD_LOCATION_PLAYER2"
+        // this.getNextCardFromDrawpile().location="CARD_LOCATION_PLAYER3"
+        // this.getNextCardFromDrawpile().location="CARD_LOCATION_PLAYER4"
+        // this.getNextCardFromDrawpile().location="CARD_LOCATION_DISCARD"
+        // this.getNextCardFromDrawpile().location="CARD_LOCATION_DRAW"
+        
+        // this.anims.add();
+
         if(_APP.debugActive && _DEBUG){ this.debug(); }
-        return; 
+        // return; 
         if(_APP.game.gs2 == "gamestart"){
             // Set flags.
-            //
+            // _APP.shared.genTimer.create("timer1", 60); // After turn
+            // _APP.shared.genTimer.create("timer2", 60); // 
+            // _APP.shared.genTimer.create("timer3", 60); // 
+            // _APP.shared.genTimer.create("timer4", 60); // 
 
             _APP.game.gs2 == "getFirstPlayer";
         }
