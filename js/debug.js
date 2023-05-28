@@ -1006,6 +1006,10 @@ var _DEBUG = {
 
         // Go through all layer keys.
         let layerTextSet = false;
+        let coords;
+        let name;
+        let dims;
+
         for(let layerKey of layerKeys){ 
             layerTextSet = false;
 
@@ -1019,8 +1023,19 @@ var _DEBUG = {
                     // Display the layer header?
                     if(!layerTextSet){ newText += `LAYER: ${data.layerKey}:\n`; layerTextSet = true; }
 
+                    let w = data.tmap[0];
+                    let h = data.tmap[1];
+                    if(data.xyByGrid){
+                        w = w * _APP.configObj.dimensions.tileWidth;
+                        h = h * _APP.configObj.dimensions.tileHeight;
+                    }
+                    coords = `${data.x.toString().padStart(3, " ")}, ${data.y.toString().padStart(3, " ")}`;
+                    name   = `${layerObjKey}`;
+                    dims   = `${w.toString().padStart(3, " ")}, ${h.toString().padStart(3, " ")}`;
+
                     // Update the newText string.
-                    newText += `  (${data.x.toString().padStart(2, " ")}, ${data.y.toString().padStart(2, " ")}) ${layerObjKey}\n`;
+                    // newText += `  (${data.x.toString().padStart(2, " ")}, ${data.y.toString().padStart(2, " ")}) ${layerObjKey}\n`;
+                    newText += `  (${coords} ${dims}) ${name}\n`;
                 }
             }
         }
@@ -1031,6 +1046,7 @@ var _DEBUG = {
             elem.innerText = newText;
         }
     },
+
     hashCacheStats1:{},
     hashCacheStats_size1:0,
     hashCacheStats_size2:0,
@@ -1095,6 +1111,7 @@ var _DEBUG = {
                 `${(data["hashCacheDataLength"]/1000).toFixed(0).padStart(6, " ")} KB` +
                 `\n  ${data.hashCacheHash} B: ${data.hashCacheHash_BASE} ` +
                 `\n  genTime: ${data.genTime.toFixed(2)} ms` +
+                `\n  hasTransparency: ${data.hasTransparency? "TRUE" : "false"}` +
                 `\n` +
                 `\n`;
         }

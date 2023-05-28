@@ -317,6 +317,7 @@ var _GFX = {
                 // Render the layer objects if it contains the render function.
                 if(obj.render){ 
                     temp = obj.render(true); 
+                    if(!temp){ continue; }
                     layerObjects[temp.layerKey][key] = temp;
                     cnt += 1;
                 }
@@ -1162,6 +1163,28 @@ class LayerObject {
     };
 
     // Render function.
+    clampXandY(x, y, w, h){
+        let maxX = _APP.configObj.dimensions.cols * _APP.configObj.dimensions.tileWidth;
+        let maxY = _APP.configObj.dimensions.rows * _APP.configObj.dimensions.tileHeight;
+
+        // console.log(x,y,w,h, this);
+
+        // Min/Max x.
+        x = Math.max(
+            0-w, 
+            // Math.min(x, maxX)
+            Math.min(x, maxX+w)
+        );
+        
+        // Min/Max y.
+        y = Math.max(
+            0-h, 
+            Math.min(y, maxY+h)
+        );
+
+        return { x:x, y:y };
+    };
+
     render(onlyReturnLayerObjData=false){
         // Do not render unchanged LayerObjects.
         if(!this._changed){ return; }
@@ -1173,6 +1196,11 @@ class LayerObject {
             x = x * this.tw; 
             y = y * this.th;
         }
+        
+        // Clamp x and y to the acceptable range on screen.
+        let w = this.tmap[0] * _APP.configObj.dimensions.tileWidth;
+        let h = this.tmap[1] * _APP.configObj.dimensions.tileHeight;
+        ({x,y} = this.clampXandY(x,y, w, h));
 
         //
         let layerObjectData;
@@ -1255,7 +1283,12 @@ class PrintText extends LayerObject{
             removeHashOnRemoval: this.removeHashOnRemoval,
             noResort           : this.noResort,
         });
+        this.tmap = layerObjectData[this.layerObjKey].tmap;
 
+        // Clamp x and y to the acceptable range on screen.
+        let w = this.tmap[0];
+        let h = this.tmap[1];
+        ({x:layerObjectData[this.layerObjKey].x ,y: layerObjectData[this.layerObjKey].y} = this.clampXandY(x,y, w, h));
 
         if(onlyReturnLayerObjData){ 
             layerObjectData[this.layerObjKey].layerKey = this.layerKey;

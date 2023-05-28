@@ -160,7 +160,6 @@
             <label class="debug_title">BUTTONS!</label>
             <button id="debug_test_drawColorPalette">drawColorPalette (L4)</button>
             <button id="debug_test_toggleGridCanvas">toggleGridCanvas</button>
-            <button id="debug_toggleDebugFlag">DEBUG: ON</button>
         </div>
     </div>
     
@@ -169,14 +168,16 @@
         <label class="debug_title">HASHCACHE DATA:</label>
         <table class="debug_table">
             <tr>
-                <td></td>
+                <!-- <td></td> -->
                 <td>Entries</td>
                 <td>Total Size</td>
+                <td>genTime (TEMP)</td>
             </tr>
             <tr>
-                <td class="debug_td_header">hashCache</td> 
+                <!-- <td class="debug_td_header">hashCache</td>  -->
                 <td class=""> <div id="debug_hashCacheStats1_hashCacheMapSize1">0</div></td> 
                 <td class=""> <div id="debug_hashCacheStats1_hashCacheMapSize2">0</div></td> 
+                <td class=""> <div id="debug_hashCacheStats1_hashCache_genTime">0</div></td> 
             </tr>
         </table>
         <br>
@@ -262,19 +263,23 @@
             <tr> 
                 <td class="debug_td_header">LOOP</td>
                 <td class="debug_td_header">LOGIC</td>
-                <td class="debug_td_header">DRAW</td>
+                <td class="debug_td_header">ASYNC DRAW</td>
+                <td class="debug_td_header">DEBUG</td>
                 <td class="debug_td_header">CHANGE GS1</td>
                 <td class="debug_td_header">RESTART GS1</td>
             </tr> 
             <tr> 
-                <td class="debug_td_short3">
-                    <button id="debug_test_toggleGameLoop" class="debug_bgColor_on">LOOP: ON</button>
+                <td class="debug_td_short4">
+                    <button id="debug_test_toggleGameLoop" class="debug_bgColor_on">ON</button>
                 </td> 
-                <td class="debug_td_short3">
-                    <button id="debug_test_toggleLogic" class="debug_bgColor_on">LOGIC: ON</button>
+                <td class="debug_td_short4">
+                    <button id="debug_test_toggleLogic" class="debug_bgColor_on">ON</button>
                 </td> 
-                <td class="debug_td_short3">
-                    <button id="debug_test_toggleDrawAsync" class="debug_bgColor_on">ASYNC: ON</button>
+                <td class="debug_td_short4">
+                    <button id="debug_test_toggleDrawAsync" class="debug_bgColor_on">ON</button>
+                </td> 
+                <td class="debug_td_short4">
+                    <button id="debug_toggleDebugFlag" class="debug_bgColor_on">ON</button>
                 </td> 
                 <td> 
                     <select id="debug_changeGs1Select">
@@ -311,7 +316,23 @@
         <div id="debug_navBarViews2">
             <div id="debug_navBar2_view_gs_JSG" class="controls_navBarViews">view: gs_JSG</div>
             <div id="debug_navBar2_view_gs_N782" class="controls_navBarViews">view: gs_N782</div>
-            <div id="debug_navBar2_view_gs_TITLE" class="controls_navBarViews">view: gs_TITLE</div>
+            <div id="debug_navBar2_view_gs_TITLE" class="controls_navBarViews">
+                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_u.y --;">U UP</button>
+                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_u.y ++;">U DN</button>
+                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_u.x --;">U LE</button>
+                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_u.x ++;">U RI</button>
+                <br>
+                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_n.y --;">N UP</button>
+                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_n.y ++;">N DN</button>
+                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_n.x --;">N LE</button>
+                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_n.x ++;">N RI</button>
+                <br>
+                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_o.y --;">O UP</button>
+                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_o.y ++;">O DN</button>
+                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_o.x --;">O LE</button>
+                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_o.x ++;">O RI</button>
+                <br>
+            </div>
             <div id="debug_navBar2_view_gs_RULES" class="controls_navBarViews">view: gs_RULES</div>
             <div id="debug_navBar2_view_gs_CREDITS" class="controls_navBarViews">view: gs_CREDITS</div>
             <div id="debug_navBar2_view_gs_OPTIONS" class="controls_navBarViews">view: gs_OPTIONS</div>
@@ -396,8 +417,14 @@
                     <tr> <td class="debug_td_header">P2</td>     <td> <div id="debug_P2Cards" class="debug_cardDisplay"></div> </td>     </tr>
                     <tr> <td class="debug_td_header">P3</td>     <td> <div id="debug_P3Cards" class="debug_cardDisplay"></div> </td>     </tr>
                     <tr> <td class="debug_td_header">P4</td>     <td> <div id="debug_P4Cards" class="debug_cardDisplay"></div> </td>     </tr>
-                </tr>
-            </table>
+                </table>
+
+                <br>
+                <button onmousedown="_GFX.layerObjs.objs.gs_PLAYING.drapBorder_fill.y --;">DPF UP</button>
+                <button onmousedown="_GFX.layerObjs.objs.gs_PLAYING.drapBorder_fill.y ++;">DPF DN</button>
+                <button onmousedown="_GFX.layerObjs.objs.gs_PLAYING.drapBorder_fill.x --;">DPF LE</button>
+                <button onmousedown="_GFX.layerObjs.objs.gs_PLAYING.drapBorder_fill.x ++;">DPF RI</button>
+                <br>
             </div>
 
         </div>

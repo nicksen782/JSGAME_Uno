@@ -155,8 +155,8 @@
         }
 
         return {
-            // hasTransparency   : transparentPixelCounter ? true : false, 
-            // isFullyTransparent: transparentPixelCounter == tileData.length, 
+            hasTransparency   : transparentPixelCounter ? true : false, 
+            isFullyTransparent: transparentPixelCounter == tileData.length, 
             tileDataRgb332    : tileDataRgb332,
         }
     }
@@ -169,7 +169,7 @@
 
         let tileDataRgb32 = new Uint8ClampedArray( tileWidth * tileHeight * 4);
 
-        // let transparentPixelCounter = 0;
+        let transparentPixelCounter = 0;
 
         let rgba32_index = 0;
         let nR;
@@ -184,7 +184,7 @@
 
             // Transparent pixel?
             if(rgb332_byte == translucent_color){ 
-                // transparentPixelCounter += 1;
+                transparentPixelCounter += 1;
             }
 
             // Not a transparent pixel.
@@ -206,8 +206,8 @@
         }
 
         return {
-            // hasTransparency   : transparentPixelCounter ? true : false, 
-            // isFullyTransparent: transparentPixelCounter == tileData.length, 
+            hasTransparency   : transparentPixelCounter ? true : false, 
+            isFullyTransparent: transparentPixelCounter == tileData.length, 
             tileDataRgb32     : tileDataRgb32,
         }
     }
@@ -298,17 +298,16 @@
                             // Image Data
                             imgData: new ImageData(tileWidth, tileHeight),
 
-                            // Flags.
-                            // TODO: These are not actually used anywhere.
-                            // hasTransparency   : false, 
-                            // isFullyTransparent: false, 
+                            // Flags: transparency.
+                            hasTransparency   : false, 
+                            isFullyTransparent: false, 
                         };
 
                         // Generate rgba32 tile data from rgb332 data and save.
                         let tileDataRgba = rgb332TileDataToRgba32(rgb332Src, rgb332_tilesets[tsKey].config);
                         newTile.imgData.data.set(tileDataRgba.tileDataRgb32);
-                        // newTile.hasTransparency    = tileDataRgba.hasTransparency;
-                        // newTile.isFullyTransparent = tileDataRgba.isFullyTransparent;
+                        newTile.hasTransparency    = tileDataRgba.hasTransparency;
+                        newTile.isFullyTransparent = tileDataRgba.isFullyTransparent;
 
                         // Save this tile.
                         finishedTilesets[ tilesetName ].tileset[tileIndex] = newTile;
@@ -329,30 +328,58 @@
         return finishedTilesets;
     }
 
-    // Clear a region from the source (Uint8ClampedArray).
+
+    // CLEAR a region from the source (Uint8ClampedArray).
     function clearRegion(source, srcWidth, dx, dy, w, h) {
-        for (let y = dy; y < dy + h; y++) {
-            let rowStartIndex = y * srcWidth * 4;
-            for (let x = dx; x < dx + w; x++) {
-                let srcIndex = rowStartIndex + x * 4;
-                source[srcIndex] = source[srcIndex + 1] = source[srcIndex + 2] = source[srcIndex + 3] = 0;
+        let maxX = srcWidth;
+        let maxY = source.length / srcWidth;
+
+        let x_start = dx < 0 ? 0 : dx;
+        let x_end = dx + w > maxX ? maxX : dx + w;
+        let y_start = dy < 0 ? 0 : dy;
+        let y_end = dy + h > maxY ? maxY : dy + h;
+
+        // Entire region to be cleared lies outside the valid source area.
+        if (x_start == maxX || y_start == maxY || x_end == 0 || y_end == 0) {
+            return;
+        }
+
+        for (let y = y_start; y < y_end; y++) {
+            for (let x = x_start; x < x_end; x++) {
+                let index = (y * srcWidth + x) << 2;
+                source[index] = source[index + 1] = source[index + 2] = source[index + 3] = 0;
             }
         }
     }
 
-    // Copy a region from the source to a new Uint8ClampedArray.
-    function copyRegion(source, srcWidth, x, y, w, h) {
+    // COPY a region from the source to a new Uint8ClampedArray.
+    function copyRegion(source, srcWidth, dx, dy, w, h) {
+        let maxX = srcWidth;
+        let maxY = source.length / srcWidth;
+
+        let x_start = dx < 0 ? 0 : dx;
+        let y_start = dy < 0 ? 0 : dy;
+        let x_end = dx + w > maxX ? maxX : dx + w;
+        let y_end = dy + h > maxY ? maxY : dy + h;
+
+        // Adjust w, h based on any out-of-bounds portion
+        if (dx < 0) w += dx;
+        if (dy < 0) h += dy;
+
+        // Exit if the region to be copied is entirely out-of-bounds
+        if (x_start >= maxX || y_start >= maxY || x_end <= 0 || y_end <= 0 || w <= 0 || h <= 0) {
+            return new Uint8ClampedArray();
+        }
+
         let resultData = new Uint8ClampedArray(w * h * 4);
         let resultIndex = 0;
 
-        for (let j = y; j < y + h; j++) {
-            for (let i = x; i < x + w; i++) {
-                let srcIndex = (j * srcWidth + i) * 4;
-
+        for (let y = y_start; y < y_end; y++) {
+            for (let x = x_start; x < x_end; x++) {
+                let srcIndex = (y * srcWidth + x) * 4;
                 for (let k = 0; k < 4; k++) {
                     resultData[resultIndex + k] = source[srcIndex + k];
                 }
-
                 resultIndex += 4;
             }
         }
@@ -360,102 +387,66 @@
         return resultData;
     }
 
-    // Update a region in the destination with the source data (Uint8ClampedArray.)
-    function updateRegion(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h, writeType="replace") {
-        // source and destination should both be Uint8ClampedArray. 
-        // The bitwise math: x_start << 2; x_end << 2 are multipling by 4.
-        // The bitwise math: srcOffset << 2; destOffset << 2 are multipling by 4.
+    // BLIT a region in the destination with the source data (Uint8ClampedArray.)
+    function updateRegion_blit(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
+        let x_start = dx < 0 ? 0 : dx;
+        let x_end = dx + w > destWidth ? destWidth : dx + w;
+        let y_start = dy < 0 ? 0 : dy;
+        let y_end = dy + h > destHeight ? destHeight : dy + h;
 
-        // writeType: 
-        // [
-        //     "blitDest",     // blitDestTransparency
-        //     "replace"       // Write by row instead of pixel.
-        // ];
-
-        let srcIndex, destIndex, diff;
-        let srcOffset, destOffset;
-        let x_start = Math.max(0, -dx);
-        let x_end = Math.min(w, destWidth - dx);
-
-        let offset;
-        let dest;
-    
-        // Quick fail test. (Are the destination coordinates outside of the destination?
-        if( 
-            (dx < 0 -w)           // Fully offscreen to the left?
-            || (dx >= destWidth)  // Fully offscreen to the right?
-            || (dy < 0 -h)        // Fully offscreen to the top?
-            || (dy >= destHeight) // Fully offscreen to the bottom?
-        ){
-            // console.log("totally offscreen");
-            return; 
+        // Entire region to be blitted lies outside the valid destination area.
+        if (x_start == destWidth || y_start == destHeight || x_end == 0 || y_end == 0) {
+            return;
         }
-    
-        for (let y = 0; y < h; y++) {
-            // Out of bounds check on rows.
-            if (y + dy >= destHeight){
-                // console.log(`TOO LOW : Out of bounds: dy: ${dy}, y: ${y}, h: ${h}`);
-                break; 
-            }
-            if(y + dy < 0) {
-                // console.log(`TOO HIGH: Out of bounds: dy: ${dy}, y: ${y}, h: ${h}`);
-                continue; 
-            }
-    
-            // Calculate the starting source and destination indexes for this row.
-            // srcIndex  = y * srcWidth * 4;
-            // destIndex = ((y + dy) * destWidth + dx) * 4;
-            srcOffset  = y * srcWidth << 2;
-            destOffset = ((y + dy) * destWidth + dx) << 2;
-    
-            switch(writeType){
-                case "blitDest": 
-                    for (let i = x_start << 2; i < x_end << 2; i += 4) {
-                        // If the source pixel is fully transparent , the destination pixel is preserved.
-                        if(source[srcOffset + i + 3] == 0) { continue; }
-                        offset = srcOffset + i;
-                        dest   = destOffset + i;
 
-                        destination[dest] = source[offset];       // R
-                        destination[dest + 1] = source[offset + 1]; // G
-                        destination[dest + 2] = source[offset + 2]; // B
-                        destination[dest + 3] = source[offset + 3]; // A
-                    }
-                    break;
+        for (let y = y_start; y < y_end; y++) {
+            for (let x = x_start; x < x_end; x++) {
+                let srcOffset = ((y - dy) * srcWidth + (x - dx)) << 2;
+                let destOffset = (y * destWidth + x) << 2;
 
-                // The source pixel overwrites the destination pixel.
-                // One whole row at a time.
-                case "replace":
-                    // Bounds check.
-                    if(dx < 0){ 
-                        diff       = -dx;      // Diff will be a positive version of dx.
-                        // srcIndex  += diff * 4; // Add pixels to srcIndex (read ahead.)
-                        srcOffset  += diff << 2; // Add pixels to srcIndex (read ahead.)
-                        // destIndex += diff * 4; // Add pixels to destIndex (read ahead.)
-                        destOffset += diff << 2; // Add pixels to destIndex (read ahead.)
-                        x_end     -= diff;     // Reduce x_end since we will be reading "diff" pixels less than before.
-                        // console.log("FIXED: x is too far left:");
-                    }
-                    if(dx >= destWidth){
-                        // console.log("CANNOT FIX: IGNORE: x too far right");
-                        continue;
-                    }
+                let r = source[srcOffset],
+                    g = source[srcOffset + 1],
+                    b = source[srcOffset + 2],
+                    a = source[srcOffset + 3];
 
-                    // for (let i = x_start * 4; i < x_end * 4; i += 4) {
-                    //     destination.set(source.subarray(srcIndex + i, srcIndex + i + 4), destIndex + i);
-                    // }
-                    for (let i = x_start << 2; i < x_end << 2; i += 4) {
-                        destination.set(source.subarray(srcOffset + i, srcOffset + i + 4), destOffset + i);
-                    }
-                    
-                    break;
-    
-                default: 
-                    throw new Error(`Unsupported writeType: ${writeType}`);
+                if(a == 0) { continue; }
+
+                destination[destOffset] = r;
+                destination[destOffset + 1] = g;
+                destination[destOffset + 2] = b;
+                destination[destOffset + 3] = a;
             }
+        }
+    }
+
+    // REPLACE a region in the destination with the source data (Uint8ClampedArray.)
+    function updateRegion_replace(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
+        // source and destination should both be Uint8ClampedArray. 
+
+        let x_start = dx < 0 ? 0 : dx;
+        let x_end = dx + w > destWidth ? destWidth : dx + w;
+        let y_start = dy < 0 ? 0 : dy;
+        let y_end = dy + h > destHeight ? destHeight : dy + h;
+
+        // Entire region to be replaced lies outside the valid destination area.
+        if (x_start >= destWidth || y_start >= destHeight || x_end <= 0 || y_end <= 0) {
+            return;
+        }
+
+        for (let y = y_start; y < y_end; y++) {
+            let srcOffset = ((y - dy) * srcWidth + (x_start - dx)) << 2;
+            let destOffset = (y * destWidth + x_start) << 2;
+
+            let srcRowStart  = srcOffset;
+            let srcRowEnd = srcOffset + ((x_end - x_start) << 2);
+            let destRowStart = destOffset;
+
+            // Copy the entire row at once.
+            destination.set(source.subarray(srcRowStart, srcRowEnd), destRowStart);
         }
     };
-    
+
+
     // Performs the graphics processing functions. 
     async function process(tilesetFiles){
         let ts1 = performance.now();
@@ -486,7 +477,9 @@
         process : process,
 
         // Copy, update, clear of regions (Uint8ClampedArray.)
-        updateRegion : updateRegion,
+        // updateRegion : updateRegion,
+        updateRegion_blit : updateRegion_blit,
+        updateRegion_replace : updateRegion_replace,
         copyRegion   : copyRegion,
         clearRegion  : clearRegion,
 

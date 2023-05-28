@@ -144,8 +144,9 @@ div#debug_test_alwaysVisible {
   max-width: 100px;
 }
 .debug_td_short4 {
-  /* width: 100px; */
-  /* max-width: 100px; */
+  width: 90px;
+  max-width: 90px;
+  text-align: center;
 }
 
 .debug_progress-bar {
