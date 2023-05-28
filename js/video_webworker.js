@@ -244,7 +244,7 @@ const _GFX = {
             const { width, height, data } = imageData;
 
             // Create new ImageData.
-            const rotatedData = new Uint8ClampedArray(data.length);
+            const rotatedData = new Uint8Array(data.length);
         
             // Rotate the image and store it in the rotatedData array
             let targetX, targetY;
@@ -438,7 +438,7 @@ const _DEBUG = {
             a = 255;
 
             // Create the new tile container. 
-            thisTile = new Uint8ClampedArray( (4 * tw * th)*4);
+            thisTile = new Uint8Array( (4 * tw * th)*4);
 
             // Fill the tile container with the same color.
             let uint8Data = new Uint32Array(thisTile.buffer);

@@ -657,7 +657,7 @@ var _GFX = {
             // Value copy.
             let tilemap = _GFX.tilesets[ts].tilemaps[mapKey];
             if(!tilemap){ throw `getTilemap: Missing tmap: ts: ${ts}, mapKey: ${mapKey}`; }
-            return new Uint8ClampedArray(tilemap);
+            return new Uint8Array(tilemap);
         },
 
         // Removes a layer object and sets the changes for that layer to true. 
@@ -743,7 +743,7 @@ var _GFX = {
             let mapHeight = obj.text.length;
             
             // Start the new tilemap.
-            let newTilemap = new Uint8ClampedArray( 2 + (mapWidth * mapHeight) );
+            let newTilemap = new Uint8Array( 2 + (mapWidth * mapHeight) );
             newTilemap[0] = mapWidth;
             newTilemap[1] = mapHeight;
 
@@ -877,7 +877,7 @@ var _GFX = {
             }
 
             // Return a new tilemap with the width, height, and new tileIndexes.
-            return new Uint8ClampedArray([width, height, ...tileIndexes]);
+            return new Uint8Array([width, height, ...tileIndexes]);
         },
         // Performs a Y flip (vertical) transform on a tilemap.
         tilemap_flipY: function(map){
@@ -903,7 +903,7 @@ var _GFX = {
             }
 
             // Return a new tilemap with the width, height, and new tileIndexes.
-            return new Uint8ClampedArray([width, height, ...tileIndexes]);
+            return new Uint8Array([width, height, ...tileIndexes]);
         },
         // Performs a rotational transform on a tilemap.
         tilemap_rotate: function(map, degrees){
@@ -975,7 +975,7 @@ var _GFX = {
             }
 
             // Return a new tilemap with the width, height, and new tileIndexes.
-            return new Uint8ClampedArray([width, height, ...tileIndexes]);
+            return new Uint8Array([width, height, ...tileIndexes]);
         },
         // Performs required transforms to a tilemap and returns the new tilemap.
         tilemapTransform: function(tmap, settings){
@@ -1131,7 +1131,7 @@ class LayerObject {
         this.noResort = config.noResort ?? false,
 
         // Tilemap. (It is possible that a tilemap is not provided/required.)
-        this.tmap = config.tmap; // ?? new Uint8ClampedArray([1,1,0]);
+        this.tmap = config.tmap; // ?? new Uint8Array([1,1,0]);
 
         // X position.
         this.x = config.x ?? 0;

@@ -160,7 +160,7 @@ _APP.shared = {
                 settings: config.settings,
                 removeHashOnRemoval: true, noResort: false,
                 x: config.x, y: config.y, 
-                tmap: new Uint8ClampedArray(
+                tmap: new Uint8Array(
                     // Dimensions and top-left tile.
                     [config.w, 1, tile_border_tl ]
                     // Horizontal tiles.
@@ -179,7 +179,7 @@ _APP.shared = {
                 settings: config.settings,
                 removeHashOnRemoval: true, noResort: false,
                 x: config.x, y: config.y + config.h-1, 
-                tmap: new Uint8ClampedArray(
+                tmap: new Uint8Array(
                     // Dimensions and bottom-left tile.
                     [config.w, 1, tile_border_bl ]
                     // Horizontal tiles.
@@ -198,7 +198,7 @@ _APP.shared = {
                 settings: config.settings,
                 removeHashOnRemoval: true, noResort: false,
                 x: config.x, y: config.y+1, 
-                tmap: new Uint8ClampedArray(
+                tmap: new Uint8Array(
                     // Dimensions.
                     [ 1, config.h-2 ]
                     // Vertical tiles.
@@ -215,7 +215,7 @@ _APP.shared = {
                 settings: config.settings,
                 removeHashOnRemoval: true, noResort: false,
                 x: config.x+config.w-1, y: config.y+1, 
-                tmap: new Uint8ClampedArray(
+                tmap: new Uint8Array(
                     // Dimensions.
                     [ 1, config.h-2 ]
                     // Vertical tiles.
@@ -238,7 +238,7 @@ _APP.shared = {
                     xyByGrid: true, settings: {},
                     removeHashOnRemoval: true, noResort: false,
                     x:config.x+1, y:config.y+1,
-                    tmap: new Uint8ClampedArray(
+                    tmap: new Uint8Array(
                         // Dimensions.
                         [ config.w-2, config.h-2 ]
                         // Tiles

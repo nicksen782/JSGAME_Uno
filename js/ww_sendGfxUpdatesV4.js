@@ -746,7 +746,7 @@ messageFuncs.sendGfxUpdates.V4 = {
                 imageData = {
                     width : mapW * tw,
                     height: mapH * th,
-                    data : new Uint8ClampedArray(
+                    data : new Uint8Array(
                         (mapW * tw) * (mapH * th) * 4
                     )
                 }; 
@@ -770,7 +770,7 @@ messageFuncs.sendGfxUpdates.V4 = {
                 imageData = {
                     width : mapW * tw,
                     height: mapH * th,
-                    data : new Uint8ClampedArray(
+                    data : new Uint8Array(
                         (mapW * tw) * (mapH * th) * 4
                     )
                 }; 

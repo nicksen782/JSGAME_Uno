@@ -213,7 +213,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
                 xyByGrid: true, settings: {},
                 removeHashOnRemoval: true, noResort: false,
                 x:data.x, y:data.y,
-                tmap: new Uint8ClampedArray(
+                tmap: new Uint8Array(
                     // Dimensions.
                     [ data.w, data.h ]
                     // Tiles

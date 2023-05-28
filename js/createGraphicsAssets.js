@@ -48,11 +48,11 @@
             r = ( ( ( ( src[i] & 0b00000111 ) >> 0) / 7 ) * 100 ) << 0;
             g = ( ( ( ( src[i] & 0b00111000 ) >> 3) / 7 ) * 100 ) << 0;
             b = ( ( ( ( src[i] & 0b11000000 ) >> 6) / 3 ) * 100 ) << 0;
-            fadeMasksRGBA.unshift( new Uint8ClampedArray([ r, g, b ]) ); 
+            fadeMasksRGBA.unshift( new Uint8Array([ r, g, b ]) ); 
         }
         fadeMasksRGBA.reverse();
     };
-    // Modifies the supplied Uint8ClampedArray and applies a fade to each pixel (Uint8ClampedArray) (by reference.)
+    // Modifies the supplied Uint8Array and applies a fade to each pixel (Uint8Array) (by reference.)
     function applyFadeToImageDataArray(typedData, fadeLevel){
         let len  = typedData.length;
 
@@ -133,7 +133,7 @@
         let translucent_color = config.translucent_color;
         let fadeMask = fadeMasks[fadeLevel];
 
-        let tileDataRgb332 = new Uint8ClampedArray( tileWidth * tileHeight);
+        let tileDataRgb332 = new Uint8Array( tileWidth * tileHeight);
 
         let transparentPixelCounter = 0;
         let rgb332_index = 0;
@@ -167,7 +167,7 @@
         let tileWidth         = config.tileWidth;
         let translucent_color = config.translucent_color;
 
-        let tileDataRgb32 = new Uint8ClampedArray( tileWidth * tileHeight * 4);
+        let tileDataRgb32 = new Uint8Array( tileWidth * tileHeight * 4);
 
         let transparentPixelCounter = 0;
 
@@ -231,20 +231,20 @@
                         tilesetName: file.tilesetName ?? "",
                     };
             
-                    // Tile data: Parse/convert the JSON-string(s) to Uint8ClampedArray.
+                    // Tile data: Parse/convert the JSON-string(s) to Uint8Array.
                     if(file.tileset){
                         for(let tileId in file.tileset){ 
-                            let tile = new Uint8ClampedArray( JSON.parse(file.tileset[tileId]) );
+                            let tile = new Uint8Array( JSON.parse(file.tileset[tileId]) );
                             tileset.tileset[tileId] = {
                                 org_rgb332: tile
                             }; 
                         }
                     }
             
-                    // Tilemap data: Parse/convert the JSON-string(s) to Uint8ClampedArray.
+                    // Tilemap data: Parse/convert the JSON-string(s) to Uint8Array.
                     if(file.tilemaps){
                         for(let key in file.tilemaps){ 
-                            let tilemap = new Uint8ClampedArray( JSON.parse(file.tilemaps[key]) );
+                            let tilemap = new Uint8Array( JSON.parse(file.tilemaps[key]) );
                             tileset.tilemaps[key] = {
                                 org_rgb332: tilemap
                             }; 
@@ -291,7 +291,7 @@
                     let tileIndex = 0;
                     for(let tileId in rgb332_tilesets[tsKey].tileset){
                         // Copy of the original rgb332 tile.
-                        let rgb332Src = new Uint8ClampedArray( rgb332_tilesets[tsKey].tileset[tileId].org_rgb332.slice() );
+                        let rgb332Src = new Uint8Array( rgb332_tilesets[tsKey].tileset[tileId].org_rgb332.slice() );
 
                         // Start the object for this tile.
                         let newTile = {
@@ -329,7 +329,7 @@
     }
 
 
-    // CLEAR a region from the source (Uint8ClampedArray).
+    // CLEAR a region from the source (Uint8Array).
     function clearRegion(source, srcWidth, dx, dy, w, h) {
         let maxX = srcWidth;
         let maxY = source.length / srcWidth;
@@ -352,7 +352,7 @@
         }
     }
 
-    // COPY a region from the source to a new Uint8ClampedArray.
+    // COPY a region from the source to a new Uint8Array.
     function copyRegion(source, srcWidth, dx, dy, w, h) {
         let maxX = srcWidth;
         let maxY = source.length / srcWidth;
@@ -368,10 +368,10 @@
 
         // Exit if the region to be copied is entirely out-of-bounds
         if (x_start >= maxX || y_start >= maxY || x_end <= 0 || y_end <= 0 || w <= 0 || h <= 0) {
-            return new Uint8ClampedArray();
+            return new Uint8Array();
         }
 
-        let resultData = new Uint8ClampedArray(w * h * 4);
+        let resultData = new Uint8Array(w * h * 4);
         let resultIndex = 0;
 
         for (let y = y_start; y < y_end; y++) {
@@ -387,7 +387,7 @@
         return resultData;
     }
 
-    // BLIT a region in the destination with the source data (Uint8ClampedArray.)
+    // BLIT a region in the destination with the source data (Uint8Array.)
     function updateRegion_blit(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
         let x_start = dx < 0 ? 0 : dx;
         let x_end = dx + w > destWidth ? destWidth : dx + w;
@@ -419,9 +419,9 @@
         }
     }
 
-    // REPLACE a region in the destination with the source data (Uint8ClampedArray.)
+    // REPLACE a region in the destination with the source data (Uint8Array.)
     function updateRegion_replace(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
-        // source and destination should both be Uint8ClampedArray. 
+        // source and destination should both be Uint8Array. 
 
         let x_start = dx < 0 ? 0 : dx;
         let x_end = dx + w > destWidth ? destWidth : dx + w;
@@ -476,14 +476,14 @@
         // Init processing.
         process : process,
 
-        // Copy, update, clear of regions (Uint8ClampedArray.)
+        // Copy, update, clear of regions (Uint8Array.)
         // updateRegion : updateRegion,
         updateRegion_blit : updateRegion_blit,
         updateRegion_replace : updateRegion_replace,
         copyRegion   : copyRegion,
         clearRegion  : clearRegion,
 
-        // Fades (Uint8ClampedArray.)
+        // Fades (Uint8Array.)
         applyFadeToRgbaArray    : applyFadeToRgbaArray,
         applyFadeToImageDataArray : applyFadeToImageDataArray,
     };
