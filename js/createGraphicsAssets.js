@@ -125,119 +125,167 @@
     // * IMAGE DATA UPDATES *
     // **********************
 
-    // CLEAR a region from the source (Uint8Array).
+    // Function to CLEAR a region from the source image (represented as a Uint8Array).
     function clearRegion(source, srcWidth, dx, dy, w, h) {
+        // Calculate the maximum X (width) and Y (height) based on the given source and source width
         let maxX = srcWidth;
         let maxY = source.length / srcWidth;
 
-        let x_start = dx < 0 ? 0 : dx;
-        let x_end = dx + w > maxX ? maxX : dx + w;
-        let y_start = dy < 0 ? 0 : dy;
-        let y_end = dy + h > maxY ? maxY : dy + h;
+        // Determine the start and end of the destination region in both dimensions.
+        // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
+        let x_start = dx < 0        ? 0    : dx;
+        let x_end   = dx + w > maxX ? maxX : dx + w;
 
-        // Entire region to be cleared lies outside the valid source area.
+        // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
+        let y_start = dy < 0        ? 0    : dy;
+        let y_end   = dy + h > maxY ? maxY : dy + h;
+
+        // If the entire destination region outside the valid source area, exit the function early.
+        // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
         if (x_start == maxX || y_start == maxY || x_end == 0 || y_end == 0) {
             return;
         }
 
+        // Iterate through the region defined by x_start to x_end and y_start to y_end.
         for (let y = y_start; y < y_end; y++) {
             for (let x = x_start; x < x_end; x++) {
-                let index = (y * srcWidth + x) << 2;
-                source[index] = source[index + 1] = source[index + 2] = source[index + 3] = 0;
+                // For each pixel in the region, set the RGBA values to 0 (clear pixel) in the source Uint8Array.
+                
+                // Calculate the starting index of the pixel in the source array.
+                let index = (y * srcWidth + x) << 2;  
+
+                // Clear the pixel.
+                source[index] = source[index + 1] = source[index + 2] = source[index + 3] = 0;  // Set RGBA values to 0.
             }
         }
-    }
+    };
 
     // COPY a region from the source to a new Uint8Array.
     function copyRegion(source, srcWidth, dx, dy, w, h) {
+        // Calculate the maximum X (width) and Y (height) based on the given source and source width
         let maxX = srcWidth;
         let maxY = source.length / srcWidth;
 
-        let x_start = dx < 0 ? 0 : dx;
-        let y_start = dy < 0 ? 0 : dy;
-        let x_end = dx + w > maxX ? maxX : dx + w;
-        let y_end = dy + h > maxY ? maxY : dy + h;
+        // Determine the start and end of the destination region in both dimensions.
+        // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
+        let x_start = dx < 0        ? 0    : dx;
+        let y_start = dy < 0        ? 0    : dy;
 
-        // Adjust w, h based on any out-of-bounds portion
+        // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
+        let x_end   = dx + w > maxX ? maxX : dx + w;
+        let y_end   = dy + h > maxY ? maxY : dy + h;
+
+        // If the region to be copied starts outside the actual source data,
+        // the size of the region is adjusted accordingly.
         if (dx < 0) w += dx;
         if (dy < 0) h += dy;
 
-        // Exit if the region to be copied is entirely out-of-bounds
+        // If the entire destination region outside the valid source area, exit the function early and return an empty array.
+        // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
         if (x_start >= maxX || y_start >= maxY || x_end <= 0 || y_end <= 0 || w <= 0 || h <= 0) {
             return new Uint8Array();
         }
 
+        // Prepare the result array.
         let resultData = new Uint8Array(w * h * 4);
         let resultIndex = 0;
 
+        // Iterate through the region defined by x_start to x_end and y_start to y_end.
         for (let y = y_start; y < y_end; y++) {
             for (let x = x_start; x < x_end; x++) {
+                // For each pixel, copy the RGB and A values from the source data to the result.
+
+                // Calculate the starting index of the pixel in the source array.
                 let srcIndex = (y * srcWidth + x) * 4;
+
+                // Copy the pixel from the source to resultData (the destination.)
                 for (let k = 0; k < 4; k++) {
                     resultData[resultIndex + k] = source[srcIndex + k];
                 }
+
+                // Increment the result index for the next pixel.
                 resultIndex += 4;
             }
         }
 
+        // Return the result data.
         return resultData;
-    }
+    };
+
 
     // BLIT a region in the destination with the source data (Uint8Array.)
+    // Writes pixels that are NOT fully transparent. (slower than replace.)
     function updateRegion_blit(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
-        let x_start = dx < 0 ? 0 : dx;
-        let x_end = dx + w > destWidth ? destWidth : dx + w;
-        let y_start = dy < 0 ? 0 : dy;
-        let y_end = dy + h > destHeight ? destHeight : dy + h;
+        // Determine the start and end of the destination region in both dimensions.
+        // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
+        let x_start = dx < 0              ? 0          : dx;
+        let y_start = dy < 0              ? 0          : dy;
 
-        // Entire region to be blitted lies outside the valid destination area.
+        // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
+        let x_end   = dx + w > destWidth  ? destWidth  : dx + w;
+        let y_end   = dy + h > destHeight ? destHeight : dy + h;
+
+        // If the entire destination region outside the valid source area, exit the function early.
+        // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
         if (x_start == destWidth || y_start == destHeight || x_end == 0 || y_end == 0) {
             return;
         }
 
+        // Iterate through the region defined by x_start to x_end and y_start to y_end.
         for (let y = y_start; y < y_end; y++) {
             for (let x = x_start; x < x_end; x++) {
-                let srcOffset = ((y - dy) * srcWidth + (x - dx)) << 2;
+                // Compute the index offsets in the source and the destination arrays.
+                let srcOffset  = ((y - dy) * srcWidth + (x - dx)) << 2;
                 let destOffset = (y * destWidth + x) << 2;
 
+                // Retrieve the RGBA values from the source.
                 let r = source[srcOffset],
                     g = source[srcOffset + 1],
                     b = source[srcOffset + 2],
                     a = source[srcOffset + 3];
 
+                // Skip transparent pixels in the source.
                 if(a == 0) { continue; }
 
+                // Write the RGBA values from the source to the destination.
                 destination[destOffset] = r;
                 destination[destOffset + 1] = g;
                 destination[destOffset + 2] = b;
                 destination[destOffset + 3] = a;
             }
         }
-    }
+    };
 
     // REPLACE a region in the destination with the source data (Uint8Array.)
+    // Writes pixels without checking for transparency. (faster than blit.)
     function updateRegion_replace(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
-        // source and destination should both be Uint8Array. 
+        // Determine the start and end of the destination region in both dimensions.
+        // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
+        let x_start = dx < 0              ? 0          : dx;
+        let y_start = dy < 0              ? 0          : dy;
 
-        let x_start = dx < 0 ? 0 : dx;
-        let x_end = dx + w > destWidth ? destWidth : dx + w;
-        let y_start = dy < 0 ? 0 : dy;
-        let y_end = dy + h > destHeight ? destHeight : dy + h;
+        // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
+        let x_end   = dx + w > destWidth  ? destWidth  : dx + w;
+        let y_end   = dy + h > destHeight ? destHeight : dy + h;
 
-        // Entire region to be replaced lies outside the valid destination area.
+        // If the entire destination region outside the valid source area, exit the function early.
+        // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
         if (x_start >= destWidth || y_start >= destHeight || x_end <= 0 || y_end <= 0) {
             return;
         }
 
+        // Iterate through the region defined by x_start to x_end and y_start to y_end.
         for (let y = y_start; y < y_end; y++) {
-            let srcOffset = ((y - dy) * srcWidth + (x_start - dx)) << 2;
+            // Compute the start and end offsets in the source and the destination arrays.
+            let srcOffset  = ((y - dy) * srcWidth + (x_start - dx)) << 2;
             let destOffset = (y * destWidth + x_start) << 2;
 
+            // Calculate the row end and start.
             let srcRowStart  = srcOffset;
-            let srcRowEnd = srcOffset + ((x_end - x_start) << 2);
+            let srcRowEnd    = srcOffset + ((x_end - x_start) << 2);
             let destRowStart = destOffset;
 
-            // Copy the entire row at once.
+            // Copy the entire row at once from the source to the destination.
             destination.set(source.subarray(srcRowStart, srcRowEnd), destRowStart);
         }
     };
