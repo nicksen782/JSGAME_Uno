@@ -110,6 +110,8 @@ _APP.shared = {
             let tile_border_vert;
             let tile_border_horz;
             config.borderType = config.borderType ?? 1;
+
+            // Border with transparency.
             if(config.borderType == 1){
                 tile_border_tl   = _GFX.funcs.getTilemap("bg_tiles1", "border1_tl")[2];
                 tile_border_tr   = _GFX.funcs.getTilemap("bg_tiles1", "border1_tr")[2];
@@ -118,6 +120,7 @@ _APP.shared = {
                 tile_border_vert = _GFX.funcs.getTilemap("bg_tiles1", "border1_row")[2];
                 tile_border_horz = _GFX.funcs.getTilemap("bg_tiles1", "border1_col")[2];
             }
+            // Gameboard border.
             else if(config.borderType == 2){
                 tile_border_tl   = _GFX.funcs.getTilemap("bg_tiles1", "border2_tl")[2];
                 tile_border_tr   = _GFX.funcs.getTilemap("bg_tiles1", "border2_tr")[2];
@@ -126,124 +129,125 @@ _APP.shared = {
                 tile_border_vert = _GFX.funcs.getTilemap("bg_tiles1", "border2_row")[2];
                 tile_border_horz = _GFX.funcs.getTilemap("bg_tiles1", "border2_col")[2];
             }
+            // Border with black instead of transparency.
+            else if(config.borderType == 3){
+                tile_border_tl   = _GFX.funcs.getTilemap("bg_tiles1", "border3_tl")[2];
+                tile_border_tr   = _GFX.funcs.getTilemap("bg_tiles1", "border3_tr")[2];
+                tile_border_bl   = _GFX.funcs.getTilemap("bg_tiles1", "border3_bl")[2];
+                tile_border_br   = _GFX.funcs.getTilemap("bg_tiles1", "border3_br")[2];
+                tile_border_vert = _GFX.funcs.getTilemap("bg_tiles1", "border3_row")[2];
+                tile_border_horz = _GFX.funcs.getTilemap("bg_tiles1", "border3_col")[2];
+            }
         
-            // A border has 4 parts and thus 4 tilemaps.
+            // A border has 8 parts and thus 8 tilemaps. Potentially one more tilemap for the fill.
             let tilemaps = {
+                // BORDER: CORNER: TOP-LEFT
+                corner_tl   : { 
+                    layerObjKey: `${config.layerObjKey}_TL`, 
+                    layerKey   : config.layerKey   ?? "L4", 
+                    tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                    tmap: new Uint8Array( [1, 1, tile_border_tl ] ),
+                    x: config.x, y: config.y, 
+                },
+                // BORDER: CORNER: TOP-RIGHT
+                corner_tr   : { 
+                    layerObjKey: `${config.layerObjKey}_TR`, 
+                    layerKey   : config.layerKey   ?? "L4", 
+                    tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                    tmap: new Uint8Array( [1, 1, tile_border_tr ] ),
+                    x: config.x+config.w-1, y: config.y, 
+                },
+                // BORDER: CORNER: BOTTOM-LEFT
+                corner_bl   : { 
+                    layerObjKey: `${config.layerObjKey}_BL`, 
+                    layerKey   : config.layerKey   ?? "L4", 
+                    tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                    tmap: new Uint8Array( [1, 1, tile_border_bl ] ),
+                    x: config.x, y: config.y+config.h-1, 
+                },
+                // BORDER: CORNER: BOTTOM-RIGHT
+                corner_br   : { 
+                    layerObjKey: `${config.layerObjKey}_BR`, 
+                    layerKey   : config.layerKey   ?? "L4", 
+                    tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                    tmap: new Uint8Array( [1, 1, tile_border_br ] ),
+                    x: config.x+config.w-1, y: config.y+config.h-1, 
+                },
+                
+                // BORDER: TOP
                 top   : { 
                     layerObjKey: `${config.layerObjKey}_T`, 
                     layerKey   : config.layerKey   ?? "L4", 
-                    tilesetKey : config.tilesetKey ?? "bg_tiles1"
+                    tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                    tmap: new Uint8Array( [config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) ),
+                    x: config.x+1, y: config.y, 
                 },
+                // BORDER: BOTTOM
                 bottom: { 
                     layerObjKey: `${config.layerObjKey}_B`,
                     layerKey   : config.layerKey   ?? "L4", 
-                    tilesetKey : config.tilesetKey ?? "bg_tiles1"
+                    tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                    tmap: new Uint8Array([config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) ),
+                    x: config.x+1, y: config.y + config.h-1, 
                 },
+                // BORDER: LEFT
                 left  : { 
                     layerObjKey: `${config.layerObjKey}_L`,
                     layerKey   : config.layerKey   ?? "L4", 
-                    tilesetKey : config.tilesetKey ?? "bg_tiles1"
+                    tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                    tmap: new Uint8Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ),
+                    x: config.x, y: config.y+1, 
                 },
+                // BORDER: RIGHT
                 right : { 
                     layerObjKey: `${config.layerObjKey}_R`,
                     layerKey   : config.layerKey   ?? "L4", 
-                    tilesetKey : config.tilesetKey ?? "bg_tiles1"
+                    tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                    tmap: new Uint8Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ),
+                    x: config.x+config.w-1, y: config.y+1, 
                 },
             };
 
-            // BORDER: TOP
-            _GFX.layerObjs.updateOne(LayerObject, {
-                layerObjKey: tilemaps["top"].layerObjKey, 
-                layerKey   : tilemaps["top"].layerKey, 
-                tilesetKey : tilemaps["top"].tilesetKey, 
-                xyByGrid: config.xyByGrid ?? false,
-                settings: config.settings,
-                removeHashOnRemoval: true, noResort: false,
-                x: config.x, y: config.y, 
-                tmap: new Uint8Array(
-                    // Dimensions and top-left tile.
-                    [config.w, 1, tile_border_tl ]
-                    // Horizontal tiles.
-                    .concat(Array.from({ length: config.w-2 }, () => tile_border_horz))
-                    // top-right tile.
-                    .concat([tile_border_tr])
-                ),
-            });
+            // Draw the border.
+            for(let key in tilemaps){
+                _GFX.layerObjs.updateOne(LayerObject, {
+                    layerObjKey: tilemaps[key].layerObjKey, 
+                    layerKey   : tilemaps[key].layerKey, 
+                    tilesetKey : tilemaps[key].tilesetKey, 
+                    tmap       : tilemaps[key].tmap,
+                    x          : tilemaps[key].x, 
+                    y          : tilemaps[key].y, 
+                    xyByGrid: config.xyByGrid ?? false,
+                    settings: config.settings,
+                    removeHashOnRemoval: true, noResort: false,
+                });
+            }
 
-            // BORDER: BOTTOM
-            _GFX.layerObjs.updateOne(LayerObject, {
-                layerObjKey: tilemaps["bottom"].layerObjKey, 
-                layerKey   : tilemaps["bottom"].layerKey, 
-                tilesetKey : tilemaps["bottom"].tilesetKey, 
-                xyByGrid: config.xyByGrid ?? false,
-                settings: config.settings,
-                removeHashOnRemoval: true, noResort: false,
-                x: config.x, y: config.y + config.h-1, 
-                tmap: new Uint8Array(
-                    // Dimensions and bottom-left tile.
-                    [config.w, 1, tile_border_bl ]
-                    // Horizontal tiles.
-                    .concat(Array.from({ length: config.w-2 }, () => tile_border_horz))
-                    // top-right tile.
-                    .concat([tile_border_br])
-                ),
-            });
-
-            // BORDER: LEFT
-            _GFX.layerObjs.updateOne(LayerObject, {
-                layerObjKey: tilemaps["left"].layerObjKey, 
-                layerKey   : tilemaps["left"].layerKey, 
-                tilesetKey : tilemaps["left"].tilesetKey, 
-                xyByGrid: config.xyByGrid ?? false,
-                settings: config.settings,
-                removeHashOnRemoval: true, noResort: false,
-                x: config.x, y: config.y+1, 
-                tmap: new Uint8Array(
-                    // Dimensions.
-                    [ 1, config.h-2 ]
-                    // Vertical tiles.
-                    .concat(Array.from({ length: config.h-2 }, () => tile_border_vert))
-                ),
-            });
-
-            // BORDER: RIGHT
-            _GFX.layerObjs.updateOne(LayerObject, {
-                layerObjKey: tilemaps["right"].layerObjKey, 
-                layerKey   : tilemaps["right"].layerKey, 
-                tilesetKey : tilemaps["right"].tilesetKey, 
-                xyByGrid: config.xyByGrid ?? false,
-                settings: config.settings,
-                removeHashOnRemoval: true, noResort: false,
-                x: config.x+config.w-1, y: config.y+1, 
-                tmap: new Uint8Array(
-                    // Dimensions.
-                    [ 1, config.h-2 ]
-                    // Vertical tiles.
-                    .concat(Array.from({ length: config.h-2 }, () => tile_border_vert))
-                ),
-            });
-
-            // FILL?
+            // Fill the border?
             if(config.fill){
                 tilemaps["fill"] = { 
                     layerObjKey: `${config.layerObjKey}_fill`, 
                     layerKey   : config.layerKey ?? "L4", 
-                    tilesetKey : config.tilesetKey ?? "bg_tiles1"
-                }
-
-                _GFX.layerObjs.updateOne(LayerObject, {
-                    layerObjKey: tilemaps["fill"].layerObjKey, 
-                    layerKey   : tilemaps["fill"].layerKey, 
-                    tilesetKey : tilemaps["fill"].tilesetKey, 
-                    xyByGrid: true, settings: {},
-                    removeHashOnRemoval: true, noResort: false,
-                    x:config.x+1, y:config.y+1,
+                    tilesetKey : config.tilesetKey ?? "bg_tiles1",
                     tmap: new Uint8Array(
                         // Dimensions.
                         [ config.w-2, config.h-2 ]
                         // Tiles
                         .concat(Array.from({ length: ((config.w-2) * (config.h-2)) }, () => config.fillTile))
                     ),
+                    x:config.x+1, y:config.y+1,
+                }
+
+                // Draw the fill.
+                _GFX.layerObjs.updateOne(LayerObject, {
+                    layerObjKey: tilemaps["fill"].layerObjKey, 
+                    layerKey   : tilemaps["fill"].layerKey, 
+                    tilesetKey : tilemaps["fill"].tilesetKey, 
+                    tmap       : tilemaps["fill"].tmap, 
+                    x          : tilemaps["fill"].x, 
+                    y          : tilemaps["fill"].y, 
+                    xyByGrid: true, settings: {},
+                    removeHashOnRemoval: true, noResort: false,
                 });
             }
 

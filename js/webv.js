@@ -7,11 +7,13 @@ var _WEBW_V = {
         "sendTilesAndSprites",
         "sendGfxUpdates",
         "clearAllLayers",
+        "generateCoreImageDataAssets",
+        // DEBUG
         "_DEBUG.drawColorPalette",
         "_DEBUG.toggleDebugFlag",
-        "generateCoreImageDataAssets",
+        "requestHashCacheEntry",
     ],
-
+    
     // Allowed RECEIVE "modes."
     modes_RECEIVE:[
         "initConfigAndGraphics",
@@ -19,9 +21,11 @@ var _WEBW_V = {
         "sendTilesAndSprites",
         "sendGfxUpdates",
         "clearAllLayers",
+        "generateCoreImageDataAssets",
+        // DEBUG
         "_DEBUG.drawColorPalette",
         "_DEBUG.toggleDebugFlag",
-        "generateCoreImageDataAssets",
+        "requestHashCacheEntry",
     ],
     
     // Differed promises allow the system to wait for a response from the WebWorker.

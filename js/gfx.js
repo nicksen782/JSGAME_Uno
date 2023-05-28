@@ -656,7 +656,10 @@ var _GFX = {
             
             // Value copy.
             let tilemap = _GFX.tilesets[ts].tilemaps[mapKey];
-            if(!tilemap){ throw `getTilemap: Missing tmap: ts: ${ts}, mapKey: ${mapKey}`; }
+            if(!tilemap){ 
+                console.error(`getTilemap: Missing tmap: ts: ${ts}, mapKey: ${mapKey}`); 
+                throw `getTilemap: Missing tmap: ts: ${ts}, mapKey: ${mapKey}`; 
+            }
             return new Uint8Array(tilemap);
         },
 

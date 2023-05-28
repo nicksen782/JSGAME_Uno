@@ -242,37 +242,52 @@ const _GFX = {
         
             // Break-out the imageData.
             const { width, height, data } = imageData;
-
+        
             // Create new ImageData.
             const rotatedData = new Uint8Array(data.length);
         
             // Rotate the image and store it in the rotatedData array
             let targetX, targetY;
+            let newWidth, newHeight;
+            if (degrees % 180 === 0) {
+                newWidth = width;
+                newHeight = height;
+            } else {
+                newWidth = height;
+                newHeight = width;
+            }
+        
             for (let y = 0; y < height; y++) {
                 for (let x = 0; x < width; x++) {
                     const sourceIndex = (y * width + x) * 4;
         
-                    if      (degrees === 90)                      { targetX = height - y - 1; targetY = x; } 
-                    else if (degrees === -90 || degrees === 270)  { targetX = y;              targetY = width - x - 1; } 
-                    else if (degrees === 180 || degrees === -180) { targetX = width - x - 1;  targetY = height - y - 1; }
+                    if (degrees === 90) {
+                        targetX = height - y - 1; targetY = x;
+                    } 
+                    else if (degrees === -90 || degrees === 270) {
+                        targetX = y; targetY = width - x - 1;
+                    } 
+                    else if (degrees === 180 || degrees === -180) {
+                        targetX = width - x - 1; targetY = height - y - 1;
+                    }
         
-                    const targetIndex = (targetY * width + targetX) * 4;
+                    const targetIndex = (targetY * newWidth + targetX) * 4;
         
-                    rotatedData.set( data.subarray(sourceIndex, sourceIndex + 4), targetIndex);
+                    rotatedData.set(data.subarray(sourceIndex, sourceIndex + 4), targetIndex);
                 }
             }
         
             // Update the imageData with the rotated data and dimensions
             // NOTE: The source ImageData will have the width and height swapped on 90 degree rotations.
             data.set(rotatedData);
-
+        
             // Swap the width and the height if needed and return the dimensions.
             return {
-                width : (degrees % 180 === 0) ? width : height,
-                height: (degrees % 180 === 0) ? height : width
+                width: newWidth,
+                height: newHeight
             }
         },
-
+        
         // Replaces colors in ImageData. (By reference, changes source imageData.)
         replaceColors: function(imageData, colorReplacements) {
             if(!colorReplacements || !colorReplacements.length){ 
@@ -525,6 +540,15 @@ self.onmessage = async function(event) {
 
             case "_DEBUG.drawColorPalette" : { 
                 _DEBUG.drawColorPalette(); 
+                break; 
+            }
+
+            case "requestHashCacheEntry" : { 
+                console.log("HASH CACHE ENTRY:", data.title);
+                console.log("  HASH:", messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.get(data.hash) );
+                console.log("  BASE:", messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.get(data.hashBase) );
+                console.log(`  HASH ACCESS: messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.get(${data.hash})`);
+                console.log(`  BASE ACCESS: messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.get(${data.hashBase})`);
                 break; 
             }
             

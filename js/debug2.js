@@ -283,7 +283,7 @@ var _DEBUG2 = {
                     let P4Cards_new      = '';
 
                     // Filter the deck by location.
-                    let tmpDeck = _APP.game.gamestates["gs_PLAYING"].deck.map((d, i) => ({ index: i, value: d }));
+                    let tmpDeck = _APP.game.gamestates["gs_PLAYING"].deck.deck.map((d, i) => ({ index: i, value: d }));
                     let location_DISCARD = tmpDeck.filter(d => d.value.location == "CARD_LOCATION_DISCARD");
                     let location_DRAW    = tmpDeck.filter(d => d.value.location == "CARD_LOCATION_DRAW");
                     let location_PLAYER1 = tmpDeck.filter(d => d.value.location == "CARD_LOCATION_PLAYER1");

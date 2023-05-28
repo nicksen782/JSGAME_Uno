@@ -983,6 +983,12 @@ var _DEBUG = {
         this.applyChange(testText, debug_GS2Text, activeTime);
     },
 
+    displayLayerObject_console: function(gs, key){
+        data = _GFX.layerObjs.objs[gs][key];
+        console.log(`LAYER OBJECT ENTRY: gs: '${gs}', key: '${key}'`);
+        console.log("  ", data);
+        console.log(`  ACCESS: _GFX.layerObjs.objs['${gs}']['${key}']`);
+    },
     displayLayerObjects: function(){
         // Display the layerObjects for the current gamestate.
         // Display the layeKeys in reverse order (L4 on top.)
@@ -1002,6 +1008,7 @@ var _DEBUG = {
 
         // Get the current text.
         let currentText = elem.innerText;
+        let oldHash = elem.getAttribute("hash");
         let newText = ``;
 
         // Go through all layer keys.
@@ -1035,21 +1042,33 @@ var _DEBUG = {
 
                     // Update the newText string.
                     // newText += `  (${data.x.toString().padStart(2, " ")}, ${data.y.toString().padStart(2, " ")}) ${layerObjKey}\n`;
-                    newText += `  (${coords} ${dims}) ${name}\n`;
+                    newText += `<div onclick="_DEBUG.displayLayerObject_console('${_APP.game.gs1}','${layerObjKey}');" class="layerObjectsStats1_entry">  (${coords} ${dims}) ${name}</div>`;
                 }
             }
         }
 
         // If the newText is different than the currentText replace the elem.innerText with the newText.
-        if(currentText != newText){
+        let newHash = _GFX.utilities.djb2Hash( newText );
+        if(oldHash != newHash){
             // console.log("Changing", maxLen);
-            elem.innerText = newText;
+            elem.innerHTML = newText;
+            elem.setAttribute("hash", newHash);
         }
     },
 
     hashCacheStats1:{},
     hashCacheStats_size1:0,
     hashCacheStats_size2:0,
+    display_hashCacheStats1_console: function(title, hash, hashBase){
+        _WEBW_V.SEND('requestHashCacheEntry', { 
+            data:{ 
+                title   : title, 
+                hash    : hash, 
+                hashBase: hashBase
+            }, 
+            refs:[] }, false, false
+        );
+    },
     display_hashCacheStats1: function(){
         let tab = document.getElementById("debug_navBar1_tab_hashCacheStats1");
         if(!tab.classList.contains("active")){ return; }
@@ -1068,8 +1087,11 @@ var _DEBUG = {
         }
 
         // Get the current text.
-        let currentText = elem.innerText.trim();
+        // let currentText = elem.innerText.trim();
+        // let currentText = elem.innerHTML.trim();
         let newText = ``;
+
+        let oldHash = elem.getAttribute("hash");
 
         // Go through all layerObjects for this gamestate.
         let data;
@@ -1096,30 +1118,36 @@ var _DEBUG = {
             // Break-out the data.
             data = this.hashCacheStats1[index];
             
-            // let hashText = `${data.hashCacheHash == data.hashCacheHash_BASE ? "BASE" : "copy"} ${data.hashCacheHash}`;
             let hashText = `${data.hashCacheHash == data.hashCacheHash_BASE ? "BASE" : "copy"}`;
-            // let hashText = `${data.hashCacheHash_BASE} : ${data.hashCacheHash == data.hashCacheHash_BASE ? "BASE" : data.hashCacheHash}`;
 
             // Update the newText string.
-            newText += `` +
-                `${data.removeHashOnRemoval?"(TEMP)":"(PERM)"} ` +
-                `${data.mapKey.toString().padEnd(maxLen1, " ")} ` + 
-                // `(${ (data.relatedMapKey ? data.relatedMapKey+")" : "<custom>)" ).padEnd(maxLen2, " ")} ` +
-                `(${ (data.relatedMapKey ? data.relatedMapKey+")" : "<custom>)" )} ` +
-                `\n  ${hashText}, ` +
-                `${data.ts    .toString().padEnd(maxLen3, " ")}, ` +
-                `${(data["hashCacheDataLength"]/1000).toFixed(0).padStart(6, " ")} KB` +
-                `\n  ${data.hashCacheHash} B: ${data.hashCacheHash_BASE} ` +
-                `\n  genTime: ${data.genTime.toFixed(2)} ms` +
-                `\n  hasTransparency: ${data.hasTransparency? "TRUE" : "false"}` +
+            if(data.rotation)
+            newText += `<div class="hashCacheStats1_entry" onclick="_DEBUG.display_hashCacheStats1_console('${data.mapKey}, ${data.relatedMapKey}',${data.hashCacheHash}, ${data.hashCacheHash_BASE} );">` +
+                `${data.removeHashOnRemoval?"(TEMP)":"(PERM)"}, ${hashText} ` +
                 `\n` +
-                `\n`;
+                ` ${data.mapKey.toString().padEnd(maxLen1, " ")} ` + 
+                `(${ (data.relatedMapKey ? data.relatedMapKey+")" : "<custom>)" )} ` +
+
+                `\n` +
+                ` ${data.ts    .toString().padEnd(maxLen3, " ")}, ` +
+                `${(data["hashCacheDataLength"]/1000).toFixed(0).padStart(6, " ")} KB` +
+                
+                `\n` +
+                ` gen: ${data.genTime.toFixed(2)} ms, ` +
+                `H:${data.hashCacheHash} B:${data.hashCacheHash_BASE}` +
+                `\n` +
+                ` rotation: ${data.rotation}, ` +
+                ` hasTransparency: ${data.hasTransparency? "TRUE" : "false"}` +
+                `</div>`;
         }
 
         // If the newText is different than the currentText replace the elem.innerText with the newText.
-        if(currentText != newText.trim()){
+        let newHash = _GFX.utilities.djb2Hash( newText );
+        if(oldHash != newHash){
             // console.log("display_hashCacheStats1: CHANGE: display_hashCacheStats1"); 
-            elem.innerText = newText.trim();
+            elem.setAttribute("hash", newHash);
+            // elem.innerText = newText.trim();
+            elem.innerHTML = newText;
         }
     },
 };

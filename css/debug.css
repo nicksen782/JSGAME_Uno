@@ -350,3 +350,13 @@ div#debug_hashCacheList1 {
   width: 80px;
   /* font-size: 14px; */
 }
+
+.hashCacheStats1_entry{ cursor: pointer; }
+.hashCacheStats1_entry:nth-child(odd)  { background-color:darkgray; }
+.hashCacheStats1_entry:nth-child(even) { background-color:lightgray; }
+.hashCacheStats1_entry:hover{background-color: dodgerblue;}
+
+.layerObjectsStats1_entry{ cursor: pointer; }
+.layerObjectsStats1_entry:nth-child(odd)  { background-color:darkgray; }
+.layerObjectsStats1_entry:nth-child(even) { background-color:lightgray; }
+.layerObjectsStats1_entry:hover{background-color: dodgerblue;}
