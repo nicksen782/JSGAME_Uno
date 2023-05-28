@@ -36,9 +36,9 @@ _APP.game.gamestates["gs_TITLE"] = {
         // _APP.shared.genTimer.create("timer2", 600);
 
         if(test == "title"){
-            _GFX.layerObjs.updateOne(UnoLetter, { letter: "u", x:2 , y: 1, layerObjKey: `letter_uno_u`, layerKey: "L1", xyByGrid: true, });
-            _GFX.layerObjs.updateOne(UnoLetter, { letter: "n", x:10, y: 3, layerObjKey: `letter_uno_n`, layerKey: "L1", xyByGrid: true, });
-            _GFX.layerObjs.updateOne(UnoLetter, { letter: "o", x:18, y: 5, layerObjKey: `letter_uno_o`, layerKey: "L1", xyByGrid: true, });
+            _GFX.layerObjs.updateOne(UnoLetter, { letter: "u", x:2 , y: 1, layerObjKey: `letter_uno_u`, layerKey: "L1", xyByGrid: true, framesBeforeIndexChange: 15 });
+            _GFX.layerObjs.updateOne(UnoLetter, { letter: "n", x:10, y: 3, layerObjKey: `letter_uno_n`, layerKey: "L1", xyByGrid: true, framesBeforeIndexChange: 15 });
+            _GFX.layerObjs.updateOne(UnoLetter, { letter: "o", x:18, y: 5, layerObjKey: `letter_uno_o`, layerKey: "L1", xyByGrid: true, framesBeforeIndexChange: 15 });
 
             let y = 12;
             _APP.shared.border.createBorder1({

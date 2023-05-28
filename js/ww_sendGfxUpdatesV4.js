@@ -601,15 +601,19 @@ messageFuncs.sendGfxUpdates.V4 = {
 
         // Pre-caches all assets and sets removeHashOnRemoval for each to false (base assets, does not include future.)
         generateCoreImageDataAssets: async function(list){
+            let ts1 = performance.now();
+            let usedList = list ? true : false;
+            let mapCount = 0;
+
             // console.log("RUNNING: generateCoreImageDataAssets");
             let hashCacheHash;
             let hashCacheHash_BASE;
             let tilemap;
-            let settings;
 
             // Pre-generate all ImageData tilemaps to cache?
             if(!list){
-                console.log("generateCoreImageDataAssets: A list was NOT provided.. Generating a list for ALL tilemaps.");
+                // console.log("generateCoreImageDataAssets: A list was NOT provided.. Generating a list for ALL tilemaps.");
+
                 list = {};
                 for(let tilesetKey in _GFX.tilesets){
                     if(!list[tilesetKey]){ 
@@ -638,9 +642,9 @@ messageFuncs.sendGfxUpdates.V4 = {
                     }
                 }
             }
-            else{
-                console.log("generateCoreImageDataAssets: A list WAS specified.");
-            }
+            // else{
+                // console.log("generateCoreImageDataAssets: A list WAS specified.");
+            // }
             
             // Use the list to create the tilemap data.
             for(let tilesetKey in list){ 
@@ -687,18 +691,25 @@ messageFuncs.sendGfxUpdates.V4 = {
                     rec.hashCacheHash_BASE = hashCacheHash_BASE;
 
                     list[rec.ts].mapObjs[rec.mapKey] = rec;
+
+                    mapCount += 1; 
                 }
             }
 
             // // Use the list to pre-generate ImageData tilemaps to cache.
             for(let tilesetKey in list){ 
                 // Create tilemaps and hashCache entries for any missing tilemaps.
-                // console.log(list, " *** ", list[tilesetKey].mapKeys, list[tilesetKey].mapObjs);
                 this.createImageDataFromTilemapsAndUpdateGraphicsCache("", list[tilesetKey].mapKeys, list[tilesetKey].mapObjs, false);
             }
 
+            // Debug output:
+            ts1 = performance.now() - ts1;
+            if(debugActive){
+                console.log(`generateCoreImageDataAssets: List used: '${usedList.toString()}', MAPS PRE-LOADED: '${mapCount}', TIME: '${ts1.toFixed(2)} ms'`);
+            }
         },
 
+        // Look through a tileset for a map record that contains a match for the provided tilemap.
         findRelatedMapKey: function(ts, tmap){
             let tmap_same;
             let tmap2;
@@ -1175,7 +1186,7 @@ messageFuncs.sendGfxUpdates.V4 = {
             _GFX.layers[layerKey].ctx.putImageData(imgDataCache, 0, 0);
         },
     },
-    clearTimingsValues: function(layerKey, messageData){
+    clearTimingsValues: function(layerKey){
         timeIt(layerKey+"___TOTAL"            , "reset");
         timeIt(layerKey+"_A_clearLayer"       , "reset"); 
         timeIt(layerKey+"_B_clearRemovedData" , "reset"); 
@@ -1235,46 +1246,9 @@ messageFuncs.sendGfxUpdates.V4 = {
         messageFuncs.timings["sendGfxUpdates"].version    = messageData.version;
         messageFuncs.timings["sendGfxUpdates"].ALLCLEAR   = messageData.ALLCLEAR;
 
-        if(debugActive){
-            messageFuncs.timings["sendGfxUpdates"].hashCacheMapSize1 = messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.size;
-
-            let totalSum = Array.from(messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.values()).reduce((acc, rec) => acc + rec.hashCacheDataLength, 0);
-            messageFuncs.timings["sendGfxUpdates"]["hashCacheMapSize2"] = totalSum;
-            
-            let hashCacheStats = Array.from(messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.values()).map(d=>{
-                return {
-                    mapKey: d.mapKey,
-                    relatedMapKey: d.relatedMapKey,
-                    ts: d.ts,
-                    // w: d.w, 
-                    // h: d.h, 
-                    hasTransparency    : d.hasTransparency,
-                    genTime            : d.genTime,
-                    hashCacheDataLength: d.hashCacheDataLength,
-                    removeHashOnRemoval: d.removeHashOnRemoval,
-                    hashCacheHash      : d.hashCacheHash,
-                    hashCacheHash_BASE : d.hashCacheHash_BASE,
-                    isBase             : d.hashCacheHash_BASE == d.hashCacheHash_BASE,
-                };
-            });
-
-            messageFuncs.timings["sendGfxUpdates"]["hashCacheStats"] = hashCacheStats;
-            messageFuncs.timings["sendGfxUpdates"].ALLTIMINGS = timeIt("", "getAll");
-        }
+        if(debugActive){ this.updateDebugTimings(); }
 
         messageFuncs.timings["sendGfxUpdates"]["sendGfxUpdates"] = + timeIt("sendGfxUpdates", "get").toFixed(3);
-
-        // DEBUG: TIMINGS
-        // let tmp = messageFuncs.timings["sendGfxUpdates"].ALLTIMINGS;
-        // let l1ChangesCount = Object.keys(messageData.L1.CHANGES).length + (messageData.L1.REMOVALS_ONLY.length)
-        // console.log(
-        //     `A_clearLayer: gs1: ${messageData.gs1}: changes/removals: ${l1ChangesCount}:` +
-        //     `    part1: ${ (tmp["L1_A_clearLayer_part1"] ?? 0) .toFixed(1).padStart(4, " ")}, ` +
-        //     `    part2: ${ (tmp["L1_A_clearLayer_part2"] ?? 0) .toFixed(1).padStart(4, " ")}, ` +
-        //     `    part3: ${ (tmp["L1_A_clearLayer_part3"] ?? 0) .toFixed(1).padStart(4, " ")}, ` +
-        //     // `    part4: ${ (data.ALLTIMINGS["L1_A_clearLayer_part4"] ?? 0) .toFixed(1).padStart(4, " ")}  ` +
-        //     `` 
-        // );
 
         // Return the timings.
         return messageFuncs.timings["sendGfxUpdates"];
@@ -1309,6 +1283,32 @@ messageFuncs.sendGfxUpdates.V4 = {
             // <OTHER LAYERS> NOTE: Only L1 has bgColorRgba.
         };
         */
+    },
+    updateDebugTimings: function(){
+        messageFuncs.timings["sendGfxUpdates"].hashCacheMapSize1 = messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.size;
+
+        let totalSum = Array.from(messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.values()).reduce((acc, rec) => acc + rec.hashCacheDataLength, 0);
+        messageFuncs.timings["sendGfxUpdates"]["hashCacheMapSize2"] = totalSum;
+        
+        let hashCacheStats = Array.from(messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.values()).map(d=>{
+            return {
+                mapKey: d.mapKey,
+                relatedMapKey: d.relatedMapKey,
+                ts: d.ts,
+                // w: d.w, 
+                // h: d.h, 
+                hasTransparency    : d.hasTransparency,
+                genTime            : d.genTime,
+                hashCacheDataLength: d.hashCacheDataLength,
+                removeHashOnRemoval: d.removeHashOnRemoval,
+                hashCacheHash      : d.hashCacheHash,
+                hashCacheHash_BASE : d.hashCacheHash_BASE,
+                isBase             : d.hashCacheHash_BASE == d.hashCacheHash_BASE,
+            };
+        });
+
+        messageFuncs.timings["sendGfxUpdates"]["hashCacheStats"] = hashCacheStats;
+        messageFuncs.timings["sendGfxUpdates"].ALLTIMINGS = timeIt("", "getAll");
     },
     init: async function(){
         // layerKeys

@@ -11,6 +11,11 @@
         root.createGraphicsAssets = factory();
     }
 }(typeof self !== 'undefined' ? self : this, function () {
+
+    // **********
+    // * FADING *
+    // **********
+
     // Fade masks for fading rgb332 tiles.
     const fadeMasks = [
         //    // INDEX // DEC // B G R // BB GGG RRR // B%  G%  R%  
@@ -32,26 +37,27 @@
     const fadeMasksRGBA = [];
     function createRgbaFadeValues(){
         let src = fadeMasks;
-        let b,g,r;
+        let r,g,b;
 
         for(let i=0, l=src.length; i<l; i+=1){
             // console.log( {
             //     "index:"      : i,
             //     "hex_string"  : "0x"+src[i].toString(16).toUpperCase().padStart(2, "0"), 
             //     "dec"         : src[i], 
+            //     "bin_string"  : src[i].toString(2).padStart(8, "0"), 
             //     "bin_string_b": ( (src[i] & 0b11000000) >> 6 ).toString(2).padStart(2, "0"), 
             //     "bin_string_g": ( (src[i] & 0b00111000) >> 3 ).toString(2).padStart(3, "0"), 
             //     "bin_string_r": ( (src[i] & 0b00000111) >> 0 ).toString(2).padStart(3, "0"),
             // } );
 
-            // Add the values in reverse order (round down to the nearest whole integer).
+            // Add the values in order (round down to the nearest whole integer).
             r = ( ( ( ( src[i] & 0b00000111 ) >> 0) / 7 ) * 100 ) << 0;
             g = ( ( ( ( src[i] & 0b00111000 ) >> 3) / 7 ) * 100 ) << 0;
             b = ( ( ( ( src[i] & 0b11000000 ) >> 6) / 3 ) * 100 ) << 0;
-            fadeMasksRGBA.unshift( new Uint8Array([ r, g, b ]) ); 
+            fadeMasksRGBA.push( new Uint8Array([ r, g, b ]) ); 
         }
-        fadeMasksRGBA.reverse();
     };
+    
     // Modifies the supplied Uint8Array and applies a fade to each pixel (Uint8Array) (by reference.)
     function applyFadeToImageDataArray(typedData, fadeLevel){
         let len  = typedData.length;
@@ -115,15 +121,130 @@
         return rgbaArray;
     };
 
-    // UNUSED
-    // Sets pixelated values on the specified ctx.
-    function setPixelated(ctx){
-        ctx.mozImageSmoothingEnabled    = false; // Firefox
-        ctx.imageSmoothingEnabled       = false; // Firefox
-        ctx.oImageSmoothingEnabled      = false; //
-        ctx.webkitImageSmoothingEnabled = false; //
-        ctx.msImageSmoothingEnabled     = false; //
+    // **********************
+    // * IMAGE DATA UPDATES *
+    // **********************
+
+    // CLEAR a region from the source (Uint8Array).
+    function clearRegion(source, srcWidth, dx, dy, w, h) {
+        let maxX = srcWidth;
+        let maxY = source.length / srcWidth;
+
+        let x_start = dx < 0 ? 0 : dx;
+        let x_end = dx + w > maxX ? maxX : dx + w;
+        let y_start = dy < 0 ? 0 : dy;
+        let y_end = dy + h > maxY ? maxY : dy + h;
+
+        // Entire region to be cleared lies outside the valid source area.
+        if (x_start == maxX || y_start == maxY || x_end == 0 || y_end == 0) {
+            return;
+        }
+
+        for (let y = y_start; y < y_end; y++) {
+            for (let x = x_start; x < x_end; x++) {
+                let index = (y * srcWidth + x) << 2;
+                source[index] = source[index + 1] = source[index + 2] = source[index + 3] = 0;
+            }
+        }
     }
+
+    // COPY a region from the source to a new Uint8Array.
+    function copyRegion(source, srcWidth, dx, dy, w, h) {
+        let maxX = srcWidth;
+        let maxY = source.length / srcWidth;
+
+        let x_start = dx < 0 ? 0 : dx;
+        let y_start = dy < 0 ? 0 : dy;
+        let x_end = dx + w > maxX ? maxX : dx + w;
+        let y_end = dy + h > maxY ? maxY : dy + h;
+
+        // Adjust w, h based on any out-of-bounds portion
+        if (dx < 0) w += dx;
+        if (dy < 0) h += dy;
+
+        // Exit if the region to be copied is entirely out-of-bounds
+        if (x_start >= maxX || y_start >= maxY || x_end <= 0 || y_end <= 0 || w <= 0 || h <= 0) {
+            return new Uint8Array();
+        }
+
+        let resultData = new Uint8Array(w * h * 4);
+        let resultIndex = 0;
+
+        for (let y = y_start; y < y_end; y++) {
+            for (let x = x_start; x < x_end; x++) {
+                let srcIndex = (y * srcWidth + x) * 4;
+                for (let k = 0; k < 4; k++) {
+                    resultData[resultIndex + k] = source[srcIndex + k];
+                }
+                resultIndex += 4;
+            }
+        }
+
+        return resultData;
+    }
+
+    // BLIT a region in the destination with the source data (Uint8Array.)
+    function updateRegion_blit(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
+        let x_start = dx < 0 ? 0 : dx;
+        let x_end = dx + w > destWidth ? destWidth : dx + w;
+        let y_start = dy < 0 ? 0 : dy;
+        let y_end = dy + h > destHeight ? destHeight : dy + h;
+
+        // Entire region to be blitted lies outside the valid destination area.
+        if (x_start == destWidth || y_start == destHeight || x_end == 0 || y_end == 0) {
+            return;
+        }
+
+        for (let y = y_start; y < y_end; y++) {
+            for (let x = x_start; x < x_end; x++) {
+                let srcOffset = ((y - dy) * srcWidth + (x - dx)) << 2;
+                let destOffset = (y * destWidth + x) << 2;
+
+                let r = source[srcOffset],
+                    g = source[srcOffset + 1],
+                    b = source[srcOffset + 2],
+                    a = source[srcOffset + 3];
+
+                if(a == 0) { continue; }
+
+                destination[destOffset] = r;
+                destination[destOffset + 1] = g;
+                destination[destOffset + 2] = b;
+                destination[destOffset + 3] = a;
+            }
+        }
+    }
+
+    // REPLACE a region in the destination with the source data (Uint8Array.)
+    function updateRegion_replace(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
+        // source and destination should both be Uint8Array. 
+
+        let x_start = dx < 0 ? 0 : dx;
+        let x_end = dx + w > destWidth ? destWidth : dx + w;
+        let y_start = dy < 0 ? 0 : dy;
+        let y_end = dy + h > destHeight ? destHeight : dy + h;
+
+        // Entire region to be replaced lies outside the valid destination area.
+        if (x_start >= destWidth || y_start >= destHeight || x_end <= 0 || y_end <= 0) {
+            return;
+        }
+
+        for (let y = y_start; y < y_end; y++) {
+            let srcOffset = ((y - dy) * srcWidth + (x_start - dx)) << 2;
+            let destOffset = (y * destWidth + x_start) << 2;
+
+            let srcRowStart  = srcOffset;
+            let srcRowEnd = srcOffset + ((x_end - x_start) << 2);
+            let destRowStart = destOffset;
+
+            // Copy the entire row at once.
+            destination.set(source.subarray(srcRowStart, srcRowEnd), destRowStart);
+        }
+    };
+
+    // **************
+    // * PROCESSING *
+    // **************
 
     // UNUSED.
     // Returns a copy of a rgb332 tile that has had the specified fade applied to it.
@@ -328,125 +449,6 @@
         return finishedTilesets;
     }
 
-
-    // CLEAR a region from the source (Uint8Array).
-    function clearRegion(source, srcWidth, dx, dy, w, h) {
-        let maxX = srcWidth;
-        let maxY = source.length / srcWidth;
-
-        let x_start = dx < 0 ? 0 : dx;
-        let x_end = dx + w > maxX ? maxX : dx + w;
-        let y_start = dy < 0 ? 0 : dy;
-        let y_end = dy + h > maxY ? maxY : dy + h;
-
-        // Entire region to be cleared lies outside the valid source area.
-        if (x_start == maxX || y_start == maxY || x_end == 0 || y_end == 0) {
-            return;
-        }
-
-        for (let y = y_start; y < y_end; y++) {
-            for (let x = x_start; x < x_end; x++) {
-                let index = (y * srcWidth + x) << 2;
-                source[index] = source[index + 1] = source[index + 2] = source[index + 3] = 0;
-            }
-        }
-    }
-
-    // COPY a region from the source to a new Uint8Array.
-    function copyRegion(source, srcWidth, dx, dy, w, h) {
-        let maxX = srcWidth;
-        let maxY = source.length / srcWidth;
-
-        let x_start = dx < 0 ? 0 : dx;
-        let y_start = dy < 0 ? 0 : dy;
-        let x_end = dx + w > maxX ? maxX : dx + w;
-        let y_end = dy + h > maxY ? maxY : dy + h;
-
-        // Adjust w, h based on any out-of-bounds portion
-        if (dx < 0) w += dx;
-        if (dy < 0) h += dy;
-
-        // Exit if the region to be copied is entirely out-of-bounds
-        if (x_start >= maxX || y_start >= maxY || x_end <= 0 || y_end <= 0 || w <= 0 || h <= 0) {
-            return new Uint8Array();
-        }
-
-        let resultData = new Uint8Array(w * h * 4);
-        let resultIndex = 0;
-
-        for (let y = y_start; y < y_end; y++) {
-            for (let x = x_start; x < x_end; x++) {
-                let srcIndex = (y * srcWidth + x) * 4;
-                for (let k = 0; k < 4; k++) {
-                    resultData[resultIndex + k] = source[srcIndex + k];
-                }
-                resultIndex += 4;
-            }
-        }
-
-        return resultData;
-    }
-
-    // BLIT a region in the destination with the source data (Uint8Array.)
-    function updateRegion_blit(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
-        let x_start = dx < 0 ? 0 : dx;
-        let x_end = dx + w > destWidth ? destWidth : dx + w;
-        let y_start = dy < 0 ? 0 : dy;
-        let y_end = dy + h > destHeight ? destHeight : dy + h;
-
-        // Entire region to be blitted lies outside the valid destination area.
-        if (x_start == destWidth || y_start == destHeight || x_end == 0 || y_end == 0) {
-            return;
-        }
-
-        for (let y = y_start; y < y_end; y++) {
-            for (let x = x_start; x < x_end; x++) {
-                let srcOffset = ((y - dy) * srcWidth + (x - dx)) << 2;
-                let destOffset = (y * destWidth + x) << 2;
-
-                let r = source[srcOffset],
-                    g = source[srcOffset + 1],
-                    b = source[srcOffset + 2],
-                    a = source[srcOffset + 3];
-
-                if(a == 0) { continue; }
-
-                destination[destOffset] = r;
-                destination[destOffset + 1] = g;
-                destination[destOffset + 2] = b;
-                destination[destOffset + 3] = a;
-            }
-        }
-    }
-
-    // REPLACE a region in the destination with the source data (Uint8Array.)
-    function updateRegion_replace(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
-        // source and destination should both be Uint8Array. 
-
-        let x_start = dx < 0 ? 0 : dx;
-        let x_end = dx + w > destWidth ? destWidth : dx + w;
-        let y_start = dy < 0 ? 0 : dy;
-        let y_end = dy + h > destHeight ? destHeight : dy + h;
-
-        // Entire region to be replaced lies outside the valid destination area.
-        if (x_start >= destWidth || y_start >= destHeight || x_end <= 0 || y_end <= 0) {
-            return;
-        }
-
-        for (let y = y_start; y < y_end; y++) {
-            let srcOffset = ((y - dy) * srcWidth + (x_start - dx)) << 2;
-            let destOffset = (y * destWidth + x_start) << 2;
-
-            let srcRowStart  = srcOffset;
-            let srcRowEnd = srcOffset + ((x_end - x_start) << 2);
-            let destRowStart = destOffset;
-
-            // Copy the entire row at once.
-            destination.set(source.subarray(srcRowStart, srcRowEnd), destRowStart);
-        }
-    };
-
-
     // Performs the graphics processing functions. 
     async function process(tilesetFiles){
         let ts1 = performance.now();
@@ -477,7 +479,6 @@
         process : process,
 
         // Copy, update, clear of regions (Uint8Array.)
-        // updateRegion : updateRegion,
         updateRegion_blit : updateRegion_blit,
         updateRegion_replace : updateRegion_replace,
         copyRegion   : copyRegion,

@@ -100,8 +100,12 @@ _APP.utility = {
                     { "baseMapKey": "letter_uno_u",         "mapKey": "letter_uno_u_C4", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.green ]] } },
                     { "baseMapKey": "letter_uno_n",         "mapKey": "letter_uno_n_C4", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.green ]] } },
                     { "baseMapKey": "letter_uno_o",         "mapKey": "letter_uno_o_C4", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.green ]] } },
+
+                    { "baseMapKey": "letter_uno_u",         "mapKey": "letter_uno_u_C5", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.black ]] } },
+                    { "baseMapKey": "letter_uno_n",         "mapKey": "letter_uno_n_C5", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.black ]] } },
+                    { "baseMapKey": "letter_uno_o",         "mapKey": "letter_uno_o_C5", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.black ]] } },
                     
-                    // // UNO LETTERS small
+                    // UNO LETTERS small
                     { "baseMapKey": "letter_uno2_u",         "mapKey": "letter_uno_u2_C1", "settings": { } },
                     { "baseMapKey": "letter_uno2_n",         "mapKey": "letter_uno_n2_C1", "settings": { } },
                     { "baseMapKey": "letter_uno2_o",         "mapKey": "letter_uno_o2_C1", "settings": { } },
@@ -117,6 +121,10 @@ _APP.utility = {
                     { "baseMapKey": "letter_uno2_u",         "mapKey": "letter_uno_u2_C4", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.green ]] } },
                     { "baseMapKey": "letter_uno2_n",         "mapKey": "letter_uno_n2_C4", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.green ]] } },
                     { "baseMapKey": "letter_uno2_o",         "mapKey": "letter_uno_o2_C4", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.green ]] } },
+
+                    { "baseMapKey": "letter_uno2_u",         "mapKey": "letter_uno_u2_C5", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.black ]] } },
+                    { "baseMapKey": "letter_uno2_n",         "mapKey": "letter_uno_n2_C5", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.black ]] } },
+                    { "baseMapKey": "letter_uno2_o",         "mapKey": "letter_uno_o2_C5", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.black ]] } },
 
                     // RED: Small cards
                     { "baseMapKey": "card_sm_0",         "mapKey": "RED_card_sm_0",          "settings": {}  },
@@ -250,6 +258,7 @@ _APP.utility = {
                 ]
             },
         };
+        
         for(let tilesetKey in list){ 
             for(let rec of list[tilesetKey].mapsArray){ 
                 rec.ts = tilesetKey;

@@ -147,15 +147,7 @@ _APP.game = {
         
             // Generate all graphics on the WebWorker.
             if(_APP.configObj.generateCoreImageDataAssets){
-                if(!_APP.debugActive){
-                    await _APP.utility.generateCoreImageDataAssets();
-                }
-                else{
-                    let ts1 = performance.now();
-                    await _APP.utility.generateCoreImageDataAssets();
-                    ts1 = performance.now() - ts1;
-                    console.log(`generateCoreImageDataAssets: ${ts1.toFixed(2)}ms`);
-                }
+                await _APP.utility.generateCoreImageDataAssets();
             }
 
             // Give default values to avoid "jumpy values" at start.

@@ -438,10 +438,11 @@ const _DEBUG = {
             a = 255;
 
             // Create the new tile container. 
-            thisTile = new Uint8Array( (4 * tw * th)*4);
+            // thisTile = new Uint8Array( (4 * tw * th)*4);
+            thisTile = new Uint8ClampedArray( (4 * tw * th)*4);
 
             // Fill the tile container with the same color.
-            let uint8Data = new Uint32Array(thisTile.buffer);
+            // let uint8Data = new Uint32Array(thisTile.buffer);
             let uint32Data = new Uint32Array(thisTile.buffer);
             let fillColor = (a << 24) | (b << 16) | (g << 8) | r; // 32-bit number.
             let len = uint32Data.length;

@@ -45,15 +45,17 @@ _GFX.layerObjs.getOne("board_28x28", "gs_JSG").layerKey = "L2";
 class UnoLetter extends LayerObject{
     // Set named colors.
     static colors = {
-        base   : [255, 182, 85 , 255], // 
+        base   : [255, 182, 85 , 255], // Yellow
         blue   : [36 , 72 , 170, 255], // 
         red    : [218, 0  , 0  , 255], // 
         green  : [0  , 145, 0  , 255], // 
+        black  : [0  , 0  , 0  , 255], // 
     };
     static colorFrames = [
-        [],
-        [ [ UnoLetter.colors.base, UnoLetter.colors.blue  ] ],
+        [ [ UnoLetter.colors.base, UnoLetter.colors.black ] ],
         [ [ UnoLetter.colors.base, UnoLetter.colors.red   ] ],
+        [ [ UnoLetter.colors.base, UnoLetter.colors.blue  ] ],
+        [], // Yellow
         [ [ UnoLetter.colors.base, UnoLetter.colors.green ] ],
     ];
 
