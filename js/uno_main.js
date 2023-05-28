@@ -39,6 +39,7 @@ _APP.game = {
         // this.gs2 = "";
         
         // Reset the inited flag for this gamestate.
+        if(this.gs1 == ""){ return; }
         _APP.game.gamestates[this.gs1].inited = false;
 
         // console.log(`gs1 has changed from '${this.gs1_prev}' to '${this.gs1_new}'`);
@@ -259,52 +260,52 @@ _APP.game.gameLoop.loop = async function loop(timestamp){
             let lastLoop_timestamp = performance.now();
             // this.lastLoop_timestamp = performance.now();
 
-            if(!this.skipLogic){
-                // -- NETWORK --
-                //
+            // Do not run the logic loop if the gamestate value is "".
+            if(!_APP.game.gs1 == ""){
+                // Do not run the logic loop if the skipLogic value is true.
+                if(!this.skipLogic){
+                    // -- NETWORK --
+                    //
 
-                // -- INPUT --
-                await _INPUT.util.getStatesForPlayers();
-                if(typeof _INPUT.customized.updateLiveGamepadDisplay != "undefined"){
-                    _INPUT.customized.updateLiveGamepadDisplay();
-                }
+                    // -- INPUT --
+                    await _INPUT.util.getStatesForPlayers();
+                    if(typeof _INPUT.customized.updateLiveGamepadDisplay != "undefined"){
+                        _INPUT.customized.updateLiveGamepadDisplay();
+                    }
 
-                // -- LOGIC --
-                _APP.game.gamestates[_APP.game.gs1].main();
-                
-                // -- RENDER --
-                // Render using the _GFX.layerObjs.render function.
-                if( !_APP.game.gamestates[_APP.game.gs1].render){ _GFX.layerObjs.render(_APP.game.gs1); }
-                
-                // Render using the gamestate's render function.
-                else { _APP.game.gamestates[_APP.game.gs1].render(); }
-
-                // -- DEBUG --
-                if(_APP.debugActive && _DEBUG){ 
-                    _DEBUG.cachedData.changes["L1"] = _GFX.currentData["L1"].changes;
-                    _DEBUG.cachedData.changes["L2"] = _GFX.currentData["L2"].changes;
-                    _DEBUG.cachedData.changes["L3"] = _GFX.currentData["L3"].changes;
-                    _DEBUG.cachedData.changes["L4"] = _GFX.currentData["L4"].changes;
-                }
-
-                // // GAMESTATE CHANGES
-                // if(_APP.game.changeGs2_triggered){ _APP.game._changeGs2(); } 
-                // if(_APP.game.changeGs1_triggered){ _APP.game._changeGs1(); } 
-
-                // -- DRAW --
-                // Determine if there are any draw updates. (Returns true/false and also sets _GFX.DRAWNEEDED.)
-                this.DRAWNEEDED_prev = _GFX.funcs.isDrawNeeded();
-                
-                // Send a draw request if there are changes for any layer.
-                if( _GFX.DRAWNEEDED ) { 
+                    // -- LOGIC --
+                    _APP.game.gamestates[_APP.game.gs1].main();
                     
-                    // Send the graphics updates without waiting. (This could be a problem where there are many graphics updates.)
-                    if(!_APP.configObj.drawAsync)         {             _GFX.funcs.sendGfxUpdates(false); }
+                    // -- RENDER --
+                    // Render using the _GFX.layerObjs.render function.
+                    if( !_APP.game.gamestates[_APP.game.gs1].render){ _GFX.layerObjs.render(_APP.game.gs1); }
                     
-                    // Synchronize the gameLoop with the rendering.
-                    else                                  {       await _GFX.funcs.sendGfxUpdates(true); }
+                    // Render using the gamestate's render function.
+                    else { _APP.game.gamestates[_APP.game.gs1].render(); }
 
-                    this.frameDrawCounter += 1;
+                    // -- DEBUG --
+                    if(_APP.debugActive && _DEBUG){ 
+                        _DEBUG.cachedData.changes["L1"] = _GFX.currentData["L1"].changes;
+                        _DEBUG.cachedData.changes["L2"] = _GFX.currentData["L2"].changes;
+                        _DEBUG.cachedData.changes["L3"] = _GFX.currentData["L3"].changes;
+                        _DEBUG.cachedData.changes["L4"] = _GFX.currentData["L4"].changes;
+                    }
+
+                    // -- DRAW --
+                    // Determine if there are any draw updates. (Returns true/false and also sets _GFX.DRAWNEEDED.)
+                    this.DRAWNEEDED_prev = _GFX.funcs.isDrawNeeded();
+                    
+                    // Send a draw request if there are changes for any layer.
+                    if( _GFX.DRAWNEEDED ) { 
+                        
+                        // Send the graphics updates without waiting. (This could be a problem where there are many graphics updates.)
+                        if(!_APP.configObj.drawAsync)         {             _GFX.funcs.sendGfxUpdates(false); }
+                        
+                        // Synchronize the gameLoop with the rendering.
+                        else                                  {       await _GFX.funcs.sendGfxUpdates(true); }
+
+                        this.frameDrawCounter += 1;
+                    }
                 }
             }
 

@@ -465,10 +465,7 @@ var _GFX = {
                 let tilemap, exists, oldHash, newHash, hashCacheHash, hashCacheHash_BASE;
                 let tw ;
                 let th ;
-                // let isNewTilemaphash;
                 for(let tilemapKey in tilemaps){
-                    // isNewTilemaphash = false;
-                    
                     // Get the tilemap from the provided list.
                     tilemap = tilemaps[tilemapKey];
                     tw = _GFX.tilesets[tilemap.ts].config.tileWidth;
@@ -488,25 +485,6 @@ var _GFX = {
 
                     // If it exists then get it's existing hash.
                     if(exists){ oldHash = _GFX.currentData[layer].tilemaps[tilemapKey].hash ?? 0; }
-
-                    // Cache of all generated ImageData tilemaps. (to avoid regeneration.)
-                    // HASHCACHEHMAP: Create a unique hash for some of the tilemap data.
-                    hashCacheHash = _GFX.utilities.djb2Hash( JSON.stringify(
-                        {
-                            ts      : tilemap.ts,
-                            settings: JSON.stringify(tilemap.settings),
-                            tmap    : Array.from(tilemap.tmap),
-                        }
-                    ));
-
-                    // Create another hash but without settings. This would be the base hash of this image.
-                    hashCacheHash_BASE = _GFX.utilities.djb2Hash( JSON.stringify(
-                        {
-                            ts      : tilemap.ts,
-                            settings: JSON.stringify(_GFX.defaultSettings),
-                            tmap    : Array.from(tilemap.tmap),
-                        }
-                    ));
 
                     // Generate a new hash for THIS layerObject. 
                     newHash = _GFX.utilities.djb2Hash( JSON.stringify([
@@ -535,12 +513,8 @@ var _GFX = {
                             settings : tilemap.settings,
                             mapKey : tilemapKey,
 
-                            hashCacheHash      : hashCacheHash,      // Used for future hashCache removals.
-                            hashCacheHash_BASE : hashCacheHash_BASE, // Used for future hashCache removals.
-
                             removeHashOnRemoval: tilemap.removeHashOnRemoval ?? true,
                             noResort           : tilemap.noResort ?? false,
-                            // isNewTilemaphash : isNewTilemaphash,
                         };
 
                         // Set the changes flag for this layer since there were changes.

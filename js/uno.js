@@ -433,27 +433,27 @@ _APP.utility = {
     
             if(e.type == "unhandledrejection"){
                 try{
-                    console.log( `ERRORHANDLER: ${e.type}\n  e.reason.message:`, e.reason ); 
+                    console.error( `ERRORHANDLER: ${e.type}\n  e.reason.message:`, e.reason ); 
                 } 
                 catch(innerError){
-                    console.log( `ERRORHANDLER: ${e.type}\n  INNERERROR:`, e, innerError ); 
+                    console.error( `ERRORHANDLER: ${e.type}\n  INNERERROR:`, e, innerError ); 
                 }
             }
             else if(e.type == "uncaughtException"){
-                console.log( `ERRORHANDLER: ${e.type}`, e.error ?? e.reason); 
+                console.error( `ERRORHANDLER: ${e.type}`, e.error ?? e.reason); 
             }
             else if(e.type == "uncaughtException"){
-                console.log( `ERRORHANDLER: ${e.type}`, e.error ?? e.reason); 
+                console.error( `ERRORHANDLER: ${e.type}`, e.error ?? e.reason); 
             }
             else if(e.type == "error"){
-                console.log( `ERRORHANDLER: ${e.type}`+ `\n  e.error: `, e.error ); 
+                console.error( `ERRORHANDLER: ${e.type}`+ `\n  e.error: `, e.error ); 
             }
             else{
-                console.log("UNKNOWN:", e);
+                console.error("UNKNOWN:", e);
             }
             
             // if(_APP.debugActive){
-            //     console.error( `ERRORHANDLER  ${e.type} (FULL EVENT):`, e.error ?? e.reason ); 
+                // console.error( `ERRORHANDLER  ${e.type} (FULL EVENT):`, e.error ?? e.reason ); 
             // }
             
             try{

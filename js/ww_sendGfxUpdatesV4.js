@@ -666,29 +666,9 @@ messageFuncs.sendGfxUpdates.V4 = {
                     }
 
                     //  Make sure that all settings keys exist and at least have their default values.
+                    // let baseSettings = _GFX.defaultSettings;
+                    // if(rec.settings.rotation){ baseSettings.rotation = rec.settings.rotation; }
                     rec.settings = Object.assign({}, _GFX.defaultSettings, rec.settings ?? {});
-
-                    // Generate hashCacheHash.
-                    hashCacheHash      = this.djb2Hash( JSON.stringify(
-                        {
-                            ts      : rec.ts,
-                            settings: JSON.stringify(rec.settings),
-                            tmap    : Array.from(rec.tmap),
-                        }
-                    ));
-
-                    // Generate hashCacheHash_BASE.
-                    hashCacheHash_BASE = this.djb2Hash( JSON.stringify(
-                        {
-                            ts      : rec.ts,
-                            settings: JSON.stringify(_GFX.defaultSettings),
-                            tmap    : Array.from(rec.tmap),
-                        }
-                    ));
-
-                    // Add the remaining keys. 
-                    rec.hashCacheHash      = hashCacheHash;
-                    rec.hashCacheHash_BASE = hashCacheHash_BASE;
 
                     list[rec.ts].mapObjs[rec.mapKey] = rec;
 
@@ -723,10 +703,11 @@ messageFuncs.sendGfxUpdates.V4 = {
 
         // Creates ImageData from a tilemap.
         createImageDataFromTilemap: function(tmapObj){
-            // NOTE: imageData here is an object that looks like ImageData but is not.
-            // This is because the width and height properties of ImageData are read-only.
-            // However, considering rotations, these may need to be changed.
-            // There does not appear to be a drawback to doing it this way.
+            // NOTE: 'imageData' here is an object that appears an ImageData object but isn't one.
+            // We use this custom 'imageData' object to manage situations where rotations would require changes to 'width' and 'height'.
+            // This is because the 'width' and 'height' properties of ImageData are read-only.
+            // The 'ctx.putImageData' function only works with genuine ImageData objects.
+            // In our case, 'ctx.putImageData' is only used in 'drawImgDataCacheToCanvas', where its source 'imgDataCache' is a genuine ImageData object.
 
             // Check if the base image for this tilemap exists.
             let useCachedBase = false;
@@ -747,43 +728,20 @@ messageFuncs.sendGfxUpdates.V4 = {
             let imageData;
             let base;
             if(this.hashCacheMap.has(tmapObj.hashCacheHash_BASE)){
-                // The width and height come from the tilemap and should be correct.
                 useCachedBase   = true;
-                // imageData       = new ImageData(mapW * tw, mapH * th); 
-                // imageData = new ImageData(
-                //     (settings.rotation % 180 === 0) ? (mapW * tw) : (mapH * th),
-                //     (settings.rotation % 180 === 0) ? (mapH * th) : (mapW * tw)
-                // ); 
-                imageData = {
-                    width : mapW * tw,
-                    height: mapH * th,
-                    data : new Uint8Array(
-                        (mapW * tw) * (mapH * th) * 4
-                    )
-                }; 
                 base            = this.hashCacheMap.get(tmapObj.hashCacheHash_BASE);
                 hasTransparency = (base.hasTransparency || base.isFullyTransparent);
-                try{
-                    imageData.data.set( base.imgData.data );
-                }
-                catch(e){
-                    console.log("opps!");
-                    debugger;
-                }
-            }
-            else{
-                // The width and height come from the tilemap and should be correct.
-                // imageData = new ImageData(mapW * tw, mapH * th); 
-                // imageData = new ImageData(
-                //     (settings.rotation % 180 === 0) ? (mapW * tw) : (mapH * th),
-                //     (settings.rotation % 180 === 0) ? (mapH * th) : (mapW * tw)
-                // ); 
                 imageData = {
                     width : mapW * tw,
                     height: mapH * th,
-                    data : new Uint8Array(
-                        (mapW * tw) * (mapH * th) * 4
-                    )
+                    data: new Uint8Array( base.imgData.data )
+                }; 
+            }
+            else{
+                imageData = {
+                    width : mapW * tw,
+                    height: mapH * th,
+                    data : new Uint8Array( (mapW * tw) * (mapH * th) * 4 )
                 }; 
             }
 
@@ -865,11 +823,16 @@ messageFuncs.sendGfxUpdates.V4 = {
                     // console.log("Not generating:", tmapObj.mapKey);
                 // }
 
-                // TODO: This distorts non-square images.
+
                 // Apply image transforms using rotation, xFlip, yFlip, color replacements, bgColorRgba, fade. (by reference)
                 ( {width: imageData.width, height: imageData.height} = this.performTransformsOnImageData(imageData, settings));
-                // this.performTransformsOnImageData(imageData, settings);
             }
+
+            // // Return the completed REAL ImageData version of the tilemap.
+            // return {
+            //     imageData      : new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height),
+            //     hasTransparency: hasTransparency,
+            // }
 
             // Return the completed ImageData version of the tilemap.
             return {
@@ -984,8 +947,6 @@ messageFuncs.sendGfxUpdates.V4 = {
             let mapKey;
             let map;
             let cacheHit = false; 
-            let tw;
-            let th;
             let genTime
             let relatedMapKey;
             for(let i=0, len=mapKeys.length; i<len; i+=1){
@@ -1007,46 +968,36 @@ messageFuncs.sendGfxUpdates.V4 = {
                     }
                 }
 
-                // Get the tileWidth and tileHeight
-                tw = _GFX.tilesets[ map.ts ].config.tileWidth;
-                th = _GFX.tilesets[ map.ts ].config.tileHeight;
+                // Create a hash for the base of this tilemap. (Include the rotation setting.)
+                let baseSettings = _GFX.defaultSettings;
+                if(map.settings.rotation){ baseSettings.rotation = map.settings.rotation; }
+                map.hashCacheHash_BASE = this.djb2Hash( JSON.stringify(
+                    {
+                        ts      : map.ts,
+                        settings: JSON.stringify(baseSettings),
+                        tmap    : Array.from(map.tmap),
+                    }
+                ));
 
-                // Use the supplied hashCacheHash and hashMapHash_BASE.
-                if(map.hashCacheHash && map.hashCacheHash_BASE){
-                    // console.log(`Using supplied hashCacheHash_BASE and hashCacheHash for ${mapKey}`);
-                    map.hashCacheHash      = map.hashCacheHash;
-                    map.hashCacheHash_BASE = map.hashCacheHash_BASE;
-                }
-                
-                else{
-                    // console.log(`hashCacheHash_BASE and hashCacheHash where not supplied for: ${mapKey}. Generating.`);
-                    
-                    // Generate hashCacheHash and hashMapHash_BASE (not including settings.)
-                    // Create a hash for the base of this tilemap.
-                    map.hashCacheHash_BASE = this.djb2Hash( JSON.stringify(
-                        {
-                            ts      : map.ts,
-                            settings: JSON.stringify(_GFX.defaultSettings),
-                            tmap    : Array.from(map.tmap),
-                        }
-                    ));
-
-                    // Create a unique hash for the tilemap data including settings.
-                    map.hashCacheHash = this.djb2Hash( JSON.stringify(
-                        {
-                            ts      : map.ts,
-                            settings: JSON.stringify(map.settings),
-                            tmap    : Array.from(map.tmap),
-                        }
-                    ));
-                }
+                // Create a unique hash for the tilemap data including full settings.
+                map.hashCacheHash = this.djb2Hash( JSON.stringify(
+                    {
+                        ts      : map.ts,
+                        settings: JSON.stringify( Object.assign({}, _GFX.defaultSettings, map.settings ?? {}) ),
+                        tmap    : Array.from(map.tmap),
+                    }
+                ));
 
                 // Use existing ImageData cache (Map)
                 if(this.hashCacheMap.has(map.hashCacheHash)){
                     // console.log("Cache hit: Map", mapKey, map.hashCacheHash, map);
                     ({imgData: map.imgData, hasTransparency: map.hasTransparency} = this.hashCacheMap.get(map.hashCacheHash));
-                    if(map.imgData && map.imgData.width){ cacheHit = true; }
-                    else{ console.log("Something is wrong with the imgData", map); throw ""; }
+                    if(map.imgData && map.imgData.width){ 
+                        cacheHit = true; 
+                        map.w = map.imgData.width;
+                        map.h = map.imgData.height;
+                    }
+                    else{ console.log("Something is wrong with the imgData", map); throw "Something is wrong with the imgData"; }
                 }
 
                 // Hash was not found. The ImageData must be generated.
@@ -1056,8 +1007,10 @@ messageFuncs.sendGfxUpdates.V4 = {
                     // Create the ImageData for this tilemap since it does not exist in the cache.
                     genTime = performance.now();
                     ({imageData: map.imgData, hasTransparency: map.hasTransparency} = this.createImageDataFromTilemap(map));
+                    map.w = map.imgData.width;
+                    map.h = map.imgData.height;
                     genTime = performance.now() - genTime;
-                    
+
                     // Get the number of bytes for the new hashCache entry (approximate.)
                     let hashCacheDataLength = JSON.stringify({
                         imgData : Array.from(map.imgData.data),
@@ -1091,7 +1044,6 @@ messageFuncs.sendGfxUpdates.V4 = {
                 }
                 
                 // Save the completed data to the data cache.
-                // if(map.fadeBeforeDraw){ console.log("****"); }
                 if(save){
                     // Ensure that all keys exist.
                     if( !("mapKey"              in map) ){ console.log("map:", map.removeHashOnRemoval); throw `createImageDataFromTilemapsAndUpdateGraphicsCache: Missing key in map: mapKey`; }
@@ -1153,13 +1105,7 @@ messageFuncs.sendGfxUpdates.V4 = {
 
                 // 
                 let ts = performance.now();
-                // let funcName = "updateRegion_blit";
                 let funcName = (!map.hasTransparency) ? "updateRegion_replace" : "updateRegion_blit";
-
-                // if(mapKey == "card_l_1" || mapKey == "letter_uno_u"){
-                    // if((!map.hasTransparency)){ console.log("REPLACE:", "mapKey:", mapKey, "hasTransparency:", map.hasTransparency); }
-                    // else                      { console.log("BLIT   :", "mapKey:", mapKey, "hasTransparency:", map.hasTransparency); }
-                // }
 
                 createGraphicsAssets[funcName](
                     imgData.data,        // source
@@ -1297,6 +1243,7 @@ messageFuncs.sendGfxUpdates.V4 = {
                 ts: d.ts,
                 // w: d.w, 
                 // h: d.h, 
+                rotation           : d.settings.rotation,
                 hasTransparency    : d.hasTransparency,
                 genTime            : d.genTime,
                 hashCacheDataLength: d.hashCacheDataLength,
