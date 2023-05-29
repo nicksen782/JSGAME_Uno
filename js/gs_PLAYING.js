@@ -60,7 +60,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         this.anims.parent = this;
 
         // Create the deck.
-        this.deck = new Deck({ activePlayers: ["P1", "P2"] });
+        this.deck = new Deck({});
 
         // Create the gameboard.
         this.gameBoard = new Gameboard({
@@ -68,6 +68,10 @@ _APP.game.gamestates["gs_PLAYING"] = {
             deck         : this.deck,
             gameSettings : this.gameSettings,
         });
+
+        this.gameBoard.initPlayers();
+        this.deck.storeGameBoard(this.gameBoard);
+        this.deck.createCardPlaceholders();
 
         // Set gamestate 2.
         _APP.game.changeGs2("getFirstPlayer");
@@ -82,6 +86,9 @@ _APP.game.gamestates["gs_PLAYING"] = {
         }
 
         // this.gameBoard.displayMessage("playsFirst", "P1", false);
+
+        // GAME RESET.
+
 
         // Set the inited flag.
         this.inited = true;
@@ -129,12 +136,12 @@ _APP.game.gamestates["gs_PLAYING"] = {
             // _APP.shared.genTimer.create("timer3", 60); // 
             // _APP.shared.genTimer.create("timer4", 60); // 
 
-            _APP.game.gs2 == "getFirstPlayer";
+            _APP.game.gs2 = "getFirstPlayer";
         }
         else if(_APP.game.gs2 == "getFirstPlayer"){
             if(0){
                 // Shuffle the deck.
-                this.shuffleDeck();
+                this.deck.shuffleDeck();
             }
             else if(0){
             }
@@ -156,10 +163,10 @@ _APP.game.gamestates["gs_PLAYING"] = {
             // this.gameBoard.setCurrentPlayer(winningPlayerKey);
 
             // // Reset the deck.
-            // this.resetDeck();
+            // this.deck.resetDeck();
 
             // // Shuffle the deck.
-            // this.shuffleDeck();
+            // this.deck.shuffleDeck();
 
             // Switch to the main dealing mode.
             // _APP.game.changeGs2("dealing");

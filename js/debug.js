@@ -1,3 +1,4 @@
+// @ts-nocheck
 var _DEBUG = {
     gridCanvas: null,
     createGridCanvas: function(){
@@ -286,6 +287,7 @@ var _DEBUG = {
     },
     applyChange(newText, obj, activeTime, noTrim=false){
         // Trim the text.
+        let oldText;
         if(!noTrim){
             newText = newText.trim();
             oldText = obj.e.innerText.trim();
@@ -1014,6 +1016,9 @@ var _DEBUG = {
         parent: null,
         DOM:{
             "contextMenu1": "debug_layerObjEdit_contextMenu1",
+
+            // SHARED
+            "className"   : "debug_layerObjEdit_contextMenu1_className",
             "tilesetKey"  : "debug_layerObjEdit_contextMenu1_tilesetKey",
             "layerKey"    : "debug_layerObjEdit_contextMenu1_layerKey",
             "gs"          : "debug_layerObjEdit_contextMenu1_gs",
@@ -1022,6 +1027,8 @@ var _DEBUG = {
             "y"           : "debug_layerObjEdit_contextMenu1_y",
             "rotation"    : "debug_layerObjEdit_contextMenu1_rotation", 
             
+            // SHARED
+            "edit_className"  : "debug_layerObjEdit_className",
             "edit_tilesetKey" : "debug_layerObjEdit_tilesetKey",
             "edit_layerKey"   : "debug_layerObjEdit_layerKey",
             "edit_gs"         : "debug_layerObjEdit_gs",
@@ -1029,6 +1036,10 @@ var _DEBUG = {
             "edit_x"          : "debug_layerObjEdit_x",
             "edit_y"          : "debug_layerObjEdit_y",
             "edit_rotation"   : "debug_layerObjEdit_rotation", 
+            
+            // CARD
+            "cardTableDiv" : "debug_cardTableDiv",
+            "cardTable_attributes" : "debug_cardTable_attributes",
         },
         highlightCanvas   : null,
         highlightCanvasCtx: null,
@@ -1046,7 +1057,7 @@ var _DEBUG = {
             
             // Create a canvas for this layer.
             this.highlightCanvas = document.createElement("canvas");
-            this.highlightCanvas.width  = canvas_src_L1.width;
+            this.highlightCanvas.width  = canvas_src_L1.width; 
             this.highlightCanvas.height = canvas_src_L1.height;
             this.highlightCanvas.id = "debug_highlight_canvas";
             this.highlightCanvas.style["z-index"] = "400";
@@ -1079,11 +1090,11 @@ var _DEBUG = {
         contextMenu1_open  : function(e, gs, key){
             e.preventDefault();
             let data = _GFX.layerObjs.objs[gs][key];
-            // console.log(data);
-            // console.log("contextMenu1_open:", e, gs, key, this.DOM);
+            
+            this.DOM["className"]   .innerText = data.className;
             this.DOM["tilesetKey"]  .innerText = data.tilesetKey;
             this.DOM["layerKey"]    .innerText = data.layerKey;
-            this.DOM["gs"]           .innerText = gs;
+            this.DOM["gs"]          .innerText = gs;
             this.DOM["layerObjKey"] .innerText = key;
             this.DOM["x"]           .innerText = data.x
             this.DOM["y"]           .innerText = data.y
@@ -1108,6 +1119,7 @@ var _DEBUG = {
             _DEBUG.navBar1.showOne("view_layerObjEdit");
 
             // Load the data into that view.
+            this.DOM["edit_className"]  .innerText = data.className;
             this.DOM["edit_tilesetKey"] .innerText = data.tilesetKey;
             this.DOM["edit_layerKey"]   .innerText = data.layerKey;
             this.DOM["edit_gs"]         .innerText = gs;
@@ -1115,6 +1127,16 @@ var _DEBUG = {
             this.DOM["edit_x"]          .innerText = data.x;
             this.DOM["edit_y"]          .innerText = data.y;
             this.DOM["edit_rotation"]   .innerText = data.settings.rotation;
+
+            // Show/Hide DOM specific to the className.
+            let elems = document.querySelectorAll(".debug_classDiv");
+            elems.forEach(d=>{ d.classList.add("displayNone"); });
+
+            if(data.className == "Card"){ 
+                this.DOM["cardTableDiv"].classList.remove("displayNone"); 
+                this.card_displayAttribute(data);
+            }
+
         },
         contextMenu1_close : function(){
             // Close the contextMenu.
@@ -1143,6 +1165,38 @@ var _DEBUG = {
             let data = _GFX.layerObjs.objs[gs][key];
             data.setSetting("rotation", rotation);
             this.DOM["edit_rotation"]          .innerText = data.settings.rotation;
+        },
+
+        card_displayAttribute: function(data){
+            this.DOM["cardTable_attributes"].innerHTML = `` +
+                `<span>S:'${data.size}'</span>, ` +
+                `<span>C:'${data.color.replace("CARD_", "")}'</span>, ` +
+                `<span>V:'${data.value.replace("CARD_", "")}'</span>` +
+                ``
+        },
+        card_adjustSize: function(size){
+            let gs   = this.DOM["edit_gs"].innerText;
+            let key  = this.DOM["edit_layerObjKey"].innerText;
+            if(!gs || !key){ console.log("NOT LOADED"); return; }
+            let data = _GFX.layerObjs.objs[gs][key];
+            data.size = size;
+            this.card_displayAttribute(data);
+        },
+        card_adjustColor: function(color){
+            let gs   = this.DOM["edit_gs"].innerText;
+            let key  = this.DOM["edit_layerObjKey"].innerText;
+            if(!gs || !key){ console.log("NOT LOADED"); return; }
+            let data = _GFX.layerObjs.objs[gs][key];
+            data.color = color;
+            this.card_displayAttribute(data);
+        },
+        card_adjustValue: function(value){
+            let gs   = this.DOM["edit_gs"].innerText;
+            let key  = this.DOM["edit_layerObjKey"].innerText;
+            if(!gs || !key){ console.log("NOT LOADED"); return; }
+            let data = _GFX.layerObjs.objs[gs][key];
+            data.value = value;
+            this.card_displayAttribute(data);
         },
     },
     displayLayerObject_console: function(gs, key){

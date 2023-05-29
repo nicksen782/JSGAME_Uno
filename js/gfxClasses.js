@@ -61,6 +61,7 @@ class UnoLetter extends LayerObject{
 
     constructor(config){
         super(config);
+        this.className = this.constructor.name;
         
         if     (config.letter == "u") { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_u"); }
         else if(config.letter == "n") { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_n"); }
@@ -142,6 +143,8 @@ class Cursor1 extends LayerObject{
     constructor(config){
         config.tilesetKey = "sprite_tiles1";
         super(config);
+        this.className = this.constructor.name;
+
         this.tilesetKey = "sprite_tiles1";
 
         this.frames = [
@@ -216,60 +219,145 @@ class Cursor1 extends LayerObject{
 
 //
 class Card extends LayerObject{
+    /* NOTES
+        If you want to change the card from a black card (wilds, back) you cannot change to a non-black card by just changing one setting.  
+          You'll need two changes. 
+        This is not a problem with non-black cards. You can change the color or the value at any time. 
+          If the new value is a black card then the color will be handled automatically.
+        If you want to change the card in one operation then use change_wholeCard.
+    */
+
+    // Getters and setters.
+    get value(){ return this._value; } 
+    get color(){ return this._color; } 
+    get size() { return this._size; } 
+    set size (newValue){ if( this._size  !== newValue){ this._size  = newValue; this._change_size(this._size);   this._changed = true; } }
+    set value(newValue){ if( this._value !== newValue){ this._value = newValue; this._change_value(this._value); this._changed = true; } }
+    set color(newValue){ if( this._color !== newValue){ this._color = newValue; this._change_color(this._color); this._changed = true; } }
+
     // Set named colors.
     static colors = {
         base   : [218, 0  , 0  , 255], // All non-wild cards are initially red.
-        red    : [218, 0  , 0  , 255], // 
         yellow : [255, 182, 85 , 255], // 
         blue   : [36 , 72 , 170, 255], // 
         green  : [0  , 145, 0  , 255], // 
+        // red    : [218, 0  , 0  , 255], // Same as the base.
+        // black  : [0  , 0  , 0  , 255], // 
     };
 
-    constructor(config){
-        super(config);
-        this.tilesetKey = "bg_tiles1";
+    // Set named destination color replacements. 
+    static colorReplacements = {
+        "YELLOW": [[Card.colors.base, Card.colors.yellow ]],
+        "BLUE"  : [[Card.colors.base, Card.colors.blue   ]],
+        "GREEN" : [[Card.colors.base, Card.colors.green  ]],
+        "RED"   : [],
+        "BLACK" : [],
+    };
 
-        // Prefix determines if this is a small card or a large card.
-        let cardPrefix;
-        if     (config.size=="sm"){ cardPrefix = `card_sm`;}
-        else if(config.size=="lg"){ cardPrefix = `card_lg`;}
-        else{ 
-            console.error(`Invalid card size: ${config.size}`, this, config); 
-            throw `Invalid card size: ${config.size}`; 
-        }
-
-        // Change the color.
-        if     (config.color == "CARD_YELLOW"){ this.settings.colorData = [[Card.colors.base, Card.colors.yellow ]]; }
-        else if(config.color == "CARD_BLUE")  { this.settings.colorData = [[Card.colors.base, Card.colors.blue   ]]; }
-        else if(config.color == "CARD_RED")   { this.settings.colorData = []; }
-        else if(config.color == "CARD_GREEN") { this.settings.colorData = [[Card.colors.base, Card.colors.green  ]]; }
-        else if(config.color == "CARD_BLACK") { this.settings.colorData = []; }
-        else{ 
-            console.error(`Invalid card color: ${config.color}`, this, config); 
-            throw `Invalid card color: ${config.color}`; 
+    // Changes the displayed value of the card.
+    _change_value(value){
+        // Make sure that the size is valid.
+        if( !(this.size ==  "sm" || this.size == "lg")) { 
+            console.error(`Invalid card size: ${this.size}`, this); 
+            throw `Invalid card size: ${this.size}`; 
         }
 
         // Set the card tilemap.
-        if     (config.value == "CARD_0"    )     { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_0");         }
-        else if(config.value == "CARD_1"    )     { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_1");         }
-        else if(config.value == "CARD_2"    )     { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_2");         }
-        else if(config.value == "CARD_3"    )     { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_3");         }
-        else if(config.value == "CARD_4"    )     { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_4");         }
-        else if(config.value == "CARD_5"    )     { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_5");         }
-        else if(config.value == "CARD_6"    )     { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_6");         }
-        else if(config.value == "CARD_7"    )     { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_7");         }
-        else if(config.value == "CARD_8"    )     { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_8");         }
-        else if(config.value == "CARD_9"    )     { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_9");         }
-        else if(config.value == "CARD_DRAW2")     { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_draw2");     }
-        else if(config.value == "CARD_SKIP" )     { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_skip");      }
-        else if(config.value == "CARD_REV"  )     { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_reverse");   }
-        else if(config.value == "CARD_WILD")      { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_wild");      }
-        else if(config.value == "CARD_WILD_DRAW4"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_wildDraw4"); }
-        else if(config.value == "CARD_BACK")      { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", cardPrefix+"_back");      }
+        if     (value == "CARD_0"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_0`);         }
+        else if(value == "CARD_1"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_1`);         }
+        else if(value == "CARD_2"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_2`);         }
+        else if(value == "CARD_3"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_3`);         }
+        else if(value == "CARD_4"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_4`);         }
+        else if(value == "CARD_5"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_5`);         }
+        else if(value == "CARD_6"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_6`);         }
+        else if(value == "CARD_7"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_7`);         }
+        else if(value == "CARD_8"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_8`);         }
+        else if(value == "CARD_9"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_9`);         }
+        else if(value == "CARD_DRAW2"     ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_draw2`);     }
+        else if(value == "CARD_SKIP"      ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_skip`);      }
+        else if(value == "CARD_REV"       ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_reverse`);   }
+        else if(value == "CARD_WILD"      ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_wild`);      }
+        else if(value == "CARD_WILD_DRAW4"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_wildDraw4`); }
+        else if(value == "CARD_BACK"      ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_back`);      }
         else{ 
-            console.error(`Invalid card value: ${config.value}`, this, config); 
-            throw `Invalid card value: ${config.value}`; 
+            console.error(`Invalid card value: ${value}`, this); 
+            throw `Invalid card value: ${value}`; 
         }
+
+        // These cards must always have their color set to "CARD_BLACK".
+        if( (value == "CARD_WILD" || value == "CARD_WILD_DRAW4" || value == "CARD_BACK") ){ this.color = "CARD_BLACK"; }
+        
+        // The other cards must never have their color set to "CARD_BLACK".
+        else if(this._color == "CARD_BLACK"){ this.color = "CARD_RED"; }
+    };
+
+    // Changes the displayed color of the card.
+    _change_color(color){
+        // These cards must always have their color set to "CARD_BLACK".
+        if( (this.value == "CARD_WILD" || this.value == "CARD_WILD_DRAW4" || this.value == "CARD_BACK") ){ color = "CARD_BLACK"; this._color = color; }
+        
+        // The other cards must never have their color set to "CARD_BLACK".
+        else if(color == "CARD_BLACK"){ color = "CARD_RED";  this._color = color; }
+        
+        if     (color == "CARD_YELLOW"){ this.settings.colorData = Card.colorReplacements.YELLOW; }
+        else if(color == "CARD_BLUE"  ){ this.settings.colorData = Card.colorReplacements.BLUE;   }
+        else if(color == "CARD_GREEN" ){ this.settings.colorData = Card.colorReplacements.GREEN;  }
+        else if(color == "CARD_RED"   ){ this.settings.colorData = Card.colorReplacements.RED;    } // No color change (use the base color.)
+        else if(color == "CARD_BLACK" ){ this.settings.colorData = Card.colorReplacements.BLACK;  } // No color change (use the base color.)
+        else{ 
+            console.error(`Invalid card color: ${color}`, this); 
+            throw `Invalid card color: ${color}`; 
+        }
+    };
+
+    // Changes the displayed size of the card and regenerates the value.
+    _change_size(size){
+        // Make sure that the size is valid.
+        if( !(this.size ==  "sm" || this.size == "lg")) { 
+            console.error(`Invalid card size: ${this.size}`, this); 
+            throw `Invalid card size: ${this.size}`; 
+        }
+        this._size = size;
+
+        // Set the card tilemap.
+        this._change_value(this._value);
+    };
+
+    constructor(config){
+        config.tilesetKey = "bg_tiles1";
+        super(config);
+        this.className = this.constructor.name;
+
+        this._size  = config.size;
+        this._value = config.value;
+        this._color = config.color;
+
+        // Set the card tilemap.
+        this._change_value(config.value);
+
+        // Change the color.
+        this._change_color(config.color);
+    };
+
+    // Allows changes to each attribute of the card.
+    change_wholeCard(size, color, value){
+        // Example usages: 
+        // this.change_wholeCard(null, "CARD_YELLOW", "CARD_1");          // Color changes to yellow.
+        // this.change_wholeCard("lg", "CARD_BLUE"  , "CARD_2");          // Color changes to blue.
+        // this.change_wholeCard("sm", "CARD_GREEN" , "CARD_DRAW2");      // Color changes to green.
+        // this.change_wholeCard(null, "CARD_GREEN" , "CARD_WILD_DRAW4"); // Color forced to black.
+        // this.change_wholeCard(null, null , "CARD_WILD_DRAW4");         // Color forced to black.
+
+        // Save the values. (If any arguments were null then use the existing values.)
+        this._size  = size  ?? this._size ;
+        this._color = color ?? this._color;
+        this._value = value ?? this._value;
+
+        // Update the displayed size and value.
+        this._change_size(this._size);
+
+        // Update the displayed color.
+        this._change_color(this._color);
     };
 };
 
@@ -317,34 +405,8 @@ class Deck{
     static discardPosBelow= [ 15,15 ]; // Under Discard Pile : discard_pos_below
 
     constructor(config){
-        this.activePlayers = config.activePlayers;
-
-        // Set placeholders for each active player's small card.
-        for(let key of this.activePlayers){
-            // PLAYER CARDS (DISPLAY OF 5.) (SMALL)
-            for(let i=0, len=Deck.cardPos[key].length; i<len; i+=1){
-                let pos = Deck.cardPos[key][i];
-
-                let rotation;
-                if     (key=="P1"){ rotation =   0; }
-                else if(key=="P2"){ rotation =  90; }
-                else if(key=="P3"){ rotation = 180; }
-                else if(key=="P4"){ rotation = -90; }
-
-                // Create clear tilemap as placeholder.
-                _GFX.layerObjs.updateOne(Card, { 
-                    size       : "sm", 
-                    color      : "CARD_BLACK",
-                    value      : "CARD_BACK", 
-                    layerObjKey: `${key}_card_${i}`, 
-                    layerKey   : "L2", 
-                    xyByGrid   : true,
-                    x          : pos[0], 
-                    y          : pos[1], 
-                    settings: { rotation: rotation }
-                } );
-            }
-        }
+        this.className = this.constructor.name;
+        this.gameBoard = null;
 
         // Create the deck (in order.)
         this.deck = [
@@ -470,6 +532,71 @@ class Deck{
         ];
     }
 
+    storeGameBoard(gameBoardRef){
+        this.gameBoard = gameBoardRef;
+    };
+
+    // Create card placeholders.
+    createCardPlaceholders(){
+        // Set placeholders for each active player's small card.
+        let players = this.gameBoard.players;
+        for(let key in players){
+            // Skip non-active players.
+            if(!players[key].active){ continue; }
+
+            // PLAYER CARDS (DISPLAY OF 5.) (SMALL)
+            for(let i=0, len=Deck.cardPos[key].length; i<len; i+=1){
+                let pos = Deck.cardPos[key][i];
+
+                let rotation;
+                if     (key=="P1"){ rotation =   0; }
+                else if(key=="P2"){ rotation =  90; }
+                else if(key=="P3"){ rotation = 180; }
+                else if(key=="P4"){ rotation = -90; }
+
+                // Create clear tilemap as placeholder.
+                _GFX.layerObjs.updateOne(Card, { 
+                    size       : "sm", 
+                    color      : "CARD_BLACK",
+                    value      : "CARD_BACK", 
+                    layerObjKey: `${key}_card_${i}`, 
+                    layerKey   : "L2", 
+                    xyByGrid   : true,
+                    x          : pos[0], 
+                    y          : pos[1], 
+                    settings: { rotation: rotation }
+                } );
+            }
+        }
+    };
+
+    // Flip player cards up.
+    flipPlayerCardsUp(playerKey){
+    };
+    
+    // Flip player cards down.
+    flipPlayerCardsDown(playerKey){
+        for(let i=0, len=Deck.cardPos[playerKey].length; i<len; i+=1){
+            let layerObjKey = `${playerKey}_card_${i}`;
+            let pos = Deck.cardPos[playerKey][i];
+    
+            _GFX.layerObjs.getOne(layerObjKey);
+            
+            // // Create clear tilemap as placeholder.
+            // _GFX.layerObjs.updateOne(Card, { 
+            //     size       : "sm", 
+            //     color      : "CARD_BLACK",
+            //     value      : "CARD_BACK", 
+            //     layerObjKey: `${key}_card_${i}`, 
+            //     layerKey   : "L2", 
+            //     xyByGrid   : true,
+            //     x          : pos[0], 
+            //     y          : pos[1], 
+            //     settings: { rotation: rotation }
+            // } );
+        }
+    };
+
     // Sets the location of each card to the DRAW_PILE.
     resetDeck(){
         for(let card of this.deck){
@@ -593,9 +720,8 @@ class Gameboard{
         this.currentDirection = "F";
         this.currentPlayer    = "P1";
 
-        this.initPlayers();
-        
         this.createGameBoard();
+        // this.initPlayers();
     }
 
     // Display in-game message.
@@ -971,6 +1097,8 @@ class Gameboard{
 class OLD_N782_face_anim extends LayerObject{
     constructor(config){
         super(config);
+        this.className = this.constructor.name;
+
         this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
         
         this.frames = [
@@ -1034,6 +1162,8 @@ class OLD_N782_face_anim extends LayerObject{
 class OLD_N782_text_anim extends LayerObject{
     constructor(config){
         super(config);
+        this.className = this.constructor.name;
+
         this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
 
         this.frames = [
@@ -1102,6 +1232,8 @@ class OLD_N782_text_anim extends LayerObject{
 class OLD_N782_oneStar_anim extends LayerObject{
     constructor(config){
         super(config);
+        this.className = this.constructor.name;
+
         this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
 
         this.frames = [
@@ -1170,6 +1302,8 @@ class OLD_N782_oneStar_anim extends LayerObject{
 class OLD_N782_oneStar_animNS extends OLD_N782_oneStar_anim{
     constructor(config){
         super(config);
+        this.className = this.constructor.name;
+
         this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
 
         this.frames = [
@@ -1254,6 +1388,7 @@ class OLD_N782_oneStar_animNS extends OLD_N782_oneStar_anim{
 class OLD_N782_oneStar_anim2 extends OLD_N782_oneStar_anim{
     constructor(config){
         super(config);
+        this.className = this.constructor.name;
 
         this.frames = [
             _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT"),
@@ -1273,6 +1408,7 @@ class OLD_N782_oneStar_anim2 extends OLD_N782_oneStar_anim{
 class OLD_N782_oneStar_anim3 extends OLD_N782_oneStar_anim2{
     constructor(config){
         super(config);
+        this.className = this.constructor.name;
 
         this.frames = [
             _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT"),

@@ -24,7 +24,7 @@ messageFuncs.gfx = {
         oneLayerData: function(layerKey){
             // Clear the graphics cache for this layer.
             let mapKeys = Object.keys(_GFX.currentData[layerKey].tilemaps);
-            this.manyMapKeys(layerKey, mapKeys, "oneLayerData");
+            this.manyMapKeys(layerKey, mapKeys);
 
             // If the layer is L1 then reset bgColorRgba and bgColor32bit also.
             if(layerKey == "L1"){
@@ -877,7 +877,7 @@ messageFuncs.gfx = {
 
             // Handle per image fades (by reference.)
             if(settings.fade != null){
-                createGraphicsAssets.applyFadeToImageDataArray(imageData.data, fadeLevel);
+                createGraphicsAssets.applyFadeToImageDataArray(imageData.data, settings.fade);
             }
 
             // Handle rotation (Uses temp copy up updates the ImageData by reference.)
@@ -1194,7 +1194,7 @@ messageFuncs.gfx = {
                 this.UPDATE.ANYLAYER2(layerKey, messageData, forceLayerRedraw);
             }
             else{
-                this.clearTimingsValues(layerKey, messageData);
+                this.clearTimingsValues(layerKey);
             }
         }
 

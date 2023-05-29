@@ -1,7 +1,7 @@
 'use strict';
 
 // Take care of vendor prefixes.
-self.postMessage = self.postMessage || self.webkitPostMessage;
+// self.postMessage = self.postMessage || self.webkitPostMessage;
 
 var debugActive = false;
 const messageFuncs = {

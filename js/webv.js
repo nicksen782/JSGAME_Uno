@@ -133,7 +133,8 @@ _WEBW_V.init = async function(){
         let relPath = ".";
         if(_APP.usingJSGAME){ relPath = "./games/JSGAME_Uno"; }
         this.worker = new Worker( `${relPath}/js/video_webworker.js` );
-        this.worker.addEventListener("message", (e)=>this.RECEIVE(e), false);
+        // this.worker = new Worker( `${relPath}/js/video_webworker.js`, { type: 'module' } );
+        this.worker.addEventListener("message", (e)=>_WEBW_V.RECEIVE(e), false);
 
         resolve();
     });

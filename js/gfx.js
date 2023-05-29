@@ -1124,6 +1124,8 @@ class LayerObject {
     }
 
     constructor(config){
+        this.className = this.constructor.name;
+        
         // Settings.
         this.settings = config.settings ?? _GFX.funcs.correctSettings(null);
 
@@ -1244,6 +1246,8 @@ class PrintText extends LayerObject{
 
     constructor(config){
         super(config);
+        this.className = this.constructor.name;
+
         // mapKey  : this.layerObjKey, 
         
         this.text = config.text;

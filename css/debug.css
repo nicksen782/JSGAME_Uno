@@ -381,3 +381,10 @@ button#debug_test_toggleGridCanvas {
   /* white-space: pre; */
   z-index: 200;
 }
+
+.debug_button_card{
+  width: 45px;
+  margin: 0px;
+  margin-bottom: 5px;
+  margin-right: -3px;
+}
