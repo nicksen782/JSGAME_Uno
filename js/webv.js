@@ -42,8 +42,9 @@ var _WEBW_V = {
 
     // Handles the reception of responses.
     RECEIVE: function(e){
-        try     { if(this.modes_RECEIVE.indexOf(e.data.mode) == -1){ console.error("Invalid mode for RECEIVE:", mode); return; } }
-        catch(e){ console.error("RECEIVE: Error in 'e.data.mode'. ERROR:", e); return; }
+        // try     { if(this.modes_RECEIVE.indexOf(e.data.mode) == -1){ console.error("Invalid mode for RECEIVE:", mode); return; } }
+        // catch(e){ console.error("RECEIVE: Error in 'e.data.mode'. ERROR:", e); return; }
+        if(this.modes_RECEIVE.indexOf(e.data.mode) == -1){ console.error("Invalid mode for RECEIVE:", mode); return; }
 
         // Make sure there is data and a data.mode.
         if(e.data && e.data.mode){
@@ -85,13 +86,13 @@ var _WEBW_V = {
             }
         }
         else{ console.error(`ERROR: No mode? e.data: ${e.data}, e.data.mode: ${e.data.mode}, e:`, e); }
-
     },
 
     // Sends requests to the WebWorker. Can await a differed promise or request data.
     SEND: async function(mode, data, waitForResp=false, dataRequest=false){
-        try     { if(this.modes_SEND.indexOf(mode) == -1){ console.error("Invalid mode for SEND:", mode); return; } }
-        catch(e){ console.error("SEND: Error in 'e.data.mode'. ERROR:", e); return; }
+        // try     { if(this.modes_SEND.indexOf(mode) == -1){ console.error("Invalid mode for SEND:", mode); return; } }
+        // catch(e){ console.error("SEND: Error in 'e.data.mode'. ERROR:", e); return; }
+        if(this.modes_SEND.indexOf(mode) == -1){ console.error("Invalid mode for SEND:", mode); return; } 
 
         return new Promise(async(resolve,reject)=>{
             // Inject debugActive into data.data.

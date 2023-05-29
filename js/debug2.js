@@ -381,13 +381,15 @@ var _DEBUG2 = {
                     ``;
     
                     // Set the position of the context menu and display it
-                    contextMenu.style.top  = (e.clientY - 100) + 'px';
-                    contextMenu.style.left = (e.clientX - 150) + 'px';
+                    let top  = Math.max(0, e.layerY - 20);
+                    let left = Math.max(0, e.layerX - 140);
+                    contextMenu.style.top  = top + 'px';
+                    contextMenu.style.left = left + 'px';
                     contextMenu.style.display = 'block';
                 },
                 contextMenu1_select: function(cardIndex, location){
                     // Update the card object.
-                    _APP.game.gamestates["gs_PLAYING"].deck[cardIndex].location = location;
+                    _APP.game.gamestates["gs_PLAYING"].deck.deck[cardIndex].location = location;
                     
                     // Set lastRun to 0 so that it runs again immediately.
                     this.lastRun = 0;

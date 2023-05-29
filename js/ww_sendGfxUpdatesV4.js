@@ -615,6 +615,7 @@ messageFuncs.gfx = {
         generateCoreImageDataAssets: async function(list){
             // If the hashCache is off then there is no point in pregenerating tilemap images.
             if(_GFX.configObj.disableCache == true){
+                // console.log("cache is off");
                 return;
             }
 
@@ -986,13 +987,10 @@ messageFuncs.gfx = {
                 }
 
                 if(_GFX.configObj.disableCache == false){
-                    // Create a hash for the base of this tilemap. (Include the rotation setting.)
-                    baseSettings = _GFX.defaultSettings;
-                    if(map.settings.rotation){ baseSettings.rotation = map.settings.rotation; }
                     map.hashCacheHash_BASE = this.djb2Hash( JSON.stringify(
                         {
                             ts      : map.ts,
-                            settings: JSON.stringify(baseSettings),
+                            settings: JSON.stringify(_GFX.defaultSettings),
                             tmap    : Array.from(map.tmap),
                         }
                     ));
@@ -1121,7 +1119,7 @@ messageFuncs.gfx = {
                 }
 
                 // 
-                let ts = performance.now();
+                // let ts = performance.now();
                 let funcName = (!map.hasTransparency) ? "updateRegion_replace" : "updateRegion_blit";
 
                 createGraphicsAssets[funcName](
@@ -1135,8 +1133,8 @@ messageFuncs.gfx = {
                     map.w,               // w
                     map.h,               // h
                 );
-                ts = performance.now() - ts;
-                if(ts >= 0.3){ console.log(ts.toFixed(2), imgData.data.byteLength, layerKey, mapKey); }
+                // ts = performance.now() - ts;
+                // if(ts >= 0.3){ console.log(ts.toFixed(2), imgData.data.byteLength, layerKey, mapKey); }
             }
         },
 

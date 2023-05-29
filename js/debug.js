@@ -1090,8 +1090,10 @@ var _DEBUG = {
             this.DOM["rotation"]    .innerText = data.settings.rotation;
 
             // Set the position of the context menu and display it
-            this.DOM["contextMenu1"].style.top  = (e.clientY - 20) + 'px';
-            this.DOM["contextMenu1"].style.left = (e.clientX - 140) + 'px';
+            let top  = Math.max(0, e.layerY - 20);
+            let left = Math.max(0, e.layerX - 140);
+            this.DOM["contextMenu1"].style.top  = (top) + 'px';
+            this.DOM["contextMenu1"].style.left = (left) + 'px';
             this.DOM["contextMenu1"].style.display = 'block';
         },
         contextMenu1_select: function(){
@@ -1183,6 +1185,7 @@ var _DEBUG = {
         // TODO:
         // oncontextmenu="event.preventDefault(); _DEBUG.loadLayerObj(gs_PLAYING, deckControl);"
 
+        let firstLayer = true; 
         for(let layerKey of layerKeys){ 
             layerTextSet = false;
 
@@ -1194,8 +1197,17 @@ var _DEBUG = {
                 // Only work with layerObjs on the current layer. 
                 if(data.layerKey == layerKey){
                     // Display the layer header?
-                    if(!layerTextSet){ newText += `LAYER: ${data.layerKey}:\n`; layerTextSet = true; }
-
+                    if(!layerTextSet){ 
+                        if(!firstLayer){
+                            newText += "\n" + `LAYER: ${data.layerKey}:\n`; layerTextSet = true; 
+                        }
+                        else{
+                            newText += `LAYER: ${data.layerKey}:\n`; layerTextSet = true; 
+                            firstLayer = false; 
+                        }
+                        
+                    }
+                    
                     let w = data.tmap[0];
                     let h = data.tmap[1];
                     let x = data.x;
@@ -1208,7 +1220,7 @@ var _DEBUG = {
                     }
                     // coords = `${data.x.toString().padStart(3, " ")}, ${data.y.toString().padStart(3, " ")}`;
                     coords = `${data.x}, ${data.y}`;
-                    name   = `${layerObjKey}`;
+                    name   = `${layerObjKey.padEnd(16, " ")}`;
                     // dims   = `${w.toString().padStart(3, " ")}, ${h.toString().padStart(3, " ")}`;
                     dims   = `${w}, ${h}`;
                     rotation   = `, ${data.settings.rotation ?? 0}`;
@@ -1218,8 +1230,9 @@ var _DEBUG = {
                     `onmouseenter="_DEBUG.layerObjs.highlightOnHover(${x}, ${y}, ${w}, ${h}, ${data.settings.rotation});"` + 
                     `oncontextmenu="event.preventDefault(); _DEBUG.layerObjs.contextMenu1_open(event, '${_APP.game.gs1}','${layerObjKey}');" ` +
                     `onclick="_DEBUG.displayLayerObject_console('${_APP.game.gs1}','${layerObjKey}');" ` +
-                    `class="layerObjectsStats1_entry">  ` +
-                    `(${coords} ${dims} ${rotation}) ${name}` +
+                    `class="layerObjectsStats1_entry">` +
+                    // `(${coords} ${dims} ${rotation}) ${name}` +
+                    `${name} (${coords} ${dims} ${rotation})` +
                     `</div>`;
                 }
             }

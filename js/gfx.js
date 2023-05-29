@@ -1176,7 +1176,6 @@ class LayerObject {
         // Min/Max x.
         x = Math.max(
             0-w, 
-            // Math.min(x, maxX)
             Math.min(x, maxX+w)
         );
         
