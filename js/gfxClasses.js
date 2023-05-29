@@ -72,11 +72,13 @@ class UnoLetter extends LayerObject{
         
         this.tilesetKey = "bg_tiles1";
         this.framesIndex = config.framesIndex ?? 0;
+        if(this.framesIndex >= UnoLetter.colorFrames.length){ this.framesIndex = 0; }
         this.framesCounter = 0;
         this.framesBeforeIndexChange = config.framesBeforeIndexChange ?? 15;
         this.repeatCount = 0;
         this.repeats = 0;
         this.done = false;
+        this._changed = true;
     }
 
     // Render functions.
@@ -138,12 +140,15 @@ class Cursor1 extends LayerObject{
     };
 
     constructor(config){
+        config.tilesetKey = "sprite_tiles1";
         super(config);
         this.tilesetKey = "sprite_tiles1";
 
         this.frames = [
             _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f1"),
             _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f2"),
+            // _GFX.funcs.getTilemap("sprite_tiles1", "cursor2_f1"),
+            // _GFX.funcs.getTilemap("sprite_tiles1", "cursor2_f2"),
         ];
 
         // DEBUG
@@ -161,6 +166,8 @@ class Cursor1 extends LayerObject{
 
         this.tmap = this.frames[this.framesIndex];
         this.done = false;
+        
+        this._changed = true;
     };
 
     // Render functions.
@@ -189,7 +196,8 @@ class Cursor1 extends LayerObject{
 
                 // Stop after repeating up to this.repeats.
                 if(this.repeatCount == this.repeats) { 
-                    this.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f1");
+                    // this.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f1");
+                    this.tmap = this.frames[0];
                     this.done = true; 
                     this._changed = true; 
                     return; 

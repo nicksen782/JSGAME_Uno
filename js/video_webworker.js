@@ -6,12 +6,12 @@ self.postMessage = self.postMessage || self.webkitPostMessage;
 var debugActive = false;
 const messageFuncs = {
     timings: {
-        sendGfxUpdates: {
+        gfx: {
             "L1" : {},
             "L2" : {},
             "L3" : {},
             "L4" : {},
-            "sendGfxUpdates" : 0,
+            "gfx" : 0,
         },
         initConfigAndGraphics: {},
         initLayers: {},
@@ -101,8 +101,8 @@ const messageFuncs = {
 
         // Init V4
         let ts_initV4 = performance.now();
-        if(messageFuncs.sendGfxUpdates.V4){
-            await messageFuncs.sendGfxUpdates.V4.init();
+        if(messageFuncs.gfx){
+            await messageFuncs.gfx.init();
         }
         ts_initV4 = performance.now() - ts_initV4;
         
@@ -110,13 +110,14 @@ const messageFuncs = {
         messageFuncs.timings["initLayers"]["tsLayerSave"] = tsLayerSave.toFixed(3);
         messageFuncs.timings["initLayers"]["ts_initV4"]   = ts_initV4.toFixed(3);
     },
-    sendGfxUpdates:{}
+
+    // Populated by: ww_sendGfxUpdatesV4.js
+    gfx:{}
 };
 
 // Import the graphics module.
 importScripts("createGraphicsAssets.js");
 importScripts("ww_sendGfxUpdatesV4.js");
-// importScripts("ww_sendGfxUpdatesV4_OLD.js");
 
 const timeItData = {};
 function timeIt(key, func){
@@ -160,26 +161,30 @@ function timeIt(key, func){
     }
 };
 const _GFX = {
+    // The configObj from the application.
     configObj: {},
+
+    // Contains the canvas and ctx for each layer. Holds the imgDataCache which is used to update the canvas.
     layers: {},
     defaultSettings: {},
     currentData: {
         "L1":{
             bgColorRgba: [0,0,0,0],
-            bgColor32bit: 0,
-            tilemaps   : {},
-            fade: {},
+            bgColor32bit: 0, // Used as a check to avoid repeatly changing to the same color.
+            tilemaps : {},
+            fade     : {},
         },
         "L2":{
-            tilemaps   : {},
+            tilemaps : {},
+            fade     : {},
         },
         "L3":{
-            tilemaps   : {},
-            fade: {},
+            tilemaps : {},
+            fade     : {},
         },
         "L4":{
-            tilemaps   : {},
-            fade: {},
+            tilemaps : {},
+            fade     : {},
         },
     },
     utilities: {
@@ -233,6 +238,13 @@ const _GFX = {
         
         // Rotates ImageData by the specified degrees. (Changes source imageData. Uses temporary copy.)
         rotateImageData: function(imageData, degrees) {
+            // if(degrees == 0){
+            //     return {
+            //         width: imageData.width,
+            //         height: imageData.height
+            //     }
+            // }
+
             // Only allow specific values for degrees.
             let allowedDegrees = [-90, 90, -180, 180, 270];
             if (allowedDegrees.indexOf(degrees) === -1) {
@@ -370,7 +382,7 @@ const _GFX = {
             };
         },
 
-        // 
+        // Checks if arrays are equal. (recursion)
         areArraysEqual: function(array1, array2) {
             // Check if the arrays are the same length. If they are then there is nothing more that needs to be checked.
             if (array1.length !== array2.length) { return false; }
@@ -396,7 +408,7 @@ const _GFX = {
             return true;
         },
         
-        //
+        // Checks that settings objects are equal.
         areSettingsObjectsEqual: function(compareObj1, compareObj2=_GFX.defaultSettings) {
             // These are the keys that are required.
             let settingsKeys = Object.keys(_GFX.defaultSettings);
@@ -428,68 +440,6 @@ const _GFX = {
             }
             return true;
         },
-    
-    },
-};
-const _DEBUG = {
-    // TODO: Should this be done with a debug canvas layer on the main thread instead?
-    // Draw 256 tiles displaying all colors in the color palette. (16 rows of 16 at tile normal dimensions (to ensure fit.)) 
-    // Expects a 256x256 pixel container.
-    drawColorPalette: function(){
-        let tiles = new Array(16*16);
-        // let tw = 8;
-        let tw = 4;
-        // let th = 8;
-        let th = 4;
-        let thisTile,r,g,b,a;
-        let colors = new Array(16*16);
-
-        // Create the tile ImageData.
-        for(let i=0; i<256; i+=1){
-            // Convert RGB332 to RGB32 values.
-            r = ( ((i >> 0) & 0b00000111) * (255 / 7) ) << 0; // red
-            g = ( ((i >> 3) & 0b00000111) * (255 / 7) ) << 0; // green
-            b = ( ((i >> 6) & 0b00000011) * (255 / 3) ) << 0; // blue
-            a = 255;
-
-            // Create the new tile container. 
-            // thisTile = new Uint8Array( (4 * tw * th)*4);
-            thisTile = new Uint8ClampedArray( (4 * tw * th)*4);
-
-            // Fill the tile container with the same color.
-            // let uint8Data = new Uint32Array(thisTile.buffer);
-            let uint32Data = new Uint32Array(thisTile.buffer);
-            let fillColor = (a << 24) | (b << 16) | (g << 8) | r; // 32-bit number.
-            let len = uint32Data.length;
-            for (let p = 0; p < len; ++p) { uint32Data[p] = fillColor; }
-            
-            // Add the new tile to the list.
-            tiles[i] = new ImageData(thisTile, tw*2, th*2);
-
-            // Add the color to the list.
-            colors[i] = [r,g,b,a];
-        }
-
-        // Draw each tile to the top layer.
-        let index = 0;
-        for(let y=0; y<16; y+=1){
-            for(let x=0; x<16; x+=1){
-                // _GFX.layers["L1"].ctx.putImageData(tiles[index], (x)*(tw*2), (y)*(th*2));
-                // _GFX.layers["L2"].ctx.putImageData(tiles[index], (x)*(tw*2), (y)*(th*2));
-                // _GFX.layers["L3"].ctx.putImageData(tiles[index], (x)*(tw*2), (y)*(th*2));
-                _GFX.layers["L4"].ctx.putImageData(tiles[index], (x)*(tw*2), (y)*(th*2));
-                index+=1;
-            }
-        }
-
-        // Output the colors as text.
-        // let text = `COLORS:\n`;
-        // console.log(text);
-        // console.log("Colors:");
-        // colors.forEach((d,i)=>{
-        //     text += `  RGB332: ${i.toString().padStart(3, " ")} (0x${i.toString(16).toUpperCase().padStart(2, "0")}), RGB32: [${d.join(",")}]\n`;
-        // });
-        // console.log(text);
     },
 };
 
@@ -524,49 +474,42 @@ self.onmessage = async function(event) {
                 break; 
             }
             case "generateCoreImageDataAssets"           : { 
-                if(!flags.dataRequest){              await messageFuncs.sendGfxUpdates.V4.DRAW.generateCoreImageDataAssets(data.list); }
-                else                  { returnData = await messageFuncs.sendGfxUpdates.V4.DRAW.generateCoreImageDataAssets(data.list); }
+                if(!flags.dataRequest){              await messageFuncs.gfx.DRAW.generateCoreImageDataAssets(data.list); }
+                else                  { returnData = await messageFuncs.gfx.DRAW.generateCoreImageDataAssets(data.list); }
                 break; 
             }
             case "sendGfxUpdates"       : { 
                 if(data.version == 4){
-                    if(!flags.dataRequest){              messageFuncs.sendGfxUpdates.V4.run(data); }
-                    else                  { returnData = messageFuncs.sendGfxUpdates.V4.run(data); }
+                    if(!flags.dataRequest){              messageFuncs.gfx.run(data); }
+                    else                  { returnData = messageFuncs.gfx.run(data); }
                 }
                 break; 
             }
             
             // DEBUG REQUESTS.
 
-            case "_DEBUG.drawColorPalette" : { 
-                _DEBUG.drawColorPalette(); 
-                break; 
-            }
-
             case "requestHashCacheEntry" : { 
                 console.log("HASH CACHE ENTRY:", data.title);
-                console.log("  HASH:", messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.get(data.hash) );
-                console.log("  BASE:", messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.get(data.hashBase) );
-                console.log(`  HASH ACCESS: messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.get(${data.hash})`);
-                console.log(`  BASE ACCESS: messageFuncs.sendGfxUpdates.V4.DRAW.hashCacheMap.get(${data.hashBase})`);
+                console.log("  HASH:", messageFuncs.gfx.DRAW.hashCacheMap.get(data.hash) );
+                console.log("  BASE:", messageFuncs.gfx.DRAW.hashCacheMap.get(data.hashBase) );
+                console.log(`  HASH ACCESS: messageFuncs.gfx.DRAW.hashCacheMap.get(${data.hash})`);
+                console.log(`  BASE ACCESS: messageFuncs.gfx.DRAW.hashCacheMap.get(${data.hashBase})`);
                 break; 
             }
             
             // UNUSED??
             case "clearAllLayers"          : { 
-                messageFuncs.sendGfxUpdates.clearAllLayers(); 
+                messageFuncs.gfx.clearAllLayers(); 
                 break; 
             }
             
             case "_DEBUG.toggleDebugFlag"          : { 
-                // console.log("_DEBUG.toggleDebugFlag:", data);
-                // if(data.debugActive != debugActive){
-                //     console.log(`Changing the debugActive from ${debugActive} to ${data.debugActive}`);
-                // }
-                // else{
-                //     console.log(`NO CHANGE debugActive: ${debugActive}, data.debugActive: ${data.debugActive}`);
-                // }
                 debugActive = data.debugActive ?? false;
+                break; 
+            }
+
+            case "_DEBUG.toggleCacheFlag"          : { 
+                _GFX.configObj.disableCache = data.disableCache ?? false;
                 break; 
             }
 

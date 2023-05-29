@@ -299,9 +299,11 @@ _APP.game.gameLoop.loop = async function loop(timestamp){
                     if( _GFX.DRAWNEEDED ) { 
                         
                         // Send the graphics updates without waiting. (This could be a problem where there are many graphics updates.)
-                        if(!_APP.configObj.drawAsync)         {             _GFX.funcs.sendGfxUpdates(false); }
+                        // awaitDraw is false.
+                        if(!_APP.configObj.awaitDraw)         {             _GFX.funcs.sendGfxUpdates(false); }
                         
                         // Synchronize the gameLoop with the rendering.
+                        // awaitDraw is true.
                         else                                  {       await _GFX.funcs.sendGfxUpdates(true); }
 
                         this.frameDrawCounter += 1;

@@ -9,9 +9,9 @@ var _WEBW_V = {
         "clearAllLayers",
         "generateCoreImageDataAssets",
         // DEBUG
-        "_DEBUG.drawColorPalette",
         "_DEBUG.toggleDebugFlag",
         "requestHashCacheEntry",
+        "_DEBUG.toggleCacheFlag",
     ],
     
     // Allowed RECEIVE "modes."
@@ -23,9 +23,9 @@ var _WEBW_V = {
         "clearAllLayers",
         "generateCoreImageDataAssets",
         // DEBUG
-        "_DEBUG.drawColorPalette",
         "_DEBUG.toggleDebugFlag",
         "requestHashCacheEntry",
+        "_DEBUG.toggleCacheFlag",
     ],
     
     // Differed promises allow the system to wait for a response from the WebWorker.

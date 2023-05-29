@@ -50,6 +50,20 @@ var _DEBUG = {
     },
     toggleGridCanvas: function(){
         this.gridCanvas.classList.toggle("displayNone");
+        let elem = document.getElementById("debug_test_toggleGridCanvas")
+        if(this.gridCanvas.classList.contains("displayNone")){
+            elem.innerText = "OFF";
+            // debug_bgColor_on
+            // debug_bgColor_off
+            elem.classList.remove("debug_bgColor_on");
+            elem.classList.add("debug_bgColor_off");
+        }
+        else{
+            elem.classList.add("debug_bgColor_on");
+            elem.classList.remove("debug_bgColor_off");
+            elem.innerText = "ON ";
+        }
+
     },
 
     gameLoopControl: function(){
@@ -87,18 +101,18 @@ var _DEBUG = {
         }, false);
 
         // TOGGLE: ASYNC DRAW
-        let drawAsync = document.getElementById("debug_test_toggleDrawAsync");
-        drawAsync.addEventListener("click", ()=>{ 
-            _APP.configObj.drawAsync = !_APP.configObj.drawAsync;
-            if(_APP.configObj.drawAsync){
-                drawAsync.classList.remove("debug_bgColor_on");
-                drawAsync.classList.add("debug_bgColor_off");
-                drawAsync.innerText = "OFF";
+        let awaitDraw = document.getElementById("debug_test_toggleDrawAsync");
+        awaitDraw.addEventListener("click", ()=>{ 
+            _APP.configObj.awaitDraw = !_APP.configObj.awaitDraw;
+            if(_APP.configObj.awaitDraw){
+                awaitDraw.classList.remove("debug_bgColor_off");
+                awaitDraw.classList.add("debug_bgColor_on");
+                awaitDraw.innerText = "ON";
             } 
             else {
-                drawAsync.classList.remove("debug_bgColor_off");
-                drawAsync.classList.add("debug_bgColor_on");
-                drawAsync.innerText = "ON";
+                awaitDraw.classList.remove("debug_bgColor_on");
+                awaitDraw.classList.add("debug_bgColor_off");
+                awaitDraw.innerText = "OFF";
             } 
         }, false);
 
@@ -106,7 +120,6 @@ var _DEBUG = {
         let debugButton = document.getElementById("debug_toggleDebugFlag");
         debugButton.addEventListener("click", ()=>{ 
             _APP.debugActive = !_APP.debugActive;
-            console.log("debug", _APP.debugActive);
             if(_APP.debugActive){
                 debugButton.classList.remove("debug_bgColor_off");
                 debugButton.classList.add("debug_bgColor_on");
@@ -119,6 +132,26 @@ var _DEBUG = {
             } 
             _WEBW_V.SEND("_DEBUG.toggleDebugFlag", { 
                 data: { debugActive: _APP.debugActive }, 
+                refs:[]
+            }, false, false);
+        }, false);
+
+        // TOGGLE: ENABLE/DISABLE CACHE
+        let toggleCacheButton = document.getElementById("debug_toggleCacheFlag");
+        toggleCacheButton.addEventListener("click", ()=>{ 
+            _APP.configObj.disableCache = !_APP.configObj.disableCache;
+            if(_APP.configObj.disableCache){
+                toggleCacheButton.classList.remove("debug_bgColor_on");
+                toggleCacheButton.classList.add("debug_bgColor_off");
+                toggleCacheButton.innerText = "OFF";
+            } 
+            else {
+                toggleCacheButton.classList.remove("debug_bgColor_off");
+                toggleCacheButton.classList.add("debug_bgColor_on");
+                toggleCacheButton.innerText = "ON";
+            } 
+            _WEBW_V.SEND("_DEBUG.toggleCacheFlag", { 
+                data: { disableCache: _APP.configObj.disableCache }, 
                 refs:[]
             }, false, false);
         }, false);
@@ -471,13 +504,7 @@ var _DEBUG = {
                 this.lastUpdate1 = performance.now();
 
                 // Add to the data key for each elem.
-                this.elems.hashCacheMapSize1.data = ( `${data["hashCacheMapSize1"]}` );
-                this.elems.hashCacheMapSize2.data = ( `${(data["hashCacheMapSize2"]/1000).toFixed(2)} KB` );
-
-                _DEBUG.hashCacheStats_size1 = this.elems.hashCacheMapSize1.data;
-                _DEBUG.hashCacheStats_size2 = this.elems.hashCacheMapSize2.data;
-
-                this.elems.TOTAL_ALL.data = ( data.ALLTIMINGS["sendGfxUpdates"]        .toFixed(1) );
+                this.elems.TOTAL_ALL.data = ( data.ALLTIMINGS["gfx"]        .toFixed(1) );
                 
                 this.elems.TOTAL_L1.data  = ( data.ALLTIMINGS["L1___TOTAL"]            .toFixed(1) );
                 this.elems.A_L1.data      = ( data.ALLTIMINGS["L1_A_clearLayer"]       .toFixed(1) );
@@ -597,7 +624,7 @@ var _DEBUG = {
                 };
             },
             display_progressBars: function(now){
-                if(!this.values["sendGfxUpdates"] || this.values["sendGfxUpdates"] == 0){ 
+                if(!this.values["gfx"] || this.values["gfx"] == 0){ 
                     // console.log("No timings yet.");
                     return false; 
                 }
@@ -649,7 +676,7 @@ var _DEBUG = {
             display_layerChanges: function(now){
                 let tab = document.getElementById("debug_navBar1_tab_drawStats");
                 if(!tab.classList.contains("active")){ return; }
-                if(!this.values["sendGfxUpdates"] || this.values["sendGfxUpdates"] == 0){ 
+                if(!this.values["gfx"] || this.values["gfx"] == 0){ 
                     // console.log("No timings yet.");
                     return false; 
                 }
@@ -884,7 +911,7 @@ var _DEBUG = {
                 };
             },
             display_progressBars: function(now){
-                // if(!this.values["sendGfxUpdates"] || this.values["sendGfxUpdates"] == 0){ 
+                // if(!this.values["gfx"] || this.values["gfx"] == 0){ 
                 //     // console.log("No timings yet.");
                 //     return false; 
                 // }
@@ -983,6 +1010,139 @@ var _DEBUG = {
         this.applyChange(testText, debug_GS2Text, activeTime);
     },
 
+    layerObjs: {
+        parent: null,
+        DOM:{
+            "contextMenu1": "debug_layerObjEdit_contextMenu1",
+            "tilesetKey"  : "debug_layerObjEdit_contextMenu1_tilesetKey",
+            "layerKey"    : "debug_layerObjEdit_contextMenu1_layerKey",
+            "gs"          : "debug_layerObjEdit_contextMenu1_gs",
+            "layerObjKey" : "debug_layerObjEdit_contextMenu1_layerObjKey",
+            "x"           : "debug_layerObjEdit_contextMenu1_x",
+            "y"           : "debug_layerObjEdit_contextMenu1_y",
+            "rotation"    : "debug_layerObjEdit_contextMenu1_rotation", 
+            
+            "edit_tilesetKey" : "debug_layerObjEdit_tilesetKey",
+            "edit_layerKey"   : "debug_layerObjEdit_layerKey",
+            "edit_gs"         : "debug_layerObjEdit_gs",
+            "edit_layerObjKey": "debug_layerObjEdit_layerObjKey",
+            "edit_x"          : "debug_layerObjEdit_x",
+            "edit_y"          : "debug_layerObjEdit_y",
+            "edit_rotation"   : "debug_layerObjEdit_rotation", 
+        },
+        highlightCanvas   : null,
+        highlightCanvasCtx: null,
+        init: function(parent){
+            this.parent = parent;
+            for(let elemKey in this.DOM){
+                this.DOM[elemKey] = document.getElementById(this.DOM[elemKey]);
+            }
+
+            // Create and add the highlight canvas to the top.
+            // Save the canvas and the draw context.
+
+            // Copy the dimensions of the first canvas. 
+            const canvas_src_L1 = document.querySelector(".canvasLayer[name='L1']");
+            
+            // Create a canvas for this layer.
+            this.highlightCanvas = document.createElement("canvas");
+            this.highlightCanvas.width  = canvas_src_L1.width;
+            this.highlightCanvas.height = canvas_src_L1.height;
+            this.highlightCanvas.id = "debug_highlight_canvas";
+            this.highlightCanvas.style["z-index"] = "400";
+            this.highlightCanvasCtx = this.highlightCanvas.getContext('2d');
+
+            // Add the class.
+            this.highlightCanvas.classList.add("canvasLayer");
+            // this.highlightCanvas.classList.add("displayNone");
+
+            // Add the canvas to the output.
+            let outputDiv = document.getElementById("output");
+            outputDiv.append(this.highlightCanvas);
+        },
+        highlightOnHover: function(x, y, w, h, rotation){
+            // Clear the canvas.
+            this.highlightCanvasCtx.clearRect(0, 0, this.highlightCanvas.width, this.highlightCanvas.height);
+
+            // DEBUG: 
+            if(rotation == 90 || rotation == -90 || rotation == 270){
+                ([w,h] = [h,w])
+            }
+
+            // Draw a semi-transparent rectangle covering the region occupied by this layer object.
+            this.highlightCanvasCtx.fillStyle="rgba(244, 67, 54, 0.7)";
+            this.highlightCanvasCtx.strokeStyle="white";
+            this.highlightCanvasCtx.lineWidth=0.5;
+            this.highlightCanvasCtx.fillRect( x, y, w, h );
+            this.highlightCanvasCtx.strokeRect( x, y, w, h );
+        },
+        contextMenu1_open  : function(e, gs, key){
+            e.preventDefault();
+            let data = _GFX.layerObjs.objs[gs][key];
+            // console.log(data);
+            // console.log("contextMenu1_open:", e, gs, key, this.DOM);
+            this.DOM["tilesetKey"]  .innerText = data.tilesetKey;
+            this.DOM["layerKey"]    .innerText = data.layerKey;
+            this.DOM["gs"]           .innerText = gs;
+            this.DOM["layerObjKey"] .innerText = key;
+            this.DOM["x"]           .innerText = data.x
+            this.DOM["y"]           .innerText = data.y
+            this.DOM["rotation"]    .innerText = data.settings.rotation;
+
+            // Set the position of the context menu and display it
+            this.DOM["contextMenu1"].style.top  = (e.clientY - 20) + 'px';
+            this.DOM["contextMenu1"].style.left = (e.clientX - 140) + 'px';
+            this.DOM["contextMenu1"].style.display = 'block';
+        },
+        contextMenu1_select: function(){
+            let gs = this.DOM["gs"].innerText;
+            let key = this.DOM["layerObjKey"].innerText;
+            let data = _GFX.layerObjs.objs[gs][key];
+
+            // Close the menu.
+            this.contextMenu1_close();
+
+            // Switch to the LayerObj Edit tab.
+            _DEBUG.navBar1.showOne("view_layerObjEdit");
+
+            // Load the data into that view.
+            this.DOM["edit_tilesetKey"] .innerText = data.tilesetKey;
+            this.DOM["edit_layerKey"]   .innerText = data.layerKey;
+            this.DOM["edit_gs"]         .innerText = gs;
+            this.DOM["edit_layerObjKey"].innerText = data.layerObjKey;
+            this.DOM["edit_x"]          .innerText = data.x;
+            this.DOM["edit_y"]          .innerText = data.y;
+            this.DOM["edit_rotation"]   .innerText = data.settings.rotation;
+        },
+        contextMenu1_close : function(){
+            // Close the contextMenu.
+            this.DOM["contextMenu1"].style.display = 'none';
+        },
+        adjustX       : function(inc){
+            let gs   = this.DOM["edit_gs"].innerText;
+            let key  = this.DOM["edit_layerObjKey"].innerText;
+            if(!gs || !key){ console.log("NOT LOADED"); return; }
+            let data = _GFX.layerObjs.objs[gs][key];
+            data.x += inc;
+            this.DOM["edit_x"]          .innerText = data.x;
+        },
+        adjustY       : function(inc){
+            let gs   = this.DOM["edit_gs"].innerText;
+            let key  = this.DOM["edit_layerObjKey"].innerText;
+            if(!gs || !key){ console.log("NOT LOADED"); return; }
+            let data = _GFX.layerObjs.objs[gs][key];
+            data.y += inc;
+            this.DOM["edit_y"]          .innerText = data.y;
+        },
+        adjustRotation: function(rotation){
+            let gs   = this.DOM["edit_gs"].innerText;
+            let key  = this.DOM["edit_layerObjKey"].innerText;
+            if(!gs || !key){ console.log("NOT LOADED"); return; }
+            let data = _GFX.layerObjs.objs[gs][key];
+            data.setSetting("rotation", rotation);
+            this.DOM["edit_rotation"]          .innerText = data.settings.rotation;
+        },
+    },
     displayLayerObject_console: function(gs, key){
         data = _GFX.layerObjs.objs[gs][key];
         console.log(`LAYER OBJECT ENTRY: gs: '${gs}', key: '${key}'`);
@@ -997,6 +1157,10 @@ var _DEBUG = {
         if(!tab.classList.contains("active")){ return; }
         let elem = document.getElementById("layerObjectList1");
 
+        if(!elem.hasAttribute("onmouseleave")){
+            elem.setAttribute("onmouseleave", "_DEBUG.layerObjs.highlightOnHover(0, 0, 0, 0, 0);"); 
+        }
+
         // If the gamestate key is not in layerObjs then return.
         if(! ( _APP.game.gs1 in _GFX.layerObjs.objs ) ){ return; }
 
@@ -1007,7 +1171,6 @@ var _DEBUG = {
         let layerObjKeys = Object.keys(_GFX.layerObjs.objs[_APP.game.gs1]).reverse();
 
         // Get the current text.
-        let currentText = elem.innerText;
         let oldHash = elem.getAttribute("hash");
         let newText = ``;
 
@@ -1016,6 +1179,9 @@ var _DEBUG = {
         let coords;
         let name;
         let dims;
+
+        // TODO:
+        // oncontextmenu="event.preventDefault(); _DEBUG.loadLayerObj(gs_PLAYING, deckControl);"
 
         for(let layerKey of layerKeys){ 
             layerTextSet = false;
@@ -1032,17 +1198,29 @@ var _DEBUG = {
 
                     let w = data.tmap[0];
                     let h = data.tmap[1];
+                    let x = data.x;
+                    let y = data.y;
                     if(data.xyByGrid){
                         w = w * _APP.configObj.dimensions.tileWidth;
                         h = h * _APP.configObj.dimensions.tileHeight;
+                        x = x * _APP.configObj.dimensions.tileWidth;
+                        y = y * _APP.configObj.dimensions.tileHeight;
                     }
-                    coords = `${data.x.toString().padStart(3, " ")}, ${data.y.toString().padStart(3, " ")}`;
+                    // coords = `${data.x.toString().padStart(3, " ")}, ${data.y.toString().padStart(3, " ")}`;
+                    coords = `${data.x}, ${data.y}`;
                     name   = `${layerObjKey}`;
-                    dims   = `${w.toString().padStart(3, " ")}, ${h.toString().padStart(3, " ")}`;
+                    // dims   = `${w.toString().padStart(3, " ")}, ${h.toString().padStart(3, " ")}`;
+                    dims   = `${w}, ${h}`;
+                    rotation   = `, ${data.settings.rotation ?? 0}`;
 
                     // Update the newText string.
-                    // newText += `  (${data.x.toString().padStart(2, " ")}, ${data.y.toString().padStart(2, " ")}) ${layerObjKey}\n`;
-                    newText += `<div onclick="_DEBUG.displayLayerObject_console('${_APP.game.gs1}','${layerObjKey}');" class="layerObjectsStats1_entry">  (${coords} ${dims}) ${name}</div>`;
+                    newText += `<div ` +
+                    `onmouseenter="_DEBUG.layerObjs.highlightOnHover(${x}, ${y}, ${w}, ${h}, ${data.settings.rotation});"` + 
+                    `oncontextmenu="event.preventDefault(); _DEBUG.layerObjs.contextMenu1_open(event, '${_APP.game.gs1}','${layerObjKey}');" ` +
+                    `onclick="_DEBUG.displayLayerObject_console('${_APP.game.gs1}','${layerObjKey}');" ` +
+                    `class="layerObjectsStats1_entry">  ` +
+                    `(${coords} ${dims} ${rotation}) ${name}` +
+                    `</div>`;
                 }
             }
         }
@@ -1121,8 +1299,9 @@ var _DEBUG = {
             let hashText = `${data.hashCacheHash == data.hashCacheHash_BASE ? "BASE" : "copy"}`;
 
             // Update the newText string.
-            if(data.rotation)
-            newText += `<div class="hashCacheStats1_entry" onclick="_DEBUG.display_hashCacheStats1_console('${data.mapKey}, ${data.relatedMapKey}',${data.hashCacheHash}, ${data.hashCacheHash_BASE} );">` +
+            // if(data.rotation)
+            // if(data.removeHashOnRemoval)
+            newText += `<div class="${data.removeHashOnRemoval?"":"hashCacheStats1_entry_perm "}hashCacheStats1_entry" onclick="_DEBUG.display_hashCacheStats1_console('${data.mapKey}, ${data.relatedMapKey}',${data.hashCacheHash}, ${data.hashCacheHash_BASE} );">` +
                 `${data.removeHashOnRemoval?"(TEMP)":"(PERM)"}, ${hashText} ` +
                 `\n` +
                 ` ${data.mapKey.toString().padEnd(maxLen1, " ")} ` + 
@@ -1167,9 +1346,9 @@ _DEBUG.navBar1 = {
             'tab' : 'debug_navBar1_tab_fade',
             'view': 'debug_navBar1_view_fade',
         },
-        'view_buttons1': {
-            'tab' : 'debug_navBar1_tab_buttons1',
-            'view': 'debug_navBar1_view_buttons1',
+        'view_layerObjEdit': {
+            'tab' : 'debug_navBar1_tab_layerObjEdit',
+            'view': 'debug_navBar1_view_layerObjEdit',
         },
         'view_hashCacheStats1': {
             'tab' : 'debug_navBar1_tab_hashCacheStats1',
@@ -1328,17 +1507,6 @@ _DEBUG.init = async function(){
             pixelRGBA.innerText = text;
         });
     };
-    const drawColorPalette = function(){
-        let debug_test_drawColorPalette = document.getElementById("debug_test_drawColorPalette");
-        debug_test_drawColorPalette.addEventListener("click", async ()=>{
-            await _WEBW_V.SEND("_DEBUG.drawColorPalette", { 
-                data:{}, 
-                refs:[]
-            }, true, false);
-        }, false);
-        let debug_test_copyLayer_L4 = document.getElementById("debug_test_copyLayer_L4");
-        debug_test_copyLayer_L4.click();
-    };
 
     return new Promise(async (resolve,reject)=>{
         // Init the color finder.
@@ -1351,11 +1519,6 @@ _DEBUG.init = async function(){
         loadColorFinder();
         tsLoadColorFinder = performance.now() - tsLoadColorFinder;
         
-        // Init drawColorPalette button.
-        let ts_drawColorPalette = performance.now(); 
-        drawColorPalette();
-        ts_drawColorPalette = performance.now() - ts_drawColorPalette;
-
         // Init createGridCanvas.
         let ts_createGridCanvas = performance.now(); 
         this.createGridCanvas();
@@ -1387,15 +1550,16 @@ _DEBUG.init = async function(){
         // scaleSlider.value = "3.00";
         scaleSlider.dispatchEvent(new Event("input"));
 
+        _DEBUG.layerObjs.init(_DEBUG);
+
         // DEBUG NAV 1
         _DEBUG.navBar1.init();
         // _DEBUG.navBar1.showOne("view_colorFinder");
         // _DEBUG.navBar1.showOne("view_drawStats");
         // _DEBUG.navBar1.showOne("view_fade");
-        // _DEBUG.navBar1.showOne("view_buttons1");
-        _DEBUG.navBar1.showOne("view_hashCacheStats1");
-        // _DEBUG.navBar1.showOne("view_hashCacheStats2");
-        // _DEBUG.navBar1.showOne("view_layerObjects");
+        // _DEBUG.navBar1.showOne("view_hashCacheStats1");
+        _DEBUG.navBar1.showOne("view_layerObjects");
+        // _DEBUG.navBar1.showOne("view_layerObjEdit");
 
         // Output some timing info.
         // console.log("DEBUG: init:");

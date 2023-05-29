@@ -107,8 +107,10 @@ div#debug_test_alwaysVisible {
   vertical-align: top;
 }
 .debug_table td {
-  border: 1px solid black; /* padding: 5px; */
+  border: 1px solid lightgrey;
+  /* padding: 5px; */
   font-family: monospace;
+  /* text-align: center; */
 }
 .debug_td_header {
   text-decoration: underline;
@@ -148,6 +150,7 @@ div#debug_test_alwaysVisible {
   max-width: 90px;
   text-align: center;
 }
+.debug_td_short4 button { width: 100%; }
 
 .debug_progress-bar {
   width: 100%;
@@ -355,8 +358,26 @@ div#debug_hashCacheList1 {
 .hashCacheStats1_entry:nth-child(odd)  { background-color:darkgray; }
 .hashCacheStats1_entry:nth-child(even) { background-color:lightgray; }
 .hashCacheStats1_entry:hover{background-color: dodgerblue;}
+.hashCacheStats1_entry_perm{font-weight: bold;}
 
 .layerObjectsStats1_entry{ cursor: pointer; }
 .layerObjectsStats1_entry:nth-child(odd)  { background-color:darkgray; }
 .layerObjectsStats1_entry:nth-child(even) { background-color:lightgray; }
 .layerObjectsStats1_entry:hover{background-color: dodgerblue;}
+
+button#debug_test_toggleGridCanvas {
+    width: 45px;
+}
+
+#debug_layerObjEdit_contextMenu1 {
+  display: none;
+  position: absolute;
+  background-color: rgb(240 240 240 / 90%);
+  border: 1px solid #ddd;
+  padding: 10px;
+  z-index: 1;
+  width: 305px;
+  font-family: monospace;
+  /* white-space: pre; */
+  z-index: 200;
+}

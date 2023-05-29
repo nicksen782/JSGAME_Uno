@@ -130,7 +130,7 @@ var _GFX = {
                     layerData.tilemaps[mapKey].hashPrev != layerData.tilemaps[mapKey].hash
                 ){ 
                     this.GFX_UPDATE_DATA[layerKey]["CHANGES"][mapKey] = tilemap; 
-                    // this.GFX_UPDATE_DATA[layerKey].changes = true; 
+                    this.GFX_UPDATE_DATA[layerKey].changes = true; 
                 }
 
                 // REMOVALS_ONLY (if there are removals AND this mapKey is in removals.)
@@ -483,6 +483,9 @@ var _GFX = {
                         tilemap.y += ( (_APP.configObj.globalOffsets.y ?? 0) * th);
                     }
 
+                    // Fix settings.
+                    tilemap.settings = Object.assign({}, _GFX.defaultSettings, tilemap.settings ?? {});
+
                     // If it exists then get it's existing hash.
                     if(exists){ oldHash = _GFX.currentData[layer].tilemaps[tilemapKey].hash ?? 0; }
 
@@ -595,13 +598,13 @@ var _GFX = {
         },
 
         // This gathers the data created by the other update functions and sends the values.
-        sendGfxUpdates: async function(drawAsync){
+        sendGfxUpdates: async function(awaitDraw){
             // Update _GFX.GFX_UPDATE_DATA
             _GFX.create_GFX_UPDATE_DATA();
 
             if(_GFX.GFX_UPDATE_DATA.hasChanges){
                 // Send ASYNC
-                if(!drawAsync){
+                if(!awaitDraw){
                     // console.log("using await: false");
                     _WEBW_V.SEND("sendGfxUpdates", { 
                         data: _GFX.GFX_UPDATE_DATA, 
@@ -680,8 +683,8 @@ var _GFX = {
                 obj.tmap = _GFX.utilities.tilemapTransform(obj.tmap, obj.settings);
             }
 
-            // Return the layerObject.
-            return { 
+            // Create the layerObject.
+            let newObj = { 
                 [obj.mapKey]: { 
                     ts      : obj.ts,
                     x       : obj.x,
@@ -691,7 +694,14 @@ var _GFX = {
                     tmap    : obj.tmap,
                     settings: obj.settings,
                 } 
-            } ;
+            };
+
+            // Adjust width and height if there is a rotation that would require the change.
+            newObj[obj.mapKey].w = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].w : newObj[obj.mapKey].h;
+            newObj[obj.mapKey].h = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].h : newObj[obj.mapKey].w;
+
+            // Return the layerObject.
+            return newObj;
         },
 
         // Creates a layer object from a tilemap based on text string(s).
@@ -760,8 +770,8 @@ var _GFX = {
                 newTilemap = _GFX.utilities.tilemapTransform(newTilemap, obj.settings);
             }
 
-            // Return the layerObject.
-            return { 
+            // Create the layerObject.
+            let newObj = { 
                 [obj.mapKey]: { 
                     ts      : obj.ts,
                     x       : obj.x,
@@ -771,7 +781,14 @@ var _GFX = {
                     tmap    : newTilemap,
                     settings: obj.settings,
                 } 
-            } ;
+            };
+
+            // Adjust width and height if there is a rotation that would require the change.
+            newObj[obj.mapKey].w = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].w : newObj[obj.mapKey].h;
+            newObj[obj.mapKey].h = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].h : newObj[obj.mapKey].w;
+
+            // Return the layerObject.
+            return newObj;
         },
 
         // This is called after each draw completes.
@@ -779,6 +796,9 @@ var _GFX = {
             if(_APP.debugActive && _DEBUG){
                 _DEBUG.timingsDisplay.gfx.updateCache(data); 
 
+                // hashCacheStats
+                _DEBUG.hashCacheStats_size1 = ( `${data["hashCacheMapSize1"]}` );
+                _DEBUG.hashCacheStats_size2 = ( `${(data["hashCacheMapSize2"]/1000).toFixed(2)} KB` );
                 // Sort so that the removeHashOnRemoval entries appear first.
                 _DEBUG.hashCacheStats1 = data.hashCacheStats
                 .sort((a, b) => {
@@ -1022,7 +1042,6 @@ _GFX.init = async function(){
                 canvas        : layer.canvas,
                 canvasOptions : rec.canvasOptions,
                 name          : rec.name,
-                type          : rec.type,
             });
         }
 
@@ -1071,7 +1090,11 @@ class LayerObject {
         this._layerKey   = value; this._changed = true; 
     } }
     // set tilesetKey(value) { if( this._tilesetKey !== value){ this._tilesetKey = value; this._changed = true; } }
-    set settings(value)   { this._settings = value; this._changed = true; }
+    set settings(value)   { 
+        // this._settings = value; 
+        this._settings = Object.assign({}, _GFX.defaultSettings, value ?? {});
+        this._changed = true; 
+    }
     // TODO: FIX. Works find with gridxy to pixelxy. Need fix for pixelxy to gridxy.
     set xyByGrid(value)   { 
         if(this._xyByGrid == value) { return; }
@@ -1094,9 +1117,16 @@ class LayerObject {
     }
     
     getSetting(key)       { return this._settings[key]; } 
-    setSetting(key, value){ this._settings[key] = value; this._changed = true; }
+    setSetting(key, value){ 
+        if(this._settings[key] == value) { return; }
+        this._settings[key] = value; 
+        this._changed = true; 
+    }
 
     constructor(config){
+        // Settings.
+        this.settings = config.settings ?? _GFX.funcs.correctSettings(null);
+
         this.orgConfig  = config;
 
         // layerObjKey (MapKey), layerKey, and tilesetKey.
@@ -1119,9 +1149,6 @@ class LayerObject {
         // x,y positioning (grid or pixel based.)
         this.xyByGrid = config.xyByGrid ?? false;
         
-        // Settings.
-        this.settings = config.settings ?? _GFX.funcs.correctSettings(null);
-
         // Change detection.
         this._changed = true;
     };
@@ -1229,6 +1256,8 @@ class PrintText extends LayerObject{
 
         // This part should be handled already by _GFX.funcs.layerObjs.updateOne.
         if(!config.layerObjKey){ config.layerObjKey = config.text; }
+
+        this._changed = true;
     }
 
     // Render function.

@@ -3,11 +3,15 @@ _APP.debugActive = false;
 _APP.configObj = {
     appName: "UNO!",
 
-    // drawAsync: true,
-    drawAsync: false,
+    // Controls if the loop will wait for the graphics draw to finish before continuing.
+    // awaitDraw: true,
+    awaitDraw: false,
 
-    generateCoreImageDataAssets: true,
-    // generateCoreImageDataAssets: false,
+    // generateCoreImageDataAssets: true,
+    generateCoreImageDataAssets: false,
+
+    // disableCache: true,
+    disableCache: false,
 
     // Offset x and y for all drawings by this number of tiles.
     // useGlobalOffsets: true,
@@ -35,10 +39,10 @@ _APP.configObj = {
     },
 
     layers:[
-        { "name": "L1", "type":"grid"  , "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"105"}, {k:"background-color", v:"#181818"} ] },
-        { "name": "L2", "type":"grid"  , "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"110"} ] },
-        { "name": "L3", "type":"sprite", "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"115"} ] },
-        { "name": "L4", "type":"grid"  , "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"120"} ] },
+        { "name": "L1", "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"105"}, {k:"background-color", v:"#181818"} ] },
+        { "name": "L2", "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"110"} ] },
+        { "name": "L3", "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"115"} ] },
+        { "name": "L4", "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"120"} ] },
     ],
     
     inputConfig :{
@@ -255,6 +259,14 @@ _APP.utility = {
                     { "baseMapKey": "card_lg_back",      "mapKey": "BLA_card_lg_back",       "settings": {}  },
                     { "baseMapKey": "card_lg_wild",      "mapKey": "BLA_card_lg_wild",       "settings": {}  },
                     { "baseMapKey": "card_lg_wildDraw4", "mapKey": "BLA_card_lg_wildDraw4",  "settings": {}  },
+                ]
+            },
+            "sprite_tiles1":{
+                "mapObjs"  : {},
+                "mapKeys"  : [],
+                "mapsArray": [
+                    // { "baseMapKey": "cursor1_f1", "mapKey": "_cursor1_f1",  "settings": { rotation: 90 }  },
+                    // { "baseMapKey": "cursor1_f2", "mapKey": "_cursor1_f2",  "settings": { rotation: 90 }  },
                 ]
             },
         };
