@@ -21,7 +21,7 @@
         
         <div id="debug_colorFinder">
             <div>
-                <canvas width="2" height="2" id="debug_colorFinder_zoom"></canvas>
+                <canvas width="3" height="3" id="debug_colorFinder_zoom"></canvas>
                 <div id="debug_colorFinder_pixelRGBA"></div>
             </div>
             <div id="debug_colorFinder_canvases">
@@ -184,8 +184,9 @@
                     <td class=""> <button onclick="_DEBUG.layerObjs.contextMenu1_close();">CANCEL</button> </td>
                     <td class=""> <button onclick="_DEBUG.layerObjs.contextMenu1_select();">EDIT</button> </td>
                 </tr>
-                <tr> <td class="debug_td_header2">layerObjKey</td> <td class="" id="debug_layerObjEdit_contextMenu1_layerObjKey"></td> </tr>
+                <tr> <td class="debug_td_header2">className</td>   <td class="" id="debug_layerObjEdit_contextMenu1_className"></td> </tr>
                 <tr> <td class="debug_td_header2">tilesetKey</td>  <td class="" id="debug_layerObjEdit_contextMenu1_tilesetKey"></td> </tr>
+                <tr> <td class="debug_td_header2">layerObjKey</td> <td class="" id="debug_layerObjEdit_contextMenu1_layerObjKey"></td> </tr>
                 <tr> <td class="debug_td_header2">layerKey</td>    <td class="" id="debug_layerObjEdit_contextMenu1_layerKey"></td> </tr>
                 <tr> <td class="debug_td_header2">gs</td>          <td class="" id="debug_layerObjEdit_contextMenu1_gs"></td> </tr>
                 <tr> <td class="debug_td_header2">x</td>           <td class="" id="debug_layerObjEdit_contextMenu1_x"></td> </tr>
@@ -199,21 +200,54 @@
     <div id="debug_navBar1_view_layerObjEdit" class="controls_navBarViews">
         <div>
             <label class="debug_title">LIVE EDITOR</label>
+
+            <!-- className, tilesetKey, layerObjKey -->
             <table class="debug_table">
-                <tr> <td class="debug_td_header2">layerObjKey</td> <td class="" id="debug_layerObjEdit_layerObjKey"></td> </tr>
-                <tr> <td class="debug_td_header2">tilesetKey</td>  <td class="" id="debug_layerObjEdit_tilesetKey"></td> </tr>
-                <tr> <td class="debug_td_header2">layerKey</td>    <td class="" id="debug_layerObjEdit_layerKey"></td> </tr>
-                <tr> <td class="debug_td_header2">gs</td>          <td class="" id="debug_layerObjEdit_gs"></td> </tr>
-                <tr> <td class="debug_td_header2">x</td>           <td class="" id="debug_layerObjEdit_x"></td> </tr>
-                <tr> <td class="debug_td_header2">y</td>           <td class="" id="debug_layerObjEdit_y"></td> </tr>
-                <tr> <td class="debug_td_header2">rotation</td>    <td class="" id="debug_layerObjEdit_rotation"></td> </tr>
                 <tr> 
-                    <!-- <td class=""> <button onclick="_DEBUG.layerObjs.contextMenu1_close();">CANCEL</button> </td> -->
-                    <!-- <td class=""> <button onclick="_DEBUG.layerObjs.contextMenu1_select();">EDIT</button> </td> -->
+                    <td class="debug_td_header2">className</td>
+                    <td class="debug_td_header2">tilesetKey</td>
+                    <td class="debug_td_header2">layerObjKey</td>
+                </tr>
+                <tr>
+                    <td class="" id="debug_layerObjEdit_className"></td>
+                    <td class="" id="debug_layerObjEdit_tilesetKey"></td>
+                    <td class="" id="debug_layerObjEdit_layerObjKey"></td>
                 </tr>
             </table>
             <br>
+            <br>
+
+            <!-- layerKey, gs, x, y, rotation -->
             <table class="debug_table">
+                <tr> 
+                    <td class="debug_td_header2">layerKey</td>
+                    <td class="debug_td_header2">gs</td>
+                    <td class="debug_td_header2">x</td>
+                    <td class="debug_td_header2">y</td>
+                    <td class="debug_td_header2">rotation</td>
+                </tr>
+                <tr>
+                    <td class="" id="debug_layerObjEdit_layerKey"></td>
+                    <td class="" id="debug_layerObjEdit_gs"></td>
+                    <td class="" id="debug_layerObjEdit_x"></td>
+                    <td class="" id="debug_layerObjEdit_y"></td>
+                    <td class="" id="debug_layerObjEdit_rotation"></td>
+                </tr>
+            </table>
+            <br>
+            <br>
+
+            <!-- ADJUSTMENTS -->
+            <table class="debug_table">
+                <tr> 
+                    <td class="debug_td_header2">Adjust LAYER KEY</td>
+                    <td class="">
+                        <button onclick="_DEBUG.layerObjs.adjustLayerKey('L1');">L1</button>
+                        <button onclick="_DEBUG.layerObjs.adjustLayerKey('L2');">L2</button>
+                        <button onclick="_DEBUG.layerObjs.adjustLayerKey('L3');">L3</button>
+                        <button onclick="_DEBUG.layerObjs.adjustLayerKey('L4');">L4</button>
+                    </td> 
+                </tr>
                 <tr> 
                     <td class="debug_td_header2">Adjust X</td>
                     <td class="">
@@ -239,6 +273,68 @@
                 </tr>
             </table>
             <br>
+            <br>
+
+            <!-- CARD SPECIFIC EDITS -->
+            <div class="debug_classDiv" id="debug_cardTableDiv">
+                <label class="debug_title">Card class</label>
+                
+                <table class="debug_table">
+                    <tr> 
+                        <td class="debug_td_header2">ATTRIBUTES</td> 
+                    </tr>
+                    <tr> 
+                        <td class="">
+                            <div id="debug_cardTable_attributes"></div>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="debug_table">
+                    <tr> 
+                        <td class="debug_td_header2">SIZE</td>
+                        <td class="">
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustSize('sm');">SM</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustSize('lg');">LG</button>
+                        </td> 
+                    </tr>
+                    <tr> 
+                        <td class="debug_td_header2">COLOR</td>
+                        <td class="">
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_YELLOW');">YEL</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_BLUE');">BLU</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_GREEN');">GRE</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_RED');">RED</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_BLACK');">BLA</button>
+                        </td> 
+                    </tr>
+                    <tr> 
+                        <td class="debug_td_header2">VALUE</td>
+                        <td class="">
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_0');">0</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_1');">1</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_2');">2</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_3');">3</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_4');">4</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_5');">5</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_6');">6</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_7');">7</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_8');">8</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_9');">9</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_DRAW2');">D2</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_SKIP');">SK</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_REV');">RE</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_WILD');">WI</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_WILD_DRAW4');">WD4</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_BACK');">BAC</button>
+                        </td> 
+                    </tr>
+                </table>
+                <br>
+                <br>
+
+            </div>
+
         </div>
     </div>
 

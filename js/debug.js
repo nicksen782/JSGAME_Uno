@@ -1,4 +1,5 @@
 // @ts-nocheck
+
 var _DEBUG = {
     gridCanvas: null,
     createGridCanvas: function(){
@@ -1142,6 +1143,14 @@ var _DEBUG = {
             // Close the contextMenu.
             this.DOM["contextMenu1"].style.display = 'none';
         },
+        adjustLayerKey: function(layerKey){
+            let gs   = this.DOM["edit_gs"].innerText;
+            let key  = this.DOM["edit_layerObjKey"].innerText;
+            if(!gs || !key){ console.log("NOT LOADED"); return; }
+            let data = _GFX.layerObjs.objs[gs][key];
+            data.layerKey = layerKey;
+            this.DOM["edit_layerKey"]          .innerText = data.layerKey;
+        },
         adjustX       : function(inc){
             let gs   = this.DOM["edit_gs"].innerText;
             let key  = this.DOM["edit_layerObjKey"].innerText;
@@ -1526,8 +1535,8 @@ _DEBUG.init = async function(){
         // Mousemove event listener.
         let last_regionX;
         let last_regionY;
-        const regionWidth  = 2;
-        const regionHeight = 2;
+        const regionWidth  = 3;
+        const regionHeight = 3;
         copyCanvas.addEventListener('mousemove', (event) => {
             const rect = copyCanvas.getBoundingClientRect();
             const scaleX = copyCanvas.width / rect.width;
@@ -1558,7 +1567,7 @@ _DEBUG.init = async function(){
             // Display pixel values rgba as hex.
             let text = "";
             for(let i=0; i<regionImageData.data.length; i+=4){
-                if(i%(2*4)==0 && i!=0){ text += "\n"; }
+                if(i%(3*4)==0 && i!=0){ text += "\n"; }
                 let r = regionImageData.data[i+0];
                 let g = regionImageData.data[i+1];
                 let b = regionImageData.data[i+2];

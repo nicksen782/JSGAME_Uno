@@ -103,10 +103,11 @@ body{
     display: flex;
     flex-direction: column;
     border: 1px solid white;
+    transition: width 0.25s, max-width 0.25s;
 }
 #aux.wide{
-    width: unset;
-    max-width: unset;
+    width: 815px;
+    max-width: 850px;
 }
 #controls{
     border:1px solid white;

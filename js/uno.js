@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 _APP.debugActive = false;
 // _APP.debugActive = true;
 _APP.configObj = {
@@ -698,16 +700,18 @@ _APP.navBar1 = {
         if(typeof _INPUT != undefined && _INPUT.web){
             if(this.DOM2 && this.DOM2.aux){
                 if(key == "view_input"){ 
-                    try{ 
-                        _INPUT.web.mainView.showInput_hideOthers();
-                        this.DOM2.aux.classList.add("wide");
-                    } catch(e){ console.log(e); };
+                    _INPUT.web.mainView.showInput_hideOthers();
+                    this.DOM2.aux.classList.add("wide");
+                    this.DOM2.aux.classList.remove("wide2");
+                }
+                else if(_APP.debugActive && key == "view_debug"){ 
+                    this.DOM2.aux.classList.remove("wide");
+                    this.DOM2.aux.classList.add("wide2");
                 }
                 else{ 
-                    try{ 
-                        _INPUT.web.mainView.hideInput_restoreOthers(); 
-                        this.DOM2.aux.classList.remove("wide"); 
-                    } catch(e){ console.log(e); };
+                    _INPUT.web.mainView.hideInput_restoreOthers(); 
+                    this.DOM2.aux.classList.remove("wide"); 
+                    this.DOM2.aux.classList.remove("wide2"); 
                 }
             }
         }
@@ -734,14 +738,6 @@ _APP.navBar1 = {
                 // Add event listeners to the tab.
                 this.DOM[key].tab.addEventListener("click", () => { this.showOne(key); }, false);
             }
-            // else{
-            //     console.log(
-            //         `NAVBAR1: NOT FOUND:`+ 
-            //         `\n  tab : ${this.DOM[key].tab }` +
-            //         `\n  view: ${this.DOM[key].view}` +
-            //         ``
-            //     );
-            // }
         }
 
         //
