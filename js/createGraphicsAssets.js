@@ -58,6 +58,106 @@
         }
     };
     
+    // Modifies the supplied rgbaArray and applies a fade to it.
+    function applyFadeToRgbaArray(rgbaArray, fadeLevel){
+        if(fadeLevel === null){ return rgbaArray; }     // OFF
+        else if(fadeLevel == 10){ return [0,0,0,255]; } // BLACK
+        else if(fadeLevel == 11){ return [0,0,0,0]; }   // CLEAR
+
+        // Need the max values.
+        let fadeColorObj = fadeMasksRGBA[fadeLevel];
+        let maxRed   = fadeColorObj[0] / 100; 
+        let maxGreen = fadeColorObj[1] / 100; 
+        let maxBlue  = fadeColorObj[2] / 100; 
+
+        // Restrict r, g, b, a values and then round down.
+        rgbaArray[0] =  (rgbaArray[0] * maxRed)   | 0;
+        rgbaArray[1] =  (rgbaArray[1] * maxGreen) | 0;
+        rgbaArray[2] =  (rgbaArray[2] * maxBlue)  | 0;
+        rgbaArray[3] =  (rgbaArray[3])            | 0;
+
+        return rgbaArray;
+    };
+
+    // *********************
+    // * VALUE CONVERSIONS *
+    // *********************
+
+    // Returns a hash for the specified string. (Variation of Dan Bernstein's djb2 hash.)
+    function _djb2Hash(str) {
+        if(typeof str != "string") { str = str.toString(); }
+        var hash = 5381;
+        for (var i = 0; i < str.length; i++) {
+            hash = ((hash << 5) + hash) + str.charCodeAt(i); /* hash * 33 + c */
+        }
+        return hash;
+    };
+
+    // UNUSED
+    // Convert JsAlpha (0.0 - 1.0) to Uint8 (0-255) alpha.
+    function convertJsAlphaToUint8Alpha(JsAlpha){
+        return  Math.round(JsAlpha * 255);
+    };
+
+    // UNUSED
+    // Convert Uint8 (0-255) alpha to JsAlpha (0.0 - 1.0).
+    function convertUint8AlphaToJsAlpha(Uint8Alpha){
+        // return Number((Uint8Alpha / 255).toFixed(2));
+        return ( ( (Uint8Alpha/255) * 100 ) |0 ) / 100;
+    };
+
+    // UNUSED
+    // Convert 32-bit rgba value to array having values for r,g,b,a. (alpha 0-255 or 0.1)
+    function bits32ToRgbaArray(bits32Value, alphaAsFloat=false){
+        // Generate the alpha value.
+        let alpha = (bits32Value >> 24) & 255;
+        
+        // Optionally convert the alpha value to float.
+        if(alphaAsFloat){
+            alpha = this.convertUint8AlphaToJsAlpha(alpha);
+        }
+
+        // Return the r,g,b,a array.
+        return [
+                bits32Value & 255,        // r
+            (bits32Value >> 8) & 255,  // g
+            (bits32Value >> 16) & 255, // b
+            alpha,                     // a
+        ];
+    };
+
+    // Convert array having values for r,g,b,a to 32-bit rgba value.
+    function rgbaTo32bit(rgbaArray){
+        // Break out the values in rgbaArray.
+        let [r, g, b, a] = rgbaArray;
+        
+        // Generate the 32-bit version of the rgbaArray.
+        // let fillColor = (a << 24) | (b << 16) | (g << 8) | r;
+        let fillColor = ((a << 24) | (b << 16) | (g << 8) | r) >>> 0;
+        
+        // Return the result.
+        return fillColor;
+    };
+
+    // *************************
+    // * IMAGE DATA TRANSFORMS *
+    // *************************
+
+    // Replaces the specified color pixels with the replacement bgColor.
+    function setImageDataBgColorRgba(imageData, findColorArray, replaceColorArray){
+        // Get the 32-bit value for the [r,g,b,a] values provided.
+        let findColor_32bit    = rgbaTo32bit(findColorArray);
+        let replaceColor_32bit = rgbaTo32bit(replaceColorArray);
+
+        // Create a Uint32Array view of the imgDataCache for this layer.
+        let uint32Data = new Uint32Array(imageData.data.buffer);
+
+        // Find the findColor and replace with the replacementColor.
+        for (let p = 0, len = uint32Data.length; p < len; ++p) {
+            if (uint32Data[p] === findColor_32bit) { uint32Data[p] = replaceColor_32bit; }
+        }
+    };
+
     // Modifies the supplied Uint8Array and applies a fade to each pixel (Uint8Array) (by reference.)
     function applyFadeToImageDataArray(typedData, fadeLevel){
         let len  = typedData.length;
@@ -100,25 +200,146 @@
         }
     }
 
-    // Modifies the supplied rgbaArray and applies a fade to it.
-    function applyFadeToRgbaArray(rgbaArray, fadeLevel){
-        if(fadeLevel === null){ return rgbaArray; }     // OFF
-        else if(fadeLevel == 10){ return [0,0,0,255]; } // BLACK
-        else if(fadeLevel == 11){ return [0,0,0,0]; }   // CLEAR
+    // Flips ImageData horizontally. (By reference, changes source imageData.)
+    function flipImageDataHorizontally(imageData) {
+        const width = imageData.width;
+        const height = imageData.height;
 
-        // Need the max values.
-        let fadeColorObj = fadeMasksRGBA[fadeLevel];
-        let maxRed   = fadeColorObj[0] / 100; 
-        let maxGreen = fadeColorObj[1] / 100; 
-        let maxBlue  = fadeColorObj[2] / 100; 
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < Math.floor(width / 2); x++) {
+                // Calculate the index of the source pixel
+                const srcIndex = (y * width + x) * 4;
 
-        // Restrict r, g, b, a values and then round down.
-        rgbaArray[0] =  (rgbaArray[0] * maxRed)   | 0;
-        rgbaArray[1] =  (rgbaArray[1] * maxGreen) | 0;
-        rgbaArray[2] =  (rgbaArray[2] * maxBlue)  | 0;
-        rgbaArray[3] =  (rgbaArray[3])            | 0;
+                // Calculate the index of the destination pixel (flipped horizontally)
+                const destIndex = (y * width + (width - 1 - x)) * 4;
 
-        return rgbaArray;
+                // Swap the pixel data
+                for (let i = 0; i < 4; i++) {
+                    const temp = imageData.data[srcIndex + i];
+                    imageData.data[srcIndex + i] = imageData.data[destIndex + i];
+                    imageData.data[destIndex + i] = temp;
+                }
+            }
+        }
+    };
+
+    // Flips ImageData vertically. (By reference, changes source imageData.)
+    function flipImageDataVertically(imageData) {
+        const width = imageData.width;
+        const height = imageData.height;
+        const data = imageData.data;
+    
+        // Iterate through half the image height to avoid flipping twice.
+        for (let y = 0; y < Math.floor(height / 2); y++) {
+            for (let x = 0; x < width; x++) {
+                // Calculate the index of the source pixel
+                const srcIndex = (y * width + x) * 4;
+    
+                // Calculate the index of the destination pixel (flipped vertically)
+                const destIndex = ((height - 1 - y) * width + x) * 4;
+    
+                // Swap the pixel data
+                for (let i = 0; i < 4; i++) {
+                    const temp = data[srcIndex + i];
+                    data[srcIndex + i] = data[destIndex + i];
+                    data[destIndex + i] = temp;
+                }
+            }
+        }
+    };
+    
+    // Rotates ImageData by the specified degrees. (Changes source imageData. Uses temporary copy.)
+    function rotateImageData(imageData, degrees) {
+        // if(degrees == 0){
+        //     return {
+        //         width: imageData.width,
+        //         height: imageData.height
+        //     }
+        // }
+
+        // Only allow specific values for degrees.
+        let allowedDegrees = [-90, 90, -180, 180, 270];
+        if (allowedDegrees.indexOf(degrees) === -1) {
+            console.error('Invalid degrees. Only use these:', allowedDegrees);
+            return imageData;
+        }
+    
+        // Break-out the imageData.
+        const { width, height, data } = imageData;
+    
+        // Create new ImageData.
+        const rotatedData = new Uint8Array(data.length);
+    
+        // Rotate the image and store it in the rotatedData array
+        let targetX, targetY;
+        let newWidth, newHeight;
+        if (degrees % 180 === 0) {
+            newWidth = width;
+            newHeight = height;
+        } else {
+            newWidth = height;
+            newHeight = width;
+        }
+    
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const sourceIndex = (y * width + x) * 4;
+    
+                if (degrees === 90) {
+                    targetX = height - y - 1; targetY = x;
+                } 
+                else if (degrees === -90 || degrees === 270) {
+                    targetX = y; targetY = width - x - 1;
+                } 
+                else if (degrees === 180 || degrees === -180) {
+                    targetX = width - x - 1; targetY = height - y - 1;
+                }
+    
+                const targetIndex = (targetY * newWidth + targetX) * 4;
+    
+                rotatedData.set(data.subarray(sourceIndex, sourceIndex + 4), targetIndex);
+            }
+        }
+    
+        // Update the imageData with the rotated data and dimensions
+        // NOTE: The source ImageData will have the width and height swapped on 90 degree rotations.
+        data.set(rotatedData);
+    
+        // Swap the width and the height if needed and return the dimensions.
+        return {
+            width: newWidth,
+            height: newHeight
+        }
+    };
+    
+    // Replaces colors in ImageData. (By reference, changes source imageData.)
+    function replaceColors(imageData, colorReplacements) {
+        if(!colorReplacements || !colorReplacements.length){ 
+            console.log("replaceColors: level 1: No colors specified:", colorReplacements); 
+            return; 
+        }
+        for (let i = 0; i < imageData.data.length; i += 4) {
+            const pixelColor = imageData.data.slice(i, i + 4);
+
+            for (let j = 0; j < colorReplacements.length; j++) {
+                if(!colorReplacements[j] || !colorReplacements[j].length){ 
+                    // console.log("replaceColors: level 2: No colors specified:", j, colorReplacements[j], colorReplacements); 
+                    continue; 
+                }
+                
+                const [sourceColor, targetColor] = colorReplacements[j];
+
+                // Compare colors.
+                if(pixelColor[0] === sourceColor[0] &&
+                    pixelColor[1] === sourceColor[1] &&
+                    pixelColor[2] === sourceColor[2] &&
+                    pixelColor[3] === sourceColor[3]
+                ){
+                    imageData.data.set(targetColor, i);
+                    break;
+                }
+            }
+        }
     };
 
     // **********************
@@ -211,7 +432,6 @@
         // Return the result data.
         return resultData;
     };
-
 
     // BLIT a region in the destination with the source data (Uint8Array.)
     // Writes pixels that are NOT fully transparent. (slower than replace.)
@@ -331,7 +551,7 @@
     }
 
     // Returns a copy of a rgb332 tile converted to rgba32.
-    function rgb332TileDataToRgba32(tileData, config){
+    function _rgb332TileDataToRgba32(tileData, config){
         let tileHeight        = config.tileHeight;
         let tileWidth         = config.tileWidth;
         let translucent_color = config.translucent_color;
@@ -394,9 +614,10 @@
                     ).json();
 
                     let tileset = {
-                        config     : file.config      ?? {},
-                        tilemaps   : {}, // file.tilemaps    ?? {},
-                        tileset    : [], // file.tileset     ?? [],
+                        config       : file.config      ?? {},
+                        tileset      : [], // Image data for each tile.
+                        tilemaps     : {}, // Tilemap arrays.
+                        tilemapImages: {}, // Image  data of each tilemap built up via tiles.
                         tilesetName: file.tilesetName ?? "",
                     };
             
@@ -433,7 +654,7 @@
     }
 
     // Creates the graphical assets and faded graphical assets.
-    async function createGraphicsAssets(rgb332_tilesets){
+    async function _createGraphicsAssets(rgb332_tilesets, defaultSettings, disableCache=false){
         let finishedTilesets = {};
 
         // Create the tileset.
@@ -450,20 +671,26 @@
                     let tileWidth         = rgb332_tilesets[tsKey].config.tileWidth;
         
                     // Start the new tileset entry.
-                    finishedTilesets[ tilesetName ] = {
-                        config     : rgb332_tilesets[tsKey].config,
-                        tilemaps   : {},
-                        tileset    : [],
-                        tilesetName: tilesetName,
+                    let tsObj = {
+                        config       : rgb332_tilesets[tsKey].config,
+                        tileset      : [], // Image data for each tile.
+                        tilemaps     : {}, // Tilemap arrays.
+                        tilemapImages: {}, // Image  data of each tilemap built up via tiles.
+                        tilesetName  : tilesetName,
                     };
+                    finishedTilesets[ tilesetName ] = tsObj;
 
                     let tileIndex = 0;
+                    let rgb332Src;
+                    let newTile;
+                    let tmiObj;
+                    let tileDataRgba;
                     for(let tileId in rgb332_tilesets[tsKey].tileset){
                         // Copy of the original rgb332 tile.
-                        let rgb332Src = new Uint8Array( rgb332_tilesets[tsKey].tileset[tileId].org_rgb332.slice() );
+                        rgb332Src = new Uint8Array( rgb332_tilesets[tsKey].tileset[tileId].org_rgb332.slice() );
 
                         // Start the object for this tile.
-                        let newTile = {
+                        newTile = {
                             // Image Data
                             imgData: new ImageData(tileWidth, tileHeight),
 
@@ -473,20 +700,126 @@
                         };
 
                         // Generate rgba32 tile data from rgb332 data and save.
-                        let tileDataRgba = rgb332TileDataToRgba32(rgb332Src, rgb332_tilesets[tsKey].config);
+                        tileDataRgba = _rgb332TileDataToRgba32(rgb332Src, rgb332_tilesets[tsKey].config);
                         newTile.imgData.data.set(tileDataRgba.tileDataRgb32);
                         newTile.hasTransparency    = tileDataRgba.hasTransparency;
                         newTile.isFullyTransparent = tileDataRgba.isFullyTransparent;
 
                         // Save this tile.
-                        finishedTilesets[ tilesetName ].tileset[tileIndex] = newTile;
+                        tsObj.tileset[tileIndex] = newTile;
                         tileIndex+=1;
                     }
 
                     // Tilemaps.
                     for(let tilemapKey in rgb332_tilesets[tsKey].tilemaps){
-                        finishedTilesets[ tilesetName ].tilemaps[tilemapKey] = rgb332_tilesets[tsKey].tilemaps[tilemapKey].org_rgb332.slice();
+                        tsObj.tilemaps[tilemapKey] = rgb332_tilesets[tsKey].tilemaps[tilemapKey].org_rgb332.slice();
                     }
+
+                    // Tilemap images
+                    if(disableCache == false){
+                        let tmapArr;
+                        let genTime;
+                        let tile;
+                        let missingTile;
+                        let tileset = tsObj.tileset;
+                        let mapW;
+                        let mapH;
+                        let index;
+                        for(let tilemapKey in tsObj.tilemaps){
+                            genTime = performance.now();
+
+                            tmapArr = tsObj.tilemaps[tilemapKey];
+                            mapW = tmapArr[0];
+                            mapH = tmapArr[1];
+                            index = 2;
+
+                            // It is possible for an instance of the PrintText class to have an empty string for text. Height will be 1 but width will be 0. 
+                            // Set mapW and mapH to 1 so that the image data can have actual dimensions.
+                            // This will trigger missingTile (since there will not be a tile index after the dimensions) and leave the image data as an empty transparent tile.
+                            if(mapW == 0 || mapH == 0){ mapW = 1; mapW = 1; mapH = 1; }
+
+                            // Create the tilemap image.
+                            tsObj.tilemapImages[tilemapKey] = {
+                                "imgData"            : {
+                                    width : mapW * tileWidth,
+                                    height: mapH * tileHeight,
+                                    data : new Uint8Array( (mapW * tileWidth) * (mapH * tileHeight) * 4 )
+                                }, 
+                                "ts"                 : tsObj.tilesetName, 
+                                "settings"           : defaultSettings, 
+                                "tmap"               : tmapArr, 
+                                "w"                  : mapW * tileWidth, 
+                                "h"                  : mapH * tileHeight, 
+                                "hasTransparency"    : false, 
+                                "isFullyTransparent" : true, 
+                                "removeHashOnRemoval": true, 
+                                "mapKey"             : tilemapKey, 
+                                "relatedMapKey"      : tilemapKey, 
+                                "hashCacheHash_BASE" : _djb2Hash( JSON.stringify(
+                                    {
+                                        ts      : tsObj.tilesetName,
+                                        settings: JSON.stringify(defaultSettings),
+                                        tmap    : Array.from(tmapArr),
+                                    }
+                                )), 
+                                "hashCacheHash"      : 0, 
+                                "hashCacheDataLength": 0, 
+                                "genTime"            : 0,
+                            };
+                            tmiObj = tsObj.tilemapImages[tilemapKey];
+                            tmiObj.hashCacheHash = tmiObj.hashCacheHash_BASE;
+
+                            for(let y=0; y<mapH; y+=1){
+                                for(let x=0; x<mapW; x+=1){
+                                    // Determine if this tile is missing.
+                                    missingTile = !tileset.hasOwnProperty(tmapArr[index]) ;
+
+                                    // Update the imageData with the completed imageDataTile.
+                                    if(!missingTile){
+                                        // Get the tile object.
+                                        tile = tileset[ tmapArr[index] ];
+
+                                        // Determine if the tile has transparency (returned later.)
+                                        tmiObj.hasTransparency = tmiObj.hasTransparency || (tile.hasTransparency || tile.isFullyTransparent);
+                                        if(!tmiObj.hasTransparency){ tmiObj.isFullyTransparent = false; }
+
+                                        // Write the tile to the imageData.
+                                        updateRegion_replace(
+                                            tile.imgData.data,     // source
+                                            tile.imgData.width,    // srcWidth
+                                            tmiObj.imgData.data,   // destination
+                                            tmiObj.imgData.width,  // destWidth
+                                            tmiObj.imgData.height, // destHeight
+                                            x * tileWidth,         // x
+                                            y * tileHeight,        // y
+                                            tileWidth,             // w
+                                            tileHeight,            // h
+                                        );
+                                    }
+                                    else{ 
+                                        console.log("missing tile"); 
+                                        throw "missing tile"; 
+                                    }
+
+                                    // Increment the tile index in the tilemap.
+                                    index++;
+                                }
+                            }
+
+                            tmiObj.hashCacheDataLength = JSON.stringify({
+                                imgData  : Array.from(tmiObj.imgData.data),
+                                ts       : tmiObj.ts,
+                                settings : tmiObj.settings,
+                                tmap     : tmiObj.tmap,
+                                w        : tmiObj.imgData.width, 
+                                h        : tmiObj.imgData.height,
+                                mapKey   : tmiObj.mapKey, 
+                            });
+                            genTime = performance.now() - genTime;
+                            tmiObj.genTime = genTime;
+                        }
+                    }
+
                     res();
                 })
             );
@@ -498,13 +831,13 @@
     }
 
     // Performs the graphics processing functions. 
-    async function process(tilesetFiles){
+    async function process(tilesetFiles, defaultSettings, disableCache){
         let ts1 = performance.now();
         let rgb332_tilesets = await getAndParseGraphicsData(tilesetFiles);
         let ts1e = performance.now() - ts1;
         
         let ts2 = performance.now();
-        let finishedTilesets = await createGraphicsAssets(rgb332_tilesets);
+        let finishedTilesets = await _createGraphicsAssets(rgb332_tilesets, defaultSettings, disableCache);
         let ts2e = performance.now() - ts2;
         
         // Create the RGBA fade values.
@@ -526,14 +859,22 @@
         // Init processing.
         process : process,
 
-        // Copy, update, clear of regions (Uint8Array.)
-        updateRegion_blit : updateRegion_blit,
-        updateRegion_replace : updateRegion_replace,
-        copyRegion   : copyRegion,
-        clearRegion  : clearRegion,
+        // Background color fade.
+        rgbaTo32bit          : rgbaTo32bit,
+        applyFadeToRgbaArray : applyFadeToRgbaArray,
 
-        // Fades (Uint8Array.)
-        applyFadeToRgbaArray    : applyFadeToRgbaArray,
+        // Transforms.
+        setImageDataBgColorRgba : setImageDataBgColorRgba,
         applyFadeToImageDataArray : applyFadeToImageDataArray,
+        flipImageDataHorizontally : flipImageDataHorizontally,
+        flipImageDataVertically   : flipImageDataVertically,
+        rotateImageData           : rotateImageData,
+        replaceColors             : replaceColors,
+
+        // Copy, update, clear of regions (Uint8Array.)
+        updateRegion_blit    : updateRegion_blit,
+        updateRegion_replace : updateRegion_replace,
+        copyRegion           : copyRegion,
+        clearRegion          : clearRegion,
     };
 }));

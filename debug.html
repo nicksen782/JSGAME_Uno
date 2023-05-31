@@ -20,15 +20,13 @@
         <br>
         
         <div id="debug_colorFinder">
-            <div>
-                <canvas width="3" height="3" id="debug_colorFinder_zoom"></canvas>
-                <div id="debug_colorFinder_pixelRGBA"></div>
-            </div>
             <div id="debug_colorFinder_canvases">
                 <div>
+                    <canvas width="8" height="8" id="debug_colorFinder_zoom"></canvas>
                     <canvas width="256" height="256" id="debug_colorFinder_src"></canvas>
                 </div>
             </div>
+            <div id="debug_colorFinder_pixelRGBA"></div>
         </div>
     </div>
 
@@ -159,15 +157,15 @@
         <table class="debug_table">
             <tr>
                 <!-- <td></td> -->
-                <td>Entries</td>
-                <td>Total Size</td>
-                <td>genTime (TEMP)</td>
+                <td class="debug_td_header2">Entries</td>
+                <td class="debug_td_header2">Total Size</td>
+                <td class="debug_td_header2">genTime (TEMP)</td>
             </tr>
             <tr>
                 <!-- <td class="debug_td_header">hashCache</td>  -->
-                <td class=""> <div id="debug_hashCacheStats1_hashCacheMapSize1">0</div></td> 
-                <td class=""> <div id="debug_hashCacheStats1_hashCacheMapSize2">0</div></td> 
-                <td class=""> <div id="debug_hashCacheStats1_hashCache_genTime">0</div></td> 
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheStats1_hashCacheMapSize1">0</div></td> 
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheStats1_hashCacheMapSize2">0</div></td> 
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheStats1_hashCache_genTime">0</div></td> 
             </tr>
         </table>
         <br>
@@ -217,7 +215,7 @@
             <br>
             <br>
 
-            <!-- layerKey, gs, x, y, rotation -->
+            <!-- layerKey, gs, x, y, rotation, fade -->
             <table class="debug_table">
                 <tr> 
                     <td class="debug_td_header2">layerKey</td>
@@ -225,6 +223,7 @@
                     <td class="debug_td_header2">x</td>
                     <td class="debug_td_header2">y</td>
                     <td class="debug_td_header2">rotation</td>
+                    <td class="debug_td_header2">fade</td>
                 </tr>
                 <tr>
                     <td class="" id="debug_layerObjEdit_layerKey"></td>
@@ -232,6 +231,7 @@
                     <td class="" id="debug_layerObjEdit_x"></td>
                     <td class="" id="debug_layerObjEdit_y"></td>
                     <td class="" id="debug_layerObjEdit_rotation"></td>
+                    <td class="" id="debug_layerObjEdit_fade"></td>
                 </tr>
             </table>
             <br>
@@ -271,9 +271,55 @@
                         <button onclick="_DEBUG.layerObjs.adjustRotation(-90);">-90</button>
                     </td> 
                 </tr>
+                <tr> 
+                    <td class="debug_td_header2">Adjust Fade</td>
+                    <td class="">
+                        <button onclick="_DEBUG.layerObjs.adjustFade(11);">CLEAR</button>
+                        <button onclick="_DEBUG.layerObjs.adjustFade(null);">OFF</button>
+                        <button onclick="_DEBUG.layerObjs.adjustFade(0);">0</button>
+                        <button onclick="_DEBUG.layerObjs.adjustFade(1);">1</button>
+                        <button onclick="_DEBUG.layerObjs.adjustFade(2);">2</button>
+                        <button onclick="_DEBUG.layerObjs.adjustFade(3);">3</button>
+                        <button onclick="_DEBUG.layerObjs.adjustFade(4);">4</button>
+                        <button onclick="_DEBUG.layerObjs.adjustFade(5);">5</button>
+                        <button onclick="_DEBUG.layerObjs.adjustFade(6);">6</button>
+                        <button onclick="_DEBUG.layerObjs.adjustFade(7);">7</button>
+                        <button onclick="_DEBUG.layerObjs.adjustFade(8);">8</button>
+                        <button onclick="_DEBUG.layerObjs.adjustFade(9);">9</button>
+                        <button onclick="_DEBUG.layerObjs.adjustFade(10);">BLACK</button>
+                    </td> 
+                </tr>
             </table>
             <br>
             <br>
+
+            <!-- CARD PRINTTEXT SPECIFIC EDITS -->
+            <div class="debug_classDiv" id="debug_printTextTableDiv">
+                <label class="debug_title">PrintText class</label>
+
+                <table class="debug_table">
+                    <tr> 
+                        <td class="debug_td_header2">ATTRIBUTES</td> 
+                    </tr>
+                    <tr> 
+                        <td class="">
+                            <div id="debug_printText_attributes"></div>
+                        </td>
+                    </tr>
+                </table>
+                <br>
+
+                <table class="debug_table">
+                    <tr> 
+                        <td class="debug_td_header2">TEXT</td>
+                        <td class="">
+                            <textarea id="debug_printText_newText" type="text"></textarea>
+                            <br>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.printText_adjustText();">SET</button>
+                        </td> 
+                    </tr>
+                </table>
+            </div>
 
             <!-- CARD SPECIFIC EDITS -->
             <div class="debug_classDiv" id="debug_cardTableDiv">
@@ -471,21 +517,7 @@
             <div id="debug_navBar2_view_gs_JSG" class="controls_navBarViews">view: gs_JSG</div>
             <div id="debug_navBar2_view_gs_N782" class="controls_navBarViews">view: gs_N782</div>
             <div id="debug_navBar2_view_gs_TITLE" class="controls_navBarViews">
-                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_u.y --;">U UP</button>
-                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_u.y ++;">U DN</button>
-                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_u.x --;">U LE</button>
-                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_u.x ++;">U RI</button>
-                <br>
-                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_n.y --;">N UP</button>
-                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_n.y ++;">N DN</button>
-                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_n.x --;">N LE</button>
-                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_n.x ++;">N RI</button>
-                <br>
-                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_o.y --;">O UP</button>
-                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_o.y ++;">O DN</button>
-                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_o.x --;">O LE</button>
-                <button onmousedown="_GFX.layerObjs.objs.gs_TITLE.letter_uno_o.x ++;">O RI</button>
-                <br>
+                view_gs_TITLE
             </div>
             <div id="debug_navBar2_view_gs_RULES" class="controls_navBarViews">view: gs_RULES</div>
             <div id="debug_navBar2_view_gs_CREDITS" class="controls_navBarViews">view: gs_CREDITS</div>
@@ -573,11 +605,6 @@
                     <tr> <td class="debug_td_header">P4</td>     <td> <div id="debug_P4Cards" class="debug_cardDisplay"></div> </td>     </tr>
                 </table>
 
-                <br>
-                <button onmousedown="_GFX.layerObjs.objs.gs_PLAYING.drapBorder_fill.y --;">DPF UP</button>
-                <button onmousedown="_GFX.layerObjs.objs.gs_PLAYING.drapBorder_fill.y ++;">DPF DN</button>
-                <button onmousedown="_GFX.layerObjs.objs.gs_PLAYING.drapBorder_fill.x --;">DPF LE</button>
-                <button onmousedown="_GFX.layerObjs.objs.gs_PLAYING.drapBorder_fill.x ++;">DPF RI</button>
                 <br>
             </div>
 

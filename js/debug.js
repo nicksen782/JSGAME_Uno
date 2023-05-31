@@ -85,6 +85,16 @@ var _DEBUG = {
                 _APP.game.gameLoop.loop_start(); 
             } 
         }, false);
+        if(_APP.game.gameLoop.running){
+            toggleGameLoop.classList.remove("debug_bgColor_on");
+            toggleGameLoop.classList.add("debug_bgColor_off");
+            toggleGameLoop.innerText = "OFF";
+        } 
+        else {
+            toggleGameLoop.classList.remove("debug_bgColor_off");
+            toggleGameLoop.classList.add("debug_bgColor_on");
+            toggleGameLoop.innerText = "ON";
+        } 
 
         // TOGGLE: LOGIC
         let toggleLogic = document.getElementById("debug_test_toggleLogic");
@@ -101,6 +111,16 @@ var _DEBUG = {
                 toggleLogic.innerText = "ON";
             } 
         }, false);
+        if(_APP.game.gameLoop.skipLogic){
+            toggleLogic.classList.remove("debug_bgColor_on");
+            toggleLogic.classList.add("debug_bgColor_off");
+            toggleLogic.innerText = "OFF";
+        } 
+        else {
+            toggleLogic.classList.remove("debug_bgColor_off");
+            toggleLogic.classList.add("debug_bgColor_on");
+            toggleLogic.innerText = "ON";
+        } 
 
         // TOGGLE: ASYNC DRAW
         let awaitDraw = document.getElementById("debug_test_toggleDrawAsync");
@@ -117,6 +137,16 @@ var _DEBUG = {
                 awaitDraw.innerText = "OFF";
             } 
         }, false);
+        if(_APP.configObj.awaitDraw){
+            awaitDraw.classList.remove("debug_bgColor_off");
+            awaitDraw.classList.add("debug_bgColor_on");
+            awaitDraw.innerText = "ON";
+        } 
+        else {
+            awaitDraw.classList.remove("debug_bgColor_on");
+            awaitDraw.classList.add("debug_bgColor_off");
+            awaitDraw.innerText = "OFF";
+        } 
 
         // TOGGLE: DEBUG
         let debugButton = document.getElementById("debug_toggleDebugFlag");
@@ -137,6 +167,16 @@ var _DEBUG = {
                 refs:[]
             }, false, false);
         }, false);
+        if(_APP.debugActive){
+            debugButton.classList.remove("debug_bgColor_off");
+            debugButton.classList.add("debug_bgColor_on");
+            debugButton.innerText = "ON";
+        } 
+        else {
+            debugButton.classList.remove("debug_bgColor_on");
+            debugButton.classList.add("debug_bgColor_off");
+            debugButton.innerText = "OFF";
+        } 
 
         // TOGGLE: ENABLE/DISABLE CACHE
         let toggleCacheButton = document.getElementById("debug_toggleCacheFlag");
@@ -157,6 +197,16 @@ var _DEBUG = {
                 refs:[]
             }, false, false);
         }, false);
+        if(_APP.configObj.disableCache){
+            toggleCacheButton.classList.remove("debug_bgColor_on");
+            toggleCacheButton.classList.add("debug_bgColor_off");
+            toggleCacheButton.innerText = "OFF";
+        }
+        else{
+            toggleCacheButton.classList.remove("debug_bgColor_off");
+            toggleCacheButton.classList.add("debug_bgColor_on");
+            toggleCacheButton.innerText = "ON";
+        }
 
         // GO TO GAMESTATE
         let changeGs1Select = document.getElementById("debug_changeGs1Select");
@@ -548,8 +598,8 @@ var _DEBUG = {
 
                 // Individual values: draw.
                 // GFX TIMINGS TABLE.
-                this.elems.hashCacheMapSize1 = { e: document.getElementById("debug_timings_hashCacheMapSize1"),    t: 0, data: 0 } 
-                this.elems.hashCacheMapSize2 = { e: document.getElementById("debug_timings_hashCacheMapSize2"),    t: 0, data: 0 } 
+                // this.elems.hashCacheMapSize1 = { e: document.getElementById("debug_timings_hashCacheMapSize1"),    t: 0, data: 0 } 
+                // this.elems.hashCacheMapSize2 = { e: document.getElementById("debug_timings_hashCacheMapSize2"),    t: 0, data: 0 } 
                 this.elems.TOTAL_L1  = { e: document.getElementById("debug_timings_TOTAL_L1"),    t: 0, data: 0 } 
                 this.elems.TOTAL_L2  = { e: document.getElementById("debug_timings_TOTAL_L2"),    t: 0, data: 0 } 
                 this.elems.TOTAL_L3  = { e: document.getElementById("debug_timings_TOTAL_L3"),    t: 0, data: 0 } 
@@ -1037,6 +1087,12 @@ var _DEBUG = {
             "edit_x"          : "debug_layerObjEdit_x",
             "edit_y"          : "debug_layerObjEdit_y",
             "edit_rotation"   : "debug_layerObjEdit_rotation", 
+            "edit_fade"       : "debug_layerObjEdit_fade", 
+            
+            // PRINTTEXT
+            "printTextTableDiv"   : "debug_printTextTableDiv",
+            "printText_newText"   : "debug_printText_newText",
+            "printText_attributes": "debug_printText_attributes",
             
             // CARD
             "cardTableDiv" : "debug_cardTableDiv",
@@ -1128,6 +1184,7 @@ var _DEBUG = {
             this.DOM["edit_x"]          .innerText = data.x;
             this.DOM["edit_y"]          .innerText = data.y;
             this.DOM["edit_rotation"]   .innerText = data.settings.rotation;
+            this.DOM["edit_fade"]       .innerText = data.settings.fade;
 
             // Show/Hide DOM specific to the className.
             let elems = document.querySelectorAll(".debug_classDiv");
@@ -1137,7 +1194,11 @@ var _DEBUG = {
                 this.DOM["cardTableDiv"].classList.remove("displayNone"); 
                 this.card_displayAttribute(data);
             }
-
+            else if(data.className == "PrintText"){
+                this.DOM["printTextTableDiv"].classList.remove("displayNone"); 
+                this.DOM["printText_newText"].value = data.text;
+                this.printText_attributes(data);
+            }
         },
         contextMenu1_close : function(){
             // Close the contextMenu.
@@ -1159,6 +1220,16 @@ var _DEBUG = {
             data.x += inc;
             this.DOM["edit_x"]          .innerText = data.x;
         },
+        adjustFade: function(fadeLevel){
+            let gs   = this.DOM["edit_gs"].innerText;
+            let key  = this.DOM["edit_layerObjKey"].innerText;
+            if(!gs || !key){ console.log("NOT LOADED"); return; }
+            let data = _GFX.layerObjs.objs[gs][key];
+            data.setSetting("fade", fadeLevel);
+            this.DOM["edit_fade"]          .innerText = data.settings.fade;
+
+            // `<span>F:'${(data.settings.fade ?? "null").toString()}'</span>, ` +
+        },
         adjustY       : function(inc){
             let gs   = this.DOM["edit_gs"].innerText;
             let key  = this.DOM["edit_layerObjKey"].innerText;
@@ -1176,6 +1247,25 @@ var _DEBUG = {
             this.DOM["edit_rotation"]          .innerText = data.settings.rotation;
         },
 
+        // PRINTTEXT
+        printText_attributes: function(data){
+            this.DOM["printText_attributes"].innerHTML = `` +
+            `<span>TEXT: '${Array.isArray(data.text) ? JSON.stringify(data.text) : data.text}'</span> ` +
+            ``;
+        },
+        printText_adjustText: function(){
+            let gs   = this.DOM["edit_gs"].innerText;
+            let key  = this.DOM["edit_layerObjKey"].innerText;
+            if(!gs || !key){ console.log("NOT LOADED"); return; }
+            let data = _GFX.layerObjs.objs[gs][key];
+
+            let text = this.DOM["printText_newText"].value;
+            if(text.trim().split("\n").length == 1){ data.text = text.trim(); }
+            else                            { data.text = text.trim().split("\n"); }
+            this.printText_attributes(data);
+        },
+
+        // CARD
         card_displayAttribute: function(data){
             this.DOM["cardTable_attributes"].innerHTML = `` +
                 `<span>S:'${data.size}'</span>, ` +
@@ -1244,6 +1334,9 @@ var _DEBUG = {
         let coords;
         let name;
         let dims;
+        let rotation;
+        let settings;
+        let fade;
 
         // TODO:
         // oncontextmenu="event.preventDefault(); _DEBUG.loadLayerObj(gs_PLAYING, deckControl);"
@@ -1282,11 +1375,12 @@ var _DEBUG = {
                         y = y * _APP.configObj.dimensions.tileHeight;
                     }
                     // coords = `${data.x.toString().padStart(3, " ")}, ${data.y.toString().padStart(3, " ")}`;
-                    coords = `${data.x}, ${data.y}`;
-                    name   = `${layerObjKey.padEnd(16, " ")}`;
-                    // dims   = `${w.toString().padStart(3, " ")}, ${h.toString().padStart(3, " ")}`;
-                    dims   = `${w}, ${h}`;
-                    rotation   = `, ${data.settings.rotation ?? 0}`;
+                    coords     = `x: ${data.x}, y: ${data.y}`;
+                    name       = `${layerObjKey.padEnd(16, " ")}`;
+                    dims       = `w: ${w}, h: ${h}`;
+                    fade = data.settings.fade;
+                    fade = typeof fade !== "number" ? "OFF" : fade;
+                    settings = `fade: ${fade}, xFlip: ${data.settings.xFlip?"ON ":"OFF"}, yFlip: ${data.settings.yFlip?"ON ":"OFF"}, rotation: ${data.settings.rotation??0}`;
 
                     // Update the newText string.
                     newText += `<div ` +
@@ -1294,8 +1388,8 @@ var _DEBUG = {
                     `oncontextmenu="event.preventDefault(); _DEBUG.layerObjs.contextMenu1_open(event, '${_APP.game.gs1}','${layerObjKey}');" ` +
                     `onclick="_DEBUG.displayLayerObject_console('${_APP.game.gs1}','${layerObjKey}');" ` +
                     `class="layerObjectsStats1_entry">` +
-                    // `(${coords} ${dims} ${rotation}) ${name}` +
-                    `${name} (${coords} ${dims} ${rotation})` +
+                    `${name} : ${data.className}\n  (${coords} ${dims})` +
+                    `\n  ${settings}` + 
                     `</div>`;
                 }
             }
@@ -1311,8 +1405,15 @@ var _DEBUG = {
     },
 
     hashCacheStats1:{},
-    hashCacheStats_size1:0,
-    hashCacheStats_size2:0,
+    hashCacheStats1_totalSize_all : 0,
+    hashCacheStats1_totalSize_temp : 0,
+    hashCacheStats1_totalSize_perm : 0,
+    hashCacheStats1_totalSum    : 0,
+    hashCacheStats1_totalSumTemp: 0,
+    hashCacheStats1_totalSumPerm: 0,
+    hashCacheStats1_totalSum_genTimeAll: 0,
+    hashCacheStats1_totalSum_genTimeTemp: 0,
+    hashCacheStats1_totalSum_genTimePerm: 0,
     display_hashCacheStats1_console: function(title, hash, hashBase){
         _WEBW_V.SEND('requestHashCacheEntry', { 
             data:{ 
@@ -1331,21 +1432,42 @@ var _DEBUG = {
         let elem3 = document.getElementById("debug_hashCacheStats1_hashCacheMapSize2");
         let elem4 = document.getElementById("debug_hashCacheStats1_hashCache_genTime");
 
-        if(elem2.innerText != this.hashCacheStats_size1.toString()){ 
-            // console.log("display_hashCacheStats1: CHANGE: hashCacheStats_size1"); 
-            elem2.innerText = this.hashCacheStats_size1.toString(); 
+        // Total hashes
+        let countsText1 = `` + 
+        `TEMP : ${this.hashCacheStats1_totalSumTemp}\n` +
+        `PERM : ${this.hashCacheStats1_totalSumPerm}\n` +
+        `TOTAL: ${this.hashCacheStats1_totalSum}\n` + 
+        ``;
+        let countsText2 = `` + 
+        `${this.hashCacheStats1_totalSize_temp.padStart(12, " ")}\n` +
+        `${this.hashCacheStats1_totalSize_perm.padStart(12, " ")}\n` + 
+        `${this.hashCacheStats1_totalSize_all.padStart(12, " ")}\n` +
+        ``;
+        let countsText3 = `` + 
+        `${this.hashCacheStats1_totalSum_genTimeTemp.toFixed(2).padStart(8, " ")} ms\n` + 
+        `${this.hashCacheStats1_totalSum_genTimePerm.toFixed(2).padStart(8, " ")} ms\n` +
+        `${this.hashCacheStats1_totalSum_genTimeAll .toFixed(2).padStart(8, " ")} ms\n` +
+        ``;
+        if(elem2.innerText != countsText1){ 
+            // console.log("display_hashCacheStats1: CHANGE: hashCacheStats1_totalSum"); 
+            elem2.innerText = countsText1; 
         }
-        if(elem3.innerText != this.hashCacheStats_size2.toString()){ 
-            // console.log("display_hashCacheStats1: CHANGE: hashCacheStats_size2"); 
-            elem3.innerText = this.hashCacheStats_size2.toString(); 
+        // Total size
+        if(elem3.innerText != countsText2){ 
+            // console.log("display_hashCacheStats1: CHANGE: hashCacheStats1_totalSize"); 
+            elem3.innerText = countsText2; 
+        }
+        // Total genTime
+        if(elem4.innerText != countsText3){ 
+            // console.log("display_hashCacheStats1: CHANGE: totalTempGenTime"); 
+            elem4.innerText = countsText3; 
         }
 
         // Get the current text.
-        // let currentText = elem.innerText.trim();
-        // let currentText = elem.innerHTML.trim();
         let newText = ``;
 
         let oldHash = elem.getAttribute("hash");
+        let settings;
 
         // Go through all layerObjects for this gamestate.
         let data;
@@ -1363,10 +1485,6 @@ var _DEBUG = {
             }
         }
 
-        if(elem4.innerText != totalTempGenTime.toFixed(2)+" ms"){ 
-            // console.log("display_hashCacheStats1: CHANGE: totalTempGenTime"); 
-            elem4.innerText = totalTempGenTime.toFixed(2)+" ms"; 
-        }
 
         for(let index in this.hashCacheStats1){ 
             // Break-out the data.
@@ -1374,9 +1492,12 @@ var _DEBUG = {
             
             let hashText = `${data.hashCacheHash == data.hashCacheHash_BASE ? "BASE" : "copy"}`;
 
+            settings = `[fade: ${data.settings.fade??0}], [xFlip: ${data.settings.xFlip??0}], [yFlip: ${data.settings.yFlip??0}], [rotation: ${data.settings.rotation??0}]`;
+
             // Update the newText string.
             // if(data.rotation)
             // if(data.removeHashOnRemoval)
+            try{
             newText += `<div class="${data.removeHashOnRemoval?"":"hashCacheStats1_entry_perm "}hashCacheStats1_entry" onclick="_DEBUG.display_hashCacheStats1_console('${data.mapKey}, ${data.relatedMapKey}',${data.hashCacheHash}, ${data.hashCacheHash_BASE} );">` +
                 `${data.removeHashOnRemoval?"(TEMP)":"(PERM)"}, ${hashText} ` +
                 `\n` +
@@ -1384,16 +1505,21 @@ var _DEBUG = {
                 `(${ (data.relatedMapKey ? data.relatedMapKey+")" : "<custom>)" )} ` +
 
                 `\n` +
-                ` ${data.ts    .toString().padEnd(maxLen3, " ")}, ` +
-                `${(data["hashCacheDataLength"]/1000).toFixed(0).padStart(6, " ")} KB` +
+                ` ${data.ts    .toString().padEnd(maxLen3, " ")},` +
+                ` ${(data["hashCacheDataLength"]/1000).toFixed(0).padStart(6, " ")} KB,` +
+                ` hasTransparency: ${data.hasTransparency? "TRUE" : "false"}` +
                 
+                `\n` +
+                ` ${settings}` +
                 `\n` +
                 ` gen: ${data.genTime.toFixed(2)} ms, ` +
                 `H:${data.hashCacheHash} B:${data.hashCacheHash_BASE}` +
                 `\n` +
-                ` rotation: ${data.rotation}, ` +
-                ` hasTransparency: ${data.hasTransparency? "TRUE" : "false"}` +
                 `</div>`;
+            }
+            catch(e){
+                console.log("ERROR:", data.genTime, data.mapKey, data.relatedMapKey, data, "\n", e);
+            }
         }
 
         // If the newText is different than the currentText replace the elem.innerText with the newText.
@@ -1535,8 +1661,8 @@ _DEBUG.init = async function(){
         // Mousemove event listener.
         let last_regionX;
         let last_regionY;
-        const regionWidth  = 3;
-        const regionHeight = 3;
+        const regionWidth  = 8;
+        const regionHeight = 8;
         copyCanvas.addEventListener('mousemove', (event) => {
             const rect = copyCanvas.getBoundingClientRect();
             const scaleX = copyCanvas.width / rect.width;
@@ -1565,9 +1691,10 @@ _DEBUG.init = async function(){
             zoomCanvasCtx.putImageData(regionImageData, 0, 0);
     
             // Display pixel values rgba as hex.
-            let text = "";
+            let text = "R0: ";
+            let rowNum = 0;
             for(let i=0; i<regionImageData.data.length; i+=4){
-                if(i%(3*4)==0 && i!=0){ text += "\n"; }
+                if(i%(8*4)==0 && i!=0){ rowNum+=1; text += `\nR${rowNum}: `; }
                 let r = regionImageData.data[i+0];
                 let g = regionImageData.data[i+1];
                 let b = regionImageData.data[i+2];
@@ -1578,7 +1705,7 @@ _DEBUG.init = async function(){
                     `${g.toString().padStart(3, " ").toUpperCase()},` +
                     `${b.toString().padStart(3, " ").toUpperCase()},` +
                     `${a.toString().padStart(3, " ").toUpperCase()}` +
-                `]` ;
+                `] ` ;
             }
             pixelRGBA.innerText = text;
         });

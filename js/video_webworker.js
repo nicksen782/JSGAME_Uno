@@ -23,10 +23,14 @@ const messageFuncs = {
         _GFX.configObj = messageData.configObj;
         tsDataSave = performance.now() - tsDataSave;
 
+        // Save the default settings.
+        _GFX.defaultSettings = messageData.defaultSettings;
+
         // Convert the graphics assets.
         let results = await createGraphicsAssets.process( 
             _GFX.configObj.tilesetFiles, 
-            _GFX.configObj.createFadeTilesets
+            _GFX.defaultSettings,
+            _GFX.configObj.disableCache
         );
 
         // Create image tilemaps for each tilemap and store to the hashCacheMap.
@@ -61,9 +65,6 @@ const messageFuncs = {
 
         // Save the debugActive flag (global variable.)
         debugActive = messageData.debugActive ?? false;
-
-        // Save the default settings.
-        _GFX.defaultSettings = messageData.defaultSettings;
 
         // Save the timings.
         messageFuncs.timings["initConfigAndGraphics"]["tsDataSave"]              = tsDataSave.toFixed(3);
@@ -188,166 +189,6 @@ const _GFX = {
         },
     },
     utilities: {
-        // Flips ImageData horizontally. (By reference, changes source imageData.)
-        flipImageDataHorizontally: function(imageData) {
-            const width = imageData.width;
-            const height = imageData.height;
-
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < Math.floor(width / 2); x++) {
-                    // Calculate the index of the source pixel
-                    const srcIndex = (y * width + x) * 4;
-
-                    // Calculate the index of the destination pixel (flipped horizontally)
-                    const destIndex = (y * width + (width - 1 - x)) * 4;
-
-                    // Swap the pixel data
-                    for (let i = 0; i < 4; i++) {
-                        const temp = imageData.data[srcIndex + i];
-                        imageData.data[srcIndex + i] = imageData.data[destIndex + i];
-                        imageData.data[destIndex + i] = temp;
-                    }
-                }
-            }
-        },
-
-        // Flips ImageData vertically. (By reference, changes source imageData.)
-        flipImageDataVertically: function(imageData) {
-            const width = imageData.width;
-            const height = imageData.height;
-            const data = imageData.data;
-        
-            // Iterate through half the image height to avoid flipping twice.
-            for (let y = 0; y < Math.floor(height / 2); y++) {
-                for (let x = 0; x < width; x++) {
-                    // Calculate the index of the source pixel
-                    const srcIndex = (y * width + x) * 4;
-        
-                    // Calculate the index of the destination pixel (flipped vertically)
-                    const destIndex = ((height - 1 - y) * width + x) * 4;
-        
-                    // Swap the pixel data
-                    for (let i = 0; i < 4; i++) {
-                        const temp = data[srcIndex + i];
-                        data[srcIndex + i] = data[destIndex + i];
-                        data[destIndex + i] = temp;
-                    }
-                }
-            }
-        },
-        
-        // Rotates ImageData by the specified degrees. (Changes source imageData. Uses temporary copy.)
-        rotateImageData: function(imageData, degrees) {
-            // if(degrees == 0){
-            //     return {
-            //         width: imageData.width,
-            //         height: imageData.height
-            //     }
-            // }
-
-            // Only allow specific values for degrees.
-            let allowedDegrees = [-90, 90, -180, 180, 270];
-            if (allowedDegrees.indexOf(degrees) === -1) {
-                console.error('Invalid degrees. Only use these:', allowedDegrees);
-                return imageData;
-            }
-        
-            // Break-out the imageData.
-            const { width, height, data } = imageData;
-        
-            // Create new ImageData.
-            const rotatedData = new Uint8Array(data.length);
-        
-            // Rotate the image and store it in the rotatedData array
-            let targetX, targetY;
-            let newWidth, newHeight;
-            if (degrees % 180 === 0) {
-                newWidth = width;
-                newHeight = height;
-            } else {
-                newWidth = height;
-                newHeight = width;
-            }
-        
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const sourceIndex = (y * width + x) * 4;
-        
-                    if (degrees === 90) {
-                        targetX = height - y - 1; targetY = x;
-                    } 
-                    else if (degrees === -90 || degrees === 270) {
-                        targetX = y; targetY = width - x - 1;
-                    } 
-                    else if (degrees === 180 || degrees === -180) {
-                        targetX = width - x - 1; targetY = height - y - 1;
-                    }
-        
-                    const targetIndex = (targetY * newWidth + targetX) * 4;
-        
-                    rotatedData.set(data.subarray(sourceIndex, sourceIndex + 4), targetIndex);
-                }
-            }
-        
-            // Update the imageData with the rotated data and dimensions
-            // NOTE: The source ImageData will have the width and height swapped on 90 degree rotations.
-            data.set(rotatedData);
-        
-            // Swap the width and the height if needed and return the dimensions.
-            return {
-                width: newWidth,
-                height: newHeight
-            }
-        },
-        
-        // Replaces colors in ImageData. (By reference, changes source imageData.)
-        replaceColors: function(imageData, colorReplacements) {
-            if(!colorReplacements || !colorReplacements.length){ 
-                console.log("replaceColors: level 1: No colors specified:", colorReplacements); 
-                return; 
-            }
-            for (let i = 0; i < imageData.data.length; i += 4) {
-                const pixelColor = imageData.data.slice(i, i + 4);
-    
-                for (let j = 0; j < colorReplacements.length; j++) {
-                    if(!colorReplacements[j] || !colorReplacements[j].length){ 
-                        // console.log("replaceColors: level 2: No colors specified:", j, colorReplacements[j], colorReplacements); 
-                        continue; 
-                    }
-                    
-                    const [sourceColor, targetColor] = colorReplacements[j];
-    
-                    // Compare colors.
-                    if(pixelColor[0] === sourceColor[0] &&
-                        pixelColor[1] === sourceColor[1] &&
-                        pixelColor[2] === sourceColor[2] &&
-                        pixelColor[3] === sourceColor[3]
-                    ){
-                        imageData.data.set(targetColor, i);
-                        break;
-                    }
-                }
-            }
-        },
-
-        // Takes ImageData, copies it, and applies color changes THEN fades the tile.
-        fadeImageData: function(imageData, fadeLevel, colorData){
-            // If the currFade is 10 then set tile to a new transparent tile.
-            if(fadeLevel == 10){ 
-                // Set the image data to fully transparent. 
-                imageData.data.set(0);
-            }
-            else{
-                // Apply color replacements (RGBA).
-                if(colorData && colorData.length){ 
-                    _GFX.utilities.replaceColors(imageData, colorData); 
-                }
-
-                // Fade the tile (RGBA version of the fade table.)
-                createGraphicsAssets.applyFadeToImageDataArray(imageData.data, fadeLevel);
-            }
-        },
-
         // Axis-Aligned Bounding Box. (Determine if two rectangles are intersecting.)
         aabb_collisionDetection: function(rect1, rect2){
             // EXAMPLE USAGE:
@@ -508,6 +349,12 @@ self.onmessage = async function(event) {
                 break; 
             }
 
+            case "_DEBUG.updateDebugTimings"          : { 
+                messageFuncs.gfx.updateDebugTimings();
+                returnData = messageFuncs.timings["gfx"];
+                break; 
+            }
+
             case "_DEBUG.toggleCacheFlag"          : { 
                 _GFX.configObj.disableCache = data.disableCache ?? false;
                 break; 
@@ -523,7 +370,7 @@ self.onmessage = async function(event) {
         // Send a response.
         self.postMessage( 
             { 
-                mode: event.data.mode, 
+                mode: mode, 
                 data: returnData, 
                 flags: flags 
             }, refs 

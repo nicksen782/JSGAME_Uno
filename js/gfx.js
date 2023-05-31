@@ -172,13 +172,13 @@ var _GFX = {
             return this.objs[gamestate][key];
         },
 
-        // Adds or updates one layer object for a gamestate.
-        updateOne: function(className, config, gamestate){
+        // Adds or replaces one layer object for a gamestate.
+        createOne: function(className, config, gamestate){
             /* 
             // EXAMPLE USAGE:
             // NOTE: The last argument, gamestate is technically optional and defaults to the current gamestate 1.
 
-            _GFX.layerObjs.updateOne(LayerObject, {
+            _GFX.layerObjs.createOne(LayerObject, {
                     layerObjKey: "demo_board", layerKey: "L1", tilesetKey: "bg_tiles",
                     tmap: _GFX.funcs.getTilemap("bg_tiles", "board_28x28"),
                     x: 0, y: 0, xyByGrid: true,
@@ -797,8 +797,17 @@ var _GFX = {
                 _DEBUG.timingsDisplay.gfx.updateCache(data); 
 
                 // hashCacheStats
-                _DEBUG.hashCacheStats_size1 = ( `${data["hashCacheMapSize1"]}` );
-                _DEBUG.hashCacheStats_size2 = ( `${(data["hashCacheMapSize2"]/1000).toFixed(2)} KB` );
+                _DEBUG.hashCacheStats1_totalSize_all  = ( `${(data["totalSize_all"]/1000).toFixed(2)} KB` );
+                _DEBUG.hashCacheStats1_totalSize_temp = ( `${(data["totalSize_temp"]/1000).toFixed(2)} KB` );
+                _DEBUG.hashCacheStats1_totalSize_perm = ( `${(data["totalSize_perm"]/1000).toFixed(2)} KB` );
+                _DEBUG.hashCacheStats1_totalSum     = ( `${(data["totalSum"])}` );
+                _DEBUG.hashCacheStats1_totalSumTemp = ( `${(data["totalSumTemp"])}` );
+                _DEBUG.hashCacheStats1_totalSumPerm = ( `${(data["totalSumPerm"])}` );
+                
+                _DEBUG.hashCacheStats1_totalSum_genTimeAll  = data["totalSum_genTimeAll"]  ;
+                _DEBUG.hashCacheStats1_totalSum_genTimeTemp = data["totalSum_genTimeTemp"] ;
+                _DEBUG.hashCacheStats1_totalSum_genTimePerm = data["totalSum_genTimePerm"] ;
+
                 // Sort so that the removeHashOnRemoval entries appear first.
                 _DEBUG.hashCacheStats1 = data.hashCacheStats
                 .sort((a, b) => {
@@ -1132,7 +1141,6 @@ class LayerObject {
         this.orgConfig  = config;
 
         // layerObjKey (MapKey), layerKey, and tilesetKey.
-        this.text = config.text ?? "NO_TEXT"
         this.layerObjKey = config.layerObjKey;
         this.layerKey    = config.layerKey;
         this.tilesetKey  = config.tilesetKey;
@@ -1241,7 +1249,6 @@ class LayerObject {
 // 
 class PrintText extends LayerObject{
     get text()   { return this._text; } 
-    // set text(value){ if( this._text !== value){ this._text = value; this._changed = true; } }
     set text(value){ if( this._text !== value){ this._text = value; this._changed = true; } }
 
     constructor(config){
@@ -1250,14 +1257,15 @@ class PrintText extends LayerObject{
 
         // mapKey  : this.layerObjKey, 
         
-        this.text = config.text;
+        this.text = config.text ?? ""
         this.removeHashOnRemoval = config.removeHashOnRemoval ?? true;
         this.noResort = config.noResort ?? true;
 
         if(!this.layerKey)  { this.layerKey = "L4";}
         if(!this.tilesetKey){ this.tilesetKey = "font_tiles1"; }
 
-        // This part should be handled already by _GFX.funcs.layerObjs.updateOne.
+        // This part should be handled already by _GFX.funcs.layerObjs.createOne.
+        // TODO: This could result in a very large name.
         if(!config.layerObjKey){ config.layerObjKey = config.text; }
 
         this._changed = true;
@@ -1269,7 +1277,7 @@ class PrintText extends LayerObject{
         if(!this._changed){ return; }
 
         // Text with no length? 
-        if(!this.text.length){ this.text = " "; }
+        if(!this.text.length){ this.text = ""; }
 
         // Draw by grid or by pixel?
         let x = this.x; 

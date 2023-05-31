@@ -210,7 +210,7 @@ _APP.shared = {
 
             // Draw the border.
             for(let key in tilemaps){
-                _GFX.layerObjs.updateOne(LayerObject, {
+                _GFX.layerObjs.createOne(LayerObject, {
                     layerObjKey: tilemaps[key].layerObjKey, 
                     layerKey   : tilemaps[key].layerKey, 
                     tilesetKey : tilemaps[key].tilesetKey, 
@@ -239,7 +239,7 @@ _APP.shared = {
                 }
 
                 // Draw the fill.
-                _GFX.layerObjs.updateOne(LayerObject, {
+                _GFX.layerObjs.createOne(LayerObject, {
                     layerObjKey: tilemaps["fill"].layerObjKey, 
                     layerKey   : tilemaps["fill"].layerKey, 
                     tilesetKey : tilemaps["fill"].tilesetKey, 
@@ -266,7 +266,7 @@ _APP.shared = {
         for(let i=0, len=config.lines.length; i<len; i+=1){
             line = config.lines[i];
             if(line.length){
-                _GFX.layerObjs.updateOne(PrintText, { 
+                _GFX.layerObjs.createOne(PrintText, { 
                     text: line, 
                     x:x, y:y,
                     // layerObjKey_base: `${config.layerObjKey}`, 
@@ -281,7 +281,7 @@ _APP.shared = {
     },
 };
 
-// _GFX.layerObjs.updateOne(PrintText, { 
+// _GFX.layerObjs.createOne(PrintText, { 
 //     text: "PROGRAMMING: ", 
 //     x:2, y: 
 //     y+=1,           

@@ -107,10 +107,10 @@ _APP.game.gamestates["gs_JSG"] = {
         // _GFX.funcs.updateL1BgColorRgba( [8,8,8,255] );
 
         // Draw the board to L1.
-        _GFX.layerObjs.updateOne(GameBoard, {
-            layerObjKey: `board_28x28`, layerKey: "L1", xyByGrid: true,
-            settings : { bgColorRgba:[128,128,0,255] }
-        });
+        // _GFX.layerObjs.createOne(OLD_GameBoard, {
+        //     layerObjKey: `board_28x28`, layerKey: "L1", xyByGrid: true,
+        //     settings : { bgColorRgba:[128,128,0,255] }
+        // });
 
         // Reset the deck and shuffle the deck.
         this.resetDeck();
@@ -283,11 +283,11 @@ _APP.game.gamestates["gs_JSG"] = {
     drawCardOnDiscardPile: function(value, color){
         let x4 = this.staticConfig.discardPos[0]; 
         let y4 = this.staticConfig.discardPos[1]; 
-        _GFX.layerObjs.updateOne(Card, {
-            layerObjKey: `discardPileFaceUpCard`, layerKey: "L2", tilesetKey: "bg_tiles",
+        _GFX.layerObjs.createOne(Card, {
+            layerObjKey: `discardPileFaceUpCard`, layerKey: "L2", tilesetKey: "bg_tiles1",
             x: x4, y: y4, xyByGrid: true,
             settings : { xFlip: false, yFlip: false, rotation: 0, colorData:[] },
-            card: { size: "large", value: value, color: color }
+            size: "lg", value: value, color: color
         });
     },
     // Sends a card to the discard pile (does not move the card.)
@@ -301,7 +301,8 @@ _APP.game.gamestates["gs_JSG"] = {
     },
     // Updates the displayed heights of the draw and discard piles. 
     updateUnderPiles: function(){
-        let offBlackTile = _GFX.funcs.getTilemap("bg_tiles", "offBlackTile")[2];
+        return;
+        let offBlackTile = _GFX.funcs.getTilemap("bg_tiles1", "offBlackTile")[2];
 
         // DRAW PILE
         let x_draw = this.staticConfig.drawPosBelow[0]; 
@@ -309,12 +310,12 @@ _APP.game.gamestates["gs_JSG"] = {
         let tmap_draw;
         let drawPileCount = this.config.deck.filter(d=>d.location=="CARD_LOCATION_DRAW").length;
         if     (drawPileCount == 0  ) { tmap_draw = [ 3,1, offBlackTile, offBlackTile, offBlackTile ];}
-        else if(drawPileCount <  27 ) { tmap_draw = _GFX.funcs.getTilemap("bg_tiles", "cardsBelow_lg_lt27"); }
-        else if(drawPileCount <  54 ) { tmap_draw = _GFX.funcs.getTilemap("bg_tiles", "cardsBelow_lg_lt54"); }
-        else if(drawPileCount <  81 ) { tmap_draw = _GFX.funcs.getTilemap("bg_tiles", "cardsBelow_lg_lt81"); }
-        else                          { tmap_draw = _GFX.funcs.getTilemap("bg_tiles", "cardsBelow_lg_lt108"); }
-        _GFX.layerObjs.updateOne(LayerObject, {
-            layerObjKey: "drawPileHeight", layerKey: "L2", tilesetKey: "bg_tiles",
+        else if(drawPileCount <  27 ) { tmap_draw = _GFX.funcs.getTilemap("bg_tiles1", "cardsBelow_lg_lt27"); }
+        else if(drawPileCount <  54 ) { tmap_draw = _GFX.funcs.getTilemap("bg_tiles1", "cardsBelow_lg_lt54"); }
+        else if(drawPileCount <  81 ) { tmap_draw = _GFX.funcs.getTilemap("bg_tiles1", "cardsBelow_lg_lt81"); }
+        else                          { tmap_draw = _GFX.funcs.getTilemap("bg_tiles1", "cardsBelow_lg_lt108"); }
+        _GFX.layerObjs.createOne(LayerObject, {
+            layerObjKey: "drawPileHeight", layerKey: "L2", tilesetKey: "bg_tiles1",
             tmap: tmap_draw,
             x: x_draw*8, y: y_draw*8, 
             settings : {
@@ -328,12 +329,12 @@ _APP.game.gamestates["gs_JSG"] = {
         let tmap_discard;
         let discardPileCount = this.config.deck.filter(d=>d.location=="CARD_LOCATION_DISCARD").length;
         if     (discardPileCount == 0  ) { tmap_discard = [ 3,1, offBlackTile, offBlackTile, offBlackTile ];}
-        else if(discardPileCount <  27 ) { tmap_discard = _GFX.funcs.getTilemap("bg_tiles", "cardsBelow_lg_lt27"); }
-        else if(discardPileCount <  54 ) { tmap_discard = _GFX.funcs.getTilemap("bg_tiles", "cardsBelow_lg_lt54"); }
-        else if(discardPileCount <  81 ) { tmap_discard = _GFX.funcs.getTilemap("bg_tiles", "cardsBelow_lg_lt81"); }
-        else                             { tmap_discard = _GFX.funcs.getTilemap("bg_tiles", "cardsBelow_lg_lt108"); }
-        _GFX.layerObjs.updateOne(LayerObject, {
-            layerObjKey: "discardPileHeight", layerKey: "L2", tilesetKey: "bg_tiles",
+        else if(discardPileCount <  27 ) { tmap_discard = _GFX.funcs.getTilemap("bg_tiles1", "cardsBelow_lg_lt27"); }
+        else if(discardPileCount <  54 ) { tmap_discard = _GFX.funcs.getTilemap("bg_tiles1", "cardsBelow_lg_lt54"); }
+        else if(discardPileCount <  81 ) { tmap_discard = _GFX.funcs.getTilemap("bg_tiles1", "cardsBelow_lg_lt81"); }
+        else                             { tmap_discard = _GFX.funcs.getTilemap("bg_tiles1", "cardsBelow_lg_lt108"); }
+        _GFX.layerObjs.createOne(LayerObject, {
+            layerObjKey: "discardPileHeight", layerKey: "L2", tilesetKey: "bg_tiles1",
             tmap: tmap_discard,
             x: x_discard*8, y: y_discard*8, 
             settings : {
@@ -349,6 +350,7 @@ _APP.game.gamestates["gs_JSG"] = {
     },
     // Either draws or removes the displayed card based on drawPileCount.
     updateDrawPileTopCard: function(drawPileCount=null){
+        return;
         let x = this.staticConfig.drawPos[0]; 
         let y = this.staticConfig.drawPos[1]; 
 
@@ -356,21 +358,21 @@ _APP.game.gamestates["gs_JSG"] = {
         if(drawPileCount === null){ drawPileCount = this.config.deck.filter(d=>d.location=="CARD_LOCATION_DRAW").length; }
         // console.log("updateDrawPileTopCard: drawPileCount   :", drawPileCount);
 
-        let offBlackTile = _GFX.funcs.getTilemap("bg_tiles", "offBlackTile")[2];
+        let offBlackTile = _GFX.funcs.getTilemap("bg_tiles1", "offBlackTile")[2];
         let tmap_draw;
         if(drawPileCount){
-            tmap_draw = _GFX.funcs.getTilemap("bg_tiles", "card_back_lg");
+            tmap_draw = _GFX.funcs.getTilemap("bg_tiles1", "card_back_lg");
         }
         else{
-            tmap_draw = _GFX.funcs.getTilemap("bg_tiles", "card_back_lg");
+            tmap_draw = _GFX.funcs.getTilemap("bg_tiles1", "card_back_lg");
             for (let i = 2; i < tmap_draw.length; i++) {
                 tmap_draw[i] = offBlackTile;
             }
         }
 
         // Draw. 
-        _GFX.layerObjs.updateOne(LayerObject, {
-            layerObjKey: "drawPileFaceDownCard", layerKey: "L2", tilesetKey: "bg_tiles",
+        _GFX.layerObjs.createOne(LayerObject, {
+            layerObjKey: "drawPileFaceDownCard", layerKey: "L2", tilesetKey: "bg_tiles1",
             tmap: tmap_draw,
             x: x*8, y: y*8, 
             settings : {
@@ -410,35 +412,35 @@ _APP.game.gamestates["gs_JSG"] = {
         for(let c=0; c<colors.length; c+=1){
             let color = colors[c];
             if(color=="CARD_BLACK"){
-                _GFX.layerObjs.updateOne(Card, {
-                    layerObjKey: `debug_${color}_WILD`, layerKey: "L2", tilesetKey: "bg_tiles",
+                _GFX.layerObjs.createOne(Card, {
+                    layerObjKey: `debug_${color}_WILD`, layerKey: "L2", tilesetKey: "bg_tiles1",
                     x: 0, y: 0, xyByGrid: true,
                     settings : { xFlip: false, yFlip: false, rotation: 0, colorData:[] },
-                    card: { size: "small", value: "CARD_WILD", color: color }
+                    size: "sm", value: "CARD_WILD", color: color
                 });
-                _GFX.layerObjs.updateOne(Card, {
-                    layerObjKey: `debug_${color}_CARD_WILD_DRAW4`, layerKey: "L2", tilesetKey: "bg_tiles",
+                _GFX.layerObjs.createOne(Card, {
+                    layerObjKey: `debug_${color}_CARD_WILD_DRAW4`, layerKey: "L2", tilesetKey: "bg_tiles1",
                     x: 2, y: 0, xyByGrid: true,
                     settings : { xFlip: false, yFlip: false, rotation: 0, colorData:[] },
-                    card: { size: "small", value: "CARD_WILD_DRAW4", color: color }
+                    size: "sm", value: "CARD_WILD_DRAW4", color: color
                 });
             }
             else if(color=="CARD_BACK"){
-                _GFX.layerObjs.updateOne(Card, {
-                    layerObjKey: `debug_${color}_card_back_sm_0deg`, layerKey: "L2", tilesetKey: "bg_tiles",
+                _GFX.layerObjs.createOne(Card, {
+                    layerObjKey: `debug_${color}_card_back_sm_0deg`, layerKey: "L2", tilesetKey: "bg_tiles1",
                     x: 4, y: 0, xyByGrid: true, 
                     settings : { xFlip: false, yFlip: false, rotation: 0, colorData:[] },
-                    card: { size: "small", value: "card_back_sm_0deg", color: color }
+                    size: "sm", value: "CARD_BACK", color: color
                 });
             }
             else{
                 for(let v=0; v<values.length; v+=1){
                     let value = values[v];
-                    _GFX.layerObjs.updateOne(Card, {
-                        layerObjKey: `debug_${color}_${value}`, layerKey: "L2", tilesetKey: "bg_tiles",
+                    _GFX.layerObjs.createOne(Card, {
+                        layerObjKey: `debug_${color}_${value}`, layerKey: "L2", tilesetKey: "bg_tiles1",
                         x: x, y: y, xyByGrid: true,
                         settings : { xFlip: false, yFlip: false, rotation: 0, colorData:[] },
-                        card: { size: "small", value: value, color: color }
+                        size: "sm", value: value, color: color
                     });
                     x+=2;
                 }
@@ -477,36 +479,36 @@ _APP.game.gamestates["gs_JSG"] = {
         for(let c=0; c<colors.length; c+=1){
             let color = colors[c];
             if(color=="CARD_BLACK"){
-                _GFX.layerObjs.updateOne(Card, {
-                    layerObjKey: `debug_large_${color}_WILD`, layerKey: "L2", tilesetKey: "bg_tiles",
+                _GFX.layerObjs.createOne(Card, {
+                    layerObjKey: `debug_large_${color}_WILD`, layerKey: "L2", tilesetKey: "bg_tiles1",
                     x: 0, y: 0, xyByGrid: true,
                     settings : { xFlip: false, yFlip: false, rotation: 0, colorData:[] },
-                    card: { size: "large", value: "CARD_WILD", color: color }
+                    size: "lg", value: "CARD_WILD", color: color
                 });
-                _GFX.layerObjs.updateOne(Card, {
-                    layerObjKey: `debug_large_${color}_CARD_WILD_DRAW4`, layerKey: "L2", tilesetKey: "bg_tiles",
+                _GFX.layerObjs.createOne(Card, {
+                    layerObjKey: `debug_large_${color}_CARD_WILD_DRAW4`, layerKey: "L2", tilesetKey: "bg_tiles1",
                     x: 3, y: 0, xyByGrid: true,
                     settings : { xFlip: false, yFlip: false, rotation: 0, colorData:[] },
-                    card: { size: "large", value: "CARD_WILD_DRAW4", color: color }
+                    size: "lg", value: "CARD_WILD_DRAW4", color: color
                 });
             }
             else if(color=="CARD_BACK"){
-                _GFX.layerObjs.updateOne(Card, {
-                    layerObjKey: `debug_large_${color}_card_back_lg`, layerKey: "L2", tilesetKey: "bg_tiles",
+                _GFX.layerObjs.createOne(Card, {
+                    layerObjKey: `debug_large_${color}_card_back_lg`, layerKey: "L2", tilesetKey: "bg_tiles1",
                     x: 6, y: 0, xyByGrid: true,
                     settings : { xFlip: false, yFlip: false, rotation: 0, colorData:[] },
-                    card: { size: "large", value: "card_back_lg", color: color }
+                    size: "lg", value: "card_back_lg", color: color
                 });
             }
             else{
                 // First portion...
                 for(let v=0; v<9; v+=1){
                     let value = values[v];
-                    _GFX.layerObjs.updateOne(Card, {
-                        layerObjKey: `debug_large_${color}_${value}`, layerKey: "L2", tilesetKey: "bg_tiles",
+                    _GFX.layerObjs.createOne(Card, {
+                        layerObjKey: `debug_large_${color}_${value}`, layerKey: "L2", tilesetKey: "bg_tiles1",
                         x: x, y: y, xyByGrid: true,
                         settings : { xFlip: false, yFlip: false, rotation: 0, colorData:[] },
-                        card: { size: "large", value: value, color: color }
+                        size: "lg", value: value, color: color
                     });
                     x+=3;
                 }
@@ -516,11 +518,11 @@ _APP.game.gamestates["gs_JSG"] = {
                 y+=4;
                 for(let v=9; v<values.length; v+=1){
                     let value = values[v];
-                    _GFX.layerObjs.updateOne(Card, {
-                        layerObjKey: `debug_large_${color}_${value}`, layerKey: "L2", tilesetKey: "bg_tiles",
+                    _GFX.layerObjs.createOne(Card, {
+                        layerObjKey: `debug_large_${color}_${value}`, layerKey: "L2", tilesetKey: "bg_tiles1",
                         x: x, y: y, xyByGrid: true,
                         settings : { xFlip: false, yFlip: false, rotation: 0, colorData:[] },
-                        card: { size: "large", value: value, color: color }
+                        size: "lg", value: value, color: color
                     });
                     x+=3;
                 }
@@ -550,11 +552,11 @@ _APP.game.gamestates["gs_JSG"] = {
                 else if(playerKey=="p3"){ rotation = 180; }
                 else if(playerKey=="p4"){ rotation = -90; }
 
-                _GFX.layerObjs.updateOne(Card, {
-                    layerObjKey: `${playerKey}_card_${p}`, layerKey: "L2", tilesetKey: "bg_tiles",
+                _GFX.layerObjs.createOne(Card, {
+                    layerObjKey: `${playerKey}_card_${p}`, layerKey: "L2", tilesetKey: "bg_tiles1",
                     x: x, y: y, xyByGrid: true,
                     settings : { xFlip: false, yFlip: false, rotation: rotation, colorData:[] },
-                    card: { size: "small", value: "card_back_sm_0deg", color: "CARD_BACK" }
+                    size: "sm", value: "CARD_BACK", color: "CARD_BLACK"
                 });
             }
         }

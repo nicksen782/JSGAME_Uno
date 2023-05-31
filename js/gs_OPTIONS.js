@@ -22,12 +22,12 @@ _APP.game.gamestates["gs_OPTIONS"] = {
                 x:x+0, y:y+0, w: 28, h: 28, 
                 layerObjKey: `brdr_All`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1"
             });
-            _GFX.layerObjs.updateOne(PrintText, { text: "OPTIONS", x:x+11, y: y+0, layerObjKey: `screen_title`, layerKey: "L4", xyByGrid: true, settings: { bgColorRgba: [0,0,0,168] } });
+            _GFX.layerObjs.createOne(PrintText, { text: "OPTIONS", x:x+11, y: y+0, layerObjKey: `screen_title`, layerKey: "L4", xyByGrid: true, settings: { bgColorRgba: [0,0,0,168] } });
 
             // UNO at the top.
-            _GFX.layerObjs.updateOne(UnoLetter, { letter: "u2", x:x+3 , y: y+2, layerObjKey: `letter_uno2_u`, layerKey: "L1", xyByGrid: true, framesBeforeIndexChange: 30, framesIndex: 0 });
-            _GFX.layerObjs.updateOne(UnoLetter, { letter: "n2", x:x+11, y: y+2, layerObjKey: `letter_uno2_n`, layerKey: "L1", xyByGrid: true, framesBeforeIndexChange: 30, framesIndex: 1 });
-            _GFX.layerObjs.updateOne(UnoLetter, { letter: "o2", x:x+19, y: y+2, layerObjKey: `letter_uno2_o`, layerKey: "L1", xyByGrid: true, framesBeforeIndexChange: 30, framesIndex: 2 });
+            _GFX.layerObjs.createOne(UnoLetter, { letter: "u2", x:x+3 , y: y+2, layerObjKey: `letter_uno2_u`, layerKey: "L1", xyByGrid: true, framesBeforeIndexChange: 30, framesIndex: 0 });
+            _GFX.layerObjs.createOne(UnoLetter, { letter: "n2", x:x+11, y: y+2, layerObjKey: `letter_uno2_n`, layerKey: "L1", xyByGrid: true, framesBeforeIndexChange: 30, framesIndex: 1 });
+            _GFX.layerObjs.createOne(UnoLetter, { letter: "o2", x:x+19, y: y+2, layerObjKey: `letter_uno2_o`, layerKey: "L1", xyByGrid: true, framesBeforeIndexChange: 30, framesIndex: 2 });
         }
         else if(section == "players"){
             let x=2;
@@ -41,7 +41,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             });
 
             // "PLAYERS" text.
-            _GFX.layerObjs.updateOne(PrintText, { text: "PLAYERS" , x:x+1, y: y-1, layerObjKey: `players_title`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "PLAYERS" , x:x+1, y: y-1, layerObjKey: `players_title`, layerKey: "L4", xyByGrid: true });
             
             // Border around the "PLAYERS" text.
             _APP.shared.border.createBorder1({
@@ -52,29 +52,29 @@ _APP.game.gamestates["gs_OPTIONS"] = {
 
             // Text for the player options. 
             let text = "";
-            _GFX.layerObjs.updateOne(PrintText, { text: "P1", x:x+2, y: y+1, layerObjKey: `P1_text`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "P1", x:x+2, y: y+1, layerObjKey: `P1_text`, layerKey: "L4", xyByGrid: true });
             if     (this.gameSettings["P1"] == "HUMAN"){ text = "HUMAN"; }
             else if(this.gameSettings["P1"] == "CPU")  { text = "  CPU"; }
             else if(this.gameSettings["P1"] == "NONE") { text = " NONE"; }
-            _GFX.layerObjs.updateOne(PrintText, { text: text, x:x+2+3, y: y+1, layerObjKey: `P1_text2`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: text, x:x+2+3, y: y+1, layerObjKey: `P1_text2`, layerKey: "L4", xyByGrid: true });
             
-            _GFX.layerObjs.updateOne(PrintText, { text: "P2", x:x+2, y: y+2, layerObjKey: `P2_text`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "P2", x:x+2, y: y+2, layerObjKey: `P2_text`, layerKey: "L4", xyByGrid: true });
             if     (this.gameSettings["P2"] == "HUMAN"){ text = "HUMAN"; }
             else if(this.gameSettings["P2"] == "CPU")  { text = "  CPU"; }
             else if(this.gameSettings["P2"] == "NONE") { text = " NONE"; }
-            _GFX.layerObjs.updateOne(PrintText, { text: text, x:x+2+3, y: y+2, layerObjKey: `P2_text2`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: text, x:x+2+3, y: y+2, layerObjKey: `P2_text2`, layerKey: "L4", xyByGrid: true });
 
-            _GFX.layerObjs.updateOne(PrintText, { text: "P3",  x:x+2, y: y+3, layerObjKey: `P3_text`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "P3",  x:x+2, y: y+3, layerObjKey: `P3_text`, layerKey: "L4", xyByGrid: true });
             if     (this.gameSettings["P3"] == "HUMAN"){ text = "HUMAN"; }
             else if(this.gameSettings["P3"] == "CPU")  { text = "  CPU"; }
             else if(this.gameSettings["P3"] == "NONE") { text = " NONE"; }
-            _GFX.layerObjs.updateOne(PrintText, { text: text, x:x+2+3, y: y+3, layerObjKey: `P3_text2`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: text, x:x+2+3, y: y+3, layerObjKey: `P3_text2`, layerKey: "L4", xyByGrid: true });
             
-            _GFX.layerObjs.updateOne(PrintText, { text: "P4", x:x+2, y: y+4, layerObjKey: `P4_text`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "P4", x:x+2, y: y+4, layerObjKey: `P4_text`, layerKey: "L4", xyByGrid: true });
             if     (this.gameSettings["P4"] == "HUMAN"){ text = "HUMAN"; }
             else if(this.gameSettings["P4"] == "CPU")  { text = "  CPU"; }
             else if(this.gameSettings["P4"] == "NONE") { text = " NONE"; }
-            _GFX.layerObjs.updateOne(PrintText, { text: text, x:x+2+3, y: y+4, layerObjKey: `P4_text4`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: text, x:x+2+3, y: y+4, layerObjKey: `P4_text4`, layerKey: "L4", xyByGrid: true });
         }
         else if(section == "winStyle"){
             let x=15;
@@ -88,7 +88,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             });
             
             // "WIN STYLE" text.
-            _GFX.layerObjs.updateOne(PrintText, { text: "WIN STYLE" , x:x+1, y: y-1, layerObjKey: `winStyle_title`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "WIN STYLE" , x:x+1, y: y-1, layerObjKey: `winStyle_title`, layerKey: "L4", xyByGrid: true });
             
                 // Border around the "WIN STYLE" text.
             _APP.shared.border.createBorder1({
@@ -98,9 +98,9 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             });
 
             // Text for the player options. 
-            _GFX.layerObjs.updateOne(PrintText, { text: "1ST TO:", x:x+2, y: y+1, layerObjKey: `winStyle_text1`, layerKey: "L4", xyByGrid: true });
-            _GFX.layerObjs.updateOne(PrintText, { text: "500 PTS", x:x+2, y: y+3, layerObjKey: `winStyle_text2`, layerKey: "L4", xyByGrid: true });
-            _GFX.layerObjs.updateOne(PrintText, { text: "0 CARDS", x:x+2, y: y+4, layerObjKey: `winStyle_text3`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "1ST TO:", x:x+2, y: y+1, layerObjKey: `winStyle_text1`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "500 PTS", x:x+2, y: y+3, layerObjKey: `winStyle_text2`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "0 CARDS", x:x+2, y: y+4, layerObjKey: `winStyle_text3`, layerKey: "L4", xyByGrid: true });
         }
         else if(section == "noPlayableCard"){
             let x=2;
@@ -114,7 +114,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             });
             
             // "IF NO PLAYABLE CARD" text.
-            _GFX.layerObjs.updateOne(PrintText, { text: "IF NO PLAYABLE CARD" , x:x+1, y: y-1, layerObjKey: `npc_title`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "IF NO PLAYABLE CARD" , x:x+1, y: y-1, layerObjKey: `npc_title`, layerKey: "L4", xyByGrid: true });
             
             // Border around the "IF NO PLAYABLE CARD" text.
             _APP.shared.border.createBorder1({
@@ -124,12 +124,12 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             });
 
             // // Text for the player options. 
-            _GFX.layerObjs.updateOne(PrintText, { text: "DRAW ONLY ONE CARD",  x:x+2, y: y+1, layerObjKey: `npc_text1`, layerKey: "L4", xyByGrid: true });
-            _GFX.layerObjs.updateOne(PrintText, { text: "DRAW UNTIL PLAYABLE", x:x+2, y: y+2, layerObjKey: `npc_text2`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "DRAW ONLY ONE CARD",  x:x+2, y: y+1, layerObjKey: `npc_text1`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "DRAW UNTIL PLAYABLE", x:x+2, y: y+2, layerObjKey: `npc_text2`, layerKey: "L4", xyByGrid: true });
             
             // Bottom text
-            _GFX.layerObjs.updateOne(PrintText, { text: "A:ACCEPT    DPAD:CHANGE", x:x+0, y: y+5, layerObjKey: `npc_text3`, layerKey: "L4", xyByGrid: true });
-            _GFX.layerObjs.updateOne(PrintText, { text: "B:BACK"                 , x:x+0, y: y+6, layerObjKey: `npc_text4`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "A:ACCEPT    DPAD:CHANGE", x:x+0, y: y+5, layerObjKey: `npc_text3`, layerKey: "L4", xyByGrid: true });
+            _GFX.layerObjs.createOne(PrintText, { text: "B:BACK"                 , x:x+0, y: y+6, layerObjKey: `npc_text4`, layerKey: "L4", xyByGrid: true });
         }
     },
     changeSection: function(section){
@@ -246,7 +246,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
         // _GFX.funcs.updateL1BgColorRgba([0,128,64,255]);
         _GFX.funcs.updateL1BgColorRgba([32,32,48,255]);
 
-        // _GFX.layerObjs.updateOne(Cursor1, { x:0, y:0, layerObjKey: `debugCursor`   , layerKey: "L3", xyByGrid: true, settings:{rotation: 90} } );
+        // _GFX.layerObjs.createOne(Cursor1, { x:0, y:0, layerObjKey: `debugCursor`   , layerKey: "L3", xyByGrid: true, settings:{rotation: 90} } );
 
         let cursorIndex;
 
@@ -259,17 +259,17 @@ _APP.game.gamestates["gs_OPTIONS"] = {
         cursorPosObj = this.cursorPositions["players"];
         cursorIndex = cursorPosObj.currentIndex;
         cursorPos = cursorPosObj.items[cursorIndex];
-        _GFX.layerObjs.updateOne(Cursor1, { x:cursorPos.x, y:cursorPos.y, layerObjKey: `playersCursor` , layerKey: "L3", xyByGrid: true, settings:{rotation: 90} } );
+        _GFX.layerObjs.createOne(Cursor1, { x:cursorPos.x, y:cursorPos.y, layerObjKey: `playersCursor` , layerKey: "L3", xyByGrid: true, settings:{rotation: 90} } );
         
         cursorPosObj = this.cursorPositions["winStyle"];
         cursorIndex = cursorPosObj.currentIndex;
         cursorPos = cursorPosObj.items[cursorIndex];
-        _GFX.layerObjs.updateOne(Cursor1, { x:cursorPos.x, y:cursorPos.y, layerObjKey: `winStyleCursor`, layerKey: "L3", xyByGrid: true, settings:{rotation: 90} } );
+        _GFX.layerObjs.createOne(Cursor1, { x:cursorPos.x, y:cursorPos.y, layerObjKey: `winStyleCursor`, layerKey: "L3", xyByGrid: true, settings:{rotation: 90} } );
         
         cursorPosObj = this.cursorPositions["noPlayableCard"];
         cursorIndex = cursorPosObj.currentIndex;
         cursorPos = cursorPosObj.items[cursorIndex];
-        _GFX.layerObjs.updateOne(Cursor1, { x:cursorPos.x, y:cursorPos.y, layerObjKey: `npcCursor`     , layerKey: "L3", xyByGrid: true, settings:{rotation: 90} } );
+        _GFX.layerObjs.createOne(Cursor1, { x:cursorPos.x, y:cursorPos.y, layerObjKey: `npcCursor`     , layerKey: "L3", xyByGrid: true, settings:{rotation: 90} } );
 
         this.genSection("start");
         this.genSection("players");

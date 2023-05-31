@@ -307,6 +307,21 @@ _APP.game.gameLoop.loop = async function loop(timestamp){
                         else                                  {       await _GFX.funcs.sendGfxUpdates(true); }
 
                         this.frameDrawCounter += 1;
+                        
+                        // DEBUG Set the getDebugTimings flag so that one more call to _DEBUG.updateDebugTimings can be made.
+                        if(_APP.debugActive){ this.getDebugTimings = true;  }
+                    }
+
+                    // DEBUG:
+                    else if(_APP.debugActive && this.getDebugTimings){ 
+                        // Request the debug timings.
+                        _WEBW_V.SEND("_DEBUG.updateDebugTimings", { 
+                            data: { }, 
+                            refs:[]
+                        }, false, false);
+
+                        // Set the getDebugTimings false. It will be set true again at the next actual draw.
+                        this.getDebugTimings = false;
                     }
                 }
             }

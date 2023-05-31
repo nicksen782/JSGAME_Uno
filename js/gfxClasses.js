@@ -555,7 +555,7 @@ class Deck{
                 else if(key=="P4"){ rotation = -90; }
 
                 // Create clear tilemap as placeholder.
-                _GFX.layerObjs.updateOne(Card, { 
+                _GFX.layerObjs.createOne(Card, { 
                     size       : "sm", 
                     color      : "CARD_BLACK",
                     value      : "CARD_BACK", 
@@ -583,7 +583,7 @@ class Deck{
             _GFX.layerObjs.getOne(layerObjKey);
             
             // // Create clear tilemap as placeholder.
-            // _GFX.layerObjs.updateOne(Card, { 
+            // _GFX.layerObjs.createOne(Card, { 
             //     size       : "sm", 
             //     color      : "CARD_BLACK",
             //     value      : "CARD_BACK", 
@@ -806,7 +806,7 @@ class Gameboard{
         let data;
         if(!textKey_msgBox)  { 
             data = pos["msgBox"].msgBox;
-            _GFX.layerObjs.updateOne(PrintText, { text: " "  , x:data.x, y:data.y, layerObjKey: data.layerObjKey, layerKey: data.layerKey, xyByGrid: true });   
+            _GFX.layerObjs.createOne(PrintText, { text: " "  , x:data.x, y:data.y, layerObjKey: data.layerObjKey, layerKey: data.layerKey, xyByGrid: true });   
             textKey_msgBox   = _GFX.layerObjs.getOne( pos["msgBox"].msgBox.layerObjKey   );
         }
 
@@ -897,7 +897,7 @@ class Gameboard{
 
         // Create the bar.
         let data = pos[playerKey];
-        _GFX.layerObjs.updateOne(LayerObject, {
+        _GFX.layerObjs.createOne(LayerObject, {
             layerObjKey: data.layerObjKey, 
             layerKey   : data.layerKey, 
             tilesetKey : data.tilesetKey, 
@@ -920,16 +920,16 @@ class Gameboard{
         // _APP.shared.gameBoard.setDirectionIndicators("R");
         this.currentDirection = dir;
         if(dir == "F"){
-            _GFX.layerObjs.updateOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionF_tl"), x:5, y:5, layerObjKey: `direction_tl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
-            _GFX.layerObjs.updateOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionF_tr"), x:20, y:5, layerObjKey: `direction_tr`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
-            _GFX.layerObjs.updateOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionF_bl"), x:5, y:20, layerObjKey: `direction_bl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
-            _GFX.layerObjs.updateOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionF_br"), x:20, y:20, layerObjKey: `direction_br`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionF_tl"), x:5, y:5, layerObjKey: `direction_tl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionF_tr"), x:20, y:5, layerObjKey: `direction_tr`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionF_bl"), x:5, y:20, layerObjKey: `direction_bl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionF_br"), x:20, y:20, layerObjKey: `direction_br`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
         }
         else if(dir == "R"){
-            _GFX.layerObjs.updateOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_tl"), x:5, y:5, layerObjKey: `direction_tl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
-            _GFX.layerObjs.updateOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_tr"), x:20, y:5, layerObjKey: `direction_tr`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
-            _GFX.layerObjs.updateOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_bl"), x:5, y:20, layerObjKey: `direction_bl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
-            _GFX.layerObjs.updateOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_br"), x:20, y:20, layerObjKey: `direction_br`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_tl"), x:5, y:5, layerObjKey: `direction_tl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_tr"), x:20, y:5, layerObjKey: `direction_tr`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_bl"), x:5, y:20, layerObjKey: `direction_bl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_br"), x:20, y:20, layerObjKey: `direction_br`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
         }
         else if(dir == "N"){
             _GFX.layerObjs.removeOne( "direction_tl" );
@@ -982,22 +982,22 @@ class Gameboard{
             if(!textKey_uno)  { 
                 data = pos[playerKey].uno;
                 // console.log("Adding uno:", playerKey, data);
-                _GFX.layerObjs.updateOne(PrintText, { text: "    "  , x:data.x, y:data.y, layerObjKey: data.layerObjKey, layerKey: data.layerKey, xyByGrid: true });   
+                _GFX.layerObjs.createOne(PrintText, { text: "    "  , x:data.x, y:data.y, layerObjKey: data.layerObjKey, layerKey: data.layerKey, xyByGrid: true });   
                 textKey_uno   = _GFX.layerObjs.getOne( pos[playerKey].uno.layerObjKey   );
             }
             if(!textKey_name) { 
                 data = pos[playerKey].name;
-                _GFX.layerObjs.updateOne(PrintText, { text: playerKey  , x:data.x, y:data.y, layerObjKey: data.layerObjKey, layerKey: data.layerKey, xyByGrid: true });  
+                _GFX.layerObjs.createOne(PrintText, { text: playerKey  , x:data.x, y:data.y, layerObjKey: data.layerObjKey, layerKey: data.layerKey, xyByGrid: true });  
                 textKey_name  = _GFX.layerObjs.getOne( pos[playerKey].name.layerObjKey  );
             }
             if(!textKey_count){ 
                 data = pos[playerKey].count;
-                _GFX.layerObjs.updateOne(PrintText, { text: "  10  "  , x:data.x, y:data.y, layerObjKey: data.layerObjKey, layerKey: data.layerKey, xyByGrid: true }); 
+                _GFX.layerObjs.createOne(PrintText, { text: "  10  "  , x:data.x, y:data.y, layerObjKey: data.layerObjKey, layerKey: data.layerKey, xyByGrid: true }); 
                 textKey_count = _GFX.layerObjs.getOne( pos[playerKey].count.layerObjKey );
             }
             if(!textKey_cards){ 
                 data = pos[playerKey].cards;
-                _GFX.layerObjs.updateOne(PrintText, { text: "CARDS"  , x:data.x, y:data.y, layerObjKey: data.layerObjKey, layerKey: data.layerKey, xyByGrid: true }); 
+                _GFX.layerObjs.createOne(PrintText, { text: "CARDS"  , x:data.x, y:data.y, layerObjKey: data.layerObjKey, layerKey: data.layerKey, xyByGrid: true }); 
                 textKey_cards = _GFX.layerObjs.getOne( pos[playerKey].cards.layerObjKey );
             }
 

@@ -12,6 +12,7 @@ var _WEBW_V = {
         "_DEBUG.toggleDebugFlag",
         "requestHashCacheEntry",
         "_DEBUG.toggleCacheFlag",
+        "_DEBUG.updateDebugTimings",
     ],
     
     // Allowed RECEIVE "modes."
@@ -26,6 +27,7 @@ var _WEBW_V = {
         "_DEBUG.toggleDebugFlag",
         "requestHashCacheEntry",
         "_DEBUG.toggleCacheFlag",
+        "_DEBUG.updateDebugTimings",
     ],
     
     // Differed promises allow the system to wait for a response from the WebWorker.
@@ -64,6 +66,17 @@ var _WEBW_V = {
                 }
 
                 case "sendGfxUpdates"     : {
+                    // Send data to afterDraw.
+                    _GFX.funcs.afterDraw(e.data.data);
+
+                    // Resolve differed promise?
+                    if(this.differedProms[e.data.mode]){ 
+                        this.differedProms[e.data.mode].resolve(); 
+                    }
+                    break;
+                }
+
+                case "_DEBUG.updateDebugTimings"     : {
                     // Send data to afterDraw.
                     _GFX.funcs.afterDraw(e.data.data);
 

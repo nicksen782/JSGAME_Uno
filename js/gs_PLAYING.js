@@ -79,8 +79,8 @@ _APP.game.gamestates["gs_PLAYING"] = {
         // Run the debug init.
         if(_APP.debugActive && _DEBUG2){ 
             // DEBUG CURSOR.
-            _GFX.layerObjs.updateOne(Cursor1, { x:5, y:5, layerObjKey: `debugCursor`   , layerKey: "L3", xyByGrid: true, settings:{rotation: 90} } );
-            // _GFX.layerObjs.updateOne(Cursor1, { x:5, y:6, layerObjKey: `debugCursor2`   , layerKey: "L3", xyByGrid: true, settings:{rotation: -90} } );
+            _GFX.layerObjs.createOne(Cursor1, { x:5, y:5, layerObjKey: `debugCursor`   , layerKey: "L3", xyByGrid: true, settings:{rotation: 90} } );
+            // _GFX.layerObjs.createOne(Cursor1, { x:5, y:6, layerObjKey: `debugCursor2`   , layerKey: "L3", xyByGrid: true, settings:{rotation: -90} } );
 
             _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); 
         }
@@ -114,7 +114,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         // let card;
         // card = this.getNextCardFromDrawpile();
         // if(card){
-        //     _GFX.layerObjs.updateOne(Card, { size: "sm", color:card.color, value: card.value , x:0, y:0, layerObjKey: "p1card", layerKey: "L1", xyByGrid: true } );
+        //     _GFX.layerObjs.createOne(Card, { size: "sm", color:card.color, value: card.value , x:0, y:0, layerObjKey: "p1card", layerKey: "L1", xyByGrid: true } );
         //     card.location = "CARD_LOCATION_PLAYER1";
         // }
 

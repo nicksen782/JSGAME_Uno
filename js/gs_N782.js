@@ -13,22 +13,22 @@ _APP.game.gamestates["gs_N782"] = {
         // _GFX.funcs.updateL1BgColorRgba([32,24,64,255]);
         _GFX.funcs.updateL1BgColorRgba([0,0,0,0]);
 
-        _GFX.layerObjs.updateOne(N782_face_anim, { layerObjKey: "N782_face_anim", layerKey: "L2", tilesetKey: "bg_tiles2" });
-        _GFX.layerObjs.updateOne(N782_text_anim, { layerObjKey: "N782_text_anim", layerKey: "L2", tilesetKey: "bg_tiles2" });
+        _GFX.layerObjs.createOne(N782_face_anim, { layerObjKey: "N782_face_anim", layerKey: "L2", tilesetKey: "bg_tiles2" });
+        _GFX.layerObjs.createOne(N782_text_anim, { layerObjKey: "N782_text_anim", layerKey: "L2", tilesetKey: "bg_tiles2" });
         
-        _GFX.layerObjs.updateOne(N782_oneStar_anim,  { layerObjKey: "N782_oneStar_anim1"  , layerKey: "L3", tilesetKey: "bg_tiles2", y: ( 5 )*8});
-        _GFX.layerObjs.updateOne(N782_oneStar_anim,  { layerObjKey: "N782_oneStar_anim2"  , layerKey: "L3", tilesetKey: "bg_tiles2", y: ( 6 )*8});
-        _GFX.layerObjs.updateOne(N782_oneStar_anim,  { layerObjKey: "N782_oneStar_anim3"  , layerKey: "L2", tilesetKey: "bg_tiles2", y: ( 7 )*8});
+        _GFX.layerObjs.createOne(N782_oneStar_anim,  { layerObjKey: "N782_oneStar_anim1"  , layerKey: "L3", tilesetKey: "bg_tiles2", y: ( 5 )*8});
+        _GFX.layerObjs.createOne(N782_oneStar_anim,  { layerObjKey: "N782_oneStar_anim2"  , layerKey: "L3", tilesetKey: "bg_tiles2", y: ( 6 )*8});
+        _GFX.layerObjs.createOne(N782_oneStar_anim,  { layerObjKey: "N782_oneStar_anim3"  , layerKey: "L2", tilesetKey: "bg_tiles2", y: ( 7 )*8});
         
-        // _GFX.layerObjs.updateOne(N782_oneStar_anim3, { layerObjKey: "N782_oneStar_anim3_1", layerKey: "L3", tilesetKey: "bg_tiles2", y: ( 10 )*8}); // rotated text
+        // _GFX.layerObjs.createOne(N782_oneStar_anim3, { layerObjKey: "N782_oneStar_anim3_1", layerKey: "L3", tilesetKey: "bg_tiles2", y: ( 10 )*8}); // rotated text
         
-        _GFX.layerObjs.updateOne(N782_oneStar_animNS,  { layerObjKey: "N782_oneStar_animNS1"  , layerKey: "L3", tilesetKey: "bg_tiles2", x: ( 5 )*8, y: ( 5 )*8});
+        _GFX.layerObjs.createOne(N782_oneStar_animNS,  { layerObjKey: "N782_oneStar_animNS1"  , layerKey: "L3", tilesetKey: "bg_tiles2", x: ( 5 )*8, y: ( 5 )*8});
 
         
         let x = 0;
         for(let i=0; i<28; i+=1){
             let key = `N782_oneStar_anim2_${(i)}`;
-            _GFX.layerObjs.updateOne(N782_oneStar_anim2, { layerObjKey: key, layerKey: "L2", tilesetKey: "bg_tiles2", y: ( i )*8, x: x});
+            _GFX.layerObjs.createOne(N782_oneStar_anim2, { layerObjKey: key, layerKey: "L2", tilesetKey: "bg_tiles2", y: ( i )*8, x: x});
             x+=6;
         }
 
@@ -86,8 +86,8 @@ _APP.game.gamestates["gs_N782"] = {
             // _APP.game.changeGs1("gs_JSG");
             // _APP.game.changeGs1("gs_N782");
 
-            _GFX.layerObjs.updateOne(N782_face_anim, { layerObjKey: "N782_face_anim", layerKey: "L2" });
-            _GFX.layerObjs.updateOne(N782_text_anim, { layerObjKey: "N782_text_anim", layerKey: "L2" });
+            _GFX.layerObjs.createOne(N782_face_anim, { layerObjKey: "N782_face_anim", layerKey: "L2" });
+            _GFX.layerObjs.createOne(N782_text_anim, { layerObjKey: "N782_text_anim", layerKey: "L2" });
 
             _APP.game.changeGs2("anim2");
         }

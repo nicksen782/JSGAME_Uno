@@ -37,25 +37,25 @@
 }
 #debug_colorFinder_src {
   /* background-color: #181818; */
-  width: 95%;
-  border: 1px solid white;
+  width: 49%;
+  /* border: 1px solid white; */
 }
 #debug_colorFinder_zoom {
-  width: 48px;
-  height: 48px;
-  border: 1px solid white;
-  /* width: 20%; */
+  /* width: 80px; */
+  /* height: 80px; */
+  /* border: 1px solid white; */
+  width: 49%;
 }
 #debug_colorFinder_pixelRGBA {
   /* border:1px solid white; */
   font-family: monospace;
   white-space: pre;
   display: inline-block;
-  min-width: 375px;
-  max-width: 375px;
+  min-width: 450px;
+  max-width: 450px;
   /* width: 100%; */
-  min-height: 48px;
-  max-height: 48px;
+  min-height: 130px;
+  max-height: 130px;
   vertical-align: top;
   font-size: 12px;
   overflow: scroll;
@@ -111,6 +111,7 @@ div#debug_test_alwaysVisible {
   /* padding: 5px; */
   font-family: monospace;
   /* text-align: center; */
+  vertical-align: top;
 }
 .debug_td_header {
   text-decoration: underline;
@@ -122,6 +123,7 @@ div#debug_test_alwaysVisible {
   /* text-align:center; */
   min-width: 70px;
   padding: 5px;
+  white-space: nowrap;
 }
 .debug_td_long {
   width: 260px;
@@ -248,7 +250,7 @@ div#layerObjectList1 {
   font-family: monospace;
   white-space: pre;
   height: 500px;
-  max-height: 450px;
+  max-height: 500px;
   overflow-y: auto;
 }
 
@@ -360,7 +362,7 @@ div#debug_hashCacheList1 {
 .hashCacheStats1_entry:hover{background-color: dodgerblue;}
 .hashCacheStats1_entry_perm{font-weight: bold;}
 
-.layerObjectsStats1_entry{ cursor: pointer; }
+.layerObjectsStats1_entry{cursor: pointer;display: block;}
 .layerObjectsStats1_entry:nth-child(odd)  { background-color:darkgray; }
 .layerObjectsStats1_entry:nth-child(even) { background-color:lightgray; }
 .layerObjectsStats1_entry:hover{background-color: dodgerblue;}
@@ -394,4 +396,14 @@ button#debug_test_toggleGridCanvas {
 #aux.wide2 {
   width: 475px;
   max-width: 475px;
+}
+
+.debug_monospace{
+  font-family:monospace;
+  white-space: pre;
+}
+
+#debug_printText_newText {
+    width: 370px;
+    height: 7em;
 }
