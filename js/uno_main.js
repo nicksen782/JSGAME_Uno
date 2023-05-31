@@ -124,14 +124,13 @@ _APP.game = {
         endOfLoopTasks: function(timestamp){
             // Update the 
             if(timestamp){
-                // DEBUG.
-                if(_APP.debugActive && _DEBUG){ 
-                    _DEBUG.endOfLoopDraw_funcs(); 
+                // GAMESTATE CHANGES
+                if(_APP.game.changeGs2_triggered){ _APP.game._changeGs2(); } 
+                if(_APP.game.changeGs1_triggered){ _APP.game._changeGs1(); } 
+            }
 
-                    // GAMESTATE CHANGES
-                    if(_APP.game.changeGs2_triggered){ _APP.game._changeGs2(); } 
-                    if(_APP.game.changeGs1_triggered){ _APP.game._changeGs1(); } 
-                }
+            if(_APP.debugActive){
+                _DEBUG.endOfLoopDraw_funcs(); 
             }
 
             // Request the next frame.
@@ -176,171 +175,157 @@ _APP.game = {
             // DEBUG
             if(_APP.debugActive && _DEBUG){ _DEBUG.loop_display_func(); }
         },
-    }, 
-};
 
-// Calculates the average frames per second.
-_APP.game.gameLoop.fpsCalc = {
-    // colxi: https://stackoverflow.com/a/55644176/2731377
-    sampleSize   : undefined,
-    _sample_     : undefined,
-    average      : undefined,
-    avgMsPerFrame: undefined,
-    _index_      : undefined,
-    _lastTick_   : undefined,
+        // Calculates the average frames per second.
+        fpsCalc: {
+            // colxi: https://stackoverflow.com/a/55644176/2731377
+            sampleSize   : undefined,
+            _sample_     : undefined,
+            average      : undefined,
+            avgMsPerFrame: undefined,
+            _index_      : undefined,
+            _lastTick_   : undefined,
 
-    // Internal within tick.
-    __delta_     : undefined,
-    __fps_       : undefined,
-    __average_   : undefined,
-    __average_i_ : undefined,
+            // Internal within tick.
+            __delta_     : undefined,
+            __fps_       : undefined,
+            __average_   : undefined,
+            __average_i_ : undefined,
 
-    tick : function tick(now){
-        // if is first tick, just set tick timestamp and return
-        if( !this._lastTick_ ){ this._lastTick_ = now; return 0; }
+            tick : function tick(now){
+                // if is first tick, just set tick timestamp and return
+                if( !this._lastTick_ ){ this._lastTick_ = now; return 0; }
 
-        // Determine the fps for this tick. 
-        __delta_ = (now - this._lastTick_) / 1000;
-        __fps_ = (1 / __delta_) << 0; // Round down fps.
-        
-        // Add to fps samples the current tick fps value.
-        this._sample_[ this._index_ ] = __fps_;
-        
-        // Get the fps average by summing all samples and dividing by the sample count. 
-        __average_ = 0;
-        this.__average_i_ = this._sample_.length; 
-        while (this.__average_i_--) { __average_ += this._sample_[this.__average_i_]; } 
-        __average_ = ( __average_ / this._sample_.length);
+                // Determine the fps for this tick. 
+                __delta_ = (now - this._lastTick_) / 1000;
+                __fps_ = (1 / __delta_) << 0; // Round down fps.
+                
+                // Add to fps samples the current tick fps value.
+                this._sample_[ this._index_ ] = __fps_;
+                
+                // Get the fps average by summing all samples and dividing by the sample count. 
+                __average_ = 0;
+                this.__average_i_ = this._sample_.length; 
+                while (this.__average_i_--) { __average_ += this._sample_[this.__average_i_]; } 
+                __average_ = ( __average_ / this._sample_.length);
 
-        // Set the new FPS average.
-        this.average = __average_;
-        this.avgMsPerFrame = 1000 / __average_;
+                // Set the new FPS average.
+                this.average = __average_;
+                this.avgMsPerFrame = 1000 / __average_;
 
-        // Store current timestamp
-        this._lastTick_ = now;
+                // Store current timestamp
+                this._lastTick_ = now;
 
-        // Increase the sample index counter
-        this._index_ += 1;
+                // Increase the sample index counter
+                this._index_ += 1;
 
-        // Reset the sample index counter if it excedes the maximum sampleSize limit
-        if( this._index_ == this.sampleSize) this._index_ = 0;
-        
-        return this.average;
-    },
-    init: function init(sampleSize){
-        // Set initial values.
-        this.sampleSize = sampleSize;
-        this._index_    = 0 ;
-        this.average    = 0 ;
-        this.avgMsPerFrame = 0 ;
-        this._lastTick_ = 0 ;
+                // Reset the sample index counter if it excedes the maximum sampleSize limit
+                if( this._index_ == this.sampleSize) this._index_ = 0;
+                
+                return this.average;
+            },
+            init: function init(sampleSize){
+                // Set initial values.
+                this.sampleSize = sampleSize;
+                this._index_    = 0 ;
+                this.average    = 0 ;
+                this.avgMsPerFrame = 0 ;
+                this._lastTick_ = 0 ;
 
-        // Create new samples Uint8Array and fill with the default value.
-        this._sample_ = new Uint8Array( new ArrayBuffer(this.sampleSize) );
-        // this._sample_.fill(0);
-        // this._sample_.fill(30);
-        this._sample_.fill(sampleSize);
-    },
-};
+                // Create new samples Uint8Array and fill with the default value.
+                this._sample_ = new Uint8Array( new ArrayBuffer(this.sampleSize) );
+                // this._sample_.fill(0);
+                // this._sample_.fill(30);
+                this._sample_.fill(sampleSize);
+            },
+        },
 
-// THE GAME LOOP FUNCTION.
-_APP.game.gameLoop.loop = async function loop(timestamp){
-    // Is the loop active?
-    if(this.running){
-        // Calculate the time difference between the new timestamp and the lastLoopRun. 
-        this.delta = timestamp - this.lastLoopRun;
+        // THE GAME LOOP FUNCTION.
+        loop: async function loop(timestamp){
+            // Is the loop active?
+            if(this.running){
+                // Calculate the time difference between the new timestamp and the lastLoopRun. 
+                this.delta = timestamp - this.lastLoopRun;
 
-        // Is it time to run the next loop?
-        if( (this.delta >= this.msFrame) ){
-            // Track performance.
-            this.fpsCalc.tick(timestamp - (this.delta % this.msFrame));
-            this.lastLoopRun = timestamp - (this.delta % this.msFrame);
-            this.frameCounter += 1;
+                // Is it time to run the next loop?
+                if( (this.delta >= this.msFrame) ){
+                    // Track performance.
+                    this.fpsCalc.tick(timestamp - (this.delta % this.msFrame));
+                    this.lastLoopRun = timestamp - (this.delta % this.msFrame);
+                    this.frameCounter += 1;
 
-            let lastLoop_timestamp = performance.now();
-            // this.lastLoop_timestamp = performance.now();
+                    let lastLoop_timestamp = performance.now();
+                    // this.lastLoop_timestamp = performance.now();
 
-            // Do not run the logic loop if the gamestate value is "".
-            if(!_APP.game.gs1 == ""){
-                // Do not run the logic loop if the skipLogic value is true.
-                if(!this.skipLogic){
-                    // -- NETWORK --
-                    //
+                    // Do not run the logic loop if the gamestate value is "".
+                    if(_APP.game.gs1 != ""){
+                        // Do not run the logic loop if the skipLogic value is true.
+                        if(!this.skipLogic){
+                            // -- NETWORK --
+                            //
 
-                    // -- INPUT --
-                    await _INPUT.util.getStatesForPlayers();
-                    if(typeof _INPUT.customized.updateLiveGamepadDisplay != "undefined"){
-                        _INPUT.customized.updateLiveGamepadDisplay();
+                            // -- INPUT --
+                            await _INPUT.util.getStatesForPlayers();
+                            if(typeof _INPUT.customized.updateLiveGamepadDisplay != "undefined"){
+                                _INPUT.customized.updateLiveGamepadDisplay();
+                            }
+
+                            // -- LOGIC --
+                            _APP.game.gamestates[_APP.game.gs1].main();
+                            
+                            // -- RENDER --
+                            // Render using the _GFX.layerObjs.render function.
+                            if( !_APP.game.gamestates[_APP.game.gs1].render){ _GFX.layerObjs.render(_APP.game.gs1); }
+                            
+                            // Render using the gamestate's render function.
+                            else { _APP.game.gamestates[_APP.game.gs1].render(); }
+
+                            // -- DRAW --
+                            // Determine if there are any draw updates. (Returns true/false and also sets _GFX.DRAWNEEDED.)
+                            this.DRAWNEEDED_prev = _GFX.funcs.isDrawNeeded();
+                            
+                            // Send a draw request if there are changes for any layer.
+                            if( _GFX.DRAWNEEDED ) {
+                                // Send the graphics updates without waiting. (This could be a problem where there are many graphics updates.)
+                                // awaitDraw is false.
+                                if(!_APP.configObj.awaitDraw)         {             _GFX.funcs.sendGfxUpdates(false); }
+                                
+                                // Synchronize the gameLoop with the rendering.
+                                // awaitDraw is true.
+                                else                                  {       await _GFX.funcs.sendGfxUpdates(true); }
+
+                                this.frameDrawCounter += 1;
+                            }
+                            // else if(_APP.debugActive && this.getDebugTimings){ 
+                            else if(_APP.debugActive){ 
+                                // console.log("getDebugTimings:", _APP.game.gs1);
+
+                                // Request the debug timings.
+                                _WEBW_V.SEND("_DEBUG.updateDebugTimings", { 
+                                    data: { }, 
+                                    refs:[]
+                                }, false, false);
+                            }
+                        }
                     }
 
-                    // -- LOGIC --
-                    _APP.game.gamestates[_APP.game.gs1].main();
+                    this.lastLoop_timestamp = performance.now() - lastLoop_timestamp;
+                    // console.log("this.lastLoop_timestamp:", this.lastLoop_timestamp.toFixed(1));
                     
-                    // -- RENDER --
-                    // Render using the _GFX.layerObjs.render function.
-                    if( !_APP.game.gamestates[_APP.game.gs1].render){ _GFX.layerObjs.render(_APP.game.gs1); }
-                    
-                    // Render using the gamestate's render function.
-                    else { _APP.game.gamestates[_APP.game.gs1].render(); }
-
-                    // -- DEBUG --
-                    if(_APP.debugActive && _DEBUG){ 
-                        _DEBUG.cachedData.changes["L1"] = _GFX.currentData["L1"].changes;
-                        _DEBUG.cachedData.changes["L2"] = _GFX.currentData["L2"].changes;
-                        _DEBUG.cachedData.changes["L3"] = _GFX.currentData["L3"].changes;
-                        _DEBUG.cachedData.changes["L4"] = _GFX.currentData["L4"].changes;
-                    }
-
-                    // -- DRAW --
-                    // Determine if there are any draw updates. (Returns true/false and also sets _GFX.DRAWNEEDED.)
-                    this.DRAWNEEDED_prev = _GFX.funcs.isDrawNeeded();
-                    
-                    // Send a draw request if there are changes for any layer.
-                    if( _GFX.DRAWNEEDED ) { 
-                        
-                        // Send the graphics updates without waiting. (This could be a problem where there are many graphics updates.)
-                        // awaitDraw is false.
-                        if(!_APP.configObj.awaitDraw)         {             _GFX.funcs.sendGfxUpdates(false); }
-                        
-                        // Synchronize the gameLoop with the rendering.
-                        // awaitDraw is true.
-                        else                                  {       await _GFX.funcs.sendGfxUpdates(true); }
-
-                        this.frameDrawCounter += 1;
-                        
-                        // DEBUG Set the getDebugTimings flag so that one more call to _DEBUG.updateDebugTimings can be made.
-                        if(_APP.debugActive){ this.getDebugTimings = true;  }
-                    }
-
-                    // DEBUG:
-                    else if(_APP.debugActive && this.getDebugTimings){ 
-                        // Request the debug timings.
-                        _WEBW_V.SEND("_DEBUG.updateDebugTimings", { 
-                            data: { }, 
-                            refs:[]
-                        }, false, false);
-
-                        // Set the getDebugTimings false. It will be set true again at the next actual draw.
-                        this.getDebugTimings = false;
-                    }
+                    // End the loop and run any end of loop tasks.
+                    this.endOfLoopTasks(timestamp);
                 }
+                else{
+                    // console.log("THE LOOP DID NOT RUN THIS TIME:", new Date());
+                    // End the loop and run any end of loop tasks.
+                    this.endOfLoopTasks(false);
+                }
+
             }
-
-            this.lastLoop_timestamp = performance.now() - lastLoop_timestamp;
-            // console.log("this.lastLoop_timestamp:", this.lastLoop_timestamp.toFixed(1));
-            
-            // End the loop and run any end of loop tasks.
-            this.endOfLoopTasks(timestamp);
-        }
-        else{
-            // console.log("THE LOOP DID NOT RUN THIS TIME:", new Date());
-            // End the loop and run any end of loop tasks.
-            this.endOfLoopTasks(false);
-        }
-
-    }
-    // No. 
-    else{
-        // console.log("gameLoop is not running.");
-    }
+            // No. 
+            else{
+                // console.log("gameLoop is not running.");
+            }
+        },
+    }, 
 };

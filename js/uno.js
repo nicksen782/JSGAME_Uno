@@ -91,9 +91,9 @@ _APP.utility = {
                 "mapKeys"  : [],
                 "mapsArray": [
                     // UNO LETTERS large
-                    { "baseMapKey": "letter_uno_u",         "mapKey": "_letter_uno_u_C1", "settings": { } },
-                    { "baseMapKey": "letter_uno_n",         "mapKey": "_letter_uno_n_C1", "settings": { } },
-                    { "baseMapKey": "letter_uno_o",         "mapKey": "_letter_uno_o_C1", "settings": { } },
+                    // { "baseMapKey": "letter_uno_u",         "mapKey": "_letter_uno_u_C1", "settings": { } },
+                    // { "baseMapKey": "letter_uno_n",         "mapKey": "_letter_uno_n_C1", "settings": { } },
+                    // { "baseMapKey": "letter_uno_o",         "mapKey": "_letter_uno_o_C1", "settings": { } },
 
                     { "baseMapKey": "letter_uno_u",         "mapKey": "_letter_uno_u_C2", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.blue ]] } },
                     { "baseMapKey": "letter_uno_n",         "mapKey": "_letter_uno_n_C2", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.blue ]] } },
@@ -112,9 +112,9 @@ _APP.utility = {
                     { "baseMapKey": "letter_uno_o",         "mapKey": "_letter_uno_o_C5", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.black ]] } },
                     
                     // UNO LETTERS small
-                    { "baseMapKey": "letter_uno2_u",         "mapKey": "_letter_uno_u2_C1", "settings": { } },
-                    { "baseMapKey": "letter_uno2_n",         "mapKey": "_letter_uno_n2_C1", "settings": { } },
-                    { "baseMapKey": "letter_uno2_o",         "mapKey": "_letter_uno_o2_C1", "settings": { } },
+                    // { "baseMapKey": "letter_uno2_u",         "mapKey": "_letter_uno_u2_C1", "settings": { } },
+                    // { "baseMapKey": "letter_uno2_n",         "mapKey": "_letter_uno_n2_C1", "settings": { } },
+                    // { "baseMapKey": "letter_uno2_o",         "mapKey": "_letter_uno_o2_C1", "settings": { } },
 
                     { "baseMapKey": "letter_uno2_u",         "mapKey": "_letter_uno_u2_C2", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.blue ]] } },
                     { "baseMapKey": "letter_uno2_n",         "mapKey": "_letter_uno_n2_C2", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.blue ]] } },
@@ -133,19 +133,19 @@ _APP.utility = {
                     { "baseMapKey": "letter_uno2_o",         "mapKey": "_letter_uno_o2_C5", "settings": { colorData: [[UnoLetter.colors.base, UnoLetter.colors.black ]] } },
 
                     // RED: Small cards
-                    { "baseMapKey": "card_sm_0",         "mapKey": "_RED_card_sm_0",          "settings": {}  },
-                    { "baseMapKey": "card_sm_1",         "mapKey": "_RED_card_sm_1",          "settings": {}  },
-                    { "baseMapKey": "card_sm_2",         "mapKey": "_RED_card_sm_2",          "settings": {}  },
-                    { "baseMapKey": "card_sm_3",         "mapKey": "_RED_card_sm_3",          "settings": {}  },
-                    { "baseMapKey": "card_sm_4",         "mapKey": "_RED_card_sm_4",          "settings": {}  },
-                    { "baseMapKey": "card_sm_5",         "mapKey": "_RED_card_sm_5",          "settings": {}  },
-                    { "baseMapKey": "card_sm_6",         "mapKey": "_RED_card_sm_6",          "settings": {}  },
-                    { "baseMapKey": "card_sm_7",         "mapKey": "_RED_card_sm_7",          "settings": {}  },
-                    { "baseMapKey": "card_sm_8",         "mapKey": "_RED_card_sm_8",          "settings": {}  },
-                    { "baseMapKey": "card_sm_9",         "mapKey": "_RED_card_sm_9",          "settings": {}  },
-                    { "baseMapKey": "card_sm_draw2",     "mapKey": "_RED_card_sm_draw2",      "settings": {}  },
-                    { "baseMapKey": "card_sm_skip",      "mapKey": "_RED_card_sm_skip",       "settings": {}  },
-                    { "baseMapKey": "card_sm_reverse",   "mapKey": "_RED_card_sm_reverse",    "settings": {}  },
+                    // { "baseMapKey": "card_sm_0",         "mapKey": "_RED_card_sm_0",          "settings": {}  },
+                    // { "baseMapKey": "card_sm_1",         "mapKey": "_RED_card_sm_1",          "settings": {}  },
+                    // { "baseMapKey": "card_sm_2",         "mapKey": "_RED_card_sm_2",          "settings": {}  },
+                    // { "baseMapKey": "card_sm_3",         "mapKey": "_RED_card_sm_3",          "settings": {}  },
+                    // { "baseMapKey": "card_sm_4",         "mapKey": "_RED_card_sm_4",          "settings": {}  },
+                    // { "baseMapKey": "card_sm_5",         "mapKey": "_RED_card_sm_5",          "settings": {}  },
+                    // { "baseMapKey": "card_sm_6",         "mapKey": "_RED_card_sm_6",          "settings": {}  },
+                    // { "baseMapKey": "card_sm_7",         "mapKey": "_RED_card_sm_7",          "settings": {}  },
+                    // { "baseMapKey": "card_sm_8",         "mapKey": "_RED_card_sm_8",          "settings": {}  },
+                    // { "baseMapKey": "card_sm_9",         "mapKey": "_RED_card_sm_9",          "settings": {}  },
+                    // { "baseMapKey": "card_sm_draw2",     "mapKey": "_RED_card_sm_draw2",      "settings": {}  },
+                    // { "baseMapKey": "card_sm_skip",      "mapKey": "_RED_card_sm_skip",       "settings": {}  },
+                    // { "baseMapKey": "card_sm_reverse",   "mapKey": "_RED_card_sm_reverse",    "settings": {}  },
                     
                     // YELLOW: Small cards
                     { "baseMapKey": "card_sm_0",         "mapKey": "_YEL_card_sm_0",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
@@ -193,24 +193,24 @@ _APP.utility = {
                     { "baseMapKey": "card_sm_reverse",   "mapKey": "_GRE_card_sm_reverse",    "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
                     
                     // BLACK: Small cards
-                    { "baseMapKey": "card_sm_back",      "mapKey": "_BLA_card_sm_back",       "settings": {}  },
-                    { "baseMapKey": "card_sm_wild",      "mapKey": "_BLA_card_sm_wild",       "settings": {}  },
-                    { "baseMapKey": "card_sm_wildDraw4", "mapKey": "_BLA_card_sm_wildDraw4",  "settings": {}  },
+                    // { "baseMapKey": "card_sm_back",      "mapKey": "_BLA_card_sm_back",       "settings": {}  },
+                    // { "baseMapKey": "card_sm_wild",      "mapKey": "_BLA_card_sm_wild",       "settings": {}  },
+                    // { "baseMapKey": "card_sm_wildDraw4", "mapKey": "_BLA_card_sm_wildDraw4",  "settings": {}  },
 
                     // RED: Large cards
-                    { "baseMapKey": "card_lg_0",         "mapKey": "_RED_card_lg_0",          "settings": {}  },
-                    { "baseMapKey": "card_lg_1",         "mapKey": "_RED_card_lg_1",          "settings": {}  },
-                    { "baseMapKey": "card_lg_2",         "mapKey": "_RED_card_lg_2",          "settings": {}  },
-                    { "baseMapKey": "card_lg_3",         "mapKey": "_RED_card_lg_3",          "settings": {}  },
-                    { "baseMapKey": "card_lg_4",         "mapKey": "_RED_card_lg_4",          "settings": {}  },
-                    { "baseMapKey": "card_lg_5",         "mapKey": "_RED_card_lg_5",          "settings": {}  },
-                    { "baseMapKey": "card_lg_6",         "mapKey": "_RED_card_lg_6",          "settings": {}  },
-                    { "baseMapKey": "card_lg_7",         "mapKey": "_RED_card_lg_7",          "settings": {}  },
-                    { "baseMapKey": "card_lg_8",         "mapKey": "_RED_card_lg_8",          "settings": {}  },
-                    { "baseMapKey": "card_lg_9",         "mapKey": "_RED_card_lg_9",          "settings": {}  },
-                    { "baseMapKey": "card_lg_draw2",     "mapKey": "_RED_card_lg_draw2",      "settings": {}  },
-                    { "baseMapKey": "card_lg_skip",      "mapKey": "_RED_card_lg_skip",       "settings": {}  },
-                    { "baseMapKey": "card_lg_reverse",   "mapKey": "_RED_card_lg_reverse",    "settings": {}  },
+                    // { "baseMapKey": "card_lg_0",         "mapKey": "_RED_card_lg_0",          "settings": {}  },
+                    // { "baseMapKey": "card_lg_1",         "mapKey": "_RED_card_lg_1",          "settings": {}  },
+                    // { "baseMapKey": "card_lg_2",         "mapKey": "_RED_card_lg_2",          "settings": {}  },
+                    // { "baseMapKey": "card_lg_3",         "mapKey": "_RED_card_lg_3",          "settings": {}  },
+                    // { "baseMapKey": "card_lg_4",         "mapKey": "_RED_card_lg_4",          "settings": {}  },
+                    // { "baseMapKey": "card_lg_5",         "mapKey": "_RED_card_lg_5",          "settings": {}  },
+                    // { "baseMapKey": "card_lg_6",         "mapKey": "_RED_card_lg_6",          "settings": {}  },
+                    // { "baseMapKey": "card_lg_7",         "mapKey": "_RED_card_lg_7",          "settings": {}  },
+                    // { "baseMapKey": "card_lg_8",         "mapKey": "_RED_card_lg_8",          "settings": {}  },
+                    // { "baseMapKey": "card_lg_9",         "mapKey": "_RED_card_lg_9",          "settings": {}  },
+                    // { "baseMapKey": "card_lg_draw2",     "mapKey": "_RED_card_lg_draw2",      "settings": {}  },
+                    // { "baseMapKey": "card_lg_skip",      "mapKey": "_RED_card_lg_skip",       "settings": {}  },
+                    // { "baseMapKey": "card_lg_reverse",   "mapKey": "_RED_card_lg_reverse",    "settings": {}  },
                     
                     // YELLOW: Large cards
                     { "baseMapKey": "card_lg_0",         "mapKey": "_YEL_card_lg_0",          "settings": { colorData: [[Card.colors.base, Card.colors.yellow ]] } },
@@ -258,9 +258,9 @@ _APP.utility = {
                     { "baseMapKey": "card_lg_reverse",   "mapKey": "_GRE_card_lg_reverse",    "settings": { colorData: [[Card.colors.base, Card.colors.green ]] } },
                     
                     // BLACK: Large cards
-                    { "baseMapKey": "card_lg_back",      "mapKey": "_BLA_card_lg_back",       "settings": {}  },
-                    { "baseMapKey": "card_lg_wild",      "mapKey": "_BLA_card_lg_wild",       "settings": {}  },
-                    { "baseMapKey": "card_lg_wildDraw4", "mapKey": "_BLA_card_lg_wildDraw4",  "settings": {}  },
+                    // { "baseMapKey": "card_lg_back",      "mapKey": "_BLA_card_lg_back",       "settings": {}  },
+                    // { "baseMapKey": "card_lg_wild",      "mapKey": "_BLA_card_lg_wild",       "settings": {}  },
+                    // { "baseMapKey": "card_lg_wildDraw4", "mapKey": "_BLA_card_lg_wildDraw4",  "settings": {}  },
                 ]
             },
             "sprite_tiles1":{

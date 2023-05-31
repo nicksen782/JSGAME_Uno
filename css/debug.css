@@ -346,8 +346,8 @@ div#debug_hashCacheList1 {
     font-size: 12px;
     font-family: monospace;
     white-space: pre;
-    height: 420px;
-    max-height: 500px;
+    height: 400px;
+    max-height: 400px;
     overflow-y: auto;
 }
 
@@ -407,3 +407,9 @@ button#debug_test_toggleGridCanvas {
     width: 370px;
     height: 7em;
 }
+
+.debug_hashCache_originLabel  {padding: 2px;border: 2px solid black;display: inline-block;}
+.debug_hashCache_ON_DEMAND    {background-color: red;color: white;}
+.debug_hashCache_CUSTOM_CACHE {background-color: gold;color: black;}
+.debug_hashCache_INIT_PRECACHE{background-color: green;color: white;}
+.debug_hashCache_MODIFIED     {background-color: lightblue;}

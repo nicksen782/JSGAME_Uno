@@ -404,7 +404,7 @@
         // If the entire destination region outside the valid source area, exit the function early and return an empty array.
         // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
         if (x_start >= maxX || y_start >= maxY || x_end <= 0 || y_end <= 0 || w <= 0 || h <= 0) {
-            return new Uint8Array();
+            return new Uint8Array(0);
         }
 
         // Prepare the result array.
@@ -654,7 +654,7 @@
     }
 
     // Creates the graphical assets and faded graphical assets.
-    async function _createGraphicsAssets(rgb332_tilesets, defaultSettings, disableCache=false){
+    async function _createGraphicsAssets(rgb332_tilesets, defaultSettings, debugActive, disableCache=false){
         let finishedTilesets = {};
 
         // Create the tileset.
@@ -716,6 +716,8 @@
                     }
 
                     // Tilemap images
+                    let mapCount = 0;
+                    let ts1 = performance.now();
                     if(disableCache == false){
                         let tmapArr;
                         let genTime;
@@ -752,7 +754,7 @@
                                 "h"                  : mapH * tileHeight, 
                                 "hasTransparency"    : false, 
                                 "isFullyTransparent" : true, 
-                                "removeHashOnRemoval": true, 
+                                "removeHashOnRemoval": false, 
                                 "mapKey"             : tilemapKey, 
                                 "relatedMapKey"      : tilemapKey, 
                                 "hashCacheHash_BASE" : _djb2Hash( JSON.stringify(
@@ -765,6 +767,7 @@
                                 "hashCacheHash"      : 0, 
                                 "hashCacheDataLength": 0, 
                                 "genTime"            : 0,
+                                "origin"             : "INIT_PRECACHE",
                             };
                             tmiObj = tsObj.tilemapImages[tilemapKey];
                             tmiObj.hashCacheHash = tmiObj.hashCacheHash_BASE;
@@ -817,7 +820,14 @@
                             });
                             genTime = performance.now() - genTime;
                             tmiObj.genTime = genTime;
+
+                            mapCount += 1;
                         }
+                    }
+                    
+                    if(debugActive && disableCache == false){
+                        ts1 = performance.now() - ts1;
+                        console.log(`_createGraphicsAssets: tileset: '${tilesetName.padEnd(15, " ")}', MAPS PRE-LOADED: '${mapCount}', TIME: '${ts1.toFixed(2)} ms'`);
                     }
 
                     res();
@@ -831,13 +841,14 @@
     }
 
     // Performs the graphics processing functions. 
-    async function process(tilesetFiles, defaultSettings, disableCache){
+    async function process(tilesetFiles, defaultSettings, debugActive, disableCache){
+        console.log(`debugActive: ${debugActive}, disableCache: ${disableCache}`);
         let ts1 = performance.now();
         let rgb332_tilesets = await getAndParseGraphicsData(tilesetFiles);
         let ts1e = performance.now() - ts1;
         
         let ts2 = performance.now();
-        let finishedTilesets = await _createGraphicsAssets(rgb332_tilesets, defaultSettings, disableCache);
+        let finishedTilesets = await _createGraphicsAssets(rgb332_tilesets, defaultSettings, debugActive, disableCache);
         let ts2e = performance.now() - ts2;
         
         // Create the RGBA fade values.

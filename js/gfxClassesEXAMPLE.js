@@ -4,7 +4,7 @@
 // They are NOT inherited when the class is extended.
 
 // Creates one LayerObject.
-class LayerObject {
+class OLDLayerObject {
     /* EXAMPLE USAGE:
     */
 

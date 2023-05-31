@@ -792,9 +792,14 @@ var _GFX = {
         },
 
         // This is called after each draw completes.
-        afterDraw: function(data = {}){
+        afterDraw: function(data={}, forceGraphicsDataUsed=false){
             if(_APP.debugActive && _DEBUG){
-                _DEBUG.timingsDisplay.gfx.updateCache(data); 
+                if(forceGraphicsDataUsed){
+                    _DEBUG.timingsDisplay.gfx.dataIsUsed = false;
+                }
+                else{
+                    _DEBUG.timingsDisplay.gfx.updateCache(data); 
+                }
 
                 // hashCacheStats
                 _DEBUG.hashCacheStats1_totalSize_all  = ( `${(data["totalSize_all"]/1000).toFixed(2)} KB` );
@@ -1144,7 +1149,7 @@ class LayerObject {
         this.layerObjKey = config.layerObjKey;
         this.layerKey    = config.layerKey;
         this.tilesetKey  = config.tilesetKey;
-        this.removeHashOnRemoval = config.removeHashOnRemoval ?? false;
+        this.removeHashOnRemoval = config.removeHashOnRemoval ?? true;
         this.noResort = config.noResort ?? false,
 
         // Tilemap. (It is possible that a tilemap is not provided/required.)

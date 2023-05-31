@@ -26,10 +26,14 @@ const messageFuncs = {
         // Save the default settings.
         _GFX.defaultSettings = messageData.defaultSettings;
 
+        // Save the debugActive flag (global variable.)
+        debugActive = messageData.debugActive ?? false;
+        
         // Convert the graphics assets.
         let results = await createGraphicsAssets.process( 
             _GFX.configObj.tilesetFiles, 
             _GFX.defaultSettings,
+            debugActive,
             _GFX.configObj.disableCache
         );
 
@@ -62,9 +66,6 @@ const messageFuncs = {
             }
         }
         createMinimalData = performance.now() - createMinimalData;
-
-        // Save the debugActive flag (global variable.)
-        debugActive = messageData.debugActive ?? false;
 
         // Save the timings.
         messageFuncs.timings["initConfigAndGraphics"]["tsDataSave"]              = tsDataSave.toFixed(3);

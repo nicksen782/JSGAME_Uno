@@ -596,30 +596,6 @@ messageFuncs.gfx = {
             let usedList = list ? true : false;
             let mapCount = 0;
 
-            // Pre-generate all ImageData tilemaps to cache?
-            // if(!list){
-            //     list = {};
-            //     for(let tilesetKey in _GFX.tilesets){
-            //         if(!list[tilesetKey]){ 
-            //             list[tilesetKey] = {
-            //                 mapObjs  : {},
-            //                 mapKeys  : [],
-            //                 mapsArray: [],
-            //             }
-            //         }
-            //         for(let tilemapKey in _GFX.tilesets[tilesetKey].tilemaps){ 
-            //             list[tilesetKey].mapKeys.push(tilemapKey);
-            //             list[tilesetKey].mapsArray.push( {
-            //                 "mapKey"             : tilemapKey,
-            //                 "baseMapKey"         : tilemapKey,
-            //                 "ts"                 : tilesetKey,
-            //                 "tmap"               : _GFX.tilesets[tilesetKey].tilemaps[tilemapKey],
-            //                 "removeHashOnRemoval": false,
-            //             } );
-            //         }
-            //     }
-            // }removeHashOnRemoval
-
             // Use the list to create the tilemap data.
             if(!list){ list = {}; }
             for(let tilesetKey in list){ 
@@ -642,7 +618,8 @@ messageFuncs.gfx = {
 
                     //  Make sure that all settings keys exist and at least have their default values.
                     rec.settings = Object.assign({}, _GFX.defaultSettings, rec.settings ?? {});
-
+                    rec.origin = "CUSTOM_CACHE";
+                    rec.removeHashOnRemoval = false;
                     list[rec.ts].mapObjs[rec.mapKey] = rec;
 
                     mapCount += 1; 
@@ -650,15 +627,16 @@ messageFuncs.gfx = {
             }
 
             // Use the list to pre-generate ImageData tilemaps to cache.
+            let mapCount2 = 0;
             for(let tilesetKey in list){ 
                 // Create tilemaps and hashCache entries for any missing tilemaps.
-                this.createImageDataFromTilemapsAndUpdateGraphicsCache("", list[tilesetKey].mapKeys, list[tilesetKey].mapObjs, false);
+                mapCount2 += this.createImageDataFromTilemapsAndUpdateGraphicsCache("", list[tilesetKey].mapKeys, list[tilesetKey].mapObjs, false);
             }
 
             // Debug output:
             ts1 = performance.now() - ts1;
             if(debugActive){
-                console.log(`generateCoreImageDataAssets: List used: '${usedList.toString()}', MAPS PRE-LOADED: '${mapCount}', TIME: '${ts1.toFixed(2)} ms'`);
+                console.log(`generateCoreImageDataAssets: List used: '${usedList.toString()}', MAPS PRE-LOADED: '??/${mapCount}', TIME: '${ts1.toFixed(2)} ms'`);
             }
         },
 
@@ -929,6 +907,7 @@ messageFuncs.gfx = {
             let relatedMapKey;
             let baseSettings;
             let hashCacheDataLength;
+            let mapCount = 0;
             for(let i=0, len=mapKeys.length; i<len; i+=1){
                 cacheHit = false;
 
@@ -977,7 +956,8 @@ messageFuncs.gfx = {
                             {
                                 imgData        : map.imgData, 
                                 hasTransparency: map.hasTransparency,
-                                genTime        : map.genTime
+                                genTime        : map.genTime,
+                                origin         : map.origin,
                             } = this.hashCacheMap.get(map.hashCacheHash)
                         );
     
@@ -985,6 +965,7 @@ messageFuncs.gfx = {
                             cacheHit = true; 
                             map.w = map.imgData.width;
                             map.h = map.imgData.height;
+                            // map.origin = "createImageDataFromTilemapsAndUpdateGraphicsCache";
                         }
                         else{ console.log("Something is wrong with the imgData", map); throw "Something is wrong with the imgData"; }
 
@@ -1010,6 +991,10 @@ messageFuncs.gfx = {
                             map.genTime             = tilemapImageData.genTime;
                             map.w = map.imgData.width;
                             map.h = map.imgData.height;
+                            // if(map.origin == undefined){ console.log("map.origin:", map.mapKey, map.origin, map); }
+                            if(map.origin != "CUSTOM_CACHE"){
+                                map.origin = tilemapImageData.origin;
+                            }
 
                             // Get the number of bytes for the new hashCache entry (approximate.)
                             hashCacheDataLength = JSON.stringify({
@@ -1031,7 +1016,7 @@ messageFuncs.gfx = {
                                 w                  : map.imgData.width, 
                                 h                  : map.imgData.height,
                                 hasTransparency    : map.hasTransparency,
-                                removeHashOnRemoval: map.removeHashOnRemoval ?? false,
+                                removeHashOnRemoval: map.removeHashOnRemoval ?? true,
                                 hashCacheHash      : map.hashCacheHash,
                                 hashCacheHash_BASE : map.hashCacheHash_BASE,
 
@@ -1039,6 +1024,7 @@ messageFuncs.gfx = {
                                 mapKey             : mapKey, 
                                 relatedMapKey      : map.relatedMapKey,
                                 genTime            : map.genTime,
+                                origin             : map.origin,
                             });
 
                             // Create the ImageData for this tilemap from the base data. (It will use the base image now that it is available.)
@@ -1046,6 +1032,10 @@ messageFuncs.gfx = {
                             ({imageData: map.imgData, hasTransparency: map.hasTransparency} = this.createImageDataFromTilemap(map));
                             map.w = map.imgData.width;
                             map.h = map.imgData.height;
+
+                            if( !_GFX.utilities.areSettingsObjectsEqual(map.settings, _GFX.defaultSettings) ){
+                                map.origin += "_MODIFIED";
+                            }
                             genTime = performance.now() - genTime;
                             map.genTime += genTime;
                         }
@@ -1057,6 +1047,7 @@ messageFuncs.gfx = {
                             ({imageData: map.imgData, hasTransparency: map.hasTransparency} = this.createImageDataFromTilemap(map));
                             map.w = map.imgData.width;
                             map.h = map.imgData.height;
+                            map.origin = "ON_DEMAND";
                             genTime = performance.now() - genTime;
                             map.genTime = genTime;
                         }
@@ -1082,7 +1073,7 @@ messageFuncs.gfx = {
                                 w                  : map.imgData.width, 
                                 h                  : map.imgData.height,
                                 hasTransparency    : map.hasTransparency,
-                                removeHashOnRemoval: map.removeHashOnRemoval ?? false,
+                                removeHashOnRemoval: map.removeHashOnRemoval ?? true,
                                 hashCacheHash      : map.hashCacheHash,
                                 hashCacheHash_BASE : map.hashCacheHash_BASE,
 
@@ -1090,6 +1081,7 @@ messageFuncs.gfx = {
                                 mapKey             : mapKey, 
                                 relatedMapKey      : map.relatedMapKey,
                                 genTime            : map.genTime,
+                                origin             : map.origin,
                             });
                         }
 
@@ -1103,6 +1095,7 @@ messageFuncs.gfx = {
                         ({imageData: map.imgData, hasTransparency: map.hasTransparency} = this.createImageDataFromTilemap(map));
                         map.w = map.imgData.width;
                         map.h = map.imgData.height;
+                        map.origin = "UNCACHED";
                         genTime = performance.now() - genTime;
                         map.genTime = genTime;
                         // console.log("CACHE IS OFF:", `mapKey: '${mapKey}' genTime: '${map.genTime.toFixed(2)} ms'`);
@@ -1251,6 +1244,12 @@ messageFuncs.gfx = {
 
         messageFuncs.timings["gfx"]["gfx"] = + timeIt("gfx", "get").toFixed(3);
 
+        // // Now that the timings are stored and will be sent, reset them.
+        // for(let i=0, len1=layerKeys.length; i<len1; i+=1){
+        //     this.clearTimingsValues(layerKeys[i]);
+        // }
+        // timeIt("gfx", "reset");
+
         // Return the timings.
         return messageFuncs.timings["gfx"];
 
@@ -1330,6 +1329,7 @@ messageFuncs.gfx = {
                 mapKey: d.mapKey,
                 relatedMapKey: d.relatedMapKey,
                 ts: d.ts,
+                origin             : d.origin,
                 settings           : d.settings,
                 hasTransparency    : d.hasTransparency,
                 genTime            : d.genTime,

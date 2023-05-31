@@ -67,7 +67,7 @@ var _WEBW_V = {
 
                 case "sendGfxUpdates"     : {
                     // Send data to afterDraw.
-                    _GFX.funcs.afterDraw(e.data.data);
+                    _GFX.funcs.afterDraw(e.data.data, false);
 
                     // Resolve differed promise?
                     if(this.differedProms[e.data.mode]){ 
@@ -78,7 +78,7 @@ var _WEBW_V = {
 
                 case "_DEBUG.updateDebugTimings"     : {
                     // Send data to afterDraw.
-                    _GFX.funcs.afterDraw(e.data.data);
+                    _GFX.funcs.afterDraw(e.data.data, true);
 
                     // Resolve differed promise?
                     if(this.differedProms[e.data.mode]){ 

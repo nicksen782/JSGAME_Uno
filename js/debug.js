@@ -317,14 +317,6 @@ var _DEBUG = {
         time_LOGIC  : { e0: null, e1: null, e2: null, t: 0 },
         time_DRAW   : { e0: null, e1: null, e2: null, t: 0 },
     },
-    cachedData : {
-        changes: {
-            "L1": 0, 
-            "L2": 0, 
-            "L3": 0, 
-            "L4": 0, 
-        }
-    },
     elemsObjInit: function(){
         // Table 1.
         this.elemsObj.fpsDisplay.e    = document.getElementById("debug_fpsDisplay");
@@ -371,7 +363,8 @@ var _DEBUG = {
     },
 
     lastDebugRun: performance.now(),
-    lastDebugDelay: 200,
+    // lastDebugDelay: 200,
+    lastDebugDelay: 333,
     endOfLoopDraw_funcs: function(timings){
         if(performance.now() - this.lastDebugRun < this.lastDebugDelay){ return; }
         this.lastDebugRun = performance.now();
@@ -396,7 +389,7 @@ var _DEBUG = {
 
             // Display the timing for the game loop (canvas draws are separate.)
             _APP.utility.timeIt("loop.display_progressBars", "start"); this.timingsDisplay.loop.display_progressBars(now); _APP.utility.timeIt("loop.display_progressBars", "stop");
-            _APP.utility.timeIt("loop.display_layerChanges", "start"); this.timingsDisplay.loop.display_layerChanges(now); _APP.utility.timeIt("loop.display_layerChanges", "stop");
+            // _APP.utility.timeIt("loop.display_layerChanges", "start"); this.timingsDisplay.loop.display_layerChanges(now); _APP.utility.timeIt("loop.display_layerChanges", "stop");
             _APP.utility.timeIt("loop.display_tmapCountByLayer", "start"); this.timingsDisplay.loop.display_tmapCountByLayer(now); _APP.utility.timeIt("loop.display_tmapCountByLayer", "stop");
             
             // displayLayerObjects
@@ -444,66 +437,61 @@ var _DEBUG = {
     timingsDisplay: {
         // prevValue and newValue should be values between 0-100.
         updateProgressBar2: function(container, bar, label, newValue, mult, label2="", adjusted) {
-            // newValue = Math.min( Math.max(newValue, 0), 100);
-            let prevValue  = +label.getAttribute("curr");
-            let prevValue2 = +label.getAttribute("curr2");
-            let same  = +prevValue  === +newValue;
-            let same2 = +prevValue2 === +label2;
-            if(same && same2){ return; }
-
+            const easingFactor = 0.75;
+            const cssClasses = ["level1", "level2", "level3", "level4", "level5"];
+            newValue = Number(newValue);
+            if (isNaN(newValue)) {
+                console.error('Invalid newValue');
+                return;
+            }
+            let prevValue = Number(label.getAttribute("curr"));
+            if (isNaN(prevValue)) {
+                console.error('Invalid prevValue');
+                return;
+            }
+            let prevValue2 = Number(label.getAttribute("curr2"));
+            if (isNaN(prevValue2)) {
+                console.error('Invalid prevValue2');
+                return;
+            }
             let modifiedNewValue = newValue;
-            let easingFactor = 0.05;
             let textOutput;
             let clampedPercent;
-            let difference;
-            let cssClasses = ["level1", "level2", "level3", "level4", "level5"];
             let cssClass = "";
             
-            if(modifiedNewValue != 0){
-                difference = (modifiedNewValue - +prevValue);
-                modifiedNewValue += Math.round(difference * easingFactor);
-                modifiedNewValue = this.roundToNearestMultiple(modifiedNewValue, mult, "D");
-                if(modifiedNewValue < 0)  { modifiedNewValue = 0; }
-                // if(modifiedNewValue > 100){ modifiedNewValue = 100; }
+            // Exit if no change
+            if (prevValue === newValue && prevValue2 === Number(label2)) {
+                console.log("no change");
+                return;
             }
+        
+            let difference = (modifiedNewValue - prevValue);
+            modifiedNewValue = prevValue + difference * easingFactor;
+            modifiedNewValue = this.roundToNearestMultiple(modifiedNewValue, mult, "D");
+            modifiedNewValue = Math.max(modifiedNewValue, 0);
             
             let part1 = `${modifiedNewValue}%`.padStart(5, " ");
-            // let part2 = `(${parseInt(label2).toFixed(1)}ms)`.padStart(9, " ");
             let part2 = `(${parseFloat(label2).toFixed(1)}ms)`.padStart(9, " ") + `${adjusted ? "*":" "}`;
-
-            // if(!same || !same2){
-                // Generate the values for the label.
-                if(label2){ textOutput = `${part1} ${part2}`; }
-                else      { textOutput = `${part1} `; }
+        
+            // Generate the values for the label.
+            textOutput = label2 ? `${part1} ${part2}` : `${part1} `;
+            
+            // Adjust the width of the bar.
+            clampedPercent = Math.min(Math.max(modifiedNewValue, 0), 100);  // Ensure percent is within 0-100 range.
+            bar.style.width = `${clampedPercent}%`;
+        
+            if     (clampedPercent < 20){ cssClass = "level1"; } // GREEN
+            else if(clampedPercent < 40){ cssClass = "level2"; } // BLUE
+            else if(clampedPercent < 60){ cssClass = "level3"; } // YELLOW
+            else if(clampedPercent < 80){ cssClass = "level4"; } // ORANGE
+            else                        { cssClass = "level5"; } // RED
+            bar.classList.remove(...cssClasses);
+            bar.classList.add(cssClass);
                 
-                // Adjust the width of the bar.
-                if(!same){
-                    // Adjust the bar width.
-                    clampedPercent = Math.min( Math.max(modifiedNewValue, 0), 100) ;  // Ensure percent is within 0-100 range.
-                    bar.style.width = `${clampedPercent}%`;
-
-                    if     (clampedPercent < 20){ cssClass = "level1"; } // GREEN
-                    else if(clampedPercent < 40){ cssClass = "level2"; } // BLUE
-                    else if(clampedPercent < 60){ cssClass = "level3"; } // YELLOW
-                    else if(clampedPercent < 80){ cssClass = "level4"; } // ORANGE
-                    else                        { cssClass = "level5"; } // RED
-                    bar.classList.remove(...cssClasses);
-                    bar.classList.add(cssClass);
-                    
-                    // Adjust the attributes on the label.
-                    // label.setAttribute("curr", modifiedNewValue); 
-                }
-                
-                if(!same2){
-                    // Adjust the attributes on the label.
-                    // label.setAttribute("curr2", label2); 
-                }
-                
-                // Adjust the values on the label.
-                label.innerText = textOutput;
-                label.setAttribute("curr", modifiedNewValue); 
-                label.setAttribute("curr2", label2); 
-            // }
+            // Adjust the values on the label.
+            label.innerText = textOutput;
+            label.setAttribute("curr", modifiedNewValue); 
+            label.setAttribute("curr2", label2); 
         },
         roundToNearestMultiple: function(num, mult, dir){
             if(dir=="D")     { return Math.floor(num / mult) * mult; }
@@ -525,10 +513,9 @@ var _DEBUG = {
             }
     
             // Determine if the active class can be removed once the old and new text match again.
-            let canChange = (performance.now() - obj.t > activeTime) || obj.t == 0;
+            let canChange = (performance.now() - obj.t > activeTime) || obj.t == 0 || activeTime == 0;
             if(!canChange){ return; }
 
-            // If the newText is different that the current text...
             if(oldText != newText){
                 // Update the text.
                 obj.e.innerText = newText;
@@ -557,35 +544,35 @@ var _DEBUG = {
                 this.lastUpdate1 = performance.now();
 
                 // Add to the data key for each elem.
-                this.elems.TOTAL_ALL.data = ( data.ALLTIMINGS["gfx"]        .toFixed(1) );
+                this.elems.TOTAL_ALL.data = ( data.ALLTIMINGS["gfx"]        .toFixed(2) );
                 
-                this.elems.TOTAL_L1.data  = ( data.ALLTIMINGS["L1___TOTAL"]            .toFixed(1) );
-                this.elems.A_L1.data      = ( data.ALLTIMINGS["L1_A_clearLayer"]       .toFixed(1) );
-                this.elems.B_L1.data      = ( data.ALLTIMINGS["L1_B_clearRemovedData"] .toFixed(1) );
-                this.elems.C_L1.data      = ( data.ALLTIMINGS["L1_C_createTilemaps"]   .toFixed(1) );
-                this.elems.D_L1.data      = ( data.ALLTIMINGS["L1_D_drawFromDataCache"].toFixed(1) );
-                this.elems.E_L1.data      = ( data.ALLTIMINGS["L1_E_drawImgDataCache"] .toFixed(1) );
+                this.elems.TOTAL_L1.data  = ( data.ALLTIMINGS["L1___TOTAL"]            .toFixed(2) );
+                this.elems.A_L1.data      = ( data.ALLTIMINGS["L1_A_clearLayer"]       .toFixed(2) );
+                this.elems.B_L1.data      = ( data.ALLTIMINGS["L1_B_clearRemovedData"] .toFixed(2) );
+                this.elems.C_L1.data      = ( data.ALLTIMINGS["L1_C_createTilemaps"]   .toFixed(2) );
+                this.elems.D_L1.data      = ( data.ALLTIMINGS["L1_D_drawFromDataCache"].toFixed(2) );
+                this.elems.E_L1.data      = ( data.ALLTIMINGS["L1_E_drawImgDataCache"] .toFixed(2) );
                 
-                this.elems.TOTAL_L2.data  = ( data.ALLTIMINGS["L2___TOTAL"]            .toFixed(1) );
-                this.elems.A_L2.data      = ( data.ALLTIMINGS["L2_A_clearLayer"]       .toFixed(1) );
-                this.elems.B_L2.data      = ( data.ALLTIMINGS["L2_B_clearRemovedData"] .toFixed(1) );
-                this.elems.C_L2.data      = ( data.ALLTIMINGS["L2_C_createTilemaps"]   .toFixed(1) );
-                this.elems.D_L2.data      = ( data.ALLTIMINGS["L2_D_drawFromDataCache"].toFixed(1) );
-                this.elems.E_L2.data      = ( data.ALLTIMINGS["L2_E_drawImgDataCache"] .toFixed(1) );
+                this.elems.TOTAL_L2.data  = ( data.ALLTIMINGS["L2___TOTAL"]            .toFixed(2) );
+                this.elems.A_L2.data      = ( data.ALLTIMINGS["L2_A_clearLayer"]       .toFixed(2) );
+                this.elems.B_L2.data      = ( data.ALLTIMINGS["L2_B_clearRemovedData"] .toFixed(2) );
+                this.elems.C_L2.data      = ( data.ALLTIMINGS["L2_C_createTilemaps"]   .toFixed(2) );
+                this.elems.D_L2.data      = ( data.ALLTIMINGS["L2_D_drawFromDataCache"].toFixed(2) );
+                this.elems.E_L2.data      = ( data.ALLTIMINGS["L2_E_drawImgDataCache"] .toFixed(2) );
                 
-                this.elems.TOTAL_L3.data  = ( data.ALLTIMINGS["L3___TOTAL"]            .toFixed(1) );
-                this.elems.A_L3.data      = ( data.ALLTIMINGS["L3_A_clearLayer"]       .toFixed(1) );
-                this.elems.B_L3.data      = ( data.ALLTIMINGS["L3_B_clearRemovedData"] .toFixed(1) );
-                this.elems.C_L3.data      = ( data.ALLTIMINGS["L3_C_createTilemaps"]   .toFixed(1) );
-                this.elems.D_L3.data      = ( data.ALLTIMINGS["L3_D_drawFromDataCache"].toFixed(1) );
-                this.elems.E_L3.data      = ( data.ALLTIMINGS["L3_E_drawImgDataCache"] .toFixed(1) );
+                this.elems.TOTAL_L3.data  = ( data.ALLTIMINGS["L3___TOTAL"]            .toFixed(2) );
+                this.elems.A_L3.data      = ( data.ALLTIMINGS["L3_A_clearLayer"]       .toFixed(2) );
+                this.elems.B_L3.data      = ( data.ALLTIMINGS["L3_B_clearRemovedData"] .toFixed(2) );
+                this.elems.C_L3.data      = ( data.ALLTIMINGS["L3_C_createTilemaps"]   .toFixed(2) );
+                this.elems.D_L3.data      = ( data.ALLTIMINGS["L3_D_drawFromDataCache"].toFixed(2) );
+                this.elems.E_L3.data      = ( data.ALLTIMINGS["L3_E_drawImgDataCache"] .toFixed(2) );
                 
-                this.elems.TOTAL_L4.data  = ( data.ALLTIMINGS["L4___TOTAL"]            .toFixed(1) );
-                this.elems.A_L4.data      = ( data.ALLTIMINGS["L4_A_clearLayer"]       .toFixed(1) );
-                this.elems.B_L4.data      = ( data.ALLTIMINGS["L4_B_clearRemovedData"] .toFixed(1) );
-                this.elems.C_L4.data      = ( data.ALLTIMINGS["L4_C_createTilemaps"]   .toFixed(1) );
-                this.elems.D_L4.data      = ( data.ALLTIMINGS["L4_D_drawFromDataCache"].toFixed(1) );
-                this.elems.E_L4.data      = ( data.ALLTIMINGS["L4_E_drawImgDataCache"] .toFixed(1) );
+                this.elems.TOTAL_L4.data  = ( data.ALLTIMINGS["L4___TOTAL"]            .toFixed(2) );
+                this.elems.A_L4.data      = ( data.ALLTIMINGS["L4_A_clearLayer"]       .toFixed(2) );
+                this.elems.B_L4.data      = ( data.ALLTIMINGS["L4_B_clearRemovedData"] .toFixed(2) );
+                this.elems.C_L4.data      = ( data.ALLTIMINGS["L4_C_createTilemaps"]   .toFixed(2) );
+                this.elems.D_L4.data      = ( data.ALLTIMINGS["L4_D_drawFromDataCache"].toFixed(2) );
+                this.elems.E_L4.data      = ( data.ALLTIMINGS["L4_E_drawImgDataCache"] .toFixed(2) );
             },
             init: function(){
                 // Progress bar: draw.
@@ -683,7 +670,8 @@ var _DEBUG = {
                 }
 
                 let lastDrawTime = this.elems.time_DRAW.t;
-                let activeTime = 200;
+                // let activeTime = 200;
+                let activeTime = 1;
                 let mult = 1;
                 
                 // Determine if enough time has occurred for the next update.
@@ -735,18 +723,19 @@ var _DEBUG = {
                 }
 
                 let testText;
-                let activeTime = 200;
+                // let activeTime = 200;
+                let activeTime = 1;
                 for(let eKey in this.elems){
                     if(eKey == "time_DRAW"){ continue; }
                     let elem = this.elems[eKey];
                     
-                    testText = elem.data;
+                    testText = elem.data.toString();
                     // if(this.dataIsUsed){ testText = "0"; }
 
                     // if(eKey == "TOTAL_ALL"){ testText = testText.padStart(3, "0"); }
 
-                    _DEBUG.timingsDisplay.applyChange(testText, elem, activeTime, true);
-                    // _DEBUG.timingsDisplay.applyChange(testText, elem, 0, true);
+                    // _DEBUG.timingsDisplay.applyChange(testText, elem, activeTime, true);
+                    _DEBUG.timingsDisplay.applyChange(testText, elem, 0, false);
                 }
 
                 return true; 
@@ -765,12 +754,6 @@ var _DEBUG = {
                 };
 
                 // display_tmapCountByLayer: Tilemap counts by layer.
-                this.elems.changesL1 = { e: document.getElementById("debug_changesL1"), t: 0 };
-                this.elems.changesL2 = { e: document.getElementById("debug_changesL2"), t: 0 };
-                this.elems.changesL3 = { e: document.getElementById("debug_changesL3"), t: 0 };
-                this.elems.changesL4 = { e: document.getElementById("debug_changesL4"), t: 0 };
-                
-                // display_layerChanges: Display the number of layer objects per layer.
                 this.elems.L1_tms = { e: document.getElementById("debug_L1_tms"), t: 0 };
                 this.elems.L2_tms = { e: document.getElementById("debug_L2_tms"), t: 0 };
                 this.elems.L3_tms = { e: document.getElementById("debug_L3_tms"), t: 0 };
@@ -797,15 +780,15 @@ var _DEBUG = {
                 if(canRun){
                     // (%) Generate label1 (reduce the value if the data is stale.)
                     label1_new = (100*(elems.new.data / _APP.game.gameLoop.msFrame));
-                    if(this.dataIsUsed || (now - this.lastUpdate1 > activeTime)){
-                        tmpValue = +elems.new.data;
-                        tmpValue = + (tmpValue - (tmpValue/2)) .toFixed(1);
-                        // tmpValue = _DEBUG.timingsDisplay.roundToNearestMultiple(tmpValue, 1, "D");
-                        if(tmpValue <= 0.1) { tmpValue = 0; }
-                        elems.new.data = tmpValue;
-                        label1_new = (100*(tmpValue / _APP.game.gameLoop.msFrame));
-                        adjusted = true;
-                    }
+                    // if((now - this.lastUpdate1 > activeTime)){
+                    //     tmpValue = +elems.new.data;
+                    //     tmpValue = + (tmpValue - (tmpValue/2)) .toFixed(1);
+                    //     // tmpValue = _DEBUG.timingsDisplay.roundToNearestMultiple(tmpValue, 1, "D");
+                    //     if(tmpValue <= 0.1) { tmpValue = 0; }
+                    //     elems.new.data = tmpValue;
+                    //     label1_new = (100*(tmpValue / _APP.game.gameLoop.msFrame));
+                    //     adjusted = true;
+                    // }
 
                     label1_new = _DEBUG.timingsDisplay.roundToNearestMultiple(label1_new, mult, "D");
                     label1_new = _DEBUG.timingsDisplay.forceToRange(label1_new, 0, 999);
@@ -829,7 +812,8 @@ var _DEBUG = {
             },
             display_progressBars: function(now){
                 let lastDrawTime = this.elems.time_LOOP.t;
-                let activeTime = 200;
+                // let activeTime = 200;
+                let activeTime = 1;
                 let mult = 1;
                 
                 // Determine if enough time has occurred for the next update.
@@ -872,27 +856,14 @@ var _DEBUG = {
 
                 return false;
             },
-            display_layerChanges: function(now){
-                // Display which layers have changes on this frame. 
-                let activeTime = 200;
-                let testText = "";
-    
-                let changesL1 = this.elems["changesL1"];
-                let changesL2 = this.elems["changesL2"];
-                let changesL3 = this.elems["changesL3"];
-                let changesL4 = this.elems["changesL4"];
-    
-                testText = `${_DEBUG.cachedData.changes["L1"] ? "L1" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesL1, activeTime);
-                testText = `${_DEBUG.cachedData.changes["L2"] ? "L2" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesL2, activeTime);
-                testText = `${_DEBUG.cachedData.changes["L3"] ? "L3" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesL3, activeTime);
-                testText = `${_DEBUG.cachedData.changes["L4"] ? "L4" : "___"} `; _DEBUG.timingsDisplay.applyChange(testText, changesL4, activeTime);
-            },
+            
             display_tmapCountByLayer: function(now){
                 let L1_tms             = this.elems["L1_tms"];
                 let L2_tms             = this.elems["L2_tms"];
                 let L3_tms             = this.elems["L3_tms"];
                 let L4_tms             = this.elems["L4_tms"];
-                let activeTime = 200;
+                // let activeTime = 200;
+                let activeTime = 1;
                 let testText = "";
 
                 // Display the number of layer objects per layer.
@@ -933,15 +904,15 @@ var _DEBUG = {
                 if(canRun){
                     // (%) Generate label1 (reduce the value if the data is stale.)
                     label1_new = (100*(elems.new.data / _APP.game.gameLoop.msFrame));
-                    if(this.dataIsUsed || (now - this.lastUpdate1 > activeTime)){
-                        tmpValue = +elems.new.data;
-                        tmpValue = + (tmpValue - (tmpValue/2)) .toFixed(1);
-                        // tmpValue = _DEBUG.timingsDisplay.roundToNearestMultiple(tmpValue, 1, "D");
-                        if(tmpValue <= 0.1) { tmpValue = 0; }
-                        elems.new.data = tmpValue;
-                        label1_new = (100*(tmpValue / _APP.game.gameLoop.msFrame));
-                        adjusted = true;
-                    }
+                    // if(this.dataIsUsed || (now - this.lastUpdate1 > activeTime)){
+                    //     tmpValue = +elems.new.data;
+                    //     tmpValue = + (tmpValue - (tmpValue/2)) .toFixed(1);
+                    //     // tmpValue = _DEBUG.timingsDisplay.roundToNearestMultiple(tmpValue, 1, "D");
+                    //     if(tmpValue <= 0.1) { tmpValue = 0; }
+                    //     elems.new.data = tmpValue;
+                    //     label1_new = (100*(tmpValue / _APP.game.gameLoop.msFrame));
+                    //     adjusted = true;
+                    // }
 
                     // label1_new = _DEBUG.timingsDisplay.roundToNearestMultiple(label1_new, mult, "D");
                     label1_new = _DEBUG.timingsDisplay.forceToRange(label1_new, 0, 999);
@@ -970,7 +941,8 @@ var _DEBUG = {
                 // }
 
                 let lastDrawTime = this.elems.time_DEBUG.t;
-                let activeTime = 200;
+                // let activeTime = 200;
+                let activeTime = 1;
                 let mult = 1;
                 
                 // Determine if enough time has occurred for the next update.
@@ -1025,7 +997,8 @@ var _DEBUG = {
         let DRAWNEEDED          = this.elemsObj["DRAWNEEDED"];
         // let skipLogic           = this.elemsObj["skipLogic"];
         
-        let activeTime = 200;
+        // let activeTime = 200;
+        let activeTime = 1;
         let testText = "";
         
         // Show the frameCounter.
@@ -1040,11 +1013,6 @@ var _DEBUG = {
         // testText = (_APP.game.gameLoop.DRAWNEEDED_prev ? "1" : "0").toString();
         testText = (_APP.game.gameLoop.DRAWNEEDED_prev).toString();
         this.applyChange(testText, DRAWNEEDED, activeTime);
-
-        // Show the skipLogic flag.
-        // testText = (_APP.game.gameLoop.skipLogic ? "1" : "0").toString();
-        // testText = (_APP.game.gameLoop.skipLogic).toString();
-        // this.applyChange(testText, skipLogic, activeTime);
 
         // Show average FPS, average ms per frame, how much off is the average ms per frame.
         let new_average       = _APP.game.gameLoop.fpsCalc.average.toFixed(0) ?? 0;
@@ -1079,6 +1047,7 @@ var _DEBUG = {
             "rotation"    : "debug_layerObjEdit_contextMenu1_rotation", 
             
             // SHARED
+            "layerObjectTableDiv" : "debug_layerObjectTableDiv",
             "edit_className"  : "debug_layerObjEdit_className",
             "edit_tilesetKey" : "debug_layerObjEdit_tilesetKey",
             "edit_layerKey"   : "debug_layerObjEdit_layerKey",
@@ -1190,6 +1159,8 @@ var _DEBUG = {
             let elems = document.querySelectorAll(".debug_classDiv");
             elems.forEach(d=>{ d.classList.add("displayNone"); });
 
+            this.DOM["layerObjectTableDiv"].classList.remove("displayNone"); 
+            
             if(data.className == "Card"){ 
                 this.DOM["cardTableDiv"].classList.remove("displayNone"); 
                 this.card_displayAttribute(data);
@@ -1497,29 +1468,36 @@ var _DEBUG = {
             // Update the newText string.
             // if(data.rotation)
             // if(data.removeHashOnRemoval)
-            try{
-            newText += `<div class="${data.removeHashOnRemoval?"":"hashCacheStats1_entry_perm "}hashCacheStats1_entry" onclick="_DEBUG.display_hashCacheStats1_console('${data.mapKey}, ${data.relatedMapKey}',${data.hashCacheHash}, ${data.hashCacheHash_BASE} );">` +
-                `${data.removeHashOnRemoval?"(TEMP)":"(PERM)"}, ${hashText} ` +
-                `\n` +
-                ` ${data.mapKey.toString().padEnd(maxLen1, " ")} ` + 
-                `(${ (data.relatedMapKey ? data.relatedMapKey+")" : "<custom>)" )} ` +
+            let originClass = "debug_hashCache_originLabel ";
+            if     (data.origin.indexOf("ON_DEMAND")     !=-1) { originClass += "debug_hashCache_ON_DEMAND "; }
+            else if(data.origin.indexOf("CUSTOM_CACHE")  !=-1) { originClass += "debug_hashCache_CUSTOM_CACHE "; }
+            else if(data.origin.indexOf("INIT_PRECACHE") !=-1) { originClass += "debug_hashCache_INIT_PRECACHE "; }
 
-                `\n` +
-                ` ${data.ts    .toString().padEnd(maxLen3, " ")},` +
-                ` ${(data["hashCacheDataLength"]/1000).toFixed(0).padStart(6, " ")} KB,` +
-                ` hasTransparency: ${data.hasTransparency? "TRUE" : "false"}` +
-                
-                `\n` +
-                ` ${settings}` +
-                `\n` +
-                ` gen: ${data.genTime.toFixed(2)} ms, ` +
-                `H:${data.hashCacheHash} B:${data.hashCacheHash_BASE}` +
-                `\n` +
-                `</div>`;
+            let originModifiedSpan = ``;
+            if     (data.origin.indexOf("_MODIFIED")     !=-1) { 
+                originModifiedSpan = `<span class="debug_hashCache_originLabel debug_hashCache_MODIFIED">MODIFIED</span>`; 
             }
-            catch(e){
-                console.log("ERROR:", data.genTime, data.mapKey, data.relatedMapKey, data, "\n", e);
-            }
+            data.origin = data.origin.replace("_MODIFIED", "");
+
+            newText += `<div class="${data.removeHashOnRemoval?"":"hashCacheStats1_entry_perm "}hashCacheStats1_entry" onclick="_DEBUG.display_hashCacheStats1_console('${data.mapKey}, ${data.relatedMapKey}',${data.hashCacheHash}, ${data.hashCacheHash_BASE} );">` +
+            `${data.removeHashOnRemoval?"(TEMP)":"(PERM)"}, ${hashText} ` +
+            `, origin: <span class="${originClass}">${data.origin}</span> ${originModifiedSpan}` + 
+            `\n` +
+            ` ${data.mapKey.toString().padEnd(maxLen1, " ")} ` + 
+            `(${ (data.relatedMapKey ? data.relatedMapKey+")" : "<custom>)" )} ` +
+
+            `\n` +
+            ` ${data.ts    .toString().padEnd(maxLen3, " ")},` +
+            ` ${(data["hashCacheDataLength"]/1000).toFixed(0).padStart(6, " ")} KB,` +
+            ` hasTransparency: ${data.hasTransparency? "TRUE" : "false"}` +
+            
+            `\n` +
+            ` ${settings}` +
+            `\n` +
+            ` gen: ${data.genTime.toFixed(2)} ms, ` +
+            `H:${data.hashCacheHash} B:${data.hashCacheHash_BASE}` +
+            `\n` +
+            `</div>`;
         }
 
         // If the newText is different than the currentText replace the elem.innerText with the newText.

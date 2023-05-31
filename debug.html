@@ -33,7 +33,8 @@
     <!-- DRAW STATS -->
     <div id="debug_navBar1_view_drawStats" class="controls_navBarViews">
         <!-- CHANGES -->
-        <label class="debug_title">LAYER MAP COUNTS/CHANGES!</label>
+        <!-- <label class="debug_title">LAYER MAP COUNTS/CHANGES!</label> -->
+        <label class="debug_title">LAYER MAP COUNTS!</label>
         <table class="debug_table">
             <tr>
                 <td class="debug_td_header debug_td_short"> </td>
@@ -49,13 +50,13 @@
                 <td class="debug_td_short"> <div class="debugLive" id="debug_L3_tms">0</div> </td>
                 <td class="debug_td_short"> <div class="debugLive" id="debug_L4_tms">0</div> </td>
             </tr>
-            <tr> 
-                <td class="debug_td_header">CHANGE</td>
-                <td class="debug_td_short"> <span class="debugLive" id="debug_changesL1">___</span> </td>
-                <td class="debug_td_short"> <span class="debugLive" id="debug_changesL2">___</span> </td>
-                <td class="debug_td_short"> <span class="debugLive" id="debug_changesL3">___</span> </td>
-                <td class="debug_td_short"> <span class="debugLive" id="debug_changesL4">___</span> </td>
-            </tr>
+            <!-- <tr>  -->
+                <!-- <td class="debug_td_header">CHANGE</td> -->
+                <!-- <td class="debug_td_short"> <span class="debugLive" id="debug_changesL1">___</span> </td> -->
+                <!-- <td class="debug_td_short"> <span class="debugLive" id="debug_changesL2">___</span> </td> -->
+                <!-- <td class="debug_td_short"> <span class="debugLive" id="debug_changesL3">___</span> </td> -->
+                <!-- <td class="debug_td_short"> <span class="debugLive" id="debug_changesL4">___</span> </td> -->
+            <!-- </tr> -->
         </table>
         <br>
         <br>
@@ -118,11 +119,6 @@
             <tr>
                 <td class="debug_td_header">TOTAL ALL LAYERS</td> 
                 <td class="debug_td_short" colspan="4"> <div class="debugLive" id="debug_timings_TOTAL_ALL">0</div></td> 
-            </tr>
-            <tr>
-                <td class="debug_td_header">hashCache</td> 
-                <td class="debug_td_short" colspan="1"> <div class="debugLive" id="debug_timings_hashCacheMapSize1">0</div></td> 
-                <td class="debug_td_short" colspan="3"> <div class="debugLive" id="debug_timings_hashCacheMapSize2">0</div></td> 
             </tr>
         </table>
         <br>
@@ -237,8 +233,8 @@
             <br>
             <br>
 
-            <!-- ADJUSTMENTS -->
-            <table class="debug_table">
+            <!-- LAYEROBJECT SHARED EDITS -->
+            <table class="debug_table debug_classDiv displayNone" id="debug_layerObjectTableDiv">
                 <tr> 
                     <td class="debug_td_header2">Adjust LAYER KEY</td>
                     <td class="">
@@ -293,8 +289,8 @@
             <br>
             <br>
 
-            <!-- CARD PRINTTEXT SPECIFIC EDITS -->
-            <div class="debug_classDiv" id="debug_printTextTableDiv">
+            <!-- PRINTTEXT SPECIFIC EDITS -->
+            <div class="debug_classDiv displayNone" id="debug_printTextTableDiv">
                 <label class="debug_title">PrintText class</label>
 
                 <table class="debug_table">
@@ -322,7 +318,7 @@
             </div>
 
             <!-- CARD SPECIFIC EDITS -->
-            <div class="debug_classDiv" id="debug_cardTableDiv">
+            <div class="debug_classDiv displayNone" id="debug_cardTableDiv">
                 <label class="debug_title">Card class</label>
                 
                 <table class="debug_table">
