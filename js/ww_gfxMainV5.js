@@ -30,15 +30,6 @@ var gfxMainV5 = {
         for(let i=0, len=this.layerKeys.length; i<len; i+=1){
             this.clearTimingsValues(this.layerKeys[i]);
         }
-
-        // CLEAR
-        // this.gfx.CLEAR.parent = this;
-        
-        // // DRAW
-        // this.gfx.DRAW.parent = this;
-        
-        // // SETBG
-        // this.gfx.SETBG.parent = this;
     },
 
     // Clears the timers for the sections of UPDATE_LAYER.
@@ -131,9 +122,8 @@ var gfxMainV5 = {
         let toClear;
         let canContinue;
         
-        // ***********
-        // CLEAR LAYER
-        // ***********
+        // ** CLEAR LAYER **
+        // *****************
 
         timeIt(layerKey+"_A_clearLayer"       , "start");
         if(forceLayerRedraw){ 
@@ -153,9 +143,8 @@ var gfxMainV5 = {
         }
         timeIt(layerKey+"_A_clearLayer"       , "stop");
         
-        // ***************************
-        // CLEAR REMOVED GRAPHICS DATA
-        // ***************************
+        // ** CLEAR REMOVED GRAPHICS DATA **
+        // *********************************
         
         timeIt(layerKey+"_B_clearRemovedData"       , "start");
         if(!messageData.ALLCLEAR){
@@ -163,9 +152,8 @@ var gfxMainV5 = {
         }
         timeIt(layerKey+"_B_clearRemovedData"       , "stop");
         
-        // *******************************
-        // CREATE/REUSE IMAGEDATA TILEMAPS
-        // *******************************
+        // ** CREATE/REUSE IMAGEDATA TILEMAPS **
+        // *************************************
         
         // console.log("**");
         timeIt(layerKey+"_C_createTilemaps"       , "start");
@@ -188,9 +176,8 @@ var gfxMainV5 = {
         }
         timeIt(layerKey+"_C_createTilemaps"       , "stop");
         
-        // ******************************
-        // SET THE BACKGROUND COLOR (L1)
-        // ******************************
+        // ** SET THE BACKGROUND COLOR (L1) **
+        // ***********************************
 
         canContinue = gfxMainV5.gfx.SETBG.setBackgroundColor(layerKey, layerData, forceLayerRedraw);
         if(!canContinue){ 
@@ -198,20 +185,17 @@ var gfxMainV5 = {
             return; 
         }
         
-        // ********************
-        // DRAW TO IMGDATACACHE
-        // ********************
+        // ** DRAW TO IMGDATACACHE **
+        // **************************
         
         timeIt(layerKey+"_D_drawFromDataCache"       , "start");
         gfxMainV5.gfx.DRAW.drawToImgDataCache(layerKey, layerData, forceLayerRedraw, toClear, overlappedRegions);
         timeIt(layerKey+"_D_drawFromDataCache"       , "stop");
         
-        // ***************************************
-        // DRAW FROM IMGDATACACHE TO OUTPUT CANVAS
-        // ***************************************
+        // ** DRAW FROM IMGDATACACHE TO OUTPUT CANVAS **
+        // *********************************************
         
         timeIt(layerKey+"_E_drawImgDataCache"       , "start");
-        // this.drawFromImgDataCache(layerKey);
         gfxMainV5.gfx.DRAW.drawImgDataCacheToCanvas(layerKey);
         timeIt(layerKey+"_E_drawImgDataCache"       , "stop");
 
@@ -291,18 +275,14 @@ var gfxMainV5 = {
 
         // Return the timings.
         return messageFuncs.timings["gfx"];
-
     },
 
-    // ******************************
-    // FUNCTIONS USED BY UPDATE_LAYER
-    // ******************************
+    // ** FUNCTIONS USED BY UPDATE_LAYER **
+    // ************************************
 
     gfx : {
         // Clearing functions.
         CLEAR: {
-            // parent: null,
-
             // Clears ONE layer gfx. (imgDataCache only.)
             oneLayerGfx: function(layerKey){
                 // Clear the imgDataCache for this layer.
@@ -421,8 +401,6 @@ var gfxMainV5 = {
         },
         // Drawing functions.
         DRAW : {
-            // parent: null,
-
             // Per-layer flicker flags.
             flickerFlag_L1: 0,
             flickerFlag_L2: 0,
@@ -902,8 +880,6 @@ var gfxMainV5 = {
         // TODO: Unfinished.
         // Handles conditions where the background color behind the first layer changes.
         SETBG: {
-            // parent: null,
-
             // TODO: Unfinished.
             setBackgroundColor            : function(layerKey, layerData, forceLayerRedraw){
                 return true;
@@ -911,9 +887,8 @@ var gfxMainV5 = {
         },
     },
     
-    // **************
-    // INIT FUNCTIONS
-    // **************
+    // ** INIT FUNCTIONS **
+    // *******************
 
     initConfigAndGraphics : async function(messageData){
         let ts_TOTAL = performance.now();
@@ -1107,9 +1082,8 @@ var gfxMainV5 = {
         };
     },
 
-    // **************************
-    // WEB WORKER MESSAGE HANDLER
-    // **************************
+    // ** WEB WORKER MESSAGE HANDLER **
+    // ********************************
 
     messageHander : async function(event){
         // Make sure the request is valid. 
@@ -1210,5 +1184,3 @@ var gfxMainV5 = {
         );
     },
 };
-
-

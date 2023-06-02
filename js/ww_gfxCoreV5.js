@@ -24,9 +24,8 @@ var gfxCoreV5 = {
         });
     },
 
-    // *******************************
-    // Tilemap Object Cache Management
-    // *******************************
+    // ** Tilemap Object Cache Management **
+    // *************************************
 
     // Tilemap Object Cache.
     hashCache               : new Map(), 
@@ -102,9 +101,8 @@ var gfxCoreV5 = {
         }
     },
 
-    // *********************
-    // FADING AND TRANSFORMS
-    // *********************
+    // ** FADING AND TRANSFORMS **
+    // ***************************
 
     // Creates RGBA fades from the RGB332 fade table values.
     _createRgbaFadeValues: function(){
@@ -228,23 +226,9 @@ var gfxCoreV5 = {
                 let maxBlue  = fadeColorObj[2] / 100; 
                 
                 // Restrict r, g, b, a values and then round down.
-                // let oldRed, oldGreen, oldBlue;
-                // let newRed, newGreen, newBlue;
-
                 for(let i=0; i<len; i+=4){
                     // Don't operate on transparent pixels.
                     if(typedData[i+3] != 255){ continue; } 
-
-                    // IDEA TO TEST
-                    // oldRed   = typedData[i+0];
-                    // oldGreen = typedData[i+1];
-                    // oldBlue  = typedData[i+2];
-                    // newRed   = (oldRed   * maxRed)   | 0;
-                    // newGreen = (oldGreen * maxGreen) | 0;
-                    // newBlue  = (oldBlue  * maxBlue)  | 0;
-                    // if(newRed   > oldRed  ){ typedData[i+0] = newRed  ; }
-                    // if(newGreen > oldGreen){ typedData[i+1] = newGreen; }
-                    // if(newBlue  > oldBlue ){ typedData[i+2] = newBlue ; }
 
                     typedData[i+0] =  (typedData[i+0] * maxRed)   | 0;
                     typedData[i+1] =  (typedData[i+1] * maxGreen) | 0;
@@ -258,21 +242,21 @@ var gfxCoreV5 = {
         flipImageDataHorizontally: function(imageData) {
             const width = imageData.width;
             const height = imageData.height;
+            const stride = width * 4; // precalculate stride
+            const data = imageData.data;
 
             for (let y = 0; y < height; y++) {
                 for (let x = 0; x < Math.floor(width / 2); x++) {
                     // Calculate the index of the source pixel
-                    const srcIndex = (y * width + x) * 4;
+                    const srcIndex = y * stride + x * 4;
 
                     // Calculate the index of the destination pixel (flipped horizontally)
-                    const destIndex = (y * width + (width - 1 - x)) * 4;
+                    const destIndex = y * stride + (width - 1 - x) * 4;
 
                     // Swap the pixel data
-                    for (let i = 0; i < 4; i++) {
-                        const temp = imageData.data[srcIndex + i];
-                        imageData.data[srcIndex + i] = imageData.data[destIndex + i];
-                        imageData.data[destIndex + i] = temp;
-                    }
+                    const tempPixel = new Uint8Array(data.buffer, srcIndex, 4);
+                    data.set(new Uint8Array(data.buffer, destIndex, 4), srcIndex);
+                    data.set(tempPixel, destIndex);
                 }
             }
         },
@@ -281,28 +265,27 @@ var gfxCoreV5 = {
         flipImageDataVertically: function(imageData) {
             const width = imageData.width;
             const height = imageData.height;
+            const stride = width * 4; // precalculate stride
             const data = imageData.data;
-        
-            // Iterate through half the image height to avoid flipping twice.
+
             for (let y = 0; y < Math.floor(height / 2); y++) {
                 for (let x = 0; x < width; x++) {
                     // Calculate the index of the source pixel
-                    const srcIndex = (y * width + x) * 4;
-        
+                    const srcIndex = y * stride + x * 4;
+
                     // Calculate the index of the destination pixel (flipped vertically)
-                    const destIndex = ((height - 1 - y) * width + x) * 4;
-        
+                    const destIndex = (height - 1 - y) * stride + x * 4;
+
                     // Swap the pixel data
-                    for (let i = 0; i < 4; i++) {
-                        const temp = data[srcIndex + i];
-                        data[srcIndex + i] = data[destIndex + i];
-                        data[destIndex + i] = temp;
-                    }
+                    const tempPixel = new Uint8Array(data.buffer, srcIndex, 4);
+                    data.set(new Uint8Array(data.buffer, destIndex, 4), srcIndex);
+                    data.set(tempPixel, destIndex);
                 }
             }
         },
         
         // Rotates image data by the specified degrees. (Changes source image data. Uses temporary copy.)
+        allowedDegrees: [-90, 90, -180, 180, 270],
         rotateImageData: function(imageData, degrees) {
             // if(degrees == 0){
             //     return {
@@ -312,9 +295,8 @@ var gfxCoreV5 = {
             // }
 
             // Only allow specific values for degrees.
-            let allowedDegrees = [-90, 90, -180, 180, 270];
-            if (allowedDegrees.indexOf(degrees) === -1) {
-                console.error('Invalid degrees. Only use these:', allowedDegrees);
+            if (this.allowedDegrees.indexOf(degrees) === -1) {
+                console.error('Invalid degrees. Only use these:', this.allowedDegrees);
                 return imageData;
             }
         
@@ -324,13 +306,18 @@ var gfxCoreV5 = {
             // Create new ImageData.
             const rotatedData = new Uint8Array(data.length);
         
+             // Calculate these values in advance to avoid calculation inside the loop
+            const heightMinus1 = height - 1;
+            const widthMinus1 = width - 1;
+
             // Rotate the image and store it in the rotatedData array
             let targetX, targetY;
             let newWidth, newHeight;
             if (degrees % 180 === 0) {
                 newWidth = width;
                 newHeight = height;
-            } else {
+            } 
+            else {
                 newWidth = height;
                 newHeight = width;
             }
@@ -340,13 +327,15 @@ var gfxCoreV5 = {
                     const sourceIndex = (y * width + x) * 4;
         
                     if (degrees === 90) {
-                        targetX = height - y - 1; targetY = x;
+                        targetX = heightMinus1 - y; targetY = x;
                     } 
                     else if (degrees === -90 || degrees === 270) {
-                        targetX = y; targetY = width - x - 1;
+                        targetX = y; 
+                        targetY = widthMinus1 - x;
                     } 
                     else if (degrees === 180 || degrees === -180) {
-                        targetX = width - x - 1; targetY = height - y - 1;
+                        targetX = widthMinus1 - x; 
+                        targetY = heightMinus1 - y;
                     }
         
                     const targetIndex = (targetY * newWidth + targetX) * 4;
@@ -395,38 +384,71 @@ var gfxCoreV5 = {
             let targetKey;
             let sourceColor;
             let targetColor;
+            let lookup;
+            let lookupFind;
+            let lookupReplace;
 
             // Create a Uint32Array view over the image data
             const dataView = new Uint32Array(imageData.data.buffer);
 
-            // Create a lookup map for color replacements.
-            const lookup = new Map();
-            for(let i=0, len = colorReplacements.length; i<len; i+=1){
-                sourceColor = colorReplacements[i][0];
-                targetColor = colorReplacements[i][1];
+            // If only one color is to be replaced then just search for that color.
+            if(colorReplacements.length == 1){
+                sourceColor = colorReplacements[0][0];
+                targetColor = colorReplacements[0][1];
 
                 if (!sourceColor || !targetColor) {
-                    console.log("replaceColors: level 2: No colors specified:");
+                    console.log("replaceColors: (single replace mode): level 2: No colors specified:");
                     return;
                 }
 
-                // Convert colors to single integer values for faster lookup
-                sourceKey = ( (sourceColor[3] << 24) | (sourceColor[2] << 16) | (sourceColor[1] << 8) | sourceColor[0] ) >>> 0;
-                targetKey = ( (targetColor[3] << 24) | (targetColor[2] << 16) | (targetColor[1] << 8) | targetColor[0] ) >>> 0;
-                lookup.set(sourceKey, targetKey);
-            }
+                lookupFind    = ( (sourceColor[3] << 24) | (sourceColor[2] << 16) | (sourceColor[1] << 8) | sourceColor[0] ) >>> 0; 
+                lookupReplace = ( (targetColor[3] << 24) | (targetColor[2] << 16) | (targetColor[1] << 8) | targetColor[0] ) >>> 0; 
 
-            // Iterate over pixels and replace colors as needed.
-            for (let i = 0; i < dataView.length; i++) {
-                // Get this pixel as a 32-bit value. 
-                pixelKey = dataView[i];
+                // Iterate over pixels and replace colors as needed.
+                for (let i = 0; i < dataView.length; i++) {
+                    // Get this pixel as a 32-bit value. 
+                    pixelKey = dataView[i];
 
-                // Check if the pixel is in the lookup Map.
-                if (lookup.has(pixelKey)) {
-                    // It is. Replace the pixel.
-                    dataView[i] = lookup.get(pixelKey); // 32bit write
+                    // Check if the pixel is in the lookup Map.
+                    if (lookupFind == pixelKey) {
+                        // It is. Replace the pixel.
+                        dataView[i] = lookupReplace; // 32bit write
+                    }
                 }
             }
+
+            // Create a lookup map for color replacements.
+            else { 
+                lookup = new Map(); 
+                for(let i=0, len = colorReplacements.length; i<len; i+=1){
+                    sourceColor = colorReplacements[i][0];
+                    targetColor = colorReplacements[i][1];
+
+                    if (!sourceColor || !targetColor) {
+                        console.log("replaceColors: (multi replace mode): level 2: No colors specified:");
+                        return;
+                    }
+
+                    // Convert colors to single integer values for faster lookup
+                    sourceKey = ( (sourceColor[3] << 24) | (sourceColor[2] << 16) | (sourceColor[1] << 8) | sourceColor[0] ) >>> 0;
+                    targetKey = ( (targetColor[3] << 24) | (targetColor[2] << 16) | (targetColor[1] << 8) | targetColor[0] ) >>> 0;
+
+                    lookup.set(sourceKey, targetKey);
+                }
+
+                // Iterate over pixels and replace colors as needed.
+                for (let i = 0; i < dataView.length; i++) {
+                    // Get this pixel as a 32-bit value. 
+                    pixelKey = dataView[i];
+    
+                    // Check if the pixel is in the lookup Map.
+                    if (lookup.has(pixelKey)) {
+                        // It is. Replace the pixel.
+                        dataView[i] = lookup.get(pixelKey); // 32bit write
+                    }
+                }
+            }
+
         },
     },
 
@@ -518,9 +540,8 @@ var gfxCoreV5 = {
         }
     },
 
-    // ***************
-    // INIT PROCESSING
-    // ***************
+    // ** INIT PROCESSING **
+    // *********************
 
     // Retrieve the tileset JSON files and parse.
     _getAndParseGraphicsData: function(tilesetFiles){
@@ -715,9 +736,8 @@ var gfxCoreV5 = {
         });
     },
 
-    // ****************************************
-    // CREATE TILEMAP IMAGE, UPDATE THE DISPLAY
-    // ****************************************
+    // ** CREATE TILEMAP IMAGE, UPDATE THE DISPLAY **
+    // **********************************************
 
     // Creates a tilemap image from individual tiles governed by a tilemap array.
     createImageDataFromTilemap: function(tmapObj){
@@ -758,9 +778,6 @@ var gfxCoreV5 = {
             // "relatedMapKey"      : tmapObj.mapKey, 
             "genTime"            : 0,
         };
-
-        // let w = tmiObj.w;
-        // let h = tmiObj.h;
 
         // Create the tilemap image from tiles in the tileset.
         for(let y=0; y<mapH; y+=1){
@@ -827,54 +844,70 @@ var gfxCoreV5 = {
         // mapCount += 1;
         // if(added){ addedMapCount += 1; }
     },
-    // Function to CLEAR a region from the source image (represented as a Uint8Array).
+    // CLEAR a region of the source image (represented as a Uint8Array).
     clearRegion: function(source, srcWidth, dx, dy, w, h) {
         // Calculate the maximum X (width) and Y (height) based on the given source and source width
-        let maxX = srcWidth;
         let maxY = source.length / srcWidth;
 
         // Determine the start and end of the destination region in both dimensions.
         // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
-        let x_start = dx < 0        ? 0    : dx;
-        let x_end   = dx + w > maxX ? maxX : dx + w;
+        let x_start = dx < 0            ? 0    : dx;
+        let x_end   = dx + w > srcWidth ? srcWidth : dx + w;
 
         // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
-        let y_start = dy < 0        ? 0    : dy;
-        let y_end   = dy + h > maxY ? maxY : dy + h;
+        let y_start = dy < 0            ? 0    : dy;
+        let y_end   = dy + h > maxY     ? maxY : dy + h;
 
         // If the entire destination region outside the valid source area, exit the function early.
         // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
-        if (x_start == maxX || y_start == maxY || x_end == 0 || y_end == 0) {
+        if (x_start == srcWidth || y_start == maxY || x_end == 0 || y_end == 0) {
             return;
         }
 
         // Iterate through the region defined by x_start to x_end and y_start to y_end.
+        let start; 
+        let end; 
         for (let y = y_start; y < y_end; y++) {
-            for (let x = x_start; x < x_end; x++) {
-                // For each pixel in the region, set the RGBA values to 0 (clear pixel) in the source Uint8Array.
-                
-                // Calculate the starting index of the pixel in the source array.
-                let index = (y * srcWidth + x) << 2;  
-
-                // Clear the pixel.
-                source[index] = source[index + 1] = source[index + 2] = source[index + 3] = 0;  // Set RGBA values to 0.
-            }
+            // Get the start and end indexs for this row.
+            start = (y * srcWidth + x_start) << 2;
+            end = (y * srcWidth + x_end) << 2;
+            
+            // Fill with 0s (RGBA)
+            source.fill(0, start, end);  
         }
+
+        // Iterate through the region defined by x_start to x_end and y_start to y_end.
+        // for (let y = y_start; y < y_end; y++) {
+        //     for (let x = x_start; x < x_end; x++) {
+        //         // For each pixel in the region, set the RGBA values to 0 (clear pixel) in the source Uint8Array.
+                
+        //         // Calculate the starting index of the pixel in the source array.
+        //         let index = (y * srcWidth + x) << 2;  
+
+        //         // Clear the pixel.
+        //         source[index] = source[index + 1] = source[index + 2] = source[index + 3] = 0;  // Set RGBA values to 0.
+        //     }
+        // }
     },
-    // COPY a region from the source to a new Uint8Array.
+    // COPY a region of the source to a new Uint8Array.
     copyRegion: function(source, srcWidth, dx, dy, w, h) {
         // Calculate the maximum X (width) and Y (height) based on the given source and source width
-        let maxX = srcWidth;
         let maxY = source.length / srcWidth;
 
         // Determine the start and end of the destination region in both dimensions.
         // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
-        let x_start = dx < 0        ? 0    : dx;
-        let y_start = dy < 0        ? 0    : dy;
+        let x_start = dx < 0            ? 0    : dx;
+        let x_end   = dx + w > srcWidth ? srcWidth : dx + w;
 
         // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
-        let x_end   = dx + w > maxX ? maxX : dx + w;
-        let y_end   = dy + h > maxY ? maxY : dy + h;
+        let y_start = dy < 0            ? 0    : dy;
+        let y_end   = dy + h > maxY     ? maxY : dy + h;
+
+        // If the entire destination region outside the valid source area, exit the function early.
+        // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
+        if (x_start == srcWidth || y_start == maxY || x_end == 0 || y_end == 0) {
+            return;
+        }
 
         // If the region to be copied starts outside the actual source data,
         // the size of the region is adjusted accordingly.
@@ -883,7 +916,7 @@ var gfxCoreV5 = {
 
         // If the entire destination region outside the valid source area, exit the function early and return an empty array.
         // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
-        if (x_start >= maxX || y_start >= maxY || x_end <= 0 || y_end <= 0 || w <= 0 || h <= 0) {
+        if (x_start >= srcWidth || y_start >= maxY || x_end <= 0 || y_end <= 0 || w <= 0 || h <= 0) {
             return new Uint8Array(0);
         }
 
@@ -893,27 +926,39 @@ var gfxCoreV5 = {
 
         // Iterate through the region defined by x_start to x_end and y_start to y_end.
         for (let y = y_start; y < y_end; y++) {
-            for (let x = x_start; x < x_end; x++) {
-                // For each pixel, copy the RGB and A values from the source data to the result.
+            // Get the start and end indexs for this row.
+            let start = (y * srcWidth + x_start) << 2;
+            let end = (y * srcWidth + x_end) << 2;
 
-                // Calculate the starting index of the pixel in the source array.
-                let srcIndex = (y * srcWidth + x) * 4;
+            // Copy the row.
+            resultData.set(source.subarray(start, end), resultIndex);
 
-                // Copy the pixel from the source to resultData (the destination.)
-                for (let k = 0; k < 4; k++) {
-                    resultData[resultIndex + k] = source[srcIndex + k];
-                }
-
-                // Increment the result index for the next pixel.
-                resultIndex += 4;
-            }
+            // Increment the result index for the next pixel.
+            resultIndex += (x_end - x_start) << 2;
         }
+
+        // // Iterate through the region defined by x_start to x_end and y_start to y_end.
+        // for (let y = y_start; y < y_end; y++) {
+        //     for (let x = x_start; x < x_end; x++) {
+        //         // For each pixel, copy the RGB and A values from the source data to the result.
+
+        //         // Calculate the starting index of the pixel in the source array.
+        //         let srcIndex = (y * srcWidth + x) * 4;
+
+        //         // Copy the pixel from the source to resultData (the destination.)
+        //         for (let k = 0; k < 4; k++) {
+        //             resultData[resultIndex + k] = source[srcIndex + k];
+        //         }
+
+        //         // Increment the result index for the next pixel.
+        //         resultIndex += 4;
+        //     }
+        // }
 
         // Return the result data.
         return resultData;
     },
-    // REPLACE a region in the destination with the source data (Uint8Array.)
-    // Writes pixels without checking for transparency. (faster than blit.)
+    // REPLACE a region in the destination with the source data (no blit support) (Uint8Array.)
     updateRegion_replace: function(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
         // Determine the start and end of the destination region in both dimensions.
         // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
@@ -945,11 +990,8 @@ var gfxCoreV5 = {
             destination.set(source.subarray(srcRowStart, srcRowEnd), destRowStart);
         }
     },
-    // Performs all transformations before draw. 
-    // Supports direct replace as well as blitting.
+    // BLIT: Supports blitting for each pixel row that can use it. (updateRegion_replace is faster when blitting is NOT needed.)
     updateRegion_blit: function(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
-        blit = true; 
-
         // Determine the start and end of the destination region in both dimensions.
         // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
         let x_start = dx < 0              ? 0          : dx;
@@ -986,41 +1028,47 @@ var gfxCoreV5 = {
             let sourceRowView = source.subarray(srcRowStart, srcRowEnd);
             sourceRow.set(sourceRowView, 0);
 
-            // If blitting then updates need to be considered pixel-by-pixel for each row.
-            if(blit){
-                // Check for transparent pixels in this row.
-                let hasTransparentPixels = false;
-                for (let i = 3; i < sourceRowView.length; i += 4) {
-                    // if (sourceRowView[i] < 255) { hasTransparentPixels = true; break; }
-                    if (sourceRowView[i] == 0) { hasTransparentPixels = true; break; }
-                }
-
-                // Does this row actually have any transparent pixels?
-                if(hasTransparentPixels){
-                    let destRowEnd = destOffset + ((x_end - x_start) << 2);
-                    destRow.set(destination.subarray(destRowStart, destRowEnd), 0);
-                    for (let i = 0; i < sourceRowView.length; i += 4) {
-                        // Directly access the source pixel.
-                        // If the source pixel is not transparent, replace the destination pixel with the source pixel.
-                        if (sourceRowView[i+3] !== 0) { 
-                            destRow[i]   = sourceRowView[i];
-                            destRow[i+1] = sourceRowView[i+1];
-                            destRow[i+2] = sourceRowView[i+2];
-                            destRow[i+3] = sourceRowView[i+3];
-                        }
-                    }
-    
-                    // Copy the entire row (modified) at once from the source to the destination.
-                    destination.set(destRow, destRowStart);
-                }
-
-                // No. Don't blit. Copy the entire row (unmodified) at once from the source to the destination.
-                else{
-                    destination.set(sourceRowView, destRowStart);
+            // Check if the source row contains any transparent pixels.
+            // If the source row doesn't contain any transparent pixels, 
+            // the row can be skipped in the blitting process, as the aim 
+            // of this function is to copy only the rows with transparent pixels.
+            let hasTransparentPixels = false;
+            for (let i = 3; i < sourceRowView.length; i += 4) {
+                // Check if the current pixel is transparent.
+                if (sourceRowView[i] == 0) { 
+                    // Yes, mark that the row contains at least one transparent pixel.
+                    hasTransparentPixels = true; 
+                    
+                    // Stop looking for transparent pixels.
+                    break; 
                 }
             }
+            
+            // Does the source row have any transparent pixels?
+            // No need to blit if there are no transparent pixels in the source.
+            if(hasTransparentPixels){
+                // Retrieve the destination row. (This includes existing data at the destination.)
+                let destRowEnd = destOffset + ((x_end - x_start) << 2);
+                destRow.set(destination.subarray(destRowStart, destRowEnd), 0);
+                
+                // For the blitting process, update pixel-by-pixel for each row.
+                for (let i = 0; i < sourceRowView.length; i += 4) {
+                    // Check if the source pixel is not transparent. If it's not, update the pixel in the destRow.
+                    // This will preserve any transparent part of the destRow while replacing non-transparent pixels 
+                    // with the corresponding pixel from the source.
+                    if (sourceRowView[i+3] !== 0) { 
+                        destRow[i]   = sourceRowView[i];
+                        destRow[i+1] = sourceRowView[i+1];
+                        destRow[i+2] = sourceRowView[i+2];
+                        destRow[i+3] = sourceRowView[i+3];
+                    }
+                }
 
-            // Copy the entire row (unmodified) at once from the source to the destination.
+                // Copy the entire row (modified) at once from the source to the destination.
+                destination.set(destRow, destRowStart);
+            }
+
+            // No. Don't blit. Copy the entire row (unmodified) at once from the source to the destination.
             else{
                 destination.set(sourceRowView, destRowStart);
             }
@@ -1033,7 +1081,7 @@ var gfxCoreV5 = {
 
     // TESTS
     test3: function(){
-        let layerKey = "L3";
+        let layerKey = "L4";
         let imgDataCache = _GFX.layers[layerKey].imgDataCache;
         let colors = {
             base   : [145, 36,  0,255], // 
@@ -1067,31 +1115,61 @@ var gfxCoreV5 = {
         ];
 
         let drawFill = function(settings){
-            gfxCoreV5.updateRegion_blit(
-                tests[0].img.imgData.data,   // source
-                tests[0].img.imgData.width,  // srcWidth
-                imgDataCache.data,           // destination
-                imgDataCache.width,          // destWidth
-                imgDataCache.height,         // destHeight
-                tests[0].dx,                 // dx
-                tests[0].dy,                 // dy
-                tests[0].img.imgData.width,  // w
-                tests[0].img.imgData.height, // h
+            // Create new "ImageData" of the map's ImageData.
+            let rec = tests[0];
+            let imgData = {
+                width : rec.img.imgData.width, 
+                height: rec.img.imgData.height, 
+                data  : gfxCoreV5.copyRegion( 
+                    rec.img.imgData.data, 
+                    rec.img.imgData.width, 
+                    0, 0, 
+                    rec.img.imgData.width, rec.img.imgData.height
+                )
+            };
+            // Apply transforms.
+            settings = Object.assign({}, _GFX.defaultSettings, settings ?? {});
+            ( {width: imgData.width, height: imgData.height} = gfxCoreV5.transforms.applyAll( imgData, settings ) );
+
+            // Draw
+            gfxCoreV5.updateRegion_replace(
+            // gfxCoreV5.updateRegion_blit(
+                imgData.data,       // source
+                imgData.width,      // srcWidth
+                imgDataCache.data,  // destination
+                imgDataCache.width, // destWidth
+                imgDataCache.height,// destHeight
+                rec.dx,             // dx
+                rec.dy,             // dy
+                imgData.width,      // w
+                imgData.height,     // h
             );
             requestAnimationFrame(()=>{
                 _GFX.layers[layerKey].ctx.putImageData(imgDataCache, 0, 0);
             });
         };
+        
         drawFill(_GFX.defaultSettings);
 
         // Set interval to change the colors.
         let repeatsCount = 0;
-        let repeatsMax = 2;
+        let repeatsMax = 50;
+        let tsAll = performance.now();
+        let times = [];
         let id = setInterval(()=>{
             if(colorIndex >= colorFrames.length){
                 colorIndex = 0;
                 repeatsCount += 1;
                 if(repeatsCount == repeatsMax){
+                    tsAll = performance.now() - tsAll;
+
+                    let totalTimes = times.reduce((acc, curr)=> acc + curr, 0);
+                    let avgTime = totalTimes/times.length;
+
+                    console.log(`${colorFrames.length*repeatsMax} iterations consisting of: ${colorFrames.length} colors repeated ${repeatsMax} times.`);
+                    console.log(`Total avg time        : ${avgTime   .toFixed(2).padStart(8, " ")} ms`);
+                    console.log(`Total individual times: ${totalTimes.toFixed(2).padStart(8, " ")} ms`);
+                    console.log(`Total time            : ${tsAll     .toFixed(2).padStart(8, " ")} ms`);
                     clearInterval(id);
                 }
             }
@@ -1100,9 +1178,11 @@ var gfxCoreV5 = {
             };
             let ts = performance.now();
             drawFill(settings);
-            console.log("drawFill:", (performance.now()-ts).toFixed(2), colorNames[colorIndex], settings);
+            times.push(performance.now()-ts);
+            // console.log("drawFill:", (performance.now()-ts).toFixed(2), colorNames[colorIndex], settings);
             colorIndex += 1;
-        }, 240);
+        // }, 240);
+        }, 16);
 
         //  
         // { name:"cBorder_fill",    blit:false, dx:6*8 , dy:6*8 , img:_GFX.currentData.L1.tilemaps.cBorder_fill             , settings:{ rotation: 0 }, },
@@ -1134,39 +1214,35 @@ var gfxCoreV5 = {
 
         // Draw the initial graphics (UNO)
         let drawUno = function(settings){
-            gfxCoreV5.updateRegion_blit(
-                tests[0].img.imgData.data,   // source
-                tests[0].img.imgData.width,  // srcWidth
-                imgDataCache.data,           // destination
-                imgDataCache.width,          // destWidth
-                imgDataCache.height,         // destHeight
-                tests[0].dx,                 // dx
-                tests[0].dy,                 // dy
-                tests[0].img.imgData.width,  // w
-                tests[0].img.imgData.height, // h
-            );
-            gfxCoreV5.updateRegion_blit(
-                tests[1].img.imgData.data,   // source
-                tests[1].img.imgData.width,  // srcWidth
-                imgDataCache.data,           // destination
-                imgDataCache.width,          // destWidth
-                imgDataCache.height,         // destHeight
-                tests[1].dx,                 // dx
-                tests[1].dy,                 // dy
-                tests[1].img.imgData.width,  // w
-                tests[1].img.imgData.height, // h
-            );
-            gfxCoreV5.updateRegion_blit(
-                tests[2].img.imgData.data,   // source
-                tests[2].img.imgData.width,  // srcWidth
-                imgDataCache.data,           // destination
-                imgDataCache.width,          // destWidth
-                imgDataCache.height,         // destHeight
-                tests[2].dx,                 // dx
-                tests[2].dy,                 // dy
-                tests[2].img.imgData.width,  // w
-                tests[2].img.imgData.height, // h
-            );
+            for(let rec of tests){
+                let imgData = {
+                    width : rec.img.imgData.width, 
+                    height: rec.img.imgData.height, 
+                    data  : gfxCoreV5.copyRegion( 
+                        rec.img.imgData.data, 
+                        rec.img.imgData.width, 
+                        0, 0, 
+                        rec.img.imgData.width, rec.img.imgData.height
+                    )
+                };
+                // Apply transforms.
+                ( {width: imgData.width, height: imgData.height} = gfxCoreV5.transforms.applyAll( imgData, settings ) );
+    
+                // Draw
+                // gfxCoreV5.updateRegion_replace(
+                gfxCoreV5.updateRegion_blit(
+                    imgData.data,       // source
+                    imgData.width,      // srcWidth
+                    imgDataCache.data,  // destination
+                    imgDataCache.width, // destWidth
+                    imgDataCache.height,// destHeight
+                    rec.dx,             // dx
+                    rec.dy,             // dy
+                    imgData.width,      // w
+                    imgData.height,     // h
+                );
+            }
+
             requestAnimationFrame(()=>{
                 _GFX.layers[layerKey].ctx.putImageData(imgDataCache, 0, 0);
             });
@@ -1196,6 +1272,7 @@ var gfxCoreV5 = {
                 colorData: colorFrames[colorIndex]
             };
             let ts = performance.now();
+            settings = Object.assign({}, _GFX.defaultSettings, settings ?? {});
             drawUno(settings);
             console.log("drawUno:", (performance.now()-ts).toFixed(2), colorNames[colorIndex]);
             colorIndex += 1;
@@ -1244,17 +1321,35 @@ var gfxCoreV5 = {
             }
             let rec = tests[index];
             let ts = performance.now();
+
+            let imgData = {
+                width : rec.img.imgData.width, 
+                height: rec.img.imgData.height, 
+                data  : gfxCoreV5.copyRegion( 
+                    rec.img.imgData.data, 
+                    rec.img.imgData.width, 
+                    0, 0, 
+                    rec.img.imgData.width, rec.img.imgData.height
+                )
+            };
+            // Apply transforms.
+            let settings = tests[0].settings = Object.assign({}, _GFX.defaultSettings, rec.settings ?? {});
+            ( {width: imgData.width, height: imgData.height} = gfxCoreV5.transforms.applyAll( imgData, settings ) );
+
+            // Draw
+            // gfxCoreV5.updateRegion_replace(
             gfxCoreV5.updateRegion_blit(
-                rec.img.imgData.data,   // source
-                rec.img.imgData.width,  // srcWidth
-                imgDataCache.data,      // destination
-                imgDataCache.width,     // destWidth
-                imgDataCache.height,    // destHeight
-                rec.dx,                 // dx
-                rec.dy,                 // dy
-                rec.img.imgData.width,  // w
-                rec.img.imgData.height, // h
+                imgData.data,       // source
+                imgData.width,      // srcWidth
+                imgDataCache.data,  // destination
+                imgDataCache.width, // destWidth
+                imgDataCache.height,// destHeight
+                rec.dx,             // dx
+                rec.dy,             // dy
+                imgData.width,      // w
+                imgData.height,     // h
             );
+
             ts = performance.now() - ts;
             let entry = {
                 name: rec.name, 
