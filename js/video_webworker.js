@@ -17,109 +17,19 @@ const messageFuncs = {
         initLayers: {},
         clearAllLayers: {},
     },
-    initConfigAndGraphics : async function(messageData){
-        // Save the configObj.
-        let tsDataSave = performance.now();
-        _GFX.configObj = messageData.configObj;
-        tsDataSave = performance.now() - tsDataSave;
-
-        // Save the default settings.
-        _GFX.defaultSettings = messageData.defaultSettings;
-
-        // Save the debugActive flag (global variable.)
-        debugActive = messageData.debugActive ?? false;
-        
-        // Convert the graphics assets.
-        let results = await createGraphicsAssets.process( 
-            _GFX.configObj.tilesetFiles, 
-            _GFX.defaultSettings,
-            debugActive,
-            _GFX.configObj.disableCache
-        );
-
-        // Create image tilemaps for each tilemap and store to the hashCacheMap.
-        //
-
-        // Save the converted tilesets.
-        _GFX.tilesets = results.finishedTilesets;
-
-        // Send back some data about the graphics assets. 
-        let createMinimalData = performance.now();
-        let minimalReturnData = {};
-        for(let tsKey in _GFX.tilesets){
-            minimalReturnData[tsKey] = {
-                config: _GFX.tilesets[tsKey].config,
-                tilesetName: _GFX.tilesets[tsKey].tilesetName,
-                tilemaps: {},
-                tileCount: _GFX.tilesets[tsKey].tileset.length,
-            };
-            if(_GFX.configObj.clientLocalTileset){
-                minimalReturnData[tsKey].tileset = _GFX.tilesets[tsKey].tileset.map(d=>{
-                    return { 
-                        imgData: d.imgData,
-                        fadeTiles: d.fadeTiles.map( dd => { return { imgData: dd.imgData }; } ),
-                    }
-                });
-            }
-            for(let mapKey in _GFX.tilesets[tsKey].tilemaps){
-                minimalReturnData[tsKey].tilemaps[mapKey] = _GFX.tilesets[tsKey].tilemaps[mapKey];
-            }
-        }
-        createMinimalData = performance.now() - createMinimalData;
-
-        // Save the timings.
-        messageFuncs.timings["initConfigAndGraphics"]["tsDataSave"]              = tsDataSave.toFixed(3);
-        messageFuncs.timings["initConfigAndGraphics"]["getAndParseGraphicsData"] = results.timings.getAndParseGraphicsData.toFixed(3);
-        messageFuncs.timings["initConfigAndGraphics"]["createGraphicsAssets"]    = results.timings.createGraphicsAssets.toFixed(3);
-        messageFuncs.timings["initConfigAndGraphics"]["createMinimalData"]       = createMinimalData.toFixed(3);
-
-        // Return some minimal data.
-        return minimalReturnData;
-    },
-    initLayers : async function(messageData){
-        // Save the layers data. Configure the ctx value for each layer.
-        let tsLayerSave = performance.now();
-
-        for(let layer of messageData.layers){ 
-            // Get the canvas.
-            let canvas = layer.canvas;
-            
-            // Create the drawing context.
-            layer.ctx = canvas.getContext("2d", layer.canvasOptions || {});
-            
-            // Clear the layer.
-            layer.ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Create the imgDataCache
-            layer.imgDataCache = new ImageData(canvas.width, canvas.height);
-            
-            // Clear the imgDataCache
-            layer.imgDataCache.data.set(0);
-            
-            // Save the layer.
-            _GFX.layers[layer.name] = layer;
-        }
-        tsLayerSave = performance.now() - tsLayerSave;
-
-        // Init V4
-        let ts_initV4 = performance.now();
-        if(messageFuncs.gfx){
-            await messageFuncs.gfx.init();
-        }
-        ts_initV4 = performance.now() - ts_initV4;
-        
-        // Save the timings.
-        messageFuncs.timings["initLayers"]["tsLayerSave"] = tsLayerSave.toFixed(3);
-        messageFuncs.timings["initLayers"]["ts_initV4"]   = ts_initV4.toFixed(3);
-    },
-
-    // Populated by: ww_sendGfxUpdatesV4.js
-    gfx:{}
 };
 
-// Import the graphics module.
-importScripts("createGraphicsAssets.js");
-importScripts("ww_sendGfxUpdatesV4.js");
+// Import the graphics modules (V4 or version 2).
+// importScripts("createGraphicsAssets.js");
+// importScripts("ww_sendGfxUpdatesV4.js");
+
+// Import the graphics module (V5 or version 5).
+importScripts("ww_gfxCoreV5.js");
+importScripts("ww_gfxMainV5.js");
+(async ()=>{
+    if(typeof gfxCoreV5 != "undefined" && !gfxCoreV5.isModuleLoaded()){ await gfxCoreV5.module_init(this, "gfxCoreV5"); }
+    if(typeof gfxMainV5 != "undefined" && !gfxMainV5.isModuleLoaded()){ await gfxMainV5.module_init(this, "gfxMainV5"); }
+})();
 
 const timeItData = {};
 function timeIt(key, func){
@@ -190,6 +100,41 @@ const _GFX = {
         },
     },
     utilities: {
+        // Look through a tileset for a map record that contains a match for the provided tilemap.
+        findRelatedMapKey: function(ts, tmap){
+            let tmap_same;
+            let tmap2;
+            for(let mapKey in _GFX.tilesets[ts].tilemaps){
+                tmap2 = _GFX.tilesets[ts].tilemaps[mapKey];
+                tmap_same = _GFX.utilities.areArraysEqual(tmap, tmap2);
+                if(tmap_same){ return mapKey; };
+            }
+            return "";
+        },
+
+        // Convert array having values for r,g,b,a to 32-bit rgba value.
+        rgbaTo32bit: function(rgbaArray){
+            // Break out the values in rgbaArray.
+            let [r, g, b, a] = rgbaArray;
+            
+            // Generate the 32-bit version of the rgbaArray.
+            // let fillColor = (a << 24) | (b << 16) | (g << 8) | r;
+            let fillColor = ((a << 24) | (b << 16) | (g << 8) | r) >>> 0;
+            
+            // Return the result.
+            return fillColor;
+        },
+
+        // Returns a hash for the specified string. (Variation of Dan Bernstein's djb2 hash.)
+        _djb2Hash: function(str) {
+            if(typeof str != "string") { str = str.toString(); }
+            var hash = 5381;
+            for (var i = 0; i < str.length; i++) {
+                hash = ((hash << 5) + hash) + str.charCodeAt(i); /* hash * 33 + c */
+            }
+            return hash;
+        },
+
         // Axis-Aligned Bounding Box. (Determine if two rectangles are intersecting.)
         aabb_collisionDetection: function(rect1, rect2){
             // EXAMPLE USAGE:
@@ -256,12 +201,14 @@ const _GFX = {
             let settingsKeys = Object.keys(_GFX.defaultSettings);
             
             // Check that obj1 and obj2 have all keys of settingsKeys.
-            for (let key in settingsKeys) {
-                if(!key in compareObj1){ 
-                    throw `areSettingsObjectsEqual: missing key in compareObj1: ${key}`; 
+            for (let key of settingsKeys) {
+                if(!(key in compareObj1)){ 
+                    console.log(`areSettingsObjectsEqual: Missing key: '${key}' compareObj1:`, compareObj1);
+                    throw `areSettingsObjectsEqual: missing key in compareObj1: '${key}'`; 
                 }
-                if(!key in compareObj2){ 
-                    throw `areSettingsObjectsEqual: missing key in compareObj2: ${key}`; 
+                if(!(key in compareObj2)){ 
+                    console.log(`areSettingsObjectsEqual: Missing key: '${key}' compareObj2:`, compareObj2);
+                    throw `areSettingsObjectsEqual: missing key in compareObj2: '${key}'`; 
                 }
             }
 
@@ -286,95 +233,18 @@ const _GFX = {
 };
 
 self.onmessage = async function(event) {
-    // Accept only version 2 methods.
-    if(event.data.version != 2){ 
-        console.log("Mismatched version. Must be version 2.");
+    if(! (event.data.version == 2 || event.data.version == 5) ){
+        console.log("Mismatched version. Must be version 2 or 5.");
         self.postMessage( {mode: event.data, data: ""}, [] );
     }
-    else{
-        if(!event.data.mode){ console.log("No mode was specified."); self.postMessage( {mode: event.data, data: ""}, [] ); }
-        if(!event.data.data){ console.log("No data was specified."); self.postMessage( {mode: event.data, data: ""}, [] ); }
-        let mode  = event.data.mode;
-        let data  = event.data.data;
-        let flags = event.data.flags;
-        let refs  = [];
-        let returnData = "";
 
-        // DEBUG:
-        // console.log(`mode: ${mode}`, ", data:", data, ", flags:", flags);
-        // console.log(`mode: ${mode}`, ", flags:", flags);
+    // VERSION 5 METHODS
+    if(event.data.version == 5){ 
+        gfxMainV5.messageHander(event);
+    }
 
-        switch(mode){
-            // NORMAL REQUESTS.
-            case "initConfigAndGraphics": { 
-                if(!flags.dataRequest){              await messageFuncs.initConfigAndGraphics(data); }
-                else                  { returnData = await messageFuncs.initConfigAndGraphics(data); }
-                break;
-            }
-            case "initLayers"           : { 
-                await messageFuncs.initLayers(data); 
-                break; 
-            }
-            case "generateCoreImageDataAssets"           : { 
-                if(!flags.dataRequest){              await messageFuncs.gfx.DRAW.generateCoreImageDataAssets(data.list); }
-                else                  { returnData = await messageFuncs.gfx.DRAW.generateCoreImageDataAssets(data.list); }
-                break; 
-            }
-            case "sendGfxUpdates"       : { 
-                if(data.version == 4){
-                    if(!flags.dataRequest){              messageFuncs.gfx.run(data); }
-                    else                  { returnData = messageFuncs.gfx.run(data); }
-                }
-                break; 
-            }
-            
-            // DEBUG REQUESTS.
-
-            case "requestHashCacheEntry" : { 
-                console.log("HASH CACHE ENTRY:", data.title);
-                console.log("  HASH:", messageFuncs.gfx.DRAW.hashCacheMap.get(data.hash) );
-                console.log("  BASE:", messageFuncs.gfx.DRAW.hashCacheMap.get(data.hashBase) );
-                console.log(`  HASH ACCESS: messageFuncs.gfx.DRAW.hashCacheMap.get(${data.hash})`);
-                console.log(`  BASE ACCESS: messageFuncs.gfx.DRAW.hashCacheMap.get(${data.hashBase})`);
-                break; 
-            }
-            
-            // UNUSED??
-            case "clearAllLayers"          : { 
-                messageFuncs.gfx.clearAllLayers(); 
-                break; 
-            }
-            
-            case "_DEBUG.toggleDebugFlag"          : { 
-                debugActive = data.debugActive ?? false;
-                break; 
-            }
-
-            case "_DEBUG.updateDebugTimings"          : { 
-                messageFuncs.gfx.updateDebugTimings();
-                returnData = messageFuncs.timings["gfx"];
-                break; 
-            }
-
-            case "_DEBUG.toggleCacheFlag"          : { 
-                _GFX.configObj.disableCache = data.disableCache ?? false;
-                break; 
-            }
-
-            // UNKNOWN REQUESTS.
-            default: {
-                console.log("WEBWORKER: Unknown mode:", mode);
-                break; 
-            }
-        }
-
-        // Send a response.
-        self.postMessage( 
-            { 
-                mode: mode, 
-                data: returnData, 
-                flags: flags 
-            }, refs 
-        );
+    // VERSION 2 METHODS
+    else if(event.data.version == 2){ 
+        messageFuncs.gfx.messageHander(event);
     }
 };

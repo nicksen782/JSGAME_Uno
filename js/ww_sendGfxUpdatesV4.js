@@ -8,6 +8,8 @@ messageFuncs.gfx = {
 
         // Clears ONE layer gfx. (imgDataCache)
         oneLayerGfx: function(layerKey){
+            // console.log("onLayerGfx: layerKey:", layerKey, _GFX.layers[layerKey].imgDataCache);
+
             // Clear the imgDataCache for this layer.
             _GFX.layers[layerKey].imgDataCache.data.fill(0);
         },
@@ -22,7 +24,7 @@ messageFuncs.gfx = {
 
         // Clears ALL layers data. (graphics cache)
         allLayersData: function(){
-            // Clear the graphics cache and the hashCache..
+            // Clear the graphics cache and the hashCache.
             this.allMapKeys();
 
             // Reset the background color for L1.
@@ -102,12 +104,25 @@ messageFuncs.gfx = {
             }
         },
 
-        // Deletes all map keys in the data cache that have removeHashOnRemoval set.
+        // Deletes all map keys in the data cache and graphics cache that have removeHashOnRemoval set.
         allMapKeys: function(){
+            // Clear the non-PERM hashCache entries. 
             let hashCacheMap = this.parent.DRAW.hashCacheMap;
             for (let [key, value] of hashCacheMap.entries()) {
                 if(value.removeHashOnRemoval){
                     hashCacheMap.delete(key);
+                }
+            }
+
+            // Clear the graphics cache. 
+            let layerKey, mapKeys, mapKey, map;
+            for(let i=0, len1=this.parent.layerKeys.length; i<len1; i+=1){
+                layerKey = this.parent.layerKeys[i];
+                mapKeys = Object.keys(_GFX.currentData[layerKey].tilemaps);
+                for(let m=0, len2=mapKeys.length; m<len2; m+=1){
+                    mapKey = mapKeys[m];
+                    map = _GFX.currentData[layerKey].tilemaps[mapKey];
+                    if(map){ delete _GFX.currentData[layerKey].tilemaps[mapKey]; }
                 }
             }
         },
@@ -495,7 +510,7 @@ messageFuncs.gfx = {
                     // Clear the imgDataCache for this layer if the fade is ON.
                     if(layerData.fade.currFade != null){
                         // Clear the imgDataCache for this layer. 
-                        this.parent.CLEAR.oneLayerGfx(layerKey); 
+                        this.parent.CLEAR.oneLayerGfx(layerKey);
                     }
                 }
             }
@@ -801,7 +816,7 @@ messageFuncs.gfx = {
             }
         },
 
-        // Transforms using rotation, xFlip, yFlip (no recoloring.) (By reference.)
+        // Transforms using rotation, xFlip, yFlip (also recoloring.) (By reference.)
         performTransformsOnImageData: function(imageData, settings){
             let width  = imageData.width;
             let height = imageData.height;
@@ -813,7 +828,7 @@ messageFuncs.gfx = {
             if(settings.yFlip)           { createGraphicsAssets.flipImageDataVertically(imageData); }
             
             // Handle color replacements. (by reference.)
-            if(settings.colorData.length){ createGraphicsAssets.replaceColors(imageData, settings.colorData); }
+            if(settings.colorData.length){ createGraphicsAssets.replaceColors(imageData, settings); }
 
             // Handle adding a background?  (by reference.)
             if(settings.bgColorRgba)     { createGraphicsAssets.setImageDataBgColorRgba(imageData, [0,0,0,0], settings.bgColorRgba); }
@@ -996,6 +1011,16 @@ messageFuncs.gfx = {
                                 map.origin = tilemapImageData.origin;
                             }
 
+                            // If this is a modification of an existing then append "_MODIFIED".
+                            if( !_GFX.utilities.areSettingsObjectsEqual(map.settings, _GFX.defaultSettings) ){
+                                map.origin += "_MODIFIED";
+                                
+                                // TODO: Need to remove modifications but keep the original base and custom_cache.
+                                // Set removehashOnRemoval to true.
+                                // Only CUSTOM_CACHE or INIT_PRECACHE are perm unless otherwise specified by the map.
+                                // map.removeHashOnRemoval = true;
+                            }
+
                             // Get the number of bytes for the new hashCache entry (approximate.)
                             hashCacheDataLength = JSON.stringify({
                                 imgData : Array.from(map.imgData.data),
@@ -1032,10 +1057,6 @@ messageFuncs.gfx = {
                             ({imageData: map.imgData, hasTransparency: map.hasTransparency} = this.createImageDataFromTilemap(map));
                             map.w = map.imgData.width;
                             map.h = map.imgData.height;
-
-                            if( !_GFX.utilities.areSettingsObjectsEqual(map.settings, _GFX.defaultSettings) ){
-                                map.origin += "_MODIFIED";
-                            }
                             genTime = performance.now() - genTime;
                             map.genTime += genTime;
                         }
@@ -1180,7 +1201,9 @@ messageFuncs.gfx = {
             let imgDataCache = _GFX.layers[layerKey].imgDataCache;
 
             // Use the imgDataCache to draw to the output canvas.
-            _GFX.layers[layerKey].ctx.putImageData(imgDataCache, 0, 0);
+            requestAnimationFrame(()=>{
+                _GFX.layers[layerKey].ctx.putImageData(imgDataCache, 0, 0);
+            });
         },
     },
     clearTimingsValues: function(layerKey){
@@ -1196,8 +1219,10 @@ messageFuncs.gfx = {
         timeIt("gfx", "start");
 
         let layerKeys = this.layerKeys;
+
         // Handle the ALLCLEAR. (Clears imgDataCache and the data cache.)
         if(messageData.ALLCLEAR){
+            // console.log("ALLCLEAR");
             this.CLEAR.allLayersGfx();  // Clears the imgDataCache for all layers.
             this.CLEAR.allLayersData(); // Clears the graphics cache for all layers and removes from hashCache if the map's hash removal flag is set. 
         }
@@ -1359,5 +1384,176 @@ messageFuncs.gfx = {
         
         // UPDATE
         this.UPDATE.parent = this;
-    }
+    },
+
+    initConfigAndGraphics : async function(messageData){
+        // Save the configObj.
+        let tsDataSave = performance.now();
+        _GFX.configObj = messageData.configObj;
+        tsDataSave = performance.now() - tsDataSave;
+
+        // Save the default settings.
+        _GFX.defaultSettings = messageData.defaultSettings;
+
+        // Save the debugActive flag (global variable.)
+        debugActive = messageData.debugActive ?? false;
+        
+        // Convert the graphics assets.
+        let results = await createGraphicsAssets.process( 
+            _GFX.configObj.tilesetFiles, 
+            _GFX.defaultSettings,
+            debugActive,
+            _GFX.configObj.disableCache
+        );
+
+        // Save the converted tilesets.
+        _GFX.tilesets = results.finishedTilesets;
+
+        // Send back some data about the graphics assets. 
+        let createMinimalData = performance.now();
+        let minimalReturnData = {};
+        for(let tsKey in _GFX.tilesets){
+            minimalReturnData[tsKey] = {
+                config: _GFX.tilesets[tsKey].config,
+                tilesetName: _GFX.tilesets[tsKey].tilesetName,
+                tilemaps: {},
+                tileCount: _GFX.tilesets[tsKey].tileset.length,
+            };
+            for(let mapKey in _GFX.tilesets[tsKey].tilemaps){
+                minimalReturnData[tsKey].tilemaps[mapKey] = _GFX.tilesets[tsKey].tilemaps[mapKey];
+            }
+        }
+        createMinimalData = performance.now() - createMinimalData;
+
+        // Save the timings.
+        messageFuncs.timings["initConfigAndGraphics"]["tsDataSave"]              = tsDataSave.toFixed(3);
+        messageFuncs.timings["initConfigAndGraphics"]["getAndParseGraphicsData"] = results.timings.getAndParseGraphicsData.toFixed(3);
+        messageFuncs.timings["initConfigAndGraphics"]["createGraphicsAssets"]    = results.timings.createGraphicsAssets.toFixed(3);
+        messageFuncs.timings["initConfigAndGraphics"]["createRgbaFadeValues"]    = results.timings.createRgbaFadeValues.toFixed(3);
+        messageFuncs.timings["initConfigAndGraphics"]["createMinimalData"]       = createMinimalData.toFixed(3);
+
+        // Return some minimal data.
+        return minimalReturnData;
+    },
+    initLayers : async function(messageData){
+        // Save the layers data. Configure the ctx value for each layer.
+        let tsLayerSave = performance.now();
+
+        for(let layer of messageData.layers){ 
+            // Get the canvas.
+            let canvas = layer.canvas;
+            
+            // Create the drawing context.
+            layer.ctx = canvas.getContext("2d", layer.canvasOptions || {});
+            
+            // Clear the layer.
+            layer.ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Create the imgDataCache
+            layer.imgDataCache = new ImageData(canvas.width, canvas.height);
+            
+            // Clear the imgDataCache
+            layer.imgDataCache.data.set(0);
+            
+            // Save the layer.
+            _GFX.layers[layer.name] = layer;
+        }
+        tsLayerSave = performance.now() - tsLayerSave;
+
+        // Init V4
+        let ts_initV4 = performance.now();
+        if(messageFuncs.gfx && messageFuncs.gfx.init){ await messageFuncs.gfx.init(); }
+        ts_initV4 = performance.now() - ts_initV4;
+        
+        // Save the timings.
+        messageFuncs.timings["initLayers"]["tsLayerSave"] = tsLayerSave.toFixed(3);
+        messageFuncs.timings["initLayers"]["ts_initV4"]   = ts_initV4.toFixed(3);
+    },
+    messageHander : async function(event){
+        if(!event.data.mode){ console.log("No mode was specified."); self.postMessage( {mode: event.data, data: ""}, [] ); }
+        if(!event.data.data){ console.log("No data was specified."); self.postMessage( {mode: event.data, data: ""}, [] ); }
+        let mode  = event.data.mode;
+        let data  = event.data.data;
+        let flags = event.data.flags;
+        let refs  = [];
+        let returnData = "";
+
+        // DEBUG:
+        // console.log(`mode: ${mode}`, ", data:", data, ", flags:", flags);
+        // console.log(`mode: ${mode}`, ", flags:", flags);
+
+        switch(mode){
+            // NORMAL REQUESTS.
+            case "initConfigAndGraphics": { 
+                if(!flags.dataRequest){              await this.initConfigAndGraphics(data); }
+                else                  { returnData = await this.initConfigAndGraphics(data); }
+                break;
+            }
+            case "initLayers"           : { 
+                await this.initLayers(data); 
+                break; 
+            }
+            case "generateCoreImageDataAssets"           : { 
+                if(!flags.dataRequest){              await this.DRAW.generateCoreImageDataAssets(data.list); }
+                else                  { returnData = await this.DRAW.generateCoreImageDataAssets(data.list); }
+                break; 
+            }
+            case "sendGfxUpdates"       : { 
+                if(data.version == 4){
+                    if(!flags.dataRequest){              this.run(data); }
+                    else                  { returnData = this.run(data); }
+                }
+                break; 
+            }
+            
+            // DEBUG REQUESTS.
+
+            case "requestHashCacheEntry" : { 
+                console.log("HASH CACHE ENTRY:", data.title);
+                console.log("  HASH:", this.DRAW.hashCacheMap.get(data.hash) );
+                console.log("  BASE:", this.DRAW.hashCacheMap.get(data.hashBase) );
+                console.log(`  HASH ACCESS: messageFuncs.gfx.DRAW.hashCacheMap.get(${data.hash})`);
+                console.log(`  BASE ACCESS: messageFuncs.gfx.DRAW.hashCacheMap.get(${data.hashBase})`);
+                break; 
+            }
+            
+            // UNUSED??
+            case "clearAllLayers"          : { 
+                this.CLEAR.allLayersGfx(); 
+                this.CLEAR.allLayersData(); 
+                break; 
+            }
+            
+            case "_DEBUG.toggleDebugFlag"          : { 
+                debugActive = data.debugActive ?? false;
+                break; 
+            }
+
+            case "_DEBUG.updateDebugTimings"          : { 
+                this.updateDebugTimings();
+                returnData = messageFuncs.timings["gfx"];
+                break; 
+            }
+
+            case "_DEBUG.toggleCacheFlag"          : { 
+                _GFX.configObj.disableCache = data.disableCache ?? false;
+                break; 
+            }
+
+            // UNKNOWN REQUESTS.
+            default: {
+                console.log("WEBWORKER: Unknown mode:", mode);
+                break; 
+            }
+        }
+
+        // Send a response.
+        self.postMessage( 
+            { 
+                mode: mode, 
+                data: returnData, 
+                flags: flags 
+            }, refs 
+        );
+    },
 };

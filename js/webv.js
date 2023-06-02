@@ -53,11 +53,34 @@ var _WEBW_V = {
             // if(e.data.data){ console.log("_WEBW_V: RECEIVE", e.data); }
             
             switch(e.data.mode){
-                
                 case "initConfigAndGraphics"     : {
                     // Save tileset/tilemap data.
-                    _GFX.tilesets = e.data.data;
+                    if(e.data.data.minimalReturnData){
+                        // Save the timings and counts.
+                        _GFX.timings.initConfigAndGraphics = {
+                            ...e.data.data.timings,
+                            ...e.data.data.counts,
+                        };
+                        _GFX.tilesets = e.data.data.minimalReturnData;
+                    }
+                    else{
+                        _GFX.tilesets = e.data.data;
+                    }
                     
+                                        
+                    // Resolve differed promise?
+                    if(this.differedProms[e.data.mode]){ 
+                        this.differedProms[e.data.mode].resolve(); 
+                    }
+                    break;
+                }
+
+                case "initLayers"     : {
+                    // Save the timings.
+                    if(e.data.data.timings){
+                        _GFX.timings.initLayers = e.data.data.timings;
+                    }
+
                     // Resolve differed promise?
                     if(this.differedProms[e.data.mode]){ 
                         this.differedProms[e.data.mode].resolve(); 
@@ -119,7 +142,8 @@ var _WEBW_V = {
                     mode: mode,
                     data: data.data,
                     flags: { waitForResp: waitForResp, dataRequest: dataRequest },
-                    version: 2,
+                    // version: 2,
+                    version: 5,
                 },
                 data.refs ?? [],
             );

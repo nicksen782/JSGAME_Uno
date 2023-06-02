@@ -538,6 +538,8 @@ var _DEBUG = {
             dataIsUsed: false,
             lastUpdate1: 0,
             updateCache: function(data){
+                if(data == "") { return; }
+
                 // Save the data.
                 this.values = data;
                 this.dataIsUsed = false;
@@ -1448,7 +1450,7 @@ var _DEBUG = {
         let totalTempGenTime = 0;
         for(let index in this.hashCacheStats1){ 
             data = this.hashCacheStats1[index];
-            if(data.mapKey.length > maxLen1){ maxLen1 = data.mapKey.length; }
+            if(data.mapKey && data.mapKey.length > maxLen1){ maxLen1 = data.mapKey.length; }
             if(data.relatedMapKey.length > maxLen2){ maxLen2 = data.relatedMapKey.length; }
             if(data.ts.length > maxLen2){ maxLen3 = data.ts.length; }
             if(data.removeHashOnRemoval){
@@ -1469,9 +1471,9 @@ var _DEBUG = {
             // if(data.rotation)
             // if(data.removeHashOnRemoval)
             let originClass = "debug_hashCache_originLabel ";
-            if     (data.origin.indexOf("ON_DEMAND")     !=-1) { originClass += "debug_hashCache_ON_DEMAND "; }
-            else if(data.origin.indexOf("CUSTOM_CACHE")  !=-1) { originClass += "debug_hashCache_CUSTOM_CACHE "; }
-            else if(data.origin.indexOf("INIT_PRECACHE") !=-1) { originClass += "debug_hashCache_INIT_PRECACHE "; }
+            if     (data.origin.indexOf("CUSTOM") !=-1) { originClass += "debug_hashCache_ON_DEMAND "; }
+            else if(data.origin.indexOf("USER")   !=-1) { originClass += "debug_hashCache_CUSTOM_CACHE "; }
+            else if(data.origin.indexOf("BASE")   !=-1) { originClass += "debug_hashCache_INIT_PRECACHE "; }
 
             let originModifiedSpan = ``;
             if     (data.origin.indexOf("_MODIFIED")     !=-1) { 
@@ -1483,8 +1485,8 @@ var _DEBUG = {
             `${data.removeHashOnRemoval?"(TEMP)":"(PERM)"}, ${hashText} ` +
             `, origin: <span class="${originClass}">${data.origin}</span> ${originModifiedSpan}` + 
             `\n` +
-            ` ${data.mapKey.toString().padEnd(maxLen1, " ")} ` + 
-            `(${ (data.relatedMapKey ? data.relatedMapKey+")" : "<custom>)" )} ` +
+            `${data.mapKey ? " mapKey: " + data.mapKey.toString().padEnd(maxLen1, " ") : ""} ` + 
+            `(relatedMapKey: ${ (data.relatedMapKey ? data.relatedMapKey+")" : "<custom>)" )} ` +
 
             `\n` +
             ` ${data.ts    .toString().padEnd(maxLen3, " ")},` +

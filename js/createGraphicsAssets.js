@@ -119,7 +119,7 @@
 
         // Return the r,g,b,a array.
         return [
-                bits32Value & 255,        // r
+             bits32Value & 255,        // r
             (bits32Value >> 8) & 255,  // g
             (bits32Value >> 16) & 255, // b
             alpha,                     // a
@@ -313,35 +313,55 @@
     };
     
     // Replaces colors in ImageData. (By reference, changes source imageData.)
-    function replaceColors(imageData, colorReplacements) {
-        if(!colorReplacements || !colorReplacements.length){ 
-            console.log("replaceColors: level 1: No colors specified:", colorReplacements); 
-            return; 
+    function replaceColors(imageData, settings) {
+        let colorReplacements = settings.colorData;
+
+        // Stop if no color replacements were specified.
+        if(!colorReplacements || !colorReplacements.length){
+            console.log("replaceColors: level 1: No colors specified:", colorReplacements, settings);
+            return;
         }
-        for (let i = 0; i < imageData.data.length; i += 4) {
-            const pixelColor = imageData.data.slice(i, i + 4);
 
-            for (let j = 0; j < colorReplacements.length; j++) {
-                if(!colorReplacements[j] || !colorReplacements[j].length){ 
-                    // console.log("replaceColors: level 2: No colors specified:", j, colorReplacements[j], colorReplacements); 
-                    continue; 
-                }
-                
-                const [sourceColor, targetColor] = colorReplacements[j];
+        // Variables.
+        let pixelKey;
+        let sourceKey;
+        let targetKey;
+        let sourceColor;
+        let targetColor;
 
-                // Compare colors.
-                if(pixelColor[0] === sourceColor[0] &&
-                    pixelColor[1] === sourceColor[1] &&
-                    pixelColor[2] === sourceColor[2] &&
-                    pixelColor[3] === sourceColor[3]
-                ){
-                    imageData.data.set(targetColor, i);
-                    break;
-                }
+        // Create a Uint32Array view over the image data
+        const dataView = new Uint32Array(imageData.data.buffer);
+
+        // Create a lookup map for color replacements.
+        const lookup = new Map();
+        for(let i=0, len = colorReplacements.length; i<len; i+=1){
+            sourceColor = colorReplacements[i][0];
+            targetColor = colorReplacements[i][1];
+
+            if (!sourceColor || !targetColor) {
+                console.log("replaceColors: level 2: No colors specified:");
+                return;
+            }
+
+            // Convert colors to single integer values for faster lookup
+            sourceKey = ( (sourceColor[3] << 24) | (sourceColor[2] << 16) | (sourceColor[1] << 8) | sourceColor[0] ) >>> 0;
+            targetKey = ( (targetColor[3] << 24) | (targetColor[2] << 16) | (targetColor[1] << 8) | targetColor[0] ) >>> 0;
+            lookup.set(sourceKey, targetKey);
+        }
+
+        // Iterate over pixels and replace colors as needed.
+        for (let i = 0; i < dataView.length; i++) {
+            // Get this pixel as a 32-bit value. 
+            pixelKey = dataView[i];
+
+            // Check if the pixel is in the lookup Map.
+            if (lookup.has(pixelKey)) {
+                // It is. Replace the pixel.
+                dataView[i] = lookup.get(pixelKey); // 32bit write
             }
         }
     };
-
+    
     // **********************
     // * IMAGE DATA UPDATES *
     // **********************
@@ -817,7 +837,7 @@
                                 w        : tmiObj.imgData.width, 
                                 h        : tmiObj.imgData.height,
                                 mapKey   : tmiObj.mapKey, 
-                            });
+                            }).length;
                             genTime = performance.now() - genTime;
                             tmiObj.genTime = genTime;
 
@@ -827,7 +847,7 @@
                     
                     if(debugActive && disableCache == false){
                         ts1 = performance.now() - ts1;
-                        console.log(`_createGraphicsAssets: tileset: '${tilesetName.padEnd(15, " ")}', MAPS PRE-LOADED: '${mapCount}', TIME: '${ts1.toFixed(2)} ms'`);
+                        console.log(`V4: _createGraphicsAssets: tileset: '${tilesetName.padEnd(13, " ")}', MAPS PRE-LOADED: '${mapCount}', TIME: '${ts1.toFixed(2)} ms'`);
                     }
 
                     res();

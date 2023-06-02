@@ -9,8 +9,8 @@ _APP.configObj = {
     // awaitDraw: true,
     awaitDraw: false,
 
-    generateCoreImageDataAssets: true,
-    // generateCoreImageDataAssets: false,
+    // generateCoreImageDataAssets: true,
+    generateCoreImageDataAssets: false,
 
     // disableCache: true,
     disableCache: false,

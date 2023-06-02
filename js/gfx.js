@@ -1,4 +1,6 @@
 var _GFX = {
+    timings: {},
+
     // Cache of tileset settings, tiles (optional), and tilemaps.
     tilesets:{},
 
@@ -568,6 +570,8 @@ var _GFX = {
                     _GFX.currentData[layerKey].changes = true;
                 }
             }
+
+            // Affect an individual layer.
             else{
                 // If the fade level is off then reset the fade settings for the layer.
                 if(level==null){
@@ -794,6 +798,7 @@ var _GFX = {
         // This is called after each draw completes.
         afterDraw: function(data={}, forceGraphicsDataUsed=false){
             if(_APP.debugActive && _DEBUG){
+                if(data == ""){ return; }
                 if(forceGraphicsDataUsed){
                     _DEBUG.timingsDisplay.gfx.dataIsUsed = false;
                 }
@@ -1065,7 +1070,7 @@ _GFX.init = async function(){
                 layers: layers,
             },
             refs:[...layers.map(d=>d.canvas)]
-        }, true, false);
+        }, true, true);
 
         resolve();
     });
