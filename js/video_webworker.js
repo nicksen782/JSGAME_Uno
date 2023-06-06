@@ -7,11 +7,28 @@ var debugActive = false;
 const messageFuncs = {
     timings: {
         gfx: {
-            "L1" : {},
-            "L2" : {},
-            "L3" : {},
-            "L4" : {},
-            "gfx" : 0,
+            'L1'                  : {},
+            'L2'                  : {},
+            'L3'                  : {},
+            'L4'                  : {},
+            'gfx'                 : 0,
+            'gs1'                 : "",
+            'gs2'                 : "",
+            'hasChanges'          : false,
+            'version'             : 0,
+            'ALLCLEAR'            : false,
+            'totalSize_all'       : 0,
+            'totalSize_temp'      : 0,
+            'totalSize_perm'      : 0,
+            'totalSum_genTimeAll' : 0,
+            'totalSum_genTimeTemp': 0,
+            'totalSum_genTimePerm': 0,
+            'totalSum'            : 0,
+            'totalSumTemp'        : 0,
+            'totalSumPerm'        : 0,
+            'hashCacheStats'      : [],
+            'ALLTIMINGS'          : {}
+
         },
         initConfigAndGraphics: {},
         initLayers: {},

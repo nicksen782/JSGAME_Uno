@@ -1,254 +1,360 @@
 // @ts-nocheck
 
 var _DEBUG = {
-    gridCanvas: null,
-    createGridCanvas: function(){
-        // Copy the dimensions of the first canvas. 
-        const canvas_src_L1 = document.querySelector(".canvasLayer[name='L1']");
-    
-        // Create a canvas for this layer.
-        this.gridCanvas = document.createElement("canvas");
-        this.gridCanvas.width  = canvas_src_L1.width;
-        this.gridCanvas.height = canvas_src_L1.height;
-        this.gridCanvas.id = "debug_grid_canvas";
-        this.gridCanvas.style["z-index"] = "300";
-        const ctx = this.gridCanvas.getContext('2d');
-    
-        // Add the class.
-        this.gridCanvas.classList.add("canvasLayer");
-        this.gridCanvas.classList.add("displayNone");
-    
-        const gridSize = 8;
-        const offset = 0.5;
-        ctx.lineWidth = 1;
-        for (let x = 0; x <= this.gridCanvas.width; x += gridSize) {
-          ctx.moveTo(x + offset, 0);
-          ctx.lineTo(x + offset, this.gridCanvas.height);
-        }
-        for (let y = 0; y <= this.gridCanvas.height; y += gridSize) {
-          ctx.moveTo(0, y + offset);
-          ctx.lineTo(this.gridCanvas.width, y + offset);
-        }
-        ctx.strokeStyle = 'rgba(128,128,128, 1)';
-        ctx.stroke();
-    
-        // Add a marker to every 5th square.
-        ctx.fillStyle = 'rgba(128,128,128,1)';
-        for (let x = 0; x <= this.gridCanvas.width; x += gridSize * 5) {
-            for (let y = 0; y <= this.gridCanvas.height; y += gridSize * 5) {
-                ctx.fillRect(
-                    x + 3, 
-                    y + 3, 
-                    gridSize-5, 
-                    gridSize-5
-                );
-            }
-        }
-    
-        let outputDiv = document.getElementById("output");
-        outputDiv.append(this.gridCanvas);
-    
-        document.getElementById("debug_test_toggleGridCanvas").addEventListener("click", ()=>_DEBUG.toggleGridCanvas(), false);
-    },
-    toggleGridCanvas: function(){
-        this.gridCanvas.classList.toggle("displayNone");
-        let elem = document.getElementById("debug_test_toggleGridCanvas")
-        if(this.gridCanvas.classList.contains("displayNone")){
-            elem.innerText = "OFF";
-            // debug_bgColor_on
-            // debug_bgColor_off
-            elem.classList.remove("debug_bgColor_on");
-            elem.classList.add("debug_bgColor_off");
-        }
-        else{
-            elem.classList.add("debug_bgColor_on");
-            elem.classList.remove("debug_bgColor_off");
-            elem.innerText = "ON ";
-        }
+};
 
-    },
+_DEBUG.init = async function(){
+    return new Promise(async (resolve,reject)=>{
+        await _new_DEBUG.init();
 
-    gameLoopControl: function(){
-        // TOGGLE: GAMELOOP
-        let toggleGameLoop = document.getElementById("debug_test_toggleGameLoop");
-        toggleGameLoop .addEventListener("click", ()=>{ 
-            if(_APP.game.gameLoop.running){
-                toggleGameLoop.classList.remove("debug_bgColor_on");
-                toggleGameLoop.classList.add("debug_bgColor_off");
-                toggleGameLoop.innerText = "OFF";
-                _APP.game.gameLoop.loop_stop(); 
-            } 
-            else {
-                toggleGameLoop.classList.remove("debug_bgColor_off");
-                toggleGameLoop.classList.add("debug_bgColor_on");
-                toggleGameLoop.innerText = "ON";
-                _APP.game.gameLoop.loop_start(); 
-            } 
-        }, false);
-        if(_APP.game.gameLoop.running){
-            toggleGameLoop.classList.remove("debug_bgColor_on");
-            toggleGameLoop.classList.add("debug_bgColor_off");
-            toggleGameLoop.innerText = "OFF";
-        } 
-        else {
-            toggleGameLoop.classList.remove("debug_bgColor_off");
-            toggleGameLoop.classList.add("debug_bgColor_on");
-            toggleGameLoop.innerText = "ON";
-        } 
+        // _DEBUG.timingsDisplay.gfx.init();
+        // _DEBUG.timingsDisplay.loop.init();
+        // _DEBUG.timingsDisplay.debug.init();
 
-        // TOGGLE: LOGIC
-        let toggleLogic = document.getElementById("debug_test_toggleLogic");
-        toggleLogic.addEventListener("click", ()=>{
-            _APP.game.gameLoop.skipLogic = !_APP.game.gameLoop.skipLogic;
-            if(_APP.game.gameLoop.skipLogic){
-                toggleLogic.classList.remove("debug_bgColor_on");
-                toggleLogic.classList.add("debug_bgColor_off");
-                toggleLogic.innerText = "OFF";
-            } 
-            else {
-                toggleLogic.classList.remove("debug_bgColor_off");
-                toggleLogic.classList.add("debug_bgColor_on");
-                toggleLogic.innerText = "ON";
-            } 
-        }, false);
-        if(_APP.game.gameLoop.skipLogic){
-            toggleLogic.classList.remove("debug_bgColor_on");
-            toggleLogic.classList.add("debug_bgColor_off");
-            toggleLogic.innerText = "OFF";
-        } 
-        else {
-            toggleLogic.classList.remove("debug_bgColor_off");
-            toggleLogic.classList.add("debug_bgColor_on");
-            toggleLogic.innerText = "ON";
-        } 
-
-        // TOGGLE: ASYNC DRAW
-        let awaitDraw = document.getElementById("debug_test_toggleDrawAsync");
-        awaitDraw.addEventListener("click", ()=>{ 
-            _APP.configObj.awaitDraw = !_APP.configObj.awaitDraw;
-            if(_APP.configObj.awaitDraw){
-                awaitDraw.classList.remove("debug_bgColor_off");
-                awaitDraw.classList.add("debug_bgColor_on");
-                awaitDraw.innerText = "ON";
-            } 
-            else {
-                awaitDraw.classList.remove("debug_bgColor_on");
-                awaitDraw.classList.add("debug_bgColor_off");
-                awaitDraw.innerText = "OFF";
-            } 
-        }, false);
-        if(_APP.configObj.awaitDraw){
-            awaitDraw.classList.remove("debug_bgColor_off");
-            awaitDraw.classList.add("debug_bgColor_on");
-            awaitDraw.innerText = "ON";
-        } 
-        else {
-            awaitDraw.classList.remove("debug_bgColor_on");
-            awaitDraw.classList.add("debug_bgColor_off");
-            awaitDraw.innerText = "OFF";
-        } 
-
-        // TOGGLE: DEBUG
-        let debugButton = document.getElementById("debug_toggleDebugFlag");
-        debugButton.addEventListener("click", ()=>{ 
-            _APP.debugActive = !_APP.debugActive;
-            if(_APP.debugActive){
-                debugButton.classList.remove("debug_bgColor_off");
-                debugButton.classList.add("debug_bgColor_on");
-                debugButton.innerText = "ON";
-            } 
-            else {
-                debugButton.classList.remove("debug_bgColor_on");
-                debugButton.classList.add("debug_bgColor_off");
-                debugButton.innerText = "OFF";
-            } 
-            _WEBW_V.SEND("_DEBUG.toggleDebugFlag", { 
-                data: { debugActive: _APP.debugActive }, 
-                refs:[]
-            }, false, false);
-        }, false);
-        if(_APP.debugActive){
-            debugButton.classList.remove("debug_bgColor_off");
-            debugButton.classList.add("debug_bgColor_on");
-            debugButton.innerText = "ON";
-        } 
-        else {
-            debugButton.classList.remove("debug_bgColor_on");
-            debugButton.classList.add("debug_bgColor_off");
-            debugButton.innerText = "OFF";
-        } 
-
-        // TOGGLE: ENABLE/DISABLE CACHE
-        let toggleCacheButton = document.getElementById("debug_toggleCacheFlag");
-        toggleCacheButton.addEventListener("click", ()=>{ 
-            _APP.configObj.disableCache = !_APP.configObj.disableCache;
-            if(_APP.configObj.disableCache){
-                toggleCacheButton.classList.remove("debug_bgColor_on");
-                toggleCacheButton.classList.add("debug_bgColor_off");
-                toggleCacheButton.innerText = "OFF";
-            } 
-            else {
-                toggleCacheButton.classList.remove("debug_bgColor_off");
-                toggleCacheButton.classList.add("debug_bgColor_on");
-                toggleCacheButton.innerText = "ON";
-            } 
-            _WEBW_V.SEND("_DEBUG.toggleCacheFlag", { 
-                data: { disableCache: _APP.configObj.disableCache }, 
-                refs:[]
-            }, false, false);
-        }, false);
-        if(_APP.configObj.disableCache){
-            toggleCacheButton.classList.remove("debug_bgColor_on");
-            toggleCacheButton.classList.add("debug_bgColor_off");
-            toggleCacheButton.innerText = "OFF";
-        }
-        else{
-            toggleCacheButton.classList.remove("debug_bgColor_off");
-            toggleCacheButton.classList.add("debug_bgColor_on");
-            toggleCacheButton.innerText = "ON";
-        }
-
-        // GO TO GAMESTATE
-        let changeGs1Select = document.getElementById("debug_changeGs1Select");
-        let changeGs1Button = document.getElementById("debug_changeGs1Button");
+        // Init init2.
+        let ts_init2 = performance.now(); 
+        await _DEBUG2.init();
+        ts_init2 = performance.now() - ts_init2;
         
-        changeGs1Select.addEventListener("change", ()=>{ 
-            let value = changeGs1Select.value;
-            _APP.game.changeGs1(value);
-            _APP.game._changeGs1(value);
-        }, false);
-        changeGs1Button.addEventListener("click" , ()=>{ 
-            let value = changeGs1Select.value;
-            _APP.game.changeGs1(value);
-            _APP.game._changeGs1(value);
-        }, false);
-        let intervalId = setInterval(()=>{ 
-            if(_APP.game.gs1){ changeGs1Select.value = _APP.game.gs1; clearInterval(intervalId);}
-        }, 100);
+        resolve();
+    });
+}
 
-        // RESTART THE CURRENT GAMESTATE
-        let restartGS1 = document.getElementById("debug_test_restartGS1");
-        restartGS1.addEventListener("click", ()=>{ 
-            console.log("_APP.game.gs1:", _APP.game.gs1);
-            _APP.game.gameLoop.loop_stop(); 
-            _APP.game.gamestates[_APP.game.gs1].inited = false;
-            _APP.game.gameLoop.loop_start(); 
-        }, false);
+var _new_DEBUG = {
+    // Displays a canvas on top of all canvases with a grid drawn to it.
+    gridCanvas: {
+        canvas:null,
+        ctx:null,
+        init: function(){
+            // Copy the dimensions of the first canvas. 
+            const canvas_src = document.querySelector(".canvasLayer");
+
+            // Create a canvas for this layer.
+            this.canvas = document.createElement("canvas");
+            this.canvas.width  = canvas_src.width;
+            this.canvas.height = canvas_src.height;
+            this.canvas.id = "debug_grid_canvas";
+            this.canvas.style["z-index"] = "300";
+            this.ctx = this.canvas.getContext('2d');
+        
+            // Add the class.
+            this.canvas.classList.add("canvasLayer");
+            this.canvas.classList.add("displayNone");
+
+            // Draw a grid pattern.
+            const gridSize = 8;
+            const offset = 0.5;
+            this.ctx.lineWidth = 1;
+            for (let x = 0; x <= this.canvas.width; x += gridSize) {
+                this.ctx.moveTo(x + offset, 0);
+                this.ctx.lineTo(x + offset, this.canvas.height);
+            }
+            for (let y = 0; y <= this.canvas.height; y += gridSize) {
+                this.ctx.moveTo(0, y + offset);
+                this.ctx.lineTo(this.canvas.width, y + offset);
+            }
+            this.ctx.strokeStyle = 'rgba(128,128,128, 1)';
+            this.ctx.stroke();
+        
+            // Add a marker to every 5th square.
+            this.ctx.fillStyle = 'rgba(128,128,128,1)';
+            for (let x = 0; x <= this.canvas.width; x += gridSize * 5) {
+                for (let y = 0; y <= this.canvas.height; y += gridSize * 5) {
+                    this.ctx.fillRect(
+                        x + 3, 
+                        y + 3, 
+                        gridSize-5, 
+                        gridSize-5
+                    );
+                }
+            }
+        
+            // Add the new canvas to the output div.
+            let outputDiv = document.getElementById("output");
+            outputDiv.append(this.canvas);
+        },
     },
-    
-    fadeHandler: function(){
-        let fadeSliderALL     = document.getElementById("fadeSliderALL");
-        let fadeSliderL1     = document.getElementById("fadeSliderL1");
-        let fadeSliderL2     = document.getElementById("fadeSliderL2");
-        let fadeSliderL3     = document.getElementById("fadeSliderL3");
-        let fadeSliderL4     = document.getElementById("fadeSliderL4");
-        let fadeSliderALLText = document.getElementById("fadeSliderALLText");
-        let fadeSliderL1Text = document.getElementById("fadeSliderL1Text");
-        let fadeSliderL2Text = document.getElementById("fadeSliderL2Text");
-        let fadeSliderL3Text = document.getElementById("fadeSliderL3Text");
-        let fadeSliderL4Text = document.getElementById("fadeSliderL4Text");
+    // Control of the toggle buttons: loop, logic, await draw, debug, hashcache, grid.
+    toggleButtons1: {
+        DOM: {
+            gridCanvasButton : null,
+            toggleGameLoop   : null,
+            toggleLogic      : null,
+            awaitDraw        : null,
+            debugButton      : null,
+            toggleCacheButton: null,
+        },
+        setCurrentStates: function(){
+            let checks = [
+                { check: !_new_DEBUG.gridCanvas.canvas.classList.contains("displayNone"), elem: this.DOM["gridCanvasButton"] },
+                { check:  _APP.game.gameLoop.running,                                     elem: this.DOM["toggleGameLoop"] },
+                { check: !_APP.game.gameLoop.skipLogic,                                   elem: this.DOM["toggleLogic"] },
+                { check:  _APP.configObj.awaitDraw,                                       elem: this.DOM["awaitDraw"] },
+                { check:  _APP.debugActive,                                               elem: this.DOM["debugButton"] },
+                { check: !_APP.configObj.disableCache,                                    elem: this.DOM["toggleCacheButton"] },
+            ];
+            let classes = [
+                "debug_bgColor_on",
+                "debug_bgColor_off",
+            ];
 
-        function changeFade(layer, sliderElem, sliderTextElem) {
+            for(let rec of checks){
+                // If the check is true (meaning that the setting is on...
+                if(rec.check){
+                    rec.elem.classList.remove(...classes);
+                    rec.elem.classList.add("debug_bgColor_on");
+                    rec.elem.innerText = "ON";
+                }
+                // The the setting is off...
+                else{
+                    rec.elem.classList.remove(...classes);
+                    rec.elem.classList.add("debug_bgColor_off");
+                    rec.elem.innerText = "OFF";
+                }
+            }
+        },
+        init: function(){
+            // Save DOM.
+            this.DOM.gridCanvasButton  = document.getElementById("debug_test_toggleGridCanvas");
+            this.DOM.toggleGameLoop    = document.getElementById("debug_test_toggleGameLoop");
+            this.DOM.toggleLogic       = document.getElementById("debug_test_toggleLogic");
+            this.DOM.awaitDraw         = document.getElementById("debug_test_toggleDrawAsync");
+            this.DOM.debugButton       = document.getElementById("debug_toggleDebugFlag");
+            this.DOM.toggleCacheButton = document.getElementById("debug_toggleCacheFlag");
+            
+            // Add toggle logic/event listeners.
+
+            // SHOW GRID
+            this.DOM.gridCanvasButton.addEventListener("click", ()=>{
+                let home = _new_DEBUG.gridCanvas;
+                home.canvas.classList.toggle("displayNone");
+                if(home.canvas.classList.contains("displayNone")){
+                    this.DOM.gridCanvasButton.innerText = "OFF";
+                    this.DOM.gridCanvasButton.classList.remove("debug_bgColor_on");
+                    this.DOM.gridCanvasButton.classList.add("debug_bgColor_off");
+                }
+                else{
+                    this.DOM.gridCanvasButton.classList.add("debug_bgColor_on");
+                    this.DOM.gridCanvasButton.classList.remove("debug_bgColor_off");
+                    this.DOM.gridCanvasButton.innerText = "ON ";
+                }
+            }, false);
+
+            // GAMELOOP
+            this.DOM.toggleGameLoop .addEventListener("click", ()=>{ 
+                if(_APP.game.gameLoop.running){
+                    this.DOM.toggleGameLoop.classList.remove("debug_bgColor_on");
+                    this.DOM.toggleGameLoop.classList.add("debug_bgColor_off");
+                    this.DOM.toggleGameLoop.innerText = "OFF";
+                    _APP.game.gameLoop.loop_stop(); 
+                } 
+                else {
+                    this.DOM.toggleGameLoop.classList.remove("debug_bgColor_off");
+                    this.DOM.toggleGameLoop.classList.add("debug_bgColor_on");
+                    this.DOM.toggleGameLoop.innerText = "ON";
+                    _APP.game.gameLoop.loop_start(); 
+                } 
+            }, false);
+
+            // LOGIC
+            this.DOM.toggleLogic.addEventListener("click", ()=>{
+                _APP.game.gameLoop.skipLogic = !_APP.game.gameLoop.skipLogic;
+                if(_APP.game.gameLoop.skipLogic){
+                    this.DOM.toggleLogic.classList.remove("debug_bgColor_on");
+                    this.DOM.toggleLogic.classList.add("debug_bgColor_off");
+                    this.DOM.toggleLogic.innerText = "OFF";
+                } 
+                else {
+                    this.DOM.toggleLogic.classList.remove("debug_bgColor_off");
+                    this.DOM.toggleLogic.classList.add("debug_bgColor_on");
+                    this.DOM.toggleLogic.innerText = "ON";
+                } 
+            }, false);
+
+            // AWAIT DRAW
+            this.DOM.awaitDraw.addEventListener("click", ()=>{ 
+                _APP.configObj.awaitDraw = !_APP.configObj.awaitDraw;
+                if(_APP.configObj.awaitDraw){
+                    this.DOM.awaitDraw.classList.remove("debug_bgColor_off");
+                    this.DOM.awaitDraw.classList.add("debug_bgColor_on");
+                    this.DOM.awaitDraw.innerText = "ON";
+                } 
+                else {
+                    this.DOM.awaitDraw.classList.remove("debug_bgColor_on");
+                    this.DOM.awaitDraw.classList.add("debug_bgColor_off");
+                    this.DOM.awaitDraw.innerText = "OFF";
+                } 
+            }, false);
+
+            // DEBUG
+            this.DOM.debugButton.addEventListener("click", ()=>{ 
+                _APP.debugActive = !_APP.debugActive;
+                if(_APP.debugActive){
+                    this.DOM.debugButton.classList.remove("debug_bgColor_off");
+                    this.DOM.debugButton.classList.add("debug_bgColor_on");
+                    this.DOM.debugButton.innerText = "ON";
+                } 
+                else {
+                    this.DOM.debugButton.classList.remove("debug_bgColor_on");
+                    this.DOM.debugButton.classList.add("debug_bgColor_off");
+                    this.DOM.debugButton.innerText = "OFF";
+                } 
+                _WEBW_V.SEND("_DEBUG.toggleDebugFlag", { 
+                    data: { debugActive: _APP.debugActive }, 
+                    refs:[]
+                }, false, false);
+            }, false);
+
+            // HASH CACHE
+            this.DOM.toggleCacheButton.addEventListener("click", ()=>{ 
+                _APP.configObj.disableCache = !_APP.configObj.disableCache;
+                if(_APP.configObj.disableCache){
+                    this.DOM.toggleCacheButton.classList.remove("debug_bgColor_on");
+                    this.DOM.toggleCacheButton.classList.add("debug_bgColor_off");
+                    this.DOM.toggleCacheButton.innerText = "OFF";
+                } 
+                else {
+                    this.DOM.toggleCacheButton.classList.remove("debug_bgColor_off");
+                    this.DOM.toggleCacheButton.classList.add("debug_bgColor_on");
+                    this.DOM.toggleCacheButton.innerText = "ON";
+                } 
+                _WEBW_V.SEND("_DEBUG.toggleCacheFlag", { 
+                    data: { disableCache: _APP.configObj.disableCache }, 
+                    refs:[]
+                }, false, false);
+            }, false);
+
+
+            // Set initial toggle button states.
+            this.setCurrentStates();
+        },
+    },
+    // Color finder: hover to see the tile and the RGBA colors for each pixel of that tile.
+    colorFinder:{
+        DOM: {
+            "canvas_src_L1": null,
+            "canvas_src_L2": null,
+            "canvas_src_L3": null,
+            "canvas_src_L4": null,
+            "copyCanvas": null,
+            "zoomCanvas": null,
+            "pixelRGBA": null,
+            "debug_test_copyLayer_L1": null,
+            "debug_test_copyLayer_L2": null,
+            "debug_test_copyLayer_L3": null,
+            "debug_test_copyLayer_L4": null,
+            "debug_test_copyLayer_ALL": null,
+        },
+        replaceCopyCanvas: function(canvas_src, copyCanvasCtx){
+            copyCanvasCtx.clearRect(0, 0, copyCanvasCtx.canvas.width, copyCanvasCtx.canvas.height);
+            copyCanvasCtx.drawImage(canvas_src, 0, 0);
+        },
+        copyAll : function(copyCanvasCtx){
+            copyCanvasCtx.clearRect(0, 0, copyCanvasCtx.canvas.width, copyCanvasCtx.canvas.height);
+            copyCanvasCtx.drawImage(this.DOM.canvas_src_L1, 0, 0);
+            copyCanvasCtx.drawImage(this.DOM.canvas_src_L2, 0, 0);
+            copyCanvasCtx.drawImage(this.DOM.canvas_src_L3, 0, 0);
+            copyCanvasCtx.drawImage(this.DOM.canvas_src_L4, 0, 0);
+        },
+        hover1: function(event, copyCanvasCtx, zoomCanvasCtx){
+            let last_regionX;
+            let last_regionY;
+            const regionWidth  = 8;
+            const regionHeight = 8;
+
+            const rect = this.DOM.copyCanvas.getBoundingClientRect();
+            const scaleX = this.DOM.copyCanvas.width / rect.width;
+            const scaleY = this.DOM.copyCanvas.height / rect.height;
+    
+            // Calculate the scaled mouse position.
+            const mouseX = (event.clientX - rect.left) * scaleX;
+            const mouseY = (event.clientY - rect.top) * scaleY;
+    
+            // Calculate the 8x8px region under the mouse cursor
+            const regionX = Math.floor(mouseX / regionWidth) * regionWidth;
+            const regionY = Math.floor(mouseY / regionHeight) * regionHeight;
+            
+            // Determine if we should continue.
+            if( last_regionX == regionX && last_regionY == regionY ) { return; }
+            last_regionX = regionX; 
+            last_regionY = regionY;
+    
+            // Extract the ImageData of the region from the main canvas
+            const regionImageData = copyCanvasCtx.getImageData(regionX, regionY, regionWidth, regionHeight);
+    
+            // Clear the zoom canvas
+            zoomCanvasCtx.clearRect(0, 0, this.DOM.zoomCanvas.width, this.DOM.zoomCanvas.height);
+            
+            // Draw the extracted ImageData on the zoom canvas
+            zoomCanvasCtx.putImageData(regionImageData, 0, 0);
+    
+            // Display pixel values rgba as hex.
+            let text = "R0: ";
+            let rowNum = 0;
+            for(let i=0; i<regionImageData.data.length; i+=4){
+                if(i%(8*4)==0 && i!=0){ rowNum+=1; text += `\nR${rowNum}: `; }
+                let r = regionImageData.data[i+0];
+                let g = regionImageData.data[i+1];
+                let b = regionImageData.data[i+2];
+                let a = regionImageData.data[i+3];
+                text += `` +
+                `[` +
+                    `${r.toString().padStart(3, " ").toUpperCase()},` +
+                    `${g.toString().padStart(3, " ").toUpperCase()},` +
+                    `${b.toString().padStart(3, " ").toUpperCase()},` +
+                    `${a.toString().padStart(3, " ").toUpperCase()}` +
+                `] ` ;
+            }
+            this.DOM.pixelRGBA.innerText = text;
+        },
+        init: function(){
+            // Save DOM.
+            this.DOM.canvas_src_L1 = document.querySelector(".canvasLayer[name='L1']");
+            this.DOM.canvas_src_L2 = document.querySelector(".canvasLayer[name='L2']");
+            this.DOM.canvas_src_L3 = document.querySelector(".canvasLayer[name='L3']");
+            this.DOM.canvas_src_L4 = document.querySelector(".canvasLayer[name='L4']");
+            this.DOM.copyCanvas    = document.getElementById("debug_colorFinder_src");
+            this.DOM.zoomCanvas = document.getElementById("debug_colorFinder_zoom");
+            this.DOM.pixelRGBA  = document.getElementById("debug_colorFinder_pixelRGBA");
+            this.DOM.debug_test_copyLayer_L1  = document.getElementById("debug_test_copyLayer_L1");
+            this.DOM.debug_test_copyLayer_L2  = document.getElementById("debug_test_copyLayer_L2");
+            this.DOM.debug_test_copyLayer_L3  = document.getElementById("debug_test_copyLayer_L3");
+            this.DOM.debug_test_copyLayer_L4  = document.getElementById("debug_test_copyLayer_L4");
+            this.DOM.debug_test_copyLayer_ALL = document.getElementById("debug_test_copyLayer_ALL");
+
+            this.DOM.copyCanvas.width  = this.DOM.canvas_src_L1.width;
+            this.DOM.copyCanvas.height = this.DOM.canvas_src_L1.height;
+            let copyCanvasCtx = this.DOM.copyCanvas.getContext("2d", { willReadFrequently: true } );
+            let zoomCanvasCtx = this.DOM.zoomCanvas.getContext("2d");
+
+            // Event listeners.
+
+            // Copy buttons:
+            this.DOM.debug_test_copyLayer_L1 .addEventListener("click", ()=>this.replaceCopyCanvas(this.DOM.canvas_src_L1, copyCanvasCtx), false);
+            this.DOM.debug_test_copyLayer_L2 .addEventListener("click", ()=>this.replaceCopyCanvas(this.DOM.canvas_src_L2, copyCanvasCtx), false);
+            this.DOM.debug_test_copyLayer_L3 .addEventListener("click", ()=>this.replaceCopyCanvas(this.DOM.canvas_src_L3, copyCanvasCtx), false);
+            this.DOM.debug_test_copyLayer_L4 .addEventListener("click", ()=>this.replaceCopyCanvas(this.DOM.canvas_src_L4, copyCanvasCtx), false);
+            this.DOM.debug_test_copyLayer_ALL.addEventListener("click", ()=>this.copyAll(copyCanvasCtx), false);
+
+            // Mouse move hover.
+            this.DOM.copyCanvas.addEventListener('mousemove', (event) => this.hover1(event, copyCanvasCtx, zoomCanvasCtx), false);
+        },
+    },
+    // Allows for changing the global fade via slider bar.
+    fade: {
+        DOM: {
+            "fadeSliderALL"    : null,
+            "fadeSliderL1"     : null,
+            "fadeSliderL2"     : null,
+            "fadeSliderL3"     : null,
+            "fadeSliderL4"     : null,
+            "fadeSliderALLText": null,
+            "fadeSliderL1Text" : null,
+            "fadeSliderL2Text" : null,
+            "fadeSliderL3Text" : null,
+            "fadeSliderL4Text" : null,
+        },
+        changeFade: function(layer, sliderElem, sliderTextElem) {
             let level;
             level = parseFloat(sliderElem.value);
             let level_text;
@@ -274,767 +380,667 @@ var _DEBUG = {
                 level_text = `L:${(level-1).toString()}`;
             }
 
+            // Update the hover title.
             sliderElem.title = `${layer}: ${level_text}`;
+            
+            // Update the slider text to match the title.
             sliderTextElem.innerText = sliderElem.title;
-        }
-        changeFade("ALL", fadeSliderALL, fadeSliderALLText);
-        changeFade("L1", fadeSliderL1, fadeSliderL1Text);
-        changeFade("L2", fadeSliderL2, fadeSliderL2Text);
-        changeFade("L3", fadeSliderL3, fadeSliderL3Text);
-        changeFade("L4", fadeSliderL4, fadeSliderL4Text);
-
-        fadeSliderALL.addEventListener("input", ()=>{ changeFade("ALL", fadeSliderALL, fadeSliderALLText); }, false);
-        fadeSliderL1.addEventListener("input", ()=>{ changeFade("L1", fadeSliderL1, fadeSliderL1Text); }, false);
-        fadeSliderL2.addEventListener("input", ()=>{ changeFade("L2", fadeSliderL2, fadeSliderL2Text); }, false);
-        fadeSliderL3.addEventListener("input", ()=>{ changeFade("L3", fadeSliderL3, fadeSliderL3Text); }, false);
-        fadeSliderL4.addEventListener("input", ()=>{ changeFade("L4", fadeSliderL4, fadeSliderL4Text); }, false);
-    },
-
-    toggleDebugFlag: function(){
-        _APP.debugActive = !_APP.debugActive;
-        _WEBW_V.SEND("_DEBUG.toggleDebugFlag", { 
-            data: { debugActive: _APP.debugActive }, 
-            refs:[]
-        }, false, false);
-
-        // Update the text on the button.
-        let debug_toggleDebugActive = document.getElementById("debug_toggleDebugFlag");
-        if(_APP.debugActive){
-            debug_toggleDebugActive.innerText = "DEBUG: ON";
-        }
-        else{
-            debug_toggleDebugActive.innerText = "DEBUG: OFF";
-        }
-    },
-    elemsObj: {
-        frameCounter       : { e: null, t:0 },
-        frameDrawCounter   : { e: null, t:0 },
-        fpsDisplay         : { e: null, t:0 },
-        debug_GS1Text      : { e: null, t:0 },
-        debug_GS2Text      : { e: null, t:0 },
-        DRAWNEEDED: { e: null, t: 0 },
-        time_LOOP   : { e0: null, e1: null, e2: null, t: 0 },
-        time_LOGIC  : { e0: null, e1: null, e2: null, t: 0 },
-        time_DRAW   : { e0: null, e1: null, e2: null, t: 0 },
-    },
-    elemsObjInit: function(){
-        // Table 1.
-        this.elemsObj.fpsDisplay.e    = document.getElementById("debug_fpsDisplay");
-        this.elemsObj.debug_GS1Text.e = document.getElementById("debug_GS1Text");
-        this.elemsObj.debug_GS2Text.e = document.getElementById("debug_GS2Text");
-        
-        // Table 2.
-        this.elemsObj.frameCounter.e        = document.getElementById("debug_frameCounter");
-        this.elemsObj.frameDrawCounter.e    = document.getElementById("debug_frameDrawCounter");
-        this.elemsObj.DRAWNEEDED.e          = document.getElementById("debug_DRAWNEEDED");
-    },
-    applyChange(newText, obj, activeTime, noTrim=false){
-        // Trim the text.
-        let oldText;
-        if(!noTrim){
-            newText = newText.trim();
-            oldText = obj.e.innerText.trim();
-        }
-        // Do not trim the text.
-        else{
-            newText = newText;
-            oldText = obj.e.innerText;
-        }
-
-        // Determine if the active class can be removed once the old and new text match again.
-        let canChange = (performance.now() - obj.t > activeTime) || obj.t == 0;
-
-        // If the newText is different that the current text...
-        if(oldText != newText){
-            // Update the text.
-            obj.e.innerText = newText;
-
-            // Add the active class?
-            if(!obj.e.classList.contains("active")){ obj.e.classList.add("active"); }
-            
-            // Update the timestamp.
-            obj.t = performance.now();
-        }
-        
-        else if(obj.e.classList.contains("active") && canChange){ 
-            // Remove the active class.
-            obj.e.classList.remove("active"); 
-        }
-    },
-
-    lastDebugRun: performance.now(),
-    // lastDebugDelay: 200,
-    lastDebugDelay: 333,
-    endOfLoopDraw_funcs: function(timings){
-        if(performance.now() - this.lastDebugRun < this.lastDebugDelay){ return; }
-        this.lastDebugRun = performance.now();
-
-        window.requestAnimationFrame((now)=>{
-            let debugTs = now;
-            
-            // Display local settings/values/counts.
-            _APP.utility.timeIt("loop_display_func", "start");
-            this.loop_display_func();
-            _APP.utility.timeIt("loop_display_func", "stop");
-            
-            // Display the canvas draw timings data returned from the WebWorker.
-            _APP.utility.timeIt("gfx.barsChanges", "start");
-            if(
-                this.timingsDisplay.gfx.display_progressBars(now) &&
-                this.timingsDisplay.gfx.display_layerChanges(now) 
-            ){ 
-                _DEBUG.timingsDisplay.gfx.dataIsUsed = true;
-            }
-            _APP.utility.timeIt("gfx.barsChanges", "stop");
-
-            // Display the timing for the game loop (canvas draws are separate.)
-            _APP.utility.timeIt("loop.display_progressBars", "start"); this.timingsDisplay.loop.display_progressBars(now); _APP.utility.timeIt("loop.display_progressBars", "stop");
-            // _APP.utility.timeIt("loop.display_layerChanges", "start"); this.timingsDisplay.loop.display_layerChanges(now); _APP.utility.timeIt("loop.display_layerChanges", "stop");
-            _APP.utility.timeIt("loop.display_tmapCountByLayer", "start"); this.timingsDisplay.loop.display_tmapCountByLayer(now); _APP.utility.timeIt("loop.display_tmapCountByLayer", "stop");
-            
-            // displayLayerObjects
-            _APP.utility.timeIt("displayLayerObjects", "start");
-            this.displayLayerObjects();
-            _APP.utility.timeIt("displayLayerObjects", "stop");
-            
-            // display_hashCacheStats1
-            _APP.utility.timeIt("display_hashCacheStats1", "start");
-            this.display_hashCacheStats1();
-            _APP.utility.timeIt("display_hashCacheStats1", "stop");
-
-            // console.log(_APP.game.gameLoop.lastDebug1_timestamp);
-            
-            // Display the timing for the DEBUG (Always at least 1 frame behind.)
-            this.timingsDisplay.debug.display_progressBars(now);
-
-            // 
-            _APP.game.gameLoop.lastDebug1_timestamp =  performance.now() - debugTs;
-
-            // Total of loop and gfx.
-            let total = +this.lastLoop_timestamp +
-            +_DEBUG.timingsDisplay.gfx.elems.TOTAL_ALL.data;
-            
-            // Total of loop and gfx and DEBUG.
-            // let total2 = 
-            // +this.lastLoop_timestamp +
-            //     +_APP.game.gameLoop.lastDebug1_timestamp +
-            //     +_DEBUG.timingsDisplay.gfx.elems.TOTAL_ALL.data;
-
-            // Log to the console if the loop took too long.
-            if(total > this.msFrame){ 
-                console.log(
-                    `OVER TIME: ${100*(total/this.msFrame).toFixed(0)} % (${total.toFixed(1)} ms) of: ${this.msFrame.toFixed(1)} ms` +
-                    `\n gs1: '${_APP.game.gs1}'` +
-                    `\n gs2: '${_APP.game.gs2}')` +
-                    `\n LOOP   : ${ +(+this.lastLoop_timestamp).toFixed(2)} ms` +
-                    `\n GFX    : ${ +(+_DEBUG.timingsDisplay.gfx.elems.TOTAL_ALL.data).toFixed(2)} ms` +
-                    `\n (DEBUG): ${ +(+_APP.game.gameLoop.lastDebug1_timestamp).toFixed(2)} ms` +
-                    ``
-                ); 
-            }
-        });
-    },
-    timingsDisplay: {
-        // prevValue and newValue should be values between 0-100.
-        updateProgressBar2: function(container, bar, label, newValue, mult, label2="", adjusted) {
-            const easingFactor = 0.75;
-            const cssClasses = ["level1", "level2", "level3", "level4", "level5"];
-            newValue = Number(newValue);
-            if (isNaN(newValue)) {
-                console.error('Invalid newValue');
-                return;
-            }
-            let prevValue = Number(label.getAttribute("curr"));
-            if (isNaN(prevValue)) {
-                console.error('Invalid prevValue');
-                return;
-            }
-            let prevValue2 = Number(label.getAttribute("curr2"));
-            if (isNaN(prevValue2)) {
-                console.error('Invalid prevValue2');
-                return;
-            }
-            let modifiedNewValue = newValue;
-            let textOutput;
-            let clampedPercent;
-            let cssClass = "";
-            
-            // Exit if no change
-            if (prevValue === newValue && prevValue2 === Number(label2)) {
-                console.log("no change");
-                return;
-            }
-        
-            let difference = (modifiedNewValue - prevValue);
-            modifiedNewValue = prevValue + difference * easingFactor;
-            modifiedNewValue = this.roundToNearestMultiple(modifiedNewValue, mult, "D");
-            modifiedNewValue = Math.max(modifiedNewValue, 0);
-            
-            let part1 = `${modifiedNewValue}%`.padStart(5, " ");
-            let part2 = `(${parseFloat(label2).toFixed(1)}ms)`.padStart(9, " ") + `${adjusted ? "*":" "}`;
-        
-            // Generate the values for the label.
-            textOutput = label2 ? `${part1} ${part2}` : `${part1} `;
-            
-            // Adjust the width of the bar.
-            clampedPercent = Math.min(Math.max(modifiedNewValue, 0), 100);  // Ensure percent is within 0-100 range.
-            bar.style.width = `${clampedPercent}%`;
-        
-            if     (clampedPercent < 20){ cssClass = "level1"; } // GREEN
-            else if(clampedPercent < 40){ cssClass = "level2"; } // BLUE
-            else if(clampedPercent < 60){ cssClass = "level3"; } // YELLOW
-            else if(clampedPercent < 80){ cssClass = "level4"; } // ORANGE
-            else                        { cssClass = "level5"; } // RED
-            bar.classList.remove(...cssClasses);
-            bar.classList.add(cssClass);
-                
-            // Adjust the values on the label.
-            label.innerText = textOutput;
-            label.setAttribute("curr", modifiedNewValue); 
-            label.setAttribute("curr2", label2); 
         },
-        roundToNearestMultiple: function(num, mult, dir){
-            if(dir=="D")     { return Math.floor(num / mult) * mult; }
-            else if(dir=="U"){ return Math.ceil(num / mult) * mult; }
-        },
-        forceToRange: function(num, min, max){
-            return Math.min( Math.max(num, min), max) ;
-        },
-        applyChange(newText, obj, activeTime, noTrim=false){
-            // Trim the text.
-            if(!noTrim){
-                newText = newText.trim();
-                oldText = obj.e.innerText.trim();
-            }
-            // Do not trim the text.
-            else{
-                newText = newText;
-                oldText = obj.e.innerText;
-            }
-    
-            // Determine if the active class can be removed once the old and new text match again.
-            let canChange = (performance.now() - obj.t > activeTime) || obj.t == 0 || activeTime == 0;
-            if(!canChange){ return; }
+        init: function(){
+            // Save DOM.
+            this.DOM.fadeSliderALL     = document.getElementById("fadeSliderALL");
+            this.DOM.fadeSliderL1      = document.getElementById("fadeSliderL1");
+            this.DOM.fadeSliderL2      = document.getElementById("fadeSliderL2");
+            this.DOM.fadeSliderL3      = document.getElementById("fadeSliderL3");
+            this.DOM.fadeSliderL4      = document.getElementById("fadeSliderL4");
+            this.DOM.fadeSliderALLText = document.getElementById("fadeSliderALLText");
+            this.DOM.fadeSliderL1Text  = document.getElementById("fadeSliderL1Text");
+            this.DOM.fadeSliderL2Text  = document.getElementById("fadeSliderL2Text");
+            this.DOM.fadeSliderL3Text  = document.getElementById("fadeSliderL3Text");
+            this.DOM.fadeSliderL4Text  = document.getElementById("fadeSliderL4Text");
 
-            if(oldText != newText){
-                // Update the text.
-                obj.e.innerText = newText;
-    
-                // Add the active class?
-                if(!obj.e.classList.contains("active")){ obj.e.classList.add("active"); }
-                
-                // Update the timestamp.
-                obj.t = performance.now();
-            }
-            
-            else if(obj.e.classList.contains("active") && canChange){ 
-                // Remove the active class.
-                obj.e.classList.remove("active"); 
+            // Set the default values. (Set to the OFF value.)
+            this.DOM.fadeSliderALL.value = 0;
+            this.DOM.fadeSliderL1.value  = 0;
+            this.DOM.fadeSliderL2.value  = 0;
+            this.DOM.fadeSliderL3.value  = 0;
+            this.DOM.fadeSliderL4.value  = 0;
+
+            // Make sure those values are displayed properly on the slider and slider text.
+            this.changeFade("ALL", this.DOM.fadeSliderALL, this.DOM.fadeSliderALLText);
+            this.changeFade("L1" , this.DOM.fadeSliderL1 , this.DOM.fadeSliderL1Text);
+            this.changeFade("L2" , this.DOM.fadeSliderL2 , this.DOM.fadeSliderL2Text);
+            this.changeFade("L3" , this.DOM.fadeSliderL3 , this.DOM.fadeSliderL3Text);
+            this.changeFade("L4" , this.DOM.fadeSliderL4 , this.DOM.fadeSliderL4Text);
+
+            // Event listeners.
+            this.DOM.fadeSliderALL.addEventListener("input", ()=>this.changeFade("ALL", this.DOM.fadeSliderALL, this.DOM.fadeSliderALLText), false);
+            this.DOM.fadeSliderL1 .addEventListener("input", ()=>this.changeFade("L1" , this.DOM.fadeSliderL1 , this.DOM.fadeSliderL1Text ), false);
+            this.DOM.fadeSliderL2 .addEventListener("input", ()=>this.changeFade("L2" , this.DOM.fadeSliderL2 , this.DOM.fadeSliderL2Text ), false);
+            this.DOM.fadeSliderL3 .addEventListener("input", ()=>this.changeFade("L3" , this.DOM.fadeSliderL3 , this.DOM.fadeSliderL3Text ), false);
+            this.DOM.fadeSliderL4 .addEventListener("input", ()=>this.changeFade("L4" , this.DOM.fadeSliderL4 , this.DOM.fadeSliderL4Text ), false);
+        },
+    },
+    // Allows the changing of gamestate 1.
+    gamestateChanger: {
+        DOM: {
+            "debug_changeGs1Select": null,
+            "debug_changeGs1Button": null,
+            "debug_test_restartGS1": null,
+        },
+        init: function(){
+            // Save DOM.
+            this.DOM.changeGs1Select = document.getElementById("debug_changeGs1Select");
+            this.DOM.changeGs1Button = document.getElementById("debug_changeGs1Button");
+            this.DOM.restartGS1      = document.getElementById("debug_test_restartGS1");
+
+            this.DOM.changeGs1Select.addEventListener("change", ()=>{ 
+                let value = this.DOM.changeGs1Select.value;
+                _APP.game.changeGs1(value);
+                _APP.game._changeGs1(value);
+            }, false);
+
+            this.DOM.changeGs1Button.addEventListener("click" , ()=>{ 
+                let value = this.DOM.changeGs1Select.value;
+                _APP.game.changeGs1(value);
+                _APP.game._changeGs1(value);
+            }, false);
+
+            this.DOM.restartGS1.addEventListener("click", ()=>{ 
+                _APP.game.gameLoop.loop_stop(); 
+                _APP.game.gamestates[_APP.game.gs1].inited = false;
+                _APP.game.gameLoop.loop_start(); 
+            }, false);
+        },
+    },
+    // Shows the current gamestates.
+    showGamestate: {
+        DOM: {
+        },
+        init: function(){
+            this.DOM.changeGs1Select = document.getElementById("debug_changeGs1Select");
+            this.DOM.GS1Text         = document.getElementById("debug_GS1Text");
+            this.DOM.GS2Text         = document.getElementById("debug_GS2Text");
+        },
+        display: function(){
+            _new_DEBUG.updateIfChanged(this.DOM.GS1Text        , _APP.game.gs1.trim() );
+            _new_DEBUG.updateIfChanged(this.DOM.GS2Text        , _APP.game.gs2.trim() );
+
+            if(this.DOM.changeGs1Select.value != _APP.game.gs1){
+                this.DOM.changeGs1Select.value = _APP.game.gs1;
             }
         },
-        gfx :{
-            elems:{},
-            values:{},
-            dataIsUsed: false,
-            lastUpdate1: 0,
-            updateCache: function(data){
-                if(data == "") { return; }
+    },
+    // Shows the hashCache data.
+    hashCache : {
+        DOM: {
+            // "fadeSliderALL"    : null,
+            // Entries
+            // Total Size
+            // genTime
+            // output (use something nicer like divs.)
 
-                // Save the data.
-                this.values = data;
-                this.dataIsUsed = false;
-                this.lastUpdate1 = performance.now();
+            // Top portion elements.
+            totalSize_all       : null,
+            totalSize_perm      : null,
+            totalSize_temp      : null,
+            totalSum            : null,
+            totalSumPerm        : null,
+            totalSumTemp        : null,
+            totalSum_genTimeAll : null,
+            totalSum_genTimePerm: null,
+            totalSum_genTimeTemp: null,
+            ALL_base_size : null,
+            ALL_copy_size : null,
+            PERM_base_size: null,
+            PERM_copy_size: null,
+            TEMP_base_size: null,
+            TEMP_copy_size: null,
 
-                // Add to the data key for each elem.
-                this.elems.TOTAL_ALL.data = ( data.ALLTIMINGS["gfx"]        .toFixed(2) );
-                
-                this.elems.TOTAL_L1.data  = ( data.ALLTIMINGS["L1___TOTAL"]            .toFixed(2) );
-                this.elems.A_L1.data      = ( data.ALLTIMINGS["L1_A_clearLayer"]       .toFixed(2) );
-                this.elems.B_L1.data      = ( data.ALLTIMINGS["L1_B_clearRemovedData"] .toFixed(2) );
-                this.elems.C_L1.data      = ( data.ALLTIMINGS["L1_C_createTilemaps"]   .toFixed(2) );
-                this.elems.D_L1.data      = ( data.ALLTIMINGS["L1_D_drawFromDataCache"].toFixed(2) );
-                this.elems.E_L1.data      = ( data.ALLTIMINGS["L1_E_drawImgDataCache"] .toFixed(2) );
-                
-                this.elems.TOTAL_L2.data  = ( data.ALLTIMINGS["L2___TOTAL"]            .toFixed(2) );
-                this.elems.A_L2.data      = ( data.ALLTIMINGS["L2_A_clearLayer"]       .toFixed(2) );
-                this.elems.B_L2.data      = ( data.ALLTIMINGS["L2_B_clearRemovedData"] .toFixed(2) );
-                this.elems.C_L2.data      = ( data.ALLTIMINGS["L2_C_createTilemaps"]   .toFixed(2) );
-                this.elems.D_L2.data      = ( data.ALLTIMINGS["L2_D_drawFromDataCache"].toFixed(2) );
-                this.elems.E_L2.data      = ( data.ALLTIMINGS["L2_E_drawImgDataCache"] .toFixed(2) );
-                
-                this.elems.TOTAL_L3.data  = ( data.ALLTIMINGS["L3___TOTAL"]            .toFixed(2) );
-                this.elems.A_L3.data      = ( data.ALLTIMINGS["L3_A_clearLayer"]       .toFixed(2) );
-                this.elems.B_L3.data      = ( data.ALLTIMINGS["L3_B_clearRemovedData"] .toFixed(2) );
-                this.elems.C_L3.data      = ( data.ALLTIMINGS["L3_C_createTilemaps"]   .toFixed(2) );
-                this.elems.D_L3.data      = ( data.ALLTIMINGS["L3_D_drawFromDataCache"].toFixed(2) );
-                this.elems.E_L3.data      = ( data.ALLTIMINGS["L3_E_drawImgDataCache"] .toFixed(2) );
-                
-                this.elems.TOTAL_L4.data  = ( data.ALLTIMINGS["L4___TOTAL"]            .toFixed(2) );
-                this.elems.A_L4.data      = ( data.ALLTIMINGS["L4_A_clearLayer"]       .toFixed(2) );
-                this.elems.B_L4.data      = ( data.ALLTIMINGS["L4_B_clearRemovedData"] .toFixed(2) );
-                this.elems.C_L4.data      = ( data.ALLTIMINGS["L4_C_createTilemaps"]   .toFixed(2) );
-                this.elems.D_L4.data      = ( data.ALLTIMINGS["L4_D_drawFromDataCache"].toFixed(2) );
-                this.elems.E_L4.data      = ( data.ALLTIMINGS["L4_E_drawImgDataCache"] .toFixed(2) );
+            // Bottom portion elements.
+            hashCacheList1: null,
+        },
+        // Values that were used the last time and are currently displayed.
+        values: {
+            lastNormalrun: 0,
+            lastNormalrunWait: 1000,
+            lastForcedrun: 0,
+            lastForcedrunWait: 1000,
+
+            totalSize_all           : 0,
+            totalSize_temp          : 0,
+            totalSize_perm          : 0,
+            totalSum                : 0,
+            totalSumTemp            : 0,
+            totalSumPerm            : 0,
+            totalSum_genTimeAll     : 0,
+            totalSum_genTimeTemp    : 0,
+            totalSum_genTimePerm    : 0,
+            ALL_base_size : 0,
+            ALL_copy_size : 0,
+            PERM_base_size: 0,
+            PERM_copy_size: 0,
+            TEMP_base_size: 0,
+            TEMP_copy_size: 0,
+
+            last_hashCacheStats2: {
+                ALL : { base: new Set(), copy: new Set(), baseHash: null, copyHash: null },
+                PERM: { base: new Set(), baseHash: null },
+                TEMP: { base: new Set(), baseHash: null },
             },
-            init: function(){
-                // Progress bar: draw.
-                this.elems.time_DRAW = {
-                    e0 : document.getElementById("debug_time_DRAW"),
-                    e1 : document.getElementById("debug_time_DRAW").querySelector(".debug_innerProgressBar"),
-                    e2 : document.getElementById("debug_time_DRAW").querySelector(".debug_progressBarLabel"),
-                    t: 0
+
+            // hashCacheStats1                         : {},
+            // hashCacheStats1_hashCacheHashBASEsInUse : [],
+            // hashCacheStats1_hashCacheHashesInUse    : [],
+        },
+        // Requests that the WebWorker send the requested data to the console.
+        toConsole: function(title, hash, hashBase){
+            _WEBW_V.SEND('requestHashCacheEntry', { 
+                data:{ 
+                    title   : title, 
+                    hash    : hash, 
+                    hashBase: hashBase
+                }, 
+                refs:[] }, false, false
+            );
+        },
+        getFormattedDateTime: function() {
+            const date = new Date();
+            const year = date.getFullYear();
+        
+            let month = date.getMonth() + 1;
+            month = (month < 10 ? "0" : "") + month;
+        
+            let day = date.getDate();
+            day = (day < 10 ? "0" : "") + day;
+        
+            let hour = date.getHours();
+            let ampm = hour >= 12 ? 'pm' : 'am';
+            hour = hour % 12;
+            hour = hour ? hour : 12; // the hour '0' should be '12'
+            hour = (hour < 10 ? "0" : "") + hour;
+        
+            let min = date.getMinutes();
+            min = (min < 10 ? "0" : "") + min;
+        
+            let sec = date.getSeconds();
+            sec = (sec < 10 ? "0" : "") + sec;
+        
+            return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec + " " + ampm;
+        },
+        getSettingsDifferences: function(obj1, obj2) {
+            let differences = {};
+
+            // Check obj1 keys
+            for (let key in obj1) {
+                if (Array.isArray(obj1[key]) && Array.isArray(obj2[key])) {
+                    if (obj1[key].length !== obj2[key].length) {
+                        // differences[key] = obj1[key].length;
+                        differences[key] = true;
+                    }
+                } else if (obj2[key] === undefined || obj1[key] !== obj2[key]) {
+                    differences[key] = obj1[key];
+                }
+            }
+
+            // Check obj2 keys
+            for (let key in obj2) {
+                if (Array.isArray(obj1[key]) && Array.isArray(obj2[key])) {
+                    if (obj1[key].length !== obj2[key].length) {
+                        // differences[key] = obj2[key].length;
+                        differences[key] = true;
+                    }
+                } else if (obj1[key] === undefined || obj1[key] !== obj2[key]) {
+                    differences[key] = obj2[key];
+                }
+            }
+
+            return differences;
+        },
+        display:function(data, forced=false){
+            // lastNormalrun
+            // lastNormalrunWait
+            // if(!this.values.lastForcedrun || performance.now() - this.values.lastForcedrun > this.values.lastForcedrunWait){
+            // this.values.lastForcedrun = performance.now();
+
+            let updated1 = _new_DEBUG.hashCache.displayTop(data);
+            let updated2 = _new_DEBUG.hashCache.displayBottom(data);
+            if(forced || updated1 || updated2){
+                let newText = `Refreshed: ${this.getFormattedDateTime()}`;
+                if(this.DOM.refreshLast.innerText != newText){
+                    this.DOM.refreshLast.innerText = newText;
+                }
+            }
+        },
+        // Display of updated data.
+        displayTop: function(newData){
+            performance.mark('displayTop_Start');
+
+            let top_changes = [];
+            let lhcs2 = newData.hashCacheStats2;
+
+            // RECORD COUNTS
+            if(newData.totalSize_all  != this.values.totalSize_all)  { this.values.totalSize_all  = newData.totalSize_all  ; top_changes.push( {elem: this.DOM.totalSize_all , value: (newData.totalSize_all/1000000) .toFixed(2).padStart(5, " ") + " MB" } ); }
+            if(newData.totalSize_perm != this.values.totalSize_perm) { this.values.totalSize_perm = newData.totalSize_perm ; top_changes.push( {elem: this.DOM.totalSize_perm, value: (newData.totalSize_perm/1000000).toFixed(2).padStart(5, " ") + " MB" } ); }
+            if(newData.totalSize_temp != this.values.totalSize_temp) { this.values.totalSize_temp = newData.totalSize_temp ; top_changes.push( {elem: this.DOM.totalSize_temp, value: (newData.totalSize_temp/1000000).toFixed(2).padStart(5, " ") + " MB" } ); }
+            
+            // RECORD SIZES
+            if(newData.totalSum     != this.values.totalSum)     { this.values.totalSum     = newData.totalSum            ; top_changes.push( {elem: this.DOM.totalSum     , value: newData.totalSum     } ); }
+            if(newData.totalSumPerm != this.values.totalSumPerm) { this.values.totalSumPerm = newData.totalSumPerm        ; top_changes.push( {elem: this.DOM.totalSumPerm , value: newData.totalSumPerm } ); }
+            if(newData.totalSumTemp != this.values.totalSumTemp) { this.values.totalSumTemp = newData.totalSumTemp        ; top_changes.push( {elem: this.DOM.totalSumTemp , value: newData.totalSumTemp } ); }
+            
+            // RECORD GENERATION TIMES
+            if(newData.totalSum_genTimeAll  != this.values.totalSum_genTimeAll)  { this.values.totalSum_genTimeAll  = newData.totalSum_genTimeAll ; top_changes.push( {elem: this.DOM.totalSum_genTimeAll , value: newData.totalSum_genTimeAll .toFixed(2).padStart(6, " ") + " ms" } ); }
+            if(newData.totalSum_genTimePerm != this.values.totalSum_genTimePerm) { this.values.totalSum_genTimePerm = newData.totalSum_genTimePerm; top_changes.push( {elem: this.DOM.totalSum_genTimePerm, value: newData.totalSum_genTimePerm.toFixed(2).padStart(6, " ") + " ms" } ); }
+            if(newData.totalSum_genTimeTemp != this.values.totalSum_genTimeTemp) { this.values.totalSum_genTimeTemp = newData.totalSum_genTimeTemp; top_changes.push( {elem: this.DOM.totalSum_genTimeTemp, value: newData.totalSum_genTimeTemp.toFixed(2).padStart(6, " ") + " ms" } ); }
+
+            // ALL: bases and copies.
+            if(lhcs2.ALL.base.size != this.values.ALL_base_size) { this.values.ALL_base_size = lhcs2.ALL.base.size; top_changes.push( {elem: this.DOM.ALL_base_size, value: lhcs2.ALL.base.size } ); }
+            if(lhcs2.ALL.copy.size != this.values.ALL_copy_size) { this.values.ALL_copy_size = lhcs2.ALL.copy.size; top_changes.push( {elem: this.DOM.ALL_copy_size, value: lhcs2.ALL.copy.size } ); }
+            
+            // PERM: bases and copies.
+            if(lhcs2.PERM.base.size != this.values.PERM_base_size) { this.values.PERM_base_size = lhcs2.PERM.base.size; top_changes.push( {elem: this.DOM.PERM_base_size, value: lhcs2.PERM.base.size } ); }
+            if(lhcs2.PERM.copy.size != this.values.PERM_copy_size) { this.values.PERM_copy_size = lhcs2.PERM.copy.size; top_changes.push( {elem: this.DOM.PERM_copy_size, value: lhcs2.PERM.copy.size } ); }
+            
+            // TEMP: bases and copies.
+            if(lhcs2.TEMP.base.size != this.values.TEMP_base_size) { this.values.TEMP_base_size = lhcs2.TEMP.base.size; top_changes.push( {elem: this.DOM.TEMP_base_size, value: lhcs2.TEMP.base.size } ); }
+            if(lhcs2.TEMP.copy.size != this.values.TEMP_copy_size) { this.values.TEMP_copy_size = lhcs2.TEMP.copy.size; top_changes.push( {elem: this.DOM.TEMP_copy_size, value: lhcs2.TEMP.copy.size } ); }
+            
+            // Apply the changes.
+            if(top_changes.length){
+                for(let rec of top_changes){
+                    rec.elem.innerText = rec.value;
                 }
 
-                // Individual values: draw.
-                // GFX TIMINGS TABLE.
-                // this.elems.hashCacheMapSize1 = { e: document.getElementById("debug_timings_hashCacheMapSize1"),    t: 0, data: 0 } 
-                // this.elems.hashCacheMapSize2 = { e: document.getElementById("debug_timings_hashCacheMapSize2"),    t: 0, data: 0 } 
-                this.elems.TOTAL_L1  = { e: document.getElementById("debug_timings_TOTAL_L1"),    t: 0, data: 0 } 
-                this.elems.TOTAL_L2  = { e: document.getElementById("debug_timings_TOTAL_L2"),    t: 0, data: 0 } 
-                this.elems.TOTAL_L3  = { e: document.getElementById("debug_timings_TOTAL_L3"),    t: 0, data: 0 } 
-                this.elems.TOTAL_L4  = { e: document.getElementById("debug_timings_TOTAL_L4"),    t: 0, data: 0 } 
-                this.elems.A_L1      = { e: document.getElementById("debug_timings_A_L1"),        t: 0, data: 0 } 
-                this.elems.A_L2      = { e: document.getElementById("debug_timings_A_L2"),        t: 0, data: 0 } 
-                this.elems.A_L3      = { e: document.getElementById("debug_timings_A_L3"),        t: 0, data: 0 } 
-                this.elems.A_L4      = { e: document.getElementById("debug_timings_A_L4"),        t: 0, data: 0 } 
-                this.elems.B_L1      = { e: document.getElementById("debug_timings_B_L1"),        t: 0, data: 0 } 
-                this.elems.B_L2      = { e: document.getElementById("debug_timings_B_L2"),        t: 0, data: 0 } 
-                this.elems.B_L3      = { e: document.getElementById("debug_timings_B_L3"),        t: 0, data: 0 } 
-                this.elems.B_L4      = { e: document.getElementById("debug_timings_B_L4"),        t: 0, data: 0 } 
-                this.elems.C_L1      = { e: document.getElementById("debug_timings_C_L1"),        t: 0, data: 0 } 
-                this.elems.C_L2      = { e: document.getElementById("debug_timings_C_L2"),        t: 0, data: 0 } 
-                this.elems.C_L3      = { e: document.getElementById("debug_timings_C_L3"),        t: 0, data: 0 } 
-                this.elems.C_L4      = { e: document.getElementById("debug_timings_C_L4"),        t: 0, data: 0 } 
-                this.elems.D_L1      = { e: document.getElementById("debug_timings_D_L1"),        t: 0, data: 0 } 
-                this.elems.D_L2      = { e: document.getElementById("debug_timings_D_L2"),        t: 0, data: 0 } 
-                this.elems.D_L3      = { e: document.getElementById("debug_timings_D_L3"),        t: 0, data: 0 } 
-                this.elems.D_L4      = { e: document.getElementById("debug_timings_D_L4"),        t: 0, data: 0 } 
-                this.elems.E_L1      = { e: document.getElementById("debug_timings_E_L1"),        t: 0, data: 0 } 
-                this.elems.E_L2      = { e: document.getElementById("debug_timings_E_L2"),        t: 0, data: 0 } 
-                this.elems.E_L3      = { e: document.getElementById("debug_timings_E_L3"),        t: 0, data: 0 } 
-                this.elems.E_L4      = { e: document.getElementById("debug_timings_E_L4"),        t: 0, data: 0 } 
-                this.elems.TOTAL_ALL  = { e: document.getElementById("debug_timings_TOTAL_ALL"),    t: 0, data: 0 } 
-            },
-            calcValuesForProgressBars: function(obj){
-                let mult         = obj.mult;
-                let activeTime   = obj.activeTime;
-                let elems        = obj.elems;
-                let now          = obj.now;
-                
-                let label1_new   = "";
-                let label1_old   = "";
-                let label2_new   = "";
-                let label2_old   = "";
-                let tmpValue     = "";
-                let adjusted     = false;
+                performance.mark('displayTop_End');
+                performance.measure('displayTop', 'displayTop_Start', 'displayTop_End');
 
-                // Determine if enough time has occurred for the next update.
-                let lastDrawTime = elems.bar.t;
-                let canRun = ((now - lastDrawTime) > activeTime) || lastDrawTime == 0 ; 
+                return true;
+            }
 
-                if(canRun){
-                    // (%) Generate label1 (reduce the value if the data is stale.)
-                    label1_new = (100*(elems.new.data / _APP.game.gameLoop.msFrame));
-                    if(this.dataIsUsed || (now - this.lastUpdate1 > activeTime)){
-                        tmpValue = +elems.new.data;
-                        tmpValue = + (tmpValue - (tmpValue/2)) .toFixed(1);
-                        // tmpValue = _DEBUG.timingsDisplay.roundToNearestMultiple(tmpValue, 1, "D");
-                        if(tmpValue <= 0.1) { tmpValue = 0; }
-                        elems.new.data = tmpValue;
-                        label1_new = (100*(tmpValue / _APP.game.gameLoop.msFrame));
-                        adjusted = true;
+            performance.mark('displayBottom_End');
+            performance.measure('displayTop', 'displayTop_Start', 'displayTop_End');
+            return false;
+        },
+        
+        delegatedListener: function(e){
+            // Is this an entry row?
+            let isEntry = e.target.classList.contains("hashCacheStats1_entry");
+            if(isEntry){
+                // Get the stored attributes of the element. 
+                let hashCacheHash      = Number(e.target.getAttribute("hashCacheHash"));
+                let hashCacheHash_BASE = Number(e.target.getAttribute("hashCacheHash_BASE"));
+                let relatedMapKey      = e.target.getAttribute("relatedMapKey");
+
+                // Request the data to be displayed to the console.
+                this.toConsole(`'${relatedMapKey}'`, hashCacheHash, hashCacheHash_BASE);
+            }
+        },
+        createEntryDiv: function(rec){
+            let div_container = document.createElement("div");
+            div_container.classList.add("hashCacheStats1_entry");
+            div_container.setAttribute("hashCacheHash", rec.hashCacheHash);
+            div_container.setAttribute("hashCacheHash_BASE", rec.hashCacheHash_BASE);
+            div_container.setAttribute("relatedMapKey", rec.relatedMapKey);
+            div_container.setAttribute("origin", rec.origin);
+            // div_container.setAttribute("origin", rec.origin);
+
+            // if(rec.text){ _GFX.currentData[layer].tilemaps[tilemapKey].text = tilemap.text; }
+
+            let settingsDifferences = this.getSettingsDifferences(_GFX.defaultSettings, rec.settings);
+            let activeSettingsArray = [];
+            let activeSettings = ``;
+            for(let key in settingsDifferences){
+                activeSettingsArray.push(`${key}:${settingsDifferences[key]}`);
+            }
+            activeSettings = activeSettingsArray.join(", ");
+            // console.log(rec);
+            div_container.innerText = `` +
+            `'${rec.relatedMapKey ? (rec.relatedMapKey+"'").padEnd(18, " ") : ("CUSTOM'").padEnd(20, " ") }` +
+            `'${(rec.ts+"'").padEnd(14, " ")} w:${rec.w}, h:${rec.h}` +
+            `\n  Bytes: ${(rec.hashCacheDataLength/1000).toFixed(2)} KB, genTime: ${rec.genTime.toFixed(2)} ms` + 
+            `\n` +
+            `${activeSettings ? "  " + activeSettings + "" : ""}` +
+            `\n` +
+            `${rec.text ? "  (TEXT): '" + rec.text.slice(0, 40) + "'" : ""}` +
+            `\n` +
+            ``;
+
+            if(rec.text){ div_container.title = rec.text; }
+
+            return div_container;
+        },
+        createChildNodeClone: function(srcs=[]){
+            let arr = [];
+            for(let src of srcs){
+                let frag = document.createDocumentFragment();
+                let children = src.childNodes;
+                for (let child of children) { frag.appendChild(child.cloneNode(true)); }
+                arr.push(frag);
+            }
+            return arr; 
+        },
+
+        // Display of updated data.
+        createDisplayBottomData: function(newData){
+            // Gather data.
+            let data = {
+                strings: {
+                    BASE_ALL :{ key1: "ALL" , key2: "base" },
+                    COPY_ALL :{ key1: "ALL" , key2: "copy" },
+                    BASE_PERM:{ key1: "PERM", key2: "base" },
+                    BASE_TEMP:{ key1: "TEMP", key2: "base" },
+                },
+                elems: {
+                    BASE_ALL : { div:null, counter: this.DOM.tab_count_allBase  },
+                    COPY_ALL : { div:null, counter: this.DOM.tab_count_allCopy  },
+                    BASE_PERM: { div:null, counter: this.DOM.tab_count_permBase },
+                    BASE_TEMP: { div:null, counter: this.DOM.tab_count_tempBase },
+                },
+                hasChanges: {
+                    BASE_ALL : this.values.last_hashCacheStats2.ALL.baseHash  != newData.hashCacheStats2.ALL.baseHash ,
+                    COPY_ALL : this.values.last_hashCacheStats2.ALL.copyHash  != newData.hashCacheStats2.ALL.copyHash ,
+                    BASE_PERM: this.values.last_hashCacheStats2.PERM.baseHash != newData.hashCacheStats2.PERM.baseHash,
+                    BASE_TEMP: this.values.last_hashCacheStats2.TEMP.baseHash != newData.hashCacheStats2.TEMP.baseHash,
+                },
+                curr: {
+                    BASE_ALL : this.values.last_hashCacheStats2.ALL.base,
+                    COPY_ALL : this.values.last_hashCacheStats2.ALL.copy,
+                    BASE_PERM: this.values.last_hashCacheStats2.PERM.base,
+                    BASE_TEMP: this.values.last_hashCacheStats2.TEMP.base,
+                },
+                currHashs: {
+                    BASE_ALL : this.values.last_hashCacheStats2.ALL.baseHash,
+                    COPY_ALL : this.values.last_hashCacheStats2.ALL.copyHash,
+                    BASE_PERM: this.values.last_hashCacheStats2.PERM.baseHash,
+                    BASE_TEMP: this.values.last_hashCacheStats2.TEMP.baseHash,
+                },
+                new: {
+                    BASE_ALL : newData.hashCacheStats2.ALL.base,
+                    COPY_ALL : newData.hashCacheStats2.ALL.copy,
+                    BASE_PERM: newData.hashCacheStats2.PERM.base,
+                    BASE_TEMP: newData.hashCacheStats2.TEMP.base,
+                },
+                newHashs: {
+                    BASE_ALL : newData.hashCacheStats2.ALL.baseHash,
+                    COPY_ALL : newData.hashCacheStats2.ALL.copyHash,
+                    BASE_PERM: newData.hashCacheStats2.PERM.baseHash,
+                    BASE_TEMP: newData.hashCacheStats2.TEMP.baseHash,
+                },
+                removals :{
+                    BASE_ALL : null,
+                    COPY_ALL : null,
+                    BASE_PERM: null,
+                    BASE_TEMP: null,
+                },
+                additions:{
+                    BASE_ALL : null,
+                    COPY_ALL : null,
+                    BASE_PERM: null,
+                    BASE_TEMP: null,
+                },
+                domSources: {
+                    BASE_ALL :{
+                        CUSTOM: this.DOM.hashCacheSection_view_all_base_ORIGIN_CUSTOM,
+                        USER  : this.DOM.hashCacheSection_view_all_base_ORIGIN_USER  ,
+                        BASE  : this.DOM.hashCacheSection_view_all_base_ORIGIN_BASE  ,
+                    },
+                    COPY_ALL :{
+                        CUSTOM_MODIFIED: this.DOM.hashCacheSection_view_all_copy_ORIGIN_CUSTOM_MODIFIED,
+                        USER_MODIFIED  : this.DOM.hashCacheSection_view_all_copy_ORIGIN_USER_MODIFIED,
+                        BASE_MODIFIED  : this.DOM.hashCacheSection_view_all_copy_ORIGIN_BASE_MODIFIED,
+                    },
+                    BASE_PERM:{
+                        CUSTOM: this.DOM.hashCacheSection_view_perm_base_ORIGIN_CUSTOM,
+                        USER  : this.DOM.hashCacheSection_view_perm_base_ORIGIN_USER,
+                        BASE  : this.DOM.hashCacheSection_view_perm_base_ORIGIN_BASE,
+                    },
+                    BASE_TEMP:{
+                        CUSTOM: this.DOM.hashCacheSection_view_temp_base_ORIGIN_CUSTOM,
+                        USER  : this.DOM.hashCacheSection_view_temp_base_ORIGIN_USER,
+                        BASE  : this.DOM.hashCacheSection_view_temp_base_ORIGIN_BASE,
+                    },
+                },
+                fragments :{
+                    BASE_ALL : {
+                        CUSTOM         : null,
+                        USER           : null,
+                        BASE           : null,
+                    },
+                    COPY_ALL : {
+                        CUSTOM_MODIFIED: null,
+                        USER_MODIFIED  : null,
+                        BASE_MODIFIED  : null,
+                    },
+                    BASE_PERM: {
+                        CUSTOM         : null,
+                        USER           : null,
+                        BASE           : null,
+                    },
+                    BASE_TEMP: {
+                        CUSTOM         : null,
+                        USER           : null,
+                        BASE           : null,
+                    },
+                },
+            };
+
+            return data;
+        },
+        displayBottom: function(newData){
+            performance.mark('displayBottom_Start');
+
+            let hasChanges = false;
+
+            // Gather data.
+            let data = this.createDisplayBottomData(newData);
+
+            // Checkly end if there are no changes.
+            if(
+                !data.hasChanges.BASE_ALL  &&
+                !data.hasChanges.COPY_ALL  &&
+                !data.hasChanges.BASE_PERM &&
+                !data.hasChanges.BASE_TEMP
+            ){
+                performance.mark('displayBottom_End');
+                performance.measure('displayBottom', 'displayBottom_Start', 'displayBottom_End');
+
+                return false;
+            }
+
+            // Update the display of data (using document fragments to minimize DOM changes and repaints.)
+            for(let key in data.hasChanges){
+                if(data.hasChanges[key]){
+                    if(!hasChanges){ hasChanges = true; }
+
+                    // Update counts.
+                    let count1 = 0;
+                    let count2 = 0;
+                    let count3 = 0;
+
+                    // Clone the destinations.
+                    let fragKeys = Object.keys(data.fragments[key]);
+                    let sources = data.domSources[key];
+                    [
+                        data.fragments[key][fragKeys[0]],
+                        data.fragments[key][fragKeys[1]],
+                        data.fragments[key][fragKeys[2]]
+                    ] = this.createChildNodeClone([
+                        sources[fragKeys[0]],
+                        sources[fragKeys[1]],
+                        sources[fragKeys[2]]
+                    ]);
+
+                    // Update the displayed counter.
+                    let key1 = data.strings[key].key1;
+                    let key2 = data.strings[key].key2;
+                    let oldCount = data.elems[key].counter;
+                    let newCount = newData.hashCacheStats2[key1][key2];
+                    if( oldCount.innerText != newCount.size){ oldCount.innerText = newCount.size; }
+
+                    // Get the removals.
+                    data.removals[key]  = new Set([...this.values.last_hashCacheStats2[key1][key2]].filter(x => !newData.hashCacheStats2[key1][key2].has(x)));
+                    
+                    // Get the additions.
+                    data.additions[key] = new Set([...newData.hashCacheStats2[key1][key2]]         .filter(x => !this.values.last_hashCacheStats2[key1][key2].has(x)));
+                    
+                    // Update the stored current values. 
+                    this.values.last_hashCacheStats2[key1][key2].clear()
+                    for (let item of newData.hashCacheStats2[key1][key2]) {
+                        this.values.last_hashCacheStats2[key1][key2].add(item);
+                    }
+                    // Update the stored hash of hashes value.
+                    this.values.last_hashCacheStats2[key1][key2+"Hash"] = newData.hashCacheStats2[key1][key2+"Hash"]
+
+                    // Remove the removals from the cloned nodes.
+                    for(let hash of data.removals[key]){
+                        let elem;
+                        let cacheObj = newData.partial_hashCache.get(hash);
+                        // After a hashCache clear it is very possible that the cacheObj does not have the former entries. 
+                        if(!cacheObj){
+                            // if(!cacheObj.text){ continue; }
+
+                            // We don't know the origin so we are just going to check all three and remove the element if we find it.
+                            let elem1 = data.fragments[key][fragKeys[0]].querySelector(`[hashcachehash='${hash.toString()}']`);
+                            let elem2 = data.fragments[key][fragKeys[1]].querySelector(`[hashcachehash='${hash.toString()}']`);
+                            let elem3 = data.fragments[key][fragKeys[2]].querySelector(`[hashcachehash='${hash.toString()}']`);
+                            if     (elem1){ 
+                                // console.log(`Removed using '${fragKeys[0]}' to find the element. (missing cacheObj)`); 
+                                elem1.remove(); count1 += 1; 
+                            }
+                            else if(elem2){ 
+                                // console.log(`Removed using '${fragKeys[1]}' to find the element. (missing cacheObj)`); 
+                                elem2.remove(); count2 += 1; 
+                            }
+                            else if(elem3){ 
+                                // console.log(`Removed using '${fragKeys[2]}' to find the element. (missing cacheObj)`); 
+                                elem3.remove(); count3 += 1; 
+                            }
+                            else{
+                                // console.log("(missing cacheObj) REMOVAL: Element not found:", key, hash, [fragKeys[0], fragKeys[1], fragKeys[2]]);
+                                continue;
+                            }
+                            continue; 
+                        }
+                        // else if(!cacheObj.text){ 
+                            // continue; 
+                        // }
+                        else if(cacheObj.origin == fragKeys[0]){ elem = data.fragments[key][fragKeys[0]].querySelector(`[hashcachehash='${hash.toString()}']`); if(elem){ count1 += 1; } }
+                        else if(cacheObj.origin == fragKeys[1]){ elem = data.fragments[key][fragKeys[1]].querySelector(`[hashcachehash='${hash.toString()}']`); if(elem){ count2 += 1; } }
+                        else if(cacheObj.origin == fragKeys[2]){ elem = data.fragments[key][fragKeys[2]].querySelector(`[hashcachehash='${hash.toString()}']`); if(elem){ count3 += 1; } }
+                        else{
+                            console.log("Invalid origin:", hash, cacheObj.origin);
+                            continue;
+                        }
+                        if(!elem){
+                            console.log("REMOVAL: Element not found:", elem, cacheObj.origin, cacheObj);
+                            continue;
+                        }
+                        elem.remove();
                     }
 
-                    label1_new = _DEBUG.timingsDisplay.roundToNearestMultiple(label1_new, mult, "D");
-                    label1_new = _DEBUG.timingsDisplay.forceToRange(label1_new, 0, 999);
-                    label1_old = +elems.bar.e2.getAttribute("curr");
-                    
-                    // (ms) Generate label2.
-                    label2_new = +elems.new.data || "0";
-                    label2_old = +elems.bar.e2.getAttribute("curr2");
-                    
-                    // Determine if there should be an update.
-                    canRun = (label1_new != label1_old || label2_new != label2_old);
+                    // Add the additions to the cloned nodes.
+                    for(let hash of data.additions[key]){
+                        let cacheObj = newData.partial_hashCache.get(hash);
+                        // if(!cacheObj.text){ continue; }
+                        let entry = this.createEntryDiv(cacheObj);
+                        if     (cacheObj.origin == fragKeys[0]){ data.fragments[key][fragKeys[0]].prepend(entry); count1 += 1; }
+                        else if(cacheObj.origin == fragKeys[1]){ data.fragments[key][fragKeys[1]].prepend(entry); count2 += 1; }
+                        else if(cacheObj.origin == fragKeys[2]){ data.fragments[key][fragKeys[2]].prepend(entry); count3 += 1; }
+                        else{
+                            if(cacheObj.text){
+                                console.log("BAD ORIGIN:", cacheObj.text, cacheObj.isBase?"BASE":"COPY", "Invalid origin:", key, cacheObj.relatedMapKey||"NONE", "***", cacheObj.hashCacheHash_BASE, cacheObj.hashCacheHash, "***", cacheObj.origin, [fragKeys[0], fragKeys[1], fragKeys[2]]);
+                                // this.toConsole(`${cacheObj.text?"**(TEXT)**":""}'${cacheObj.relatedMapKey||"NONE"}'`, cacheObj.hashCacheHash, cacheObj.hashCacheHash_BASE);
+                            }
+                            continue;
+                        }
+                    }
+
+                    // Replace the destination with the modified clones.
+                    if(count1){ sources[fragKeys[0]].replaceChildren( data.fragments[key][fragKeys[0]] ); }
+                    if(count2){ sources[fragKeys[1]].replaceChildren( data.fragments[key][fragKeys[1]] ); }
+                    if(count3){ sources[fragKeys[2]].replaceChildren( data.fragments[key][fragKeys[2]] ); }
                 }
-                
-                return {
-                    canRun    : canRun,
-                    label1_new: label1_new,
-                    label2_new: label2_new,
-                    bar       : elems.bar,
-                    adjusted  : adjusted,
-                };
-            },
-            display_progressBars: function(now){
-                if(!this.values["gfx"] || this.values["gfx"] == 0){ 
-                    // console.log("No timings yet.");
-                    return false; 
-                }
+            }
 
-                let lastDrawTime = this.elems.time_DRAW.t;
-                // let activeTime = 200;
-                let activeTime = 1;
-                let mult = 1;
-                
-                // Determine if enough time has occurred for the next update.
-                let canRun = ((now - lastDrawTime) > activeTime) || lastDrawTime == 0 ; 
-                if(!canRun){ return false; }
+            performance.mark('displayBottom_End');
+            performance.measure('displayBottom', 'displayBottom_Start', 'displayBottom_End');
 
-                // Calculate the values for the progress bar.
-                let obj = this.calcValuesForProgressBars({
-                    elems: { 
-                        new: this.elems.TOTAL_ALL, 
-                        bar: this.elems.time_DRAW 
-                    },
-                    activeTime: activeTime,
-                    mult      : mult,
-                    now       : now,
-                });
-                let {
-                    bar: bar,
-                    label1_new: label1_new, // %
-                    label2_new: label2_new, // ms
-                    adjusted: adjusted,
-                } = obj;
-
-                ({ canRun: canRun } = obj);
-                // console.log(obj);
-
-                // Run the update.
-                if(canRun){
-                    _DEBUG.timingsDisplay.updateProgressBar2(
-                        bar.e0,           // container
-                        bar.e1,           // bar
-                        bar.e2,           // label
-                        label1_new, mult, 
-                        label2_new,
-                        adjusted
-                    );
-                    bar.t = now;
-                    return true;
-                }
-
-                return false;
-            },
-            display_layerChanges: function(now){
-                let tab = document.getElementById("debug_navBar1_tab_drawStats");
-                if(!tab.classList.contains("active")){ return; }
-                if(!this.values["gfx"] || this.values["gfx"] == 0){ 
-                    // console.log("No timings yet.");
-                    return false; 
-                }
-
-                let testText;
-                // let activeTime = 200;
-                let activeTime = 1;
-                for(let eKey in this.elems){
-                    if(eKey == "time_DRAW"){ continue; }
-                    let elem = this.elems[eKey];
-                    
-                    testText = elem.data.toString();
-                    // if(this.dataIsUsed){ testText = "0"; }
-
-                    // if(eKey == "TOTAL_ALL"){ testText = testText.padStart(3, "0"); }
-
-                    // _DEBUG.timingsDisplay.applyChange(testText, elem, activeTime, true);
-                    _DEBUG.timingsDisplay.applyChange(testText, elem, 0, false);
-                }
-
-                return true; 
-            },
+            if(hasChanges){ return true; }
+            return false;
         },
-        loop:{
-            elems:{},
-            // values:{},
-            init: function(){
-                // display_progressBars: Progress bar: loop.
-                this.elems.time_LOOP = {
-                    e0 : document.getElementById("debug_time_LOOP"),
-                    e1 : document.getElementById("debug_time_LOOP").querySelector(".debug_innerProgressBar"),
-                    e2 : document.getElementById("debug_time_LOOP").querySelector(".debug_progressBarLabel"),
-                    t: 0
-                };
+        init: function(){
+            // Save DOM.
 
-                // display_tmapCountByLayer: Tilemap counts by layer.
-                this.elems.L1_tms = { e: document.getElementById("debug_L1_tms"), t: 0 };
-                this.elems.L2_tms = { e: document.getElementById("debug_L2_tms"), t: 0 };
-                this.elems.L3_tms = { e: document.getElementById("debug_L3_tms"), t: 0 };
-                this.elems.L4_tms = { e: document.getElementById("debug_L4_tms"), t: 0 };
-                
-            },
-            calcValuesForProgressBars: function(obj){
-                let mult         = obj.mult;
-                let activeTime   = obj.activeTime;
-                let elems        = obj.elems;
-                let now          = obj.now;
-                
-                let label1_new   = "";
-                let label1_old   = "";
-                let label2_new   = "";
-                let label2_old   = "";
-                let tmpValue     = "";
-                let adjusted     = false;
-
-                // Determine if enough time has occurred for the next update.
-                let lastDrawTime = elems.bar.t;
-                let canRun = ((now - lastDrawTime) > activeTime) || lastDrawTime == 0 ; 
-
-                if(canRun){
-                    // (%) Generate label1 (reduce the value if the data is stale.)
-                    label1_new = (100*(elems.new.data / _APP.game.gameLoop.msFrame));
-                    // if((now - this.lastUpdate1 > activeTime)){
-                    //     tmpValue = +elems.new.data;
-                    //     tmpValue = + (tmpValue - (tmpValue/2)) .toFixed(1);
-                    //     // tmpValue = _DEBUG.timingsDisplay.roundToNearestMultiple(tmpValue, 1, "D");
-                    //     if(tmpValue <= 0.1) { tmpValue = 0; }
-                    //     elems.new.data = tmpValue;
-                    //     label1_new = (100*(tmpValue / _APP.game.gameLoop.msFrame));
-                    //     adjusted = true;
-                    // }
-
-                    label1_new = _DEBUG.timingsDisplay.roundToNearestMultiple(label1_new, mult, "D");
-                    label1_new = _DEBUG.timingsDisplay.forceToRange(label1_new, 0, 999);
-                    label1_old = +elems.bar.e2.getAttribute("curr");
-                    
-                    // (ms) Generate label2.
-                    label2_new = +elems.new.data || "0";
-                    label2_old = +elems.bar.e2.getAttribute("curr2");
-                    
-                    // Determine if there should be an update.
-                    canRun = (label1_new != label1_old || label2_new != label2_old);
-                }
-                
-                return {
-                    canRun    : canRun,
-                    label1_new: label1_new,
-                    label2_new: label2_new,
-                    bar       : elems.bar,
-                    adjusted  : adjusted,
-                };
-            },
-            display_progressBars: function(now){
-                let lastDrawTime = this.elems.time_LOOP.t;
-                // let activeTime = 200;
-                let activeTime = 1;
-                let mult = 1;
-                
-                // Determine if enough time has occurred for the next update.
-                let canRun = ((now - lastDrawTime) > activeTime) || lastDrawTime == 0 ; 
-                if(!canRun){ return false; }
-
-                // Calculate the values for the progress bar.
-                let obj = this.calcValuesForProgressBars({
-                    elems: { 
-                        new: {data: _APP.game.gameLoop.lastLoop_timestamp }, 
-                        bar: this.elems.time_LOOP 
-                    },
-                    activeTime: activeTime,
-                    mult      : mult,
-                    now       : now,
-                });
-                let {
-                    bar: bar,
-                    label1_new: label1_new, // %
-                    label2_new: label2_new, // ms
-                    adjusted: adjusted,
-                } = obj;
-
-                ({ canRun: canRun } = obj);
-                // console.log(obj);
-
-                // Run the update.
-                if(canRun){
-                    _DEBUG.timingsDisplay.updateProgressBar2(
-                        bar.e0,           // container
-                        bar.e1,           // bar
-                        bar.e2,           // label
-                        label1_new, mult, 
-                        label2_new,
-                        adjusted
-                    );
-                    bar.t = now;
-                    return true;
-                }
-
-                return false;
-            },
+            // Top portion elements.
+            this.DOM.totalSize_all        = document.getElementById("debug_hashCacheTable1_totalSize_all");
+            this.DOM.totalSize_perm       = document.getElementById("debug_hashCacheTable1_totalSize_perm");
+            this.DOM.totalSize_temp       = document.getElementById("debug_hashCacheTable1_totalSize_temp");
+            this.DOM.totalSum             = document.getElementById("debug_hashCacheTable1_totalSum");
+            this.DOM.totalSumPerm         = document.getElementById("debug_hashCacheTable1_totalSumPerm");
+            this.DOM.totalSumTemp         = document.getElementById("debug_hashCacheTable1_totalSumTemp");
+            this.DOM.totalSum_genTimeAll  = document.getElementById("debug_hashCacheTable1_totalSum_genTimeAll");
+            this.DOM.totalSum_genTimePerm = document.getElementById("debug_hashCacheTable1_totalSum_genTimePerm");
+            this.DOM.totalSum_genTimeTemp = document.getElementById("debug_hashCacheTable1_totalSum_genTimeTemp");
+            this.DOM.ALL_base_size  = document.getElementById("debug_hashCacheTable1_totalSum_bases");
+            this.DOM.ALL_copy_size  = document.getElementById("debug_hashCacheTable1_totalSum_copies");
+            this.DOM.PERM_base_size = document.getElementById("debug_hashCacheTable1_totalSumPerm_bases");
+            this.DOM.PERM_copy_size = document.getElementById("debug_hashCacheTable1_totalSumPerm_copies");
+            this.DOM.TEMP_base_size = document.getElementById("debug_hashCacheTable1_totalSumTemp_bases");
+            this.DOM.TEMP_copy_size = document.getElementById("debug_hashCacheTable1_totalSumTemp_copies");
             
-            display_tmapCountByLayer: function(now){
-                let L1_tms             = this.elems["L1_tms"];
-                let L2_tms             = this.elems["L2_tms"];
-                let L3_tms             = this.elems["L3_tms"];
-                let L4_tms             = this.elems["L4_tms"];
-                // let activeTime = 200;
-                let activeTime = 1;
-                let testText = "";
+            // Bottom portion elements.
+            this.DOM.hashCacheList1 = document.getElementById("debug_hashCacheList1");
 
-                // Display the number of layer objects per layer.
-                testText = Object.keys(_GFX.currentData["L1"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, L1_tms, activeTime);
-                testText = Object.keys(_GFX.currentData["L2"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, L2_tms, activeTime);
-                testText = Object.keys(_GFX.currentData["L3"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, L3_tms, activeTime);
-                testText = Object.keys(_GFX.currentData["L4"].tilemaps).length.toString(); _DEBUG.timingsDisplay.applyChange(testText, L4_tms, activeTime);
-            },
-        },
-        debug: {
-            elems: {},
-            init:function(){
-                // display_progressBars: DEBUG
-                this.elems.time_DEBUG = {
-                    e0 : document.getElementById("debug_time_DEBUG"),
-                    e1 : document.getElementById("debug_time_DEBUG").querySelector(".debug_innerProgressBar"),
-                    e2 : document.getElementById("debug_time_DEBUG").querySelector(".debug_progressBarLabel"),
-                    t: 0
-                };
-            },
-            calcValuesForProgressBars: function(obj){
-                let mult         = obj.mult;
-                let activeTime   = obj.activeTime;
-                let elems        = obj.elems;
-                let now          = obj.now;
-                
-                let label1_new   = "";
-                let label1_old   = "";
-                let label2_new   = "";
-                let label2_old   = "";
-                let tmpValue     = "";
-                let adjusted     = false;
+            this.DOM.view_all_base  = document.getElementById("debug_navBar3_view_all_base");
+            this.DOM.view_all_copy  = document.getElementById("debug_navBar3_view_all_copy");
+            this.DOM.view_perm_base = document.getElementById("debug_navBar3_view_perm_base");
+            this.DOM.view_temp_base = document.getElementById("debug_navBar3_view_temp_base");
 
-                // Determine if enough time has occurred for the next update.
-                let lastDrawTime = elems.bar.t;
-                let canRun = ((now - lastDrawTime) > activeTime) || lastDrawTime == 0 ; 
+            this.DOM.tab_count_allBase  = document.getElementById("debug_tab_hashCache_count_allBase");
+            this.DOM.tab_count_permBase = document.getElementById("debug_tab_hashCache_count_permBase");
+            this.DOM.tab_count_tempBase = document.getElementById("debug_tab_hashCache_count_tempBase");
+            this.DOM.tab_count_allCopy  = document.getElementById("debug_tab_hashCache_count_allCopy");
 
-                if(canRun){
-                    // (%) Generate label1 (reduce the value if the data is stale.)
-                    label1_new = (100*(elems.new.data / _APP.game.gameLoop.msFrame));
-                    // if(this.dataIsUsed || (now - this.lastUpdate1 > activeTime)){
-                    //     tmpValue = +elems.new.data;
-                    //     tmpValue = + (tmpValue - (tmpValue/2)) .toFixed(1);
-                    //     // tmpValue = _DEBUG.timingsDisplay.roundToNearestMultiple(tmpValue, 1, "D");
-                    //     if(tmpValue <= 0.1) { tmpValue = 0; }
-                    //     elems.new.data = tmpValue;
-                    //     label1_new = (100*(tmpValue / _APP.game.gameLoop.msFrame));
-                    //     adjusted = true;
-                    // }
+            this.DOM.hashCacheSection_view_all_base_ORIGIN_CUSTOM = document.getElementById("debug_hashCacheSection_view_all_base_ORIGIN_CUSTOM");
+            this.DOM.hashCacheSection_view_all_base_ORIGIN_USER   = document.getElementById("debug_hashCacheSection_view_all_base_ORIGIN_USER");
+            this.DOM.hashCacheSection_view_all_base_ORIGIN_BASE   = document.getElementById("debug_hashCacheSection_view_all_base_ORIGIN_BASE");
 
-                    // label1_new = _DEBUG.timingsDisplay.roundToNearestMultiple(label1_new, mult, "D");
-                    label1_new = _DEBUG.timingsDisplay.forceToRange(label1_new, 0, 999);
-                    label1_old = +elems.bar.e2.getAttribute("curr");
-                    
-                    // (ms) Generate label2.
-                    label2_new = +elems.new.data || "0";
-                    label2_old = +elems.bar.e2.getAttribute("curr2");
-                    
-                    // Determine if there should be an update.
-                    canRun = (label1_new != label1_old || label2_new != label2_old);
+            this.DOM.hashCacheSection_view_all_copy_ORIGIN_CUSTOM_MODIFIED = document.getElementById("debug_hashCacheSection_view_all_copy_ORIGIN_CUSTOM_MODIFIED");
+            this.DOM.hashCacheSection_view_all_copy_ORIGIN_USER_MODIFIED   = document.getElementById("debug_hashCacheSection_view_all_copy_ORIGIN_USER_MODIFIED");
+            this.DOM.hashCacheSection_view_all_copy_ORIGIN_BASE_MODIFIED   = document.getElementById("debug_hashCacheSection_view_all_copy_ORIGIN_BASE_MODIFIED");
+
+            this.DOM.hashCacheSection_view_perm_base_ORIGIN_CUSTOM = document.getElementById("debug_hashCacheSection_view_perm_base_ORIGIN_CUSTOM");
+            this.DOM.hashCacheSection_view_perm_base_ORIGIN_USER   = document.getElementById("debug_hashCacheSection_view_perm_base_ORIGIN_USER");
+            this.DOM.hashCacheSection_view_perm_base_ORIGIN_BASE   = document.getElementById("debug_hashCacheSection_view_perm_base_ORIGIN_BASE");
+
+            this.DOM.hashCacheSection_view_temp_base_ORIGIN_CUSTOM = document.getElementById("debug_hashCacheSection_view_temp_base_ORIGIN_CUSTOM");
+            this.DOM.hashCacheSection_view_temp_base_ORIGIN_USER   = document.getElementById("debug_hashCacheSection_view_temp_base_ORIGIN_USER");
+            this.DOM.hashCacheSection_view_temp_base_ORIGIN_BASE   = document.getElementById("debug_hashCacheSection_view_temp_base_ORIGIN_BASE");
+            
+            // Last time refreshed text.
+            this.DOM.refreshLast = document.getElementById("debug_hashCacheStats1_refreshLast");
+            
+            // Forced refresh.
+            let refresh = document.getElementById("debug_hashCacheStats1_refresh");
+            refresh.addEventListener("click", async ()=>{
+                if(!this.values.lastForcedrun || performance.now() - this.values.lastForcedrun > this.values.lastForcedrunWait){
+                    this.values.lastForcedrun = performance.now();
+                    // Request the debug timings.
+                    await _WEBW_V.SEND("_DEBUG.updateDebugTimings", { 
+                        data: { }, 
+                        refs:[]
+                    }, false, true);
                 }
-                
-                return {
-                    canRun    : canRun,
-                    label1_new: label1_new,
-                    label2_new: label2_new,
-                    bar       : elems.bar,
-                    adjusted  : adjusted,
-                };
-            },
-            display_progressBars: function(now){
-                // if(!this.values["gfx"] || this.values["gfx"] == 0){ 
-                //     // console.log("No timings yet.");
-                //     return false; 
-                // }
+            }, false);
 
-                let lastDrawTime = this.elems.time_DEBUG.t;
-                // let activeTime = 200;
-                let activeTime = 1;
-                let mult = 1;
-                
-                // Determine if enough time has occurred for the next update.
-                let canRun = ((now - lastDrawTime) > activeTime) || lastDrawTime == 0 ; 
-                if(!canRun){ return false; }
-
-                // Calculate the values for the progress bar.
-                let obj = this.calcValuesForProgressBars({
-                    elems: { 
-                        new: {data: _APP.game.gameLoop.lastDebug1_timestamp }, 
-                        bar: this.elems.time_DEBUG 
-                    },
-                    activeTime: activeTime,
-                    mult      : mult,
-                    now       : now,
-                });
-                let {
-                    bar: bar,
-                    label1_new: label1_new, // %
-                    label2_new: label2_new, // ms
-                    adjusted: adjusted,
-                } = obj;
-
-                ({ canRun: canRun } = obj);
-                // console.log(obj);
-
-                // Run the update.
-                if(canRun){
-                    _DEBUG.timingsDisplay.updateProgressBar2(
-                        bar.e0,           // container
-                        bar.e1,           // bar
-                        bar.e2,           // label
-                        label1_new, mult, 
-                        label2_new,
-                        adjusted
-                    );
-                    bar.t = now;
-                    return true;
-                }
-
-                return false;
-            },
+            // delegatedListener
+            this.DOM.debug_navBarViews3 = document.getElementById("debug_navBarViews3");
+            this.DOM.debug_navBarViews3.addEventListener("click", (e)=>this.delegatedListener(e), true);
         },
     },
-
-    loop_display_func: function(){
-        let frameCounter        = this.elemsObj["frameCounter"];
-        let frameDrawCounter    = this.elemsObj["frameDrawCounter"];
-        let fpsDisplay          = this.elemsObj["fpsDisplay"];
-        let debug_GS1Text       = this.elemsObj["debug_GS1Text"];
-        let debug_GS2Text       = this.elemsObj["debug_GS2Text"];
-        let DRAWNEEDED          = this.elemsObj["DRAWNEEDED"];
-        // let skipLogic           = this.elemsObj["skipLogic"];
-        
-        // let activeTime = 200;
-        let activeTime = 1;
-        let testText = "";
-        
-        // Show the frameCounter.
-        testText = (_APP.game.gameLoop.frameCounter/1000).toFixed(1)+"k";
-        this.applyChange(testText, frameCounter, activeTime);
-
-        // Show the frameDrawCounter.
-        testText = (_APP.game.gameLoop.frameDrawCounter/1000).toFixed(1)+"k";
-        this.applyChange(testText, frameDrawCounter, activeTime);
-
-        // Show the DRAWNEEDED.
-        // testText = (_APP.game.gameLoop.DRAWNEEDED_prev ? "1" : "0").toString();
-        testText = (_APP.game.gameLoop.DRAWNEEDED_prev).toString();
-        this.applyChange(testText, DRAWNEEDED, activeTime);
-
-        // Show average FPS, average ms per frame, how much off is the average ms per frame.
-        let new_average       = _APP.game.gameLoop.fpsCalc.average.toFixed(0) ?? 0;
-        let new_avgMsPerFrame = _APP.game.gameLoop.fpsCalc.avgMsPerFrame.toFixed(1) ?? 0;
-        let msDiff            = (_APP.game.gameLoop.fpsCalc.avgMsPerFrame - _APP.game.gameLoop.msFrame).toFixed(1);
-        // testText = `A: ${new_average} M: ${new_avgMsPerFrame} D: ${msDiff}`;
-        testText = `AVG: ${new_average}, MS: ${new_avgMsPerFrame}, DELTA: ${msDiff}`;
-        this.applyChange(testText, fpsDisplay, activeTime);
-
-        // Update the displayed gamestate data. (gamestate 1.)
-        testText = `'${_APP.game.gs1}' ${_APP.game.changeGs1_triggered?"**":""}`;
-        this.applyChange(testText, debug_GS1Text, activeTime);
-        
-        // Update the displayed gamestate data. (gamestate 2.)
-        testText = `'${_APP.game.gs2}' ${_APP.game.changeGs2_triggered?"**":""}`;
-        this.applyChange(testText, debug_GS2Text, activeTime);
-    },
-
-    layerObjs: {
-        parent: null,
+    // Manages the LayerObjs viewer/editor.
+    layerObjs : {
         DOM:{
             "contextMenu1": "debug_layerObjEdit_contextMenu1",
 
@@ -1071,6 +1077,12 @@ var _DEBUG = {
         },
         highlightCanvas   : null,
         highlightCanvasCtx: null,
+        lastNormalrun: 0,
+        lastNormalrunWait: 1000,
+        lastForcedrun: 0,
+        lastForcedrunWait: 1000,
+        _redisplay: false,
+
         init: function(parent){
             this.parent = parent;
             for(let elemKey in this.DOM){
@@ -1098,7 +1110,22 @@ var _DEBUG = {
             // Add the canvas to the output.
             let outputDiv = document.getElementById("output");
             outputDiv.append(this.highlightCanvas);
+
+            // Last time refreshed text.
+            this.DOM.refreshLast = document.getElementById("debug_layerObjects_refreshLast");
+            
+            // Forced refresh.
+            let refresh = document.getElementById("debug_layerObjects_refresh");
+            refresh.addEventListener("click", async ()=>{
+                if(!this.lastForcedrun || performance.now() - this.lastForcedrun > this.lastForcedrunWait){
+                    this.lastForcedrun = performance.now();
+                    this.display(true);
+                }
+            }, false);
         },
+        
+        // ** VIEWER **
+        // ************
         highlightOnHover: function(x, y, w, h, rotation){
             // Clear the canvas.
             this.highlightCanvasCtx.clearRect(0, 0, this.highlightCanvas.width, this.highlightCanvas.height);
@@ -1144,7 +1171,15 @@ var _DEBUG = {
             this.contextMenu1_close();
 
             // Switch to the LayerObj Edit tab.
-            _DEBUG.navBar1.showOne("view_layerObjEdit");
+            if(_DEBUG.navBar1){
+                _DEBUG.navBar1.showOne("view_layerObjEdit");
+            }
+            else if(_new_DEBUG.navBar1){
+                _new_DEBUG.navBar1.showOne("view_layerObjEdit")
+            }
+            else{
+                console.log("Missing nav tab: 'view_layerObjEdit'");
+            }
 
             // Load the data into that view.
             this.DOM["edit_className"]  .innerText = data.className;
@@ -1177,14 +1212,212 @@ var _DEBUG = {
             // Close the contextMenu.
             this.DOM["contextMenu1"].style.display = 'none';
         },
-        adjustLayerKey: function(layerKey){
-            let gs   = this.DOM["edit_gs"].innerText;
-            let key  = this.DOM["edit_layerObjKey"].innerText;
-            if(!gs || !key){ console.log("NOT LOADED"); return; }
-            let data = _GFX.layerObjs.objs[gs][key];
-            data.layerKey = layerKey;
-            this.DOM["edit_layerKey"]          .innerText = data.layerKey;
+        getSettingsDifferences: function(obj1, obj2) {
+            let differences = {};
+
+            // Check obj1 keys
+            for (let key in obj1) {
+                if (Array.isArray(obj1[key]) && Array.isArray(obj2[key])) {
+                    if (obj1[key].length !== obj2[key].length) {
+                        // differences[key] = obj1[key].length;
+                        differences[key] = true;
+                    }
+                } else if (obj2[key] === undefined || obj1[key] !== obj2[key]) {
+                    differences[key] = obj1[key];
+                }
+            }
+
+            // Check obj2 keys
+            for (let key in obj2) {
+                if (Array.isArray(obj1[key]) && Array.isArray(obj2[key])) {
+                    if (obj1[key].length !== obj2[key].length) {
+                        // differences[key] = obj2[key].length;
+                        differences[key] = true;
+                    }
+                } else if (obj1[key] === undefined || obj1[key] !== obj2[key]) {
+                    differences[key] = obj2[key];
+                }
+            }
+
+            return differences;
         },
+        getFormattedDateTime: function() {
+            const date = new Date();
+            const year = date.getFullYear();
+        
+            let month = date.getMonth() + 1;
+            month = (month < 10 ? "0" : "") + month;
+        
+            let day = date.getDate();
+            day = (day < 10 ? "0" : "") + day;
+        
+            let hour = date.getHours();
+            let ampm = hour >= 12 ? 'pm' : 'am';
+            hour = hour % 12;
+            hour = hour ? hour : 12; // the hour '0' should be '12'
+            hour = (hour < 10 ? "0" : "") + hour;
+        
+            let min = date.getMinutes();
+            min = (min < 10 ? "0" : "") + min;
+        
+            let sec = date.getSeconds();
+            sec = (sec < 10 ? "0" : "") + sec;
+        
+            return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec + " " + ampm;
+        },
+        display: function(forced){
+            // Do not update if the tab is not active.
+            let tab = document.getElementById("debug_navBar1_tab_layerObjects");
+            if(!tab.classList.contains("active")){ 
+                // console.log("tab not active"); 
+                return false; 
+            }
+
+            // lastNormalrun
+            // lastNormalrunWait
+            let updated1;
+            if(forced || !this.lastForcedrun || performance.now() - this.lastForcedrun > this.lastForcedrunWait){
+                this.lastForcedrun = performance.now();
+                updated1 = this.displayLayerObjects();
+            }
+
+            if(updated1){
+                let newText = `Refreshed: ${this.getFormattedDateTime()}`;
+                if(this.DOM.refreshLast.innerText != newText){
+                    this.DOM.refreshLast.innerText = newText;
+                    return true;
+                }
+                else{
+                    // console.log("1 layerObjs: no display update needed.");
+                    return false;
+                }
+            }
+            else{
+                // console.log("2 layerObjs: no display update needed.");
+            }
+            return false;
+        },
+        displayLayerObject_console: function(gs, key){
+            data = _GFX.layerObjs.objs[gs][key];
+            console.log(`LAYER OBJECT ENTRY: gs: '${gs}', key: '${key}'`);
+            console.log("  ", data);
+            console.log(`  ACCESS: _GFX.layerObjs.objs['${gs}']['${key}']`);
+        },
+        displayLayerObjects: function(){
+            // Display the layerObjects for the current gamestate.
+            // Display the layeKeys in reverse order (L4 on top.)
+            // Display the layerObjects in reverse draw order (last on top.)
+            // let tab = document.getElementById("debug_navBar1_tab_layerObjects");
+            // if(!tab.classList.contains("active")){ return false; }
+
+            let elem = document.getElementById("layerObjectList1");
+            if(!elem.hasAttribute("onmouseleave")){
+                elem.setAttribute("onmouseleave", "_new_DEBUG.layerObjs.highlightOnHover(0, 0, 0, 0, 0);"); 
+            }
+    
+            // If the gamestate key is not in layerObjs then return.
+            if(! ( _APP.game.gs1 in _GFX.layerObjs.objs ) ){ return false; }
+    
+            // Get the list of layer keys and reverse them. 
+            let layerKeys = Object.keys(_GFX.currentData).reverse();
+            
+            // Get the list of layerObject keys and reverse them. 
+            let layerObjKeys = Object.keys(_GFX.layerObjs.objs[_APP.game.gs1]).reverse();
+    
+            // Get the current text.
+            let oldHash = elem.getAttribute("hash");
+            let newText = ``;
+    
+            // Go through all layer keys.
+            let layerTextSet = false;
+            let coords;
+            let name;
+            let dims;
+            let rotation;
+            let settings;
+            let fade;
+    
+            // TODO:
+            // oncontextmenu="event.preventDefault(); _DEBUG.loadLayerObj(gs_PLAYING, deckControl);"
+    
+            let firstLayer = true; 
+            for(let layerKey of layerKeys){ 
+                layerTextSet = false;
+    
+                // Go through all layerObjects for this gamestate.
+                for(let layerObjKey of layerObjKeys){ 
+                    // Break-out the data.
+                    data = _GFX.layerObjs.objs[_APP.game.gs1][layerObjKey];
+                    
+                    // Only work with layerObjs on the current layer. 
+                    if(data.layerKey == layerKey){
+                        // Display the layer header?
+                        if(!layerTextSet){ 
+                            if(!firstLayer){
+                                newText += "\n" + `LAYER: ${data.layerKey}:\n`; layerTextSet = true; 
+                            }
+                            else{
+                                newText += `LAYER: ${data.layerKey}:\n`; layerTextSet = true; 
+                                firstLayer = false; 
+                            }
+                            
+                        }
+                        
+                        let w = data.tmap[0];
+                        let h = data.tmap[1];
+                        let x = data.x;
+                        let y = data.y;
+                        if(data.xyByGrid){
+                            w = w * _APP.configObj.dimensions.tileWidth;
+                            h = h * _APP.configObj.dimensions.tileHeight;
+                            x = x * _APP.configObj.dimensions.tileWidth;
+                            y = y * _APP.configObj.dimensions.tileHeight;
+                        }
+                        // coords = `${data.x.toString().padStart(3, " ")}, ${data.y.toString().padStart(3, " ")}`;
+                        coords     = `x: ${data.x}, y: ${data.y}`;
+                        name       = `${layerObjKey.padEnd(16, " ")}`;
+                        dims       = `w: ${w}, h: ${h}`;
+                        fade = data.settings.fade;
+                        fade = typeof fade !== "number" ? "OFF" : fade;
+    
+                        let settingsDifferences = this.getSettingsDifferences(_GFX.defaultSettings, data.settings);
+                        let activeSettingsArray = [];
+                        let settings = ``;
+                        for(let key in settingsDifferences){
+                            activeSettingsArray.push(`${key}:${settingsDifferences[key]}`);
+                        }
+                        settings = activeSettingsArray.join(", ");
+    
+                        // settings = `fade: ${fade}, xFlip: ${data.settings.xFlip?"ON ":"OFF"}, yFlip: ${data.settings.yFlip?"ON ":"OFF"}, rotation: ${data.settings.rotation??0}`;
+    
+                        // Update the newText string.
+                        newText += `<div ` +
+                        `onmouseenter="_new_DEBUG.layerObjs.highlightOnHover(${x}, ${y}, ${w}, ${h}, ${data.settings.rotation});"` + 
+                        `oncontextmenu="event.preventDefault(); _new_DEBUG.layerObjs.contextMenu1_open(event, '${_APP.game.gs1}','${layerObjKey}');" ` +
+                        `onclick="_new_DEBUG.layerObjs.displayLayerObject_console('${_APP.game.gs1}','${layerObjKey}');" ` +
+                        `class="layerObjectsStats1_entry">` +
+                        `${name} : ${data.className}\n  (${coords} ${dims})` +
+                        `\n  ${settings}` + 
+                        `\n  ` + 
+                        `${data.text ? "(TEXT): '" + data.text.slice(0, 40) + "'" : ""}` +
+                        `</div>`;
+                    }
+                }
+            }
+    
+            // If the newText is different than the currentText replace the elem.innerText with the newText.
+            let newHash = _GFX.utilities.djb2Hash( newText );
+            if(oldHash != newHash){
+                // console.log("Changing", maxLen);
+                elem.innerHTML = newText;
+                elem.setAttribute("hash", newHash);
+                return true;
+            }
+            return false;
+        },
+
+        // ** EDITOR **
+        // ************
         adjustX       : function(inc){
             let gs   = this.DOM["edit_gs"].innerText;
             let key  = this.DOM["edit_layerObjKey"].innerText;
@@ -1271,499 +1504,522 @@ var _DEBUG = {
             this.card_displayAttribute(data);
         },
     },
-    displayLayerObject_console: function(gs, key){
-        data = _GFX.layerObjs.objs[gs][key];
-        console.log(`LAYER OBJECT ENTRY: gs: '${gs}', key: '${key}'`);
-        console.log("  ", data);
-        console.log(`  ACCESS: _GFX.layerObjs.objs['${gs}']['${key}']`);
-    },
-    displayLayerObjects: function(){
-        // Display the layerObjects for the current gamestate.
-        // Display the layeKeys in reverse order (L4 on top.)
-        // Display the layerObjects in reverse draw order (last on top.)
-        let tab = document.getElementById("debug_navBar1_tab_layerObjects");
-        if(!tab.classList.contains("active")){ return; }
-        let elem = document.getElementById("layerObjectList1");
+    // Shows the draw timings.
+    drawTimings: {
+        DOM: {
+            "fpsDisplay"             : null,
+            "debug_L1_tms"           : null,
+            "debug_L2_tms"           : null,
+            "debug_L3_tms"           : null,
+            "debug_L4_tms"           : null,
+            "debug_timings_A_L1"     : null,
+            "debug_timings_A_L2"     : null,
+            "debug_timings_A_L3"     : null,
+            "debug_timings_A_L4"     : null,
+            "debug_timings_B_L1"     : null,
+            "debug_timings_B_L2"     : null,
+            "debug_timings_B_L3"     : null,
+            "debug_timings_B_L4"     : null,
+            "debug_timings_C_L1"     : null,
+            "debug_timings_C_L2"     : null,
+            "debug_timings_C_L3"     : null,
+            "debug_timings_C_L4"     : null,
+            "debug_timings_D_L1"     : null,
+            "debug_timings_D_L2"     : null,
+            "debug_timings_D_L3"     : null,
+            "debug_timings_D_L4"     : null,
+            "debug_timings_E_L1"     : null,
+            "debug_timings_E_L2"     : null,
+            "debug_timings_E_L3"     : null,
+            "debug_timings_E_L4"     : null,
+            "debug_timings_TOTAL_L1" : null,
+            "debug_timings_TOTAL_L2" : null,
+            "debug_timings_TOTAL_L3" : null,
+            "debug_timings_TOTAL_L4" : null,
+            "debug_timings_TOTAL_ALL": null,
 
-        if(!elem.hasAttribute("onmouseleave")){
-            elem.setAttribute("onmouseleave", "_DEBUG.layerObjs.highlightOnHover(0, 0, 0, 0, 0);"); 
+        },
+        init: function(){
+            // Save DOM.
+            this.DOM.fpsDisplay     = document.getElementById("debug_fpsDisplay");
+            this.DOM.frameCounter     = document.getElementById("debug_frameCounter");
+            this.DOM.frameDrawCounter = document.getElementById("debug_frameDrawCounter");
+            this.DOM.L1_tms            = document.getElementById("debug_L1_tms");
+            this.DOM.L2_tms            = document.getElementById("debug_L2_tms");
+            this.DOM.L3_tms            = document.getElementById("debug_L3_tms");
+            this.DOM.L4_tms            = document.getElementById("debug_L4_tms");
+            this.DOM.timings_A_L1      = document.getElementById("debug_timings_A_L1");
+            this.DOM.timings_A_L2      = document.getElementById("debug_timings_A_L2");
+            this.DOM.timings_A_L3      = document.getElementById("debug_timings_A_L3");
+            this.DOM.timings_A_L4      = document.getElementById("debug_timings_A_L4");
+            this.DOM.timings_B_L1      = document.getElementById("debug_timings_B_L1");
+            this.DOM.timings_B_L2      = document.getElementById("debug_timings_B_L2");
+            this.DOM.timings_B_L3      = document.getElementById("debug_timings_B_L3");
+            this.DOM.timings_B_L4      = document.getElementById("debug_timings_B_L4");
+            this.DOM.timings_C_L1      = document.getElementById("debug_timings_C_L1");
+            this.DOM.timings_C_L2      = document.getElementById("debug_timings_C_L2");
+            this.DOM.timings_C_L3      = document.getElementById("debug_timings_C_L3");
+            this.DOM.timings_C_L4      = document.getElementById("debug_timings_C_L4");
+            this.DOM.timings_D_L1      = document.getElementById("debug_timings_D_L1");
+            this.DOM.timings_D_L2      = document.getElementById("debug_timings_D_L2");
+            this.DOM.timings_D_L3      = document.getElementById("debug_timings_D_L3");
+            this.DOM.timings_D_L4      = document.getElementById("debug_timings_D_L4");
+            this.DOM.timings_E_L1      = document.getElementById("debug_timings_E_L1");
+            this.DOM.timings_E_L2      = document.getElementById("debug_timings_E_L2");
+            this.DOM.timings_E_L3      = document.getElementById("debug_timings_E_L3");
+            this.DOM.timings_E_L4      = document.getElementById("debug_timings_E_L4");
+            this.DOM.timings_TOTAL_L1  = document.getElementById("debug_timings_TOTAL_L1");
+            this.DOM.timings_TOTAL_L2  = document.getElementById("debug_timings_TOTAL_L2");
+            this.DOM.timings_TOTAL_L3  = document.getElementById("debug_timings_TOTAL_L3");
+            this.DOM.timings_TOTAL_L4  = document.getElementById("debug_timings_TOTAL_L4");
+            this.DOM.timings_TOTAL_ALL = document.getElementById("debug_timings_TOTAL_ALL");
+        },
+        display: function(newData){
+            // Frame counters.
+            _new_DEBUG.updateIfChanged(this.DOM.frameCounter    , (_APP.game.gameLoop.frameCounter/1000).toFixed(1)+"k" );
+            _new_DEBUG.updateIfChanged(this.DOM.frameDrawCounter, (_APP.game.gameLoop.frameDrawCounter/1000).toFixed(1)+"k" );
+
+            // Tilemap counts per layer. 
+            _new_DEBUG.updateIfChanged(this.DOM.L1_tms, Object.keys(_GFX.currentData["L1"].tilemaps).length.toString() );
+            _new_DEBUG.updateIfChanged(this.DOM.L2_tms, Object.keys(_GFX.currentData["L2"].tilemaps).length.toString() );
+            _new_DEBUG.updateIfChanged(this.DOM.L3_tms, Object.keys(_GFX.currentData["L3"].tilemaps).length.toString() );
+            _new_DEBUG.updateIfChanged(this.DOM.L4_tms, Object.keys(_GFX.currentData["L4"].tilemaps).length.toString() );
+
+            // Current FPS.
+            // Show average FPS, average ms per frame, how much off is the average ms per frame.
+            let new_average       = _APP.game.gameLoop.fpsCalc.average.toFixed(0) ?? 0;
+            let new_avgMsPerFrame = _APP.game.gameLoop.fpsCalc.avgMsPerFrame.toFixed(1) ?? 0;
+            let msDiff            = (_APP.game.gameLoop.fpsCalc.avgMsPerFrame - _APP.game.gameLoop.msFrame).toFixed(1);
+            testText = `AVG: ${new_average}, MS: ${new_avgMsPerFrame}, DELTA: ${msDiff}`;
+            _new_DEBUG.updateIfChanged(this.DOM.fpsDisplay, testText);
+
+            // Last draw: Individual timings.
+            _new_DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L1,  newData.ALLTIMINGS["L1___TOTAL"]            .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_A_L1,      newData.ALLTIMINGS["L1_A_clearLayer"]       .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_B_L1,      newData.ALLTIMINGS["L1_B_clearRemovedData"] .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_C_L1,      newData.ALLTIMINGS["L1_C_createTilemaps"]   .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_D_L1,      newData.ALLTIMINGS["L1_D_drawFromDataCache"].toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_E_L1,      newData.ALLTIMINGS["L1_E_drawImgDataCache"] .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L2,  newData.ALLTIMINGS["L2___TOTAL"]            .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_A_L2,      newData.ALLTIMINGS["L2_A_clearLayer"]       .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_B_L2,      newData.ALLTIMINGS["L2_B_clearRemovedData"] .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_C_L2,      newData.ALLTIMINGS["L2_C_createTilemaps"]   .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_D_L2,      newData.ALLTIMINGS["L2_D_drawFromDataCache"].toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_E_L2,      newData.ALLTIMINGS["L2_E_drawImgDataCache"] .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L3,  newData.ALLTIMINGS["L3___TOTAL"]            .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_A_L3,      newData.ALLTIMINGS["L3_A_clearLayer"]       .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_B_L3,      newData.ALLTIMINGS["L3_B_clearRemovedData"] .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_C_L3,      newData.ALLTIMINGS["L3_C_createTilemaps"]   .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_D_L3,      newData.ALLTIMINGS["L3_D_drawFromDataCache"].toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_E_L3,      newData.ALLTIMINGS["L3_E_drawImgDataCache"] .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L4,  newData.ALLTIMINGS["L4___TOTAL"]            .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_A_L4,      newData.ALLTIMINGS["L4_A_clearLayer"]       .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_B_L4,      newData.ALLTIMINGS["L4_B_clearRemovedData"] .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_C_L4,      newData.ALLTIMINGS["L4_C_createTilemaps"]   .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_D_L4,      newData.ALLTIMINGS["L4_D_drawFromDataCache"].toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_E_L4,      newData.ALLTIMINGS["L4_E_drawImgDataCache"] .toFixed(1)+"");
+            _new_DEBUG.updateIfChanged(this.DOM.timings_TOTAL_ALL, newData.ALLTIMINGS["gfx"].toFixed(1)+" ms");
+        },
+    },
+    // NavBar1 buttons for the left-side debug view.
+    navBar1:{
+        // Holds the DOM for the nav buttons and nav views.
+        DOM: {
+            'view_colorFinder': {
+                'tab' : 'debug_navBar1_tab_colorFinder',
+                'view': 'debug_navBar1_view_colorFinder',
+            },
+            'view_drawStats': {
+                'tab' : 'debug_navBar1_tab_drawStats',
+                'view': 'debug_navBar1_view_drawStats',
+            },
+            'view_fade': {
+                'tab' : 'debug_navBar1_tab_fade',
+                'view': 'debug_navBar1_view_fade',
+            },
+            'view_layerObjEdit': {
+                'tab' : 'debug_navBar1_tab_layerObjEdit',
+                'view': 'debug_navBar1_view_layerObjEdit',
+            },
+            'view_hashCacheStats1': {
+                'tab' : 'debug_navBar1_tab_hashCacheStats1',
+                'view': 'debug_navBar1_view_hashCacheStats1',
+            },
+            'view_layerObjects': {
+                'tab' : 'debug_navBar1_tab_layerObjects',
+                'view': 'debug_navBar1_view_layerObjects',
+            },
+            // 'view_hashCacheStats2': {
+            //     'tab' : 'debug_navBar1_tab_hashCacheStats2',
+            //     'view': 'debug_navBar1_view_hashCacheStats2',
+            // },
+        },
+        hideAll: _APP.navBar1.hideAll,
+        showOne: _APP.navBar1.showOne,
+        init   : _APP.navBar1.init,
+    },
+    // NavBar2 buttons for the hashCache sections.
+    navBar3:{
+        // Holds the DOM for the nav buttons and nav views.
+        DOM: {
+            'view_all_base': {
+                'tab' : 'debug_navBar3_tab_all_base',
+                'view': 'debug_navBar3_view_all_base',
+            },
+            'view_perm_base': {
+                'tab' : 'debug_navBar3_tab_perm_base',
+                'view': 'debug_navBar3_view_perm_base',
+            },
+            'view_temp_base': {
+                'tab' : 'debug_navBar3_tab_temp_base',
+                'view': 'debug_navBar3_view_temp_base',
+            },
+            'view_all_copy': {
+                'tab' : 'debug_navBar3_tab_all_copy',
+                'view': 'debug_navBar3_view_all_copy',
+            },
+        },
+        hideAll: _APP.navBar1.hideAll,
+        showOne: _APP.navBar1.showOne,
+        init   : _APP.navBar1.init,
+    },
+
+    // TODO
+    updateTimingBars: {
+        DOM: {
+            debug_progressBar_canvas: null
+        },
+        ctx: null,
+        positions: {
+            "debugBar": { x:80, y:5+0  , w:540, h:20 },
+            "LoopBar" : { x:80, y:5+30 , w:540, h:20 },
+            "GfxBar"  : { x:80, y:5+60 , w:540, h:20 },
+        },
+        mapToWidth: function(value, maxWidth) {
+            canvasWidth = maxWidth; // this.ctx.canvas.width;
+
+            // Make sure the value is clamped between 0 and 100
+            value = Math.max(0, Math.min(100, value));
+
+            // Map the value to the width of the canvas
+            return ((value / 100) * canvasWidth) << 0;
+        },
+        updateOneBar: function(barKey, newValue, newValue2=""){
+            // Get the bar dimensions/position.
+            let pos = this.positions[barKey];
+
+            // Map the newValue to fit the bar. 
+            let newWidth = this.mapToWidth(newValue, pos.w);
+
+            // Clear this bar.
+            this.ctx.clearRect(pos.x, pos.y, pos.w, pos.h);
+
+            // Draw the outer rectangle.
+            this.ctx.strokeStyle = '#000';
+            this.ctx.strokeRect(pos.x-3, pos.y-3, pos.w+6, pos.h+6);
+            
+            // Draw the inner filled rectangle.
+            this.ctx.fillStyle = '#ddd';
+            this.ctx.fillRect(pos.x, pos.y, newWidth, pos.h);
+            
+            // Draw the newValue and newValue2 in the center of the bar.
+            this.ctx.font = '15px Courier New, monospace';
+            this.ctx.fillStyle = '#000';
+            this.ctx.textAlign = "center";     // Center the text horizontally
+            this.ctx.fillText(newValue.toFixed(2)+"% " + newValue2 +"", pos.x + (pos.w / 2), pos.y + (pos.h / 2));
+        },
+        init: function(){
+            // Save the DOM.
+            this.DOM.progressBar_canvas = document.getElementById("debug_progressBar_canvas");
+
+            // Get device pixel ratio
+            let dpr = window.devicePixelRatio || 1;
+
+            // Set the size of the canvas in pixels, taking into account the device pixel ratio
+            this.DOM.progressBar_canvas.width  = this.DOM.progressBar_canvas.width * dpr;
+            this.DOM.progressBar_canvas.height = this.DOM.progressBar_canvas.height * dpr;
+
+            // Set the size of the canvas in CSS pixels
+            this.DOM.progressBar_canvas.style.width = (this.DOM.progressBar_canvas.width / dpr) + "px";
+            this.DOM.progressBar_canvas.style.height = (this.DOM.progressBar_canvas.height / dpr) + "px";
+
+            this.ctx = this.DOM.progressBar_canvas.getContext("2d");
+
+            // Scale all drawing operations by the dpr
+            this.ctx.scale(dpr, dpr);
+            this.ctx.translate(0.5, 0.5);
+
+            // Clear the canvas
+            this.ctx.clearRect(0, 0, this.DOM.progressBar_canvas.width / dpr, this.DOM.progressBar_canvas.height / dpr);
+
+            // Draw the labels.
+            this.ctx.fillStyle = '#000';
+            this.ctx.font = 'bold 15px Courier New, monospace';
+            this.ctx.textAlign = "left";     // 
+            this.ctx.textBaseline = "middle";  // Center the text vertically
+            this.ctx.fillText("DEBUG", 5, this.positions.debugBar.y + this.positions.debugBar.h -8);
+            this.ctx.fillText("LOOP", 5, this.positions.LoopBar.y   + this.positions.LoopBar.h  -8);
+            this.ctx.fillText("DRAW", 5, this.positions.GfxBar.y    + this.positions.GfxBar.h   -8);
+
+            // Draw the initial bars display.
+            this.updateOneBar("debugBar", 0);
+            this.updateOneBar("LoopBar" , 0);
+            this.updateOneBar("GfxBar"  , 0);
+        },
+
+        last_debugTime: 0,
+        last_loopTime : 0,
+        last_drawTime : 0,
+
+        display: function(newData){
+            // Calculate the new debugTime, loopTime, and drawTime
+            let debugTime = (100*(_APP.utility.timeIt("debug_total", "get") / _APP.game.gameLoop.msFrame));
+            let loopTime  = (100*(_APP.game.gameLoop.lastLoop_timestamp     / _APP.game.gameLoop.msFrame));
+            let drawTime  = (100*( newData.ALLTIMINGS.gfx                   / _APP.game.gameLoop.msFrame));
+        
+            // Ensure the new values are within the range 0 - 100.
+            debugTime = Math.max(0, Math.min(100, debugTime));
+            loopTime  = Math.max(0, Math.min(100, loopTime));
+            drawTime  = Math.max(0, Math.min(100, drawTime));
+        
+            // Update the bars with new times.
+            this.updateOneBar("debugBar", debugTime, `${_APP.utility.timeIt("debug_total", "get").toFixed(1)} ms`);
+            this.updateOneBar("LoopBar" , loopTime ,  `${_APP.game.gameLoop.lastLoop_timestamp.toFixed(1)} ms`);
+            this.updateOneBar("GfxBar"  , drawTime ,  `${ newData.ALLTIMINGS.gfx.toFixed(1)} ms`);
+        
+            // Update the last times. 
+            this.last_debugTime = debugTime;
+            this.last_loopTime  = loopTime;
+            this.last_drawTime  = drawTime;
+        }
+    },
+
+    // UTILITY.
+    updateIfChanged: function(elem, newValue, method="innerText"){
+        if(elem[method].trim() != newValue.toString().trim()){ elem[method] = newValue.toString().trim(); }
+    },
+
+    // ** DEBUG TASK RUNNER **
+    // ***********************
+
+    // runDebug_wait: 1000 * 0.25, // 0.25 seconds
+    // runDebug_wait: 1000 * 0.5, // 0.5 seconds
+    runDebug_wait: 1000 * 0.75, // 0.75 seconds
+    // runDebug_wait: 1000 * 1, // 1 seconds
+    // runDebug_wait: 1000 * 2, // 2 seconds
+    // runDebug_wait: 1000 * 3, // 3 seconds
+    // runDebug_wait: 1000 * 4, // 4 seconds
+    // runDebug_wait: 1000 * 5, // 5 seconds
+    runDebug_last: 0,
+    runDebug_lastDuration: 0,
+    debugTasks: async function(){
+        // Don't run debug until it is time. 
+        let lastRunDiff = performance.now() - this.runDebug_last;
+        if( !(this.runDebug_last == 0 | lastRunDiff > this.runDebug_wait) ){
+            // console.log("not ready", lastRunDiff.toFixed(2), this.runDebug_wait);
+            return;
+        }
+        // Store the timestamp for the next run.
+        this.runDebug_last = performance.now();
+        // console.log("RUNNING");
+
+        let ts = performance.now();
+        _APP.utility.timeIt("debug_total", "start");
+
+        // Set the debug is running flag.
+        _DEBUG.debugRunning = true; 
+
+        // Reset timers.
+        _APP.utility.timeIt("_DEBUG.updateDebugTimings", "reset");
+        _APP.utility.timeIt("layerObjs.display", "reset");
+        _APP.utility.timeIt("hashCache.display", "reset");
+        _APP.utility.timeIt("drawTimings.display", "reset");
+        _APP.utility.timeIt("bars.display", "reset");
+        _APP.utility.timeIt("showGamestate.display", "reset");
+
+        // Determine if data needs to be requested.
+
+        let doDataRequest = false;
+        if(document.getElementById("debug_navBar1_tab_drawStats")      .classList.contains("active")){ doDataRequest = true; }
+        if(document.getElementById("debug_navBar1_tab_hashCacheStats1").classList.contains("active")){ doDataRequest = true; }
+        if(document.getElementById("debug_navBar1_tab_drawStats")      .classList.contains("active")){ doDataRequest = true; }
+        doDataRequest = true;
+
+        // REQUEST TIMING DATA.
+        let newData;
+        if(doDataRequest){
+            _APP.utility.timeIt("_DEBUG.updateDebugTimings", "start");
+            newData = await _WEBW_V.SEND("_DEBUG.updateDebugTimings", {
+                data:{},
+                refs:[]
+            }, true, true);
+            newData = newData.data;
+            _APP.utility.timeIt("_DEBUG.updateDebugTimings", "stop");
         }
 
-        // If the gamestate key is not in layerObjs then return.
-        if(! ( _APP.game.gs1 in _GFX.layerObjs.objs ) ){ return; }
+        // showGamestate VIEWER
+        _APP.utility.timeIt("showGamestate.display", "start");
+        _new_DEBUG.showGamestate.display(false);
+        _APP.utility.timeIt("showGamestate.display", "stop");
 
-        // Get the list of layer keys and reverse them. 
-        let layerKeys = Object.keys(_GFX.currentData).reverse();
+        // LAYER OBJECTS VIEWER/EDITOR
+        _APP.utility.timeIt("layerObjs.display", "start");
+        _new_DEBUG.layerObjs.display(false);
+        _APP.utility.timeIt("layerObjs.display", "stop");
         
-        // Get the list of layerObject keys and reverse them. 
-        let layerObjKeys = Object.keys(_GFX.layerObjs.objs[_APP.game.gs1]).reverse();
+        // HASH CACHE VIEWER
+        if(doDataRequest){
+            _APP.utility.timeIt("hashCache.display", "start");
+            _new_DEBUG.hashCache.display(newData, false);
+            _APP.utility.timeIt("hashCache.display", "stop");
+        }
+        
+        // DRAW TIMINGS
+        if(doDataRequest){
+            _APP.utility.timeIt("drawTimings.display", "start");
+            _new_DEBUG.drawTimings.display(newData, false);
+            _APP.utility.timeIt("drawTimings.display", "stop");
+        }
+        
+        // DONE. 
+        this.runDebug_lastDuration = performance.now() - ts;
+        _APP.utility.timeIt("debug_total", "stop");
 
-        // Get the current text.
-        let oldHash = elem.getAttribute("hash");
-        let newText = ``;
+        // BARS
+        _APP.utility.timeIt("bars.display", "start");
+        _new_DEBUG.updateTimingBars.display(newData, false);
+        _APP.utility.timeIt("bars.display", "stop");
 
-        // Go through all layer keys.
-        let layerTextSet = false;
-        let coords;
-        let name;
-        let dims;
-        let rotation;
-        let settings;
-        let fade;
+        // Update changed elements. 
+        this.updateIfChanged(document.getElementById("debug_timings_total")        , _APP.utility.timeIt("debug_total"              , "get").toFixed(1) + " ms");
+        this.updateIfChanged(document.getElementById("debug_timings_doDataRequest"), doDataRequest ? "YES" : "NO");
+        this.updateIfChanged(document.getElementById("debug_timings_dataRequest")  , _APP.utility.timeIt("_DEBUG.updateDebugTimings", "get").toFixed(1) + " ms");
+        this.updateIfChanged(document.getElementById("debug_timings_hashCache")    , _APP.utility.timeIt("hashCache.display"        , "get").toFixed(1) + " ms");
+        this.updateIfChanged(document.getElementById("debug_timings_layerObjs")    , _APP.utility.timeIt("layerObjs.display"        , "get").toFixed(1) + " ms");
+        this.updateIfChanged(document.getElementById("debug_timings_drawTimings")  , _APP.utility.timeIt("drawTimings.display"      , "get").toFixed(1) + " ms");
+        this.updateIfChanged(document.getElementById("debug_timings_bars")         , _APP.utility.timeIt("bars.display"             , "get").toFixed(1) + " ms");
+        this.updateIfChanged(document.getElementById("debug_timings_showGamestate"), _APP.utility.timeIt("showGamestate.display"    , "get").toFixed(1) + " ms");
 
-        // TODO:
-        // oncontextmenu="event.preventDefault(); _DEBUG.loadLayerObj(gs_PLAYING, deckControl);"
+        // if(this.runDebug_lastDuration > 8){
+            // console.log(
+            //     `DEBUG took this long: ${this.runDebug_lastDuration.toFixed(2)} ms` + 
+            //     `\n  _DEBUG.updateDebugTimings: ${_APP.utility.timeIt("_DEBUG.updateDebugTimings", "get").toFixed(2)} ms` +
+            //     `\n  layerObjs.display        : ${_APP.utility.timeIt("layerObjs.display", "get").toFixed(2)} ms` +
+            //     `\n  hashCache.display        : ${_APP.utility.timeIt("hashCache.display", "get").toFixed(2)} ms` +
+            //     `\n  drawTimings.display      : ${_APP.utility.timeIt("drawTimings.display", "get").toFixed(2)} ms` +
+            //     ``
+            // );
+        // }
+    },
 
-        let firstLayer = true; 
-        for(let layerKey of layerKeys){ 
-            layerTextSet = false;
-
-            // Go through all layerObjects for this gamestate.
-            for(let layerObjKey of layerObjKeys){ 
-                // Break-out the data.
-                data = _GFX.layerObjs.objs[_APP.game.gs1][layerObjKey];
+    init: async function(){
+        // Load the debug files.
+        await (async ()=>{
+            let relPath = ".";
+            if(_APP.usingJSGAME){ relPath = "./games/JSGAME_Uno"; }
+            await new Promise( async (res,rej) => { await _APP.utility.addFile({f:"css/debug.css", t:"css"   }, relPath); res(); } );
+            await new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/debug2.js" , t:"js"    }, relPath); res(); } );
+            await new Promise( async (res,rej) => { 
+                // Create the debug nav tab and view.
+                let navBar1Tabs  = document.getElementById("controls_navBarTabs1");
+                let navBar1Views = document.getElementById("controls_navBarViews");
                 
-                // Only work with layerObjs on the current layer. 
-                if(data.layerKey == layerKey){
-                    // Display the layer header?
-                    if(!layerTextSet){ 
-                        if(!firstLayer){
-                            newText += "\n" + `LAYER: ${data.layerKey}:\n`; layerTextSet = true; 
-                        }
-                        else{
-                            newText += `LAYER: ${data.layerKey}:\n`; layerTextSet = true; 
-                            firstLayer = false; 
-                        }
-                        
-                    }
-                    
-                    let w = data.tmap[0];
-                    let h = data.tmap[1];
-                    let x = data.x;
-                    let y = data.y;
-                    if(data.xyByGrid){
-                        w = w * _APP.configObj.dimensions.tileWidth;
-                        h = h * _APP.configObj.dimensions.tileHeight;
-                        x = x * _APP.configObj.dimensions.tileWidth;
-                        y = y * _APP.configObj.dimensions.tileHeight;
-                    }
-                    // coords = `${data.x.toString().padStart(3, " ")}, ${data.y.toString().padStart(3, " ")}`;
-                    coords     = `x: ${data.x}, y: ${data.y}`;
-                    name       = `${layerObjKey.padEnd(16, " ")}`;
-                    dims       = `w: ${w}, h: ${h}`;
-                    fade = data.settings.fade;
-                    fade = typeof fade !== "number" ? "OFF" : fade;
-                    settings = `fade: ${fade}, xFlip: ${data.settings.xFlip?"ON ":"OFF"}, yFlip: ${data.settings.yFlip?"ON ":"OFF"}, rotation: ${data.settings.rotation??0}`;
-
-                    // Update the newText string.
-                    newText += `<div ` +
-                    `onmouseenter="_DEBUG.layerObjs.highlightOnHover(${x}, ${y}, ${w}, ${h}, ${data.settings.rotation});"` + 
-                    `oncontextmenu="event.preventDefault(); _DEBUG.layerObjs.contextMenu1_open(event, '${_APP.game.gs1}','${layerObjKey}');" ` +
-                    `onclick="_DEBUG.displayLayerObject_console('${_APP.game.gs1}','${layerObjKey}');" ` +
-                    `class="layerObjectsStats1_entry">` +
-                    `${name} : ${data.className}\n  (${coords} ${dims})` +
-                    `\n  ${settings}` + 
-                    `</div>`;
-                }
-            }
-        }
-
-        // If the newText is different than the currentText replace the elem.innerText with the newText.
-        let newHash = _GFX.utilities.djb2Hash( newText );
-        if(oldHash != newHash){
-            // console.log("Changing", maxLen);
-            elem.innerHTML = newText;
-            elem.setAttribute("hash", newHash);
-        }
-    },
-
-    hashCacheStats1:{},
-    hashCacheStats1_totalSize_all : 0,
-    hashCacheStats1_totalSize_temp : 0,
-    hashCacheStats1_totalSize_perm : 0,
-    hashCacheStats1_totalSum    : 0,
-    hashCacheStats1_totalSumTemp: 0,
-    hashCacheStats1_totalSumPerm: 0,
-    hashCacheStats1_totalSum_genTimeAll: 0,
-    hashCacheStats1_totalSum_genTimeTemp: 0,
-    hashCacheStats1_totalSum_genTimePerm: 0,
-    display_hashCacheStats1_console: function(title, hash, hashBase){
-        _WEBW_V.SEND('requestHashCacheEntry', { 
-            data:{ 
-                title   : title, 
-                hash    : hash, 
-                hashBase: hashBase
-            }, 
-            refs:[] }, false, false
-        );
-    },
-    display_hashCacheStats1: function(){
-        let tab = document.getElementById("debug_navBar1_tab_hashCacheStats1");
-        if(!tab.classList.contains("active")){ return; }
-        let elem = document.getElementById("debug_hashCacheList1");
-        let elem2 = document.getElementById("debug_hashCacheStats1_hashCacheMapSize1");
-        let elem3 = document.getElementById("debug_hashCacheStats1_hashCacheMapSize2");
-        let elem4 = document.getElementById("debug_hashCacheStats1_hashCache_genTime");
-
-        // Total hashes
-        let countsText1 = `` + 
-        `TEMP : ${this.hashCacheStats1_totalSumTemp}\n` +
-        `PERM : ${this.hashCacheStats1_totalSumPerm}\n` +
-        `TOTAL: ${this.hashCacheStats1_totalSum}\n` + 
-        ``;
-        let countsText2 = `` + 
-        `${this.hashCacheStats1_totalSize_temp.padStart(12, " ")}\n` +
-        `${this.hashCacheStats1_totalSize_perm.padStart(12, " ")}\n` + 
-        `${this.hashCacheStats1_totalSize_all.padStart(12, " ")}\n` +
-        ``;
-        let countsText3 = `` + 
-        `${this.hashCacheStats1_totalSum_genTimeTemp.toFixed(2).padStart(8, " ")} ms\n` + 
-        `${this.hashCacheStats1_totalSum_genTimePerm.toFixed(2).padStart(8, " ")} ms\n` +
-        `${this.hashCacheStats1_totalSum_genTimeAll .toFixed(2).padStart(8, " ")} ms\n` +
-        ``;
-        if(elem2.innerText != countsText1){ 
-            // console.log("display_hashCacheStats1: CHANGE: hashCacheStats1_totalSum"); 
-            elem2.innerText = countsText1; 
-        }
-        // Total size
-        if(elem3.innerText != countsText2){ 
-            // console.log("display_hashCacheStats1: CHANGE: hashCacheStats1_totalSize"); 
-            elem3.innerText = countsText2; 
-        }
-        // Total genTime
-        if(elem4.innerText != countsText3){ 
-            // console.log("display_hashCacheStats1: CHANGE: totalTempGenTime"); 
-            elem4.innerText = countsText3; 
-        }
-
-        // Get the current text.
-        let newText = ``;
-
-        let oldHash = elem.getAttribute("hash");
-        let settings;
-
-        // Go through all layerObjects for this gamestate.
-        let data;
-        let maxLen1 = 0;
-        let maxLen2 = 0;
-        let maxLen3 = 0;
-        let totalTempGenTime = 0;
-        for(let index in this.hashCacheStats1){ 
-            data = this.hashCacheStats1[index];
-            if(data.mapKey && data.mapKey.length > maxLen1){ maxLen1 = data.mapKey.length; }
-            if(data.relatedMapKey.length > maxLen2){ maxLen2 = data.relatedMapKey.length; }
-            if(data.ts.length > maxLen2){ maxLen3 = data.ts.length; }
-            if(data.removeHashOnRemoval){
-                totalTempGenTime += data.genTime;
-            }
-        }
-
-
-        for(let index in this.hashCacheStats1){ 
-            // Break-out the data.
-            data = this.hashCacheStats1[index];
-            
-            let hashText = `${data.hashCacheHash == data.hashCacheHash_BASE ? "BASE" : "copy"}`;
-
-            settings = `[fade: ${data.settings.fade??0}], [xFlip: ${data.settings.xFlip??0}], [yFlip: ${data.settings.yFlip??0}], [rotation: ${data.settings.rotation??0}]`;
-
-            // Update the newText string.
-            // if(data.rotation)
-            // if(data.removeHashOnRemoval)
-            let originClass = "debug_hashCache_originLabel ";
-            if     (data.origin.indexOf("CUSTOM") !=-1) { originClass += "debug_hashCache_ON_DEMAND "; }
-            else if(data.origin.indexOf("USER")   !=-1) { originClass += "debug_hashCache_CUSTOM_CACHE "; }
-            else if(data.origin.indexOf("BASE")   !=-1) { originClass += "debug_hashCache_INIT_PRECACHE "; }
-
-            let originModifiedSpan = ``;
-            if     (data.origin.indexOf("_MODIFIED")     !=-1) { 
-                originModifiedSpan = `<span class="debug_hashCache_originLabel debug_hashCache_MODIFIED">MODIFIED</span>`; 
-            }
-            data.origin = data.origin.replace("_MODIFIED", "");
-
-            newText += `<div class="${data.removeHashOnRemoval?"":"hashCacheStats1_entry_perm "}hashCacheStats1_entry" onclick="_DEBUG.display_hashCacheStats1_console('${data.mapKey}, ${data.relatedMapKey}',${data.hashCacheHash}, ${data.hashCacheHash_BASE} );">` +
-            `${data.removeHashOnRemoval?"(TEMP)":"(PERM)"}, ${hashText} ` +
-            `, origin: <span class="${originClass}">${data.origin}</span> ${originModifiedSpan}` + 
-            `\n` +
-            `${data.mapKey ? " mapKey: " + data.mapKey.toString().padEnd(maxLen1, " ") : ""} ` + 
-            `(relatedMapKey: ${ (data.relatedMapKey ? data.relatedMapKey+")" : "<custom>)" )} ` +
-
-            `\n` +
-            ` ${data.ts    .toString().padEnd(maxLen3, " ")},` +
-            ` ${(data["hashCacheDataLength"]/1000).toFixed(0).padStart(6, " ")} KB,` +
-            ` hasTransparency: ${data.hasTransparency? "TRUE" : "false"}` +
-            
-            `\n` +
-            ` ${settings}` +
-            `\n` +
-            ` gen: ${data.genTime.toFixed(2)} ms, ` +
-            `H:${data.hashCacheHash} B:${data.hashCacheHash_BASE}` +
-            `\n` +
-            `</div>`;
-        }
-
-        // If the newText is different than the currentText replace the elem.innerText with the newText.
-        let newHash = _GFX.utilities.djb2Hash( newText );
-        if(oldHash != newHash){
-            // console.log("display_hashCacheStats1: CHANGE: display_hashCacheStats1"); 
-            elem.setAttribute("hash", newHash);
-            // elem.innerText = newText.trim();
-            elem.innerHTML = newText;
-        }
-    },
-};
-
-_DEBUG.navBar1 = {
-    // Holds the DOM for the nav buttons and nav views.
-    DOM: {
-        'view_colorFinder': {
-            'tab' : 'debug_navBar1_tab_colorFinder',
-            'view': 'debug_navBar1_view_colorFinder',
-        },
-        'view_drawStats': {
-            'tab' : 'debug_navBar1_tab_drawStats',
-            'view': 'debug_navBar1_view_drawStats',
-        },
-        'view_fade': {
-            'tab' : 'debug_navBar1_tab_fade',
-            'view': 'debug_navBar1_view_fade',
-        },
-        'view_layerObjEdit': {
-            'tab' : 'debug_navBar1_tab_layerObjEdit',
-            'view': 'debug_navBar1_view_layerObjEdit',
-        },
-        'view_hashCacheStats1': {
-            'tab' : 'debug_navBar1_tab_hashCacheStats1',
-            'view': 'debug_navBar1_view_hashCacheStats1',
-        },
-        'view_layerObjects': {
-            'tab' : 'debug_navBar1_tab_layerObjects',
-            'view': 'debug_navBar1_view_layerObjects',
-        },
-        // 'view_hashCacheStats2': {
-        //     'tab' : 'debug_navBar1_tab_hashCacheStats2',
-        //     'view': 'debug_navBar1_view_hashCacheStats2',
-        // },
-    },
-    hideAll: _APP.navBar1.hideAll,
-    showOne: _APP.navBar1.showOne,
-    init   : _APP.navBar1.init,
-};
-
-_DEBUG.init = async function(){
-    const loadFiles = async function(){
-        let relPath = ".";
-        if(_APP.usingJSGAME){ relPath = "./games/JSGAME_Uno"; }
-
-        await new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/debug2.js" , t:"js"    }, relPath); res(); } );
-        await new Promise( async (res,rej) => { await _APP.utility.addFile({f:"css/debug.css", t:"css"   }, relPath); res(); } );
-        await new Promise( async (res,rej) => { 
-            // Create the debug nav tab and view.
-            let navBar1Tabs  = document.getElementById("controls_navBarTabs1");
-            let navBar1Views = document.getElementById("controls_navBarViews");
-            
-            // Tab
-            let tab = document.createElement("div");
-            tab.id = "controls_navBar1_tab_debug1"; 
-            tab.classList.add("controls_navBarTabs");
-            tab.innerText = "DEBUG";
-            
-            // View
-            let view = document.createElement("div");
-            view.id = "controls_navBar1_view_debug1"; 
-            view.classList.add("controls_navBarViews");
-            
-            // Inner debug div
-            let innerDebugDiv = document.createElement("div");
-            innerDebugDiv.id = "debug";
-            
-            // Append
-            view.append(innerDebugDiv);
-            navBar1Tabs.append(tab);
-            navBar1Views.append(view);
-
-            // Add the HTML to the inner debug div.
-            let data = await _APP.utility.addFile({f:"debug.html"  , t:"html"  }, relPath); 
-            innerDebugDiv.innerHTML = data;
-
-            // Move the alwaysVisible div to the bottom of controls.
-            // document.getElementById("controls").append( document.getElementById("debug_test_alwaysVisible") ); 
-            
-            // Move the alwaysVisible div below the canvav output.
-            // document.getElementById("outputContainer").append( document.getElementById("debug_test_alwaysVisible") ); 
-
-            // Move the debug_test_gamestates to the side of the game output.
-            // document.getElementById("outputContainer").append( document.getElementById("debug_test_gamestates") ); 
-            document.getElementById("outputContainer").append( document.getElementById("debug_sideDiv") ); 
-
-            res(); 
-        } );
-    };
-    const loadColorFinder = function(){
-        const canvas_src_L1 = document.querySelector(".canvasLayer[name='L1']");
-        const canvas_src_L2 = document.querySelector(".canvasLayer[name='L2']");
-        const canvas_src_L3 = document.querySelector(".canvasLayer[name='L3']");
-        const canvas_src_L4 = document.querySelector(".canvasLayer[name='L4']");
-        let copyCanvas    = document.getElementById("debug_colorFinder_src");
-        copyCanvas.width = canvas_src_L1.width;
-        copyCanvas.height = canvas_src_L1.height;
-
-        let copyCanvasCtx = copyCanvas.getContext("2d", { willReadFrequently: true } );
-        let zoomCanvas = document.getElementById("debug_colorFinder_zoom");
-        let zoomCanvasCtx = zoomCanvas.getContext("2d");
-        let pixelRGBA = document.getElementById("debug_colorFinder_pixelRGBA");
-        let debug_test_copyLayer_L1 = document.getElementById("debug_test_copyLayer_L1");
-        let debug_test_copyLayer_L2 = document.getElementById("debug_test_copyLayer_L2");
-        let debug_test_copyLayer_L3 = document.getElementById("debug_test_copyLayer_L3");
-        let debug_test_copyLayer_L4 = document.getElementById("debug_test_copyLayer_L4");
-        let debug_test_copyLayer_ALL = document.getElementById("debug_test_copyLayer_ALL");
-
-        let replaceCopyCanvas = function(canvas_src){
-            // copyCanvasCtx.clearRect(0, 0, canvas_src.width, canvas_src.height);
-            copyCanvasCtx.clearRect(0, 0, copyCanvasCtx.canvas.width, copyCanvasCtx.canvas.height);
-            copyCanvasCtx.drawImage(canvas_src, 0, 0);
-        };
-        let copyAll = function(){
-            copyCanvasCtx.clearRect(0, 0, copyCanvasCtx.canvas.width, copyCanvasCtx.canvas.height);
-            copyCanvasCtx.drawImage(canvas_src_L1, 0, 0);
-            copyCanvasCtx.drawImage(canvas_src_L2, 0, 0);
-            copyCanvasCtx.drawImage(canvas_src_L3, 0, 0);
-            copyCanvasCtx.drawImage(canvas_src_L4, 0, 0);
-        };
-
-        // Copy buttons: event listeners.
-        debug_test_copyLayer_L1 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_L1);  }, false);
-        debug_test_copyLayer_L2 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_L2);  }, false);
-        debug_test_copyLayer_L3 .addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_L3);  }, false);
-        debug_test_copyLayer_L4.addEventListener("click", ()=>{ replaceCopyCanvas(canvas_src_L4); }, false);
-        debug_test_copyLayer_ALL .addEventListener("click", copyAll, false);
-
-        // Mousemove event listener.
-        let last_regionX;
-        let last_regionY;
-        const regionWidth  = 8;
-        const regionHeight = 8;
-        copyCanvas.addEventListener('mousemove', (event) => {
-            const rect = copyCanvas.getBoundingClientRect();
-            const scaleX = copyCanvas.width / rect.width;
-            const scaleY = copyCanvas.height / rect.height;
+                // Tab
+                let tab = document.createElement("div");
+                tab.id = "controls_navBar1_tab_debug1"; 
+                tab.classList.add("controls_navBarTabs");
+                tab.innerText = "DEBUG";
+                
+                // View
+                let view = document.createElement("div");
+                view.id = "controls_navBar1_view_debug1"; 
+                view.classList.add("controls_navBarViews");
+                
+                // Inner debug div
+                let innerDebugDiv = document.createElement("div");
+                innerDebugDiv.id = "debug";
+                
+                // Append
+                view.append(innerDebugDiv);
+                navBar1Tabs.append(tab);
+                navBar1Views.append(view);
     
-            // Calculate the scaled mouse position.
-            const mouseX = (event.clientX - rect.left) * scaleX;
-            const mouseY = (event.clientY - rect.top) * scaleY;
+                // Add the HTML to the inner debug div.
+                let data = await _APP.utility.addFile({f:"debug.html"  , t:"html"  }, relPath); 
+                innerDebugDiv.innerHTML = data;
     
-            // Calculate the 8x8px region under the mouse cursor
-            const regionX = Math.floor(mouseX / regionWidth) * regionWidth;
-            const regionY = Math.floor(mouseY / regionHeight) * regionHeight;
-            
-            // Determine if we should continue.
-            if( last_regionX == regionX && last_regionY == regionY ) { return; }
-            last_regionX = regionX; 
-            last_regionY = regionY;
+                // Move the alwaysVisible div to the bottom of controls.
+                // document.getElementById("controls").append( document.getElementById("debug_test_alwaysVisible") ); 
+                
+                // Move the alwaysVisible div below the canvav output.
+                // document.getElementById("outputContainer").append( document.getElementById("debug_test_alwaysVisible") ); 
     
-            // Extract the ImageData of the region from the main canvas
-            const regionImageData = copyCanvasCtx.getImageData(regionX, regionY, regionWidth, regionHeight);
+                // Move the debug_test_gamestates to the side of the game output.
+                // document.getElementById("outputContainer").append( document.getElementById("debug_test_gamestates") ); 
+                document.getElementById("outputContainer").append( document.getElementById("debug_sideDiv") ); 
     
-            // Clear the zoom canvas
-            zoomCanvasCtx.clearRect(0, 0, zoomCanvas.width, zoomCanvas.height);
-    
-            // Draw the extracted ImageData on the zoom canvas
-            zoomCanvasCtx.putImageData(regionImageData, 0, 0);
-    
-            // Display pixel values rgba as hex.
-            let text = "R0: ";
-            let rowNum = 0;
-            for(let i=0; i<regionImageData.data.length; i+=4){
-                if(i%(8*4)==0 && i!=0){ rowNum+=1; text += `\nR${rowNum}: `; }
-                let r = regionImageData.data[i+0];
-                let g = regionImageData.data[i+1];
-                let b = regionImageData.data[i+2];
-                let a = regionImageData.data[i+3];
-                text += `` +
-                `[` +
-                    `${r.toString().padStart(3, " ").toUpperCase()},` +
-                    `${g.toString().padStart(3, " ").toUpperCase()},` +
-                    `${b.toString().padStart(3, " ").toUpperCase()},` +
-                    `${a.toString().padStart(3, " ").toUpperCase()}` +
-                `] ` ;
-            }
-            pixelRGBA.innerText = text;
-        });
-    };
+                res(); 
+            } );
+        })();
 
-    return new Promise(async (resolve,reject)=>{
-        // Init the color finder.
-        let ts_loadFiles = performance.now(); 
-        await loadFiles();
-        ts_loadFiles = performance.now() - ts_loadFiles;
+        // Load the grid canvas.
+        this.gridCanvas.init();
 
-        // Init the color finder.
-        let tsLoadColorFinder = performance.now(); 
-        loadColorFinder();
-        tsLoadColorFinder = performance.now() - tsLoadColorFinder;
+        // Load the Color Finder.
+        this.colorFinder.init();
         
-        // Init createGridCanvas.
-        let ts_createGridCanvas = performance.now(); 
-        this.createGridCanvas();
-        ts_createGridCanvas = performance.now() - ts_createGridCanvas;
-
-        // Init fadeHandler.
-        let ts_fadeHandler = performance.now(); 
-        this.fadeHandler();
-        ts_fadeHandler = performance.now() - ts_fadeHandler;
-
-        // Init countHandler.
-        let ts_elemsObjInit = performance.now(); 
-        this.elemsObjInit();
-        ts_elemsObjInit = performance.now() - ts_elemsObjInit;
-
-        // Init gameLoopControl.
-        let ts_gameLoopControl = performance.now(); 
-        this.gameLoopControl();
-        ts_gameLoopControl = performance.now() - ts_gameLoopControl;
-
-        _DEBUG.timingsDisplay.gfx.init();
-        _DEBUG.timingsDisplay.loop.init();
-        _DEBUG.timingsDisplay.debug.init();
-
-        // Resize
-        let scaleSlider = document.getElementById("scaleSlider");
-        // scaleSlider.value = "2.50";
-        scaleSlider.value = "2.75";
-        // scaleSlider.value = "3.00";
-        scaleSlider.dispatchEvent(new Event("input"));
-
-        _DEBUG.layerObjs.init(_DEBUG);
-
-        // DEBUG NAV 1
-        _DEBUG.navBar1.init();
-        // _DEBUG.navBar1.showOne("view_colorFinder");
-        // _DEBUG.navBar1.showOne("view_drawStats");
-        // _DEBUG.navBar1.showOne("view_fade");
-        // _DEBUG.navBar1.showOne("view_hashCacheStats1");
-        _DEBUG.navBar1.showOne("view_layerObjects");
-        // _DEBUG.navBar1.showOne("view_layerObjEdit");
-
-        // Output some timing info.
-        // console.log("DEBUG: init:");
-        // console.log("  ts_loadFiles                :", ts_loadFiles.toFixed(3));
-        // console.log("  tsLoadColorFinder           :", tsLoadColorFinder.toFixed(3));
-        // console.log("  ts_drawColorPalette         :", ts_drawColorPalette.toFixed(3));
-        // console.log("  ts_createGridCanvas         :", ts_createGridCanvas.toFixed(3));
-        // console.log("  ts_fadeHandler              :", ts_fadeHandler.toFixed(3));
-        // console.log("  ts_elemsObjInit             :", ts_elemsObjInit.toFixed(3));
-        // console.log("  ts_gameLoopControl          :", ts_gameLoopControl.toFixed(3));
+        // Load the toggle buttons.
+        this.toggleButtons1.init();
         
-        // Init init2.
-        let ts_init2 = performance.now(); 
-        await _DEBUG2.init();
-        ts_init2 = performance.now() - ts_init2;
+        // Load the fade.
+        this.fade.init();
+
+        // Load the gamestateChanger.
+        this.gamestateChanger.init();
+
+        // Load the showGamestate.
+        this.showGamestate.init();
         
-        // console.log("  ts_init2                    :", ts_init2.toFixed(3));
+        // Load the navBar1 tabs.
+        this.navBar1.init();
+        // _new_DEBUG.navBar1.showOne("view_colorFinder");
+        _new_DEBUG.navBar1.showOne("view_drawStats");
+        // _new_DEBUG.navBar1.showOne("view_fade");
+        // _new_DEBUG.navBar1.showOne("view_hashCacheStats1");
+        // _new_DEBUG.navBar1.showOne("view_layerObjects");
+        // _new_DEBUG.navBar1.showOne("view_layerObjEdit");
         
-        resolve();
-    });
-}
-_DEBUG.endOfLoop = function(){
-    console.log("endOfLoop");
+        // Load the hashCache.
+        
+        // Load the HashCache viewer.
+        this.hashCache.init();
+
+        // Load the LayerObjects viewer.
+        this.layerObjs.init();
+
+        // Load the drawTimings viewer.
+        this.drawTimings.init();
+        
+        // Load the updateTimingBars.
+        this.updateTimingBars.init();
+        
+        // Load the navBar3 tabs.
+        this.navBar3.init();
+        // _new_DEBUG.navBar3.showOne("view_all_base"); 
+        // _new_DEBUG.navBar3.showOne("view_perm_base");
+        // _new_DEBUG.navBar3.showOne("view_temp_base"); 
+        _new_DEBUG.navBar3.showOne("view_all_copy");
+        // _new_DEBUG.navBar3.showOne("view_temp"); 
+        // _new_DEBUG.navBar3.showOne("view_temp_copy");
+
+        // Set the output scaling (only in debug mode.)
+        // let scaleSlider = document.getElementById("scaleSlider");
+        // scaleSlider.value = "2.75";
+        // scaleSlider.dispatchEvent(new Event("input"));
+
+        // Start the debug loop.
+        // setTimeout(()=>this.debugTasks(), 1000);
+
+        console.log("new_DEBUG loaded");
+    },
 };

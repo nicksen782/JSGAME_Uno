@@ -517,7 +517,8 @@ var _GFX = {
                             h        : tilemap.h,
                             settings : tilemap.settings,
                             mapKey : tilemapKey,
-
+                            
+                            text : tilemap.text,
                             removeHashOnRemoval: tilemap.removeHashOnRemoval ?? true,
                             noResort           : tilemap.noResort ?? false,
                         };
@@ -697,6 +698,7 @@ var _GFX = {
                     h       : obj.tmap[1] * _APP.configObj.dimensions.tileHeight,
                     tmap    : obj.tmap,
                     settings: obj.settings,
+                    text    : false,
                 } 
             };
 
@@ -784,6 +786,7 @@ var _GFX = {
                     h       : newTilemap[1] * _APP.configObj.dimensions.tileHeight,
                     tmap    : newTilemap,
                     settings: obj.settings,
+                    text    : obj.text,
                 } 
             };
 
@@ -799,33 +802,44 @@ var _GFX = {
         afterDraw: function(data={}, forceGraphicsDataUsed=false){
             if(_APP.debugActive && _DEBUG){
                 if(data == ""){ return; }
-                if(forceGraphicsDataUsed){
-                    _DEBUG.timingsDisplay.gfx.dataIsUsed = false;
-                }
-                else{
-                    _DEBUG.timingsDisplay.gfx.updateCache(data); 
-                }
 
-                // hashCacheStats
-                _DEBUG.hashCacheStats1_totalSize_all  = ( `${(data["totalSize_all"]/1000).toFixed(2)} KB` );
-                _DEBUG.hashCacheStats1_totalSize_temp = ( `${(data["totalSize_temp"]/1000).toFixed(2)} KB` );
-                _DEBUG.hashCacheStats1_totalSize_perm = ( `${(data["totalSize_perm"]/1000).toFixed(2)} KB` );
-                _DEBUG.hashCacheStats1_totalSum     = ( `${(data["totalSum"])}` );
-                _DEBUG.hashCacheStats1_totalSumTemp = ( `${(data["totalSumTemp"])}` );
-                _DEBUG.hashCacheStats1_totalSumPerm = ( `${(data["totalSumPerm"])}` );
-                
-                _DEBUG.hashCacheStats1_totalSum_genTimeAll  = data["totalSum_genTimeAll"]  ;
-                _DEBUG.hashCacheStats1_totalSum_genTimeTemp = data["totalSum_genTimeTemp"] ;
-                _DEBUG.hashCacheStats1_totalSum_genTimePerm = data["totalSum_genTimePerm"] ;
+                // DRAW TIMINGS.
+                // if(forceGraphicsDataUsed){
+                //     _DEBUG.timingsDisplay.gfx.dataIsUsed = false;
+                // }
+                // else{
+                //     _DEBUG.timingsDisplay.gfx.updateCache(data); 
+                // }
 
-                // Sort so that the removeHashOnRemoval entries appear first.
-                _DEBUG.hashCacheStats1 = data.hashCacheStats
-                .sort((a, b) => {
-                    if(a.removeHashOnRemoval.toString() >  b.removeHashOnRemoval.toString()){ return -1; }
-                    if(a.removeHashOnRemoval.toString() <  b.removeHashOnRemoval.toString()){ return  1; }
-                    if(a.removeHashOnRemoval.toString() == b.removeHashOnRemoval.toString()){ return  0; }
-                }); 
-                // .sort((a, b) => a.mapKey.localeCompare(b.mapKey));
+                // // HASH CACHE VIEWER
+                // if(_new_DEBUG.hashCache){
+                //     _new_DEBUG.hashCache.display(data, forceGraphicsDataUsed);
+                // }
+                // else{
+                //     // hashCacheStats
+                //     _DEBUG.hashCacheStats1_totalSize_all  = ( `${(data["totalSize_all"]/1000).toFixed(2)} KB` );
+                //     _DEBUG.hashCacheStats1_totalSize_temp = ( `${(data["totalSize_temp"]/1000).toFixed(2)} KB` );
+                //     _DEBUG.hashCacheStats1_totalSize_perm = ( `${(data["totalSize_perm"]/1000).toFixed(2)} KB` );
+                //     _DEBUG.hashCacheStats1_totalSum     = ( `${(data["totalSum"])}` );
+                //     _DEBUG.hashCacheStats1_totalSumTemp = ( `${(data["totalSumTemp"])}` );
+                //     _DEBUG.hashCacheStats1_totalSumPerm = ( `${(data["totalSumPerm"])}` );
+    
+                //     _DEBUG.hashCacheStats1_hashCacheHashBASEsInUse = data["hashCacheHashBASEsInUse"];
+                //     _DEBUG.hashCacheStats1_hashCacheHashesInUse    = data["hashCacheHashesInUse"];
+                    
+                //     _DEBUG.hashCacheStats1_totalSum_genTimeAll  = data["totalSum_genTimeAll"]  ;
+                //     _DEBUG.hashCacheStats1_totalSum_genTimeTemp = data["totalSum_genTimeTemp"] ;
+                //     _DEBUG.hashCacheStats1_totalSum_genTimePerm = data["totalSum_genTimePerm"] ;
+    
+                //     // Sort so that the removeHashOnRemoval entries appear first.
+                //     _DEBUG.hashCacheStats1 = data.hashCacheStats
+                //     .sort((a, b) => {
+                //         if(a.removeHashOnRemoval.toString() >  b.removeHashOnRemoval.toString()){ return -1; }
+                //         if(a.removeHashOnRemoval.toString() <  b.removeHashOnRemoval.toString()){ return  1; }
+                //         if(a.removeHashOnRemoval.toString() == b.removeHashOnRemoval.toString()){ return  0; }
+                //     }); 
+                //     // .sort((a, b) => a.mapKey.localeCompare(b.mapKey));
+                // }
             }
 
             if(data.newL1_bgColor){
@@ -857,6 +871,9 @@ var _GFX = {
     utilities:{
         // Returns a hash for the specified string. (Variation of Dan Bernstein's djb2 hash.)
         djb2Hash: function(str) {
+            // Example usages:
+            // _GFX.utilities.djb2Hash( "string to hash" );
+            // _GFX.utilities.djb2Hash( [1, 2, 3, "4", "5", [1,2,3] ]);
             if(typeof str != "string") { str = str.toString(); }
             var hash = 5381;
             for (var i = 0; i < str.length; i++) {
@@ -1316,6 +1333,7 @@ class PrintText extends LayerObject{
         let w = this.tmap[0];
         let h = this.tmap[1];
         ({x:layerObjectData[this.layerObjKey].x ,y: layerObjectData[this.layerObjKey].y} = this.clampXandY(x,y, w, h));
+        // this.text
 
         if(onlyReturnLayerObjData){ 
             layerObjectData[this.layerObjKey].layerKey = this.layerKey;

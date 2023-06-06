@@ -97,11 +97,11 @@
                     // alert(`${_APP.configObj.appName} (Stand-Alone version) load time: ${ts1E.toFixed(2)}ms`);
 
                     // Start the game loop.
-                    // _APP.game.gameLoop.loop_start();
                     setTimeout(()=>{ 
                         loading.style.display = "none";
                         wrapper.style.display = "";
                         _APP.game.gameLoop.loop_start(); 
+                        if(_APP.debugActive){_new_DEBUG.toggleButtons1.setCurrentStates(); }
                     }, 250);
 
                     res(); 

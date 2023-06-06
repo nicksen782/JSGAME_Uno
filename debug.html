@@ -50,13 +50,6 @@
                 <td class="debug_td_short"> <div class="debugLive" id="debug_L3_tms">0</div> </td>
                 <td class="debug_td_short"> <div class="debugLive" id="debug_L4_tms">0</div> </td>
             </tr>
-            <!-- <tr>  -->
-                <!-- <td class="debug_td_header">CHANGE</td> -->
-                <!-- <td class="debug_td_short"> <span class="debugLive" id="debug_changesL1">___</span> </td> -->
-                <!-- <td class="debug_td_short"> <span class="debugLive" id="debug_changesL2">___</span> </td> -->
-                <!-- <td class="debug_td_short"> <span class="debugLive" id="debug_changesL3">___</span> </td> -->
-                <!-- <td class="debug_td_short"> <span class="debugLive" id="debug_changesL4">___</span> </td> -->
-            <!-- </tr> -->
         </table>
         <br>
         <br>
@@ -115,7 +108,7 @@
                 <td class="debug_td_short"> <div class="debugLive" id="debug_timings_TOTAL_L4">0</div></td> 
             </tr>
 
-            <tr> <td colspan="5">_</td> </tr>
+            <!-- <tr> <td colspan="5">_</td> </tr> -->
             <tr>
                 <td class="debug_td_header">TOTAL ALL LAYERS</td> 
                 <td class="debug_td_short" colspan="4"> <div class="debugLive" id="debug_timings_TOTAL_ALL">0</div></td> 
@@ -129,9 +122,12 @@
         <table class="debug_table">
             <tr> <td class="debug_td_header">Frames :      </td> <td class="debug_td_short"> <div class="debugLive" id="debug_frameCounter">0</div> </td> </tr>
             <tr> <td class="debug_td_header">Drawn frames :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_frameDrawCounter">0</div> </td> </tr>
-            <tr> <td class="debug_td_header">DRAWNEEDED :  </td> <td class="debug_td_short"> <div class="debugLive" id="debug_DRAWNEEDED">false</div> </td> </tr>
-            <!-- <tr> <td class="debug_td_header">waitForDraw  :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_waitUntilFrameDrawn">false</div> </td> </tr> -->
-            <!-- <tr> <td class="debug_td_header">Skip logic:   </td> <td class="debug_td_short"> <div class="debugLive" id="debug_skipLogic"></div> </td> </td> </tr> -->
+        </table>
+        <br>
+        <br>
+        <label class="debug_title">FPS!</label>
+        <table class="debug_table">
+            <tr> <td class="debug_td_header">FPS :</td>     <td class="debug_td_long"> <div class="debugLive" id="debug_fpsDisplay"></div> </td> </tr>
         </table>
         <br>
         <br>
@@ -149,34 +145,96 @@
 
     <!-- HASH CACHE STATS 1 -->
     <div id="debug_navBar1_view_hashCacheStats1" class="controls_navBarViews">
+        <div id="debug_hashCacheStats1_refreshDiv">
+            <div id="debug_hashCacheStats1_refresh">Refresh Now</div>
+            <div id="debug_hashCacheStats1_refreshLast">Refreshed: </div>
+        </div>
         <label class="debug_title">HASHCACHE DATA:</label>
-        <table class="debug_table">
+        <table class="debug_table2">
             <tr>
-                <!-- <td></td> -->
-                <td class="debug_td_header2">Entries</td>
-                <td class="debug_td_header2">Total Size</td>
-                <td class="debug_td_header2">genTime (TEMP)</td>
+                <td class="debug_td_header3">Type</td>
+                <td class="debug_td_header3">Recs</td>
+                <td class="debug_td_header3">Size</td>
+                <td class="debug_td_header3">genTime</td>
+                <td class="debug_td_header3">U: BASES</td>
+                <td class="debug_td_header3">U: COPIES</td>
             </tr>
             <tr>
-                <!-- <td class="debug_td_header">hashCache</td>  -->
-                <td class=""> <div class="debug_monospace" id="debug_hashCacheStats1_hashCacheMapSize1">0</div></td> 
-                <td class=""> <div class="debug_monospace" id="debug_hashCacheStats1_hashCacheMapSize2">0</div></td> 
-                <td class=""> <div class="debug_monospace" id="debug_hashCacheStats1_hashCache_genTime">0</div></td> 
+                <td class="debug_leftAlignText debug_monospace">TEMP:</td>
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSumTemp">0</div> </td> 
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSize_temp">0</div> </td> 
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSum_genTimeTemp">0</div> </td> 
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSumTemp_bases">0</div> </td>
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSumTemp_copies">0</div> </td>
+            </tr>
+            <tr>
+                <td class="debug_leftAlignText debug_monospace">PERM:</td>
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSumPerm">0</div> </td> 
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSize_perm">0</div> </td> 
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSum_genTimePerm">0</div> </td> 
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSumPerm_bases">0</div> </td>
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSumPerm_copies">0</div> </td>
+            </tr>
+            <tr>
+                <td class="debug_leftAlignText debug_monospace">ALL :</td>
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSum">0</div> </td> 
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSize_all">0</div> </td> 
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSum_genTimeAll">0</div> </td> 
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSum_bases">0</div> </td>
+                <td class=""> <div class="debug_monospace" id="debug_hashCacheTable1_totalSum_copies">0</div> </td>
             </tr>
         </table>
         <br>
+
+        <label class="debug_title">ACTIVE HASHCACHE DATA:</label>
         <br>
+        <div id="debug_navBarTabs3">
+            <div id="debug_navBar3_tab_all_base" class="controls_navBarTabs3">ALL : BASE   <div class="debug_tab_hashCache_count" id="debug_tab_hashCache_count_allBase"></div> </div>
+            <div id="debug_navBar3_tab_all_copy" class="controls_navBarTabs3">ALL : COPY <div class="debug_tab_hashCache_count" id="debug_tab_hashCache_count_allCopy"></div> </div>
+            <div id="debug_navBar3_tab_perm_base" class="controls_navBarTabs3">PERM: BASE <div class="debug_tab_hashCache_count" id="debug_tab_hashCache_count_permBase"></div> </div>
+            <div id="debug_navBar3_tab_temp_base" class="controls_navBarTabs3">TEMP: BASE <div class="debug_tab_hashCache_count" id="debug_tab_hashCache_count_tempBase"></div> </div>
+        </div>
+        <div id="debug_navBarViews3">
+            <div id="debug_navBar3_view_all_base" class="controls_navBarViews">
+                <div id="debug_hashCacheSection_view_all_base_ORIGIN_CUSTOM"></div>
+                <div id="debug_hashCacheSection_view_all_base_ORIGIN_USER"></div>
+                <div id="debug_hashCacheSection_view_all_base_ORIGIN_BASE"></div>
+            </div>
+            <div id="debug_navBar3_view_all_copy" class="controls_navBarViews">
+                <div id="debug_hashCacheSection_view_all_copy_ORIGIN_CUSTOM_MODIFIED"></div>
+                <div id="debug_hashCacheSection_view_all_copy_ORIGIN_USER_MODIFIED"></div>
+                <div id="debug_hashCacheSection_view_all_copy_ORIGIN_BASE_MODIFIED"></div>
+            </div>
+            <div id="debug_navBar3_view_perm_base" class="controls_navBarViews">
+                <div id="debug_hashCacheSection_view_perm_base_ORIGIN_CUSTOM"></div>
+                <div id="debug_hashCacheSection_view_perm_base_ORIGIN_USER"></div>
+                <div id="debug_hashCacheSection_view_perm_base_ORIGIN_BASE"></div>
+            </div>
+            <div id="debug_navBar3_view_temp_base" class="controls_navBarViews">
+                <div id="debug_hashCacheSection_view_temp_base_ORIGIN_CUSTOM"></div>
+                <div id="debug_hashCacheSection_view_temp_base_ORIGIN_USER"></div>
+                <div id="debug_hashCacheSection_view_temp_base_ORIGIN_BASE"></div>
+            </div>
+        </div>
+
         <div id="debug_hashCacheList1"></div>
+        <!-- <div id="debug_hashCacheList2"></div> -->
+        <!-- <div id="debug_hashCacheList3"></div> -->
     </div>
 
     <!-- LAYEROBJECTS -->
     <div id="debug_navBar1_view_layerObjects" class="controls_navBarViews">
+        <div id="debug_layerObjects_refreshDiv">
+            <div id="debug_layerObjects_refresh">Refresh Now</div>
+            <div id="debug_layerObjects_refreshLast">Refreshed: </div>
+        </div>
+
         <div id="layerObjectList1"></div>
         <div id="debug_layerObjEdit_contextMenu1">
             <table class="debug_table">
                 <tr> 
-                    <td class=""> <button onclick="_DEBUG.layerObjs.contextMenu1_close();">CANCEL</button> </td>
-                    <td class=""> <button onclick="_DEBUG.layerObjs.contextMenu1_select();">EDIT</button> </td>
+                    <td class=""> <button onclick="_new_DEBUG.layerObjs.contextMenu1_close();">CANCEL</button> </td>
+                    <td class=""> <button onclick="_new_DEBUG.layerObjs.contextMenu1_select();">EDIT</button> </td>
                 </tr>
                 <tr> <td class="debug_td_header2">className</td>   <td class="" id="debug_layerObjEdit_contextMenu1_className"></td> </tr>
                 <tr> <td class="debug_td_header2">tilesetKey</td>  <td class="" id="debug_layerObjEdit_contextMenu1_tilesetKey"></td> </tr>
@@ -238,51 +296,51 @@
                 <tr> 
                     <td class="debug_td_header2">Adjust LAYER KEY</td>
                     <td class="">
-                        <button onclick="_DEBUG.layerObjs.adjustLayerKey('L1');">L1</button>
-                        <button onclick="_DEBUG.layerObjs.adjustLayerKey('L2');">L2</button>
-                        <button onclick="_DEBUG.layerObjs.adjustLayerKey('L3');">L3</button>
-                        <button onclick="_DEBUG.layerObjs.adjustLayerKey('L4');">L4</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustLayerKey('L1');">L1</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustLayerKey('L2');">L2</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustLayerKey('L3');">L3</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustLayerKey('L4');">L4</button>
                     </td> 
                 </tr>
                 <tr> 
                     <td class="debug_td_header2">Adjust X</td>
                     <td class="">
-                        <button onclick="_DEBUG.layerObjs.adjustX(-1);">LEFT</button>
-                        <button onclick="_DEBUG.layerObjs.adjustX(+1);">RIGHT</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustX(-1);">LEFT</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustX(+1);">RIGHT</button>
                     </td> 
                 </tr>
                 <tr> 
                     <td class="debug_td_header2">Adjust Y</td>
                     <td class="">
-                        <button onclick="_DEBUG.layerObjs.adjustY(-1);">UP</button>
-                        <button onclick="_DEBUG.layerObjs.adjustY(+1);">DOWN</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustY(-1);">UP</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustY(+1);">DOWN</button>
                     </td> 
                 </tr>
                 <tr> 
                     <td class="debug_td_header2">Adjust Rotation</td>
                     <td class="">
-                        <button onclick="_DEBUG.layerObjs.adjustRotation(0);">0</button>
-                        <button onclick="_DEBUG.layerObjs.adjustRotation(90);">90</button>
-                        <button onclick="_DEBUG.layerObjs.adjustRotation(180);">180</button>
-                        <button onclick="_DEBUG.layerObjs.adjustRotation(-90);">-90</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustRotation(0);">0</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustRotation(90);">90</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustRotation(180);">180</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustRotation(-90);">-90</button>
                     </td> 
                 </tr>
                 <tr> 
                     <td class="debug_td_header2">Adjust Fade</td>
                     <td class="">
-                        <button onclick="_DEBUG.layerObjs.adjustFade(11);">CLEAR</button>
-                        <button onclick="_DEBUG.layerObjs.adjustFade(null);">OFF</button>
-                        <button onclick="_DEBUG.layerObjs.adjustFade(0);">0</button>
-                        <button onclick="_DEBUG.layerObjs.adjustFade(1);">1</button>
-                        <button onclick="_DEBUG.layerObjs.adjustFade(2);">2</button>
-                        <button onclick="_DEBUG.layerObjs.adjustFade(3);">3</button>
-                        <button onclick="_DEBUG.layerObjs.adjustFade(4);">4</button>
-                        <button onclick="_DEBUG.layerObjs.adjustFade(5);">5</button>
-                        <button onclick="_DEBUG.layerObjs.adjustFade(6);">6</button>
-                        <button onclick="_DEBUG.layerObjs.adjustFade(7);">7</button>
-                        <button onclick="_DEBUG.layerObjs.adjustFade(8);">8</button>
-                        <button onclick="_DEBUG.layerObjs.adjustFade(9);">9</button>
-                        <button onclick="_DEBUG.layerObjs.adjustFade(10);">BLACK</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustFade(11);">CLEAR</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustFade(null);">OFF</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustFade(0);">0</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustFade(1);">1</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustFade(2);">2</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustFade(3);">3</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustFade(4);">4</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustFade(5);">5</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustFade(6);">6</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustFade(7);">7</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustFade(8);">8</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustFade(9);">9</button>
+                        <button onclick="_new_DEBUG.layerObjs.adjustFade(10);">BLACK</button>
                     </td> 
                 </tr>
             </table>
@@ -311,7 +369,7 @@
                         <td class="">
                             <textarea id="debug_printText_newText" type="text"></textarea>
                             <br>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.printText_adjustText();">SET</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.printText_adjustText();">SET</button>
                         </td> 
                     </tr>
                 </table>
@@ -336,39 +394,39 @@
                     <tr> 
                         <td class="debug_td_header2">SIZE</td>
                         <td class="">
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustSize('sm');">SM</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustSize('lg');">LG</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustSize('sm');">SM</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustSize('lg');">LG</button>
                         </td> 
                     </tr>
                     <tr> 
                         <td class="debug_td_header2">COLOR</td>
                         <td class="">
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_YELLOW');">YEL</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_BLUE');">BLU</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_GREEN');">GRE</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_RED');">RED</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_BLACK');">BLA</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustColor('CARD_YELLOW');">YEL</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustColor('CARD_BLUE');">BLU</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustColor('CARD_GREEN');">GRE</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustColor('CARD_RED');">RED</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustColor('CARD_BLACK');">BLA</button>
                         </td> 
                     </tr>
                     <tr> 
                         <td class="debug_td_header2">VALUE</td>
                         <td class="">
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_0');">0</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_1');">1</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_2');">2</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_3');">3</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_4');">4</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_5');">5</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_6');">6</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_7');">7</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_8');">8</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_9');">9</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_DRAW2');">D2</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_SKIP');">SK</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_REV');">RE</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_WILD');">WI</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_WILD_DRAW4');">WD4</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_BACK');">BAC</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_0');">0</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_1');">1</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_2');">2</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_3');">3</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_4');">4</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_5');">5</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_6');">6</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_7');">7</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_8');">8</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_9');">9</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_DRAW2');">D2</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_SKIP');">SK</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_REV');">RE</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_WILD');">WI</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_WILD_DRAW4');">WD4</button>
+                            <button class="debug_button_card" onclick="_new_DEBUG.layerObjs.card_adjustValue('CARD_BACK');">BAC</button>
                         </td> 
                     </tr>
                 </table>
@@ -388,70 +446,19 @@
 <!-- DISPLAY ON THE SIDE -->
 <div id="debug_sideDiv">
     <div id="debug_test_alwaysVisible"> 
-        <!-- PROGRESS BAR TABLE -->
-        <table class="debug_table" id="debug_progressTable">
-            <tr>
-                <td class="debug_td_header2" title="">DEBUG*</td>
-                <td class="debug_td_progressTable"> 
-                    <div id="debug_time_DEBUG" class="debug_progress-bar">
-                        <span class="debug_progressBarLabel debug_progress-bar-label">0</span>
-                        <div class="debug_innerProgressBar debug_inner-bar"></div>
-                    </div>
-                </td>
-            </tr>
-
-            <tr>
-                <td class="debug_td_header2">LOOP</td>
-                <td class="debug_td_progressTable"> 
-                    <div id="debug_time_LOOP" class="debug_progress-bar">
-                        <span class="debug_progressBarLabel debug_progress-bar-label">0</span>
-                        <div class="debug_innerProgressBar debug_inner-bar"></div>
-                    </div>
-                </td>
-            </tr>
-
-            <tr>
-                <td class="debug_td_header2">DRAW</td>
-                <td class="debug_td_progressTable"> 
-                    <div id="debug_time_DRAW" class="debug_progress-bar">
-                        <span class="debug_progressBarLabel debug_progress-bar-label">0</span>
-                        <div class="debug_innerProgressBar debug_inner-bar"></div>
-                    </div>
-                </td>
-            </tr>
-            
-        </table>
-        <br>
-
-        <!-- FPS TABLE -->
-        <table class="debug_table">
-            <tr>
-                <td class="debug_td_header">FPS : </td>
-                <td class="">  
-                    <div class="debugLive" id="debug_fpsDisplay"></div> 
-                </td>
-                <td class="debug_td_header">Show Grid :</td> <td class=""> <button class="debug_bgColor_off" id="debug_test_toggleGridCanvas">OFF</button> </td>
-            </tr>
-        </table>
-        <br>
-
-        <!-- CURRENT GAMESTATES -->
-        <table class="debug_table">
-            <tr>
-                <td class="debug_td_header">GS1 :</td> <td class=""> <div class="debugLive" id="debug_GS1Text"></div> </td>
-                <td class="debug_td_header">GS2 :</td> <td class=""> <div class="debugLive" id="debug_GS2Text"></div> </td>
-            </tr>
-        </table>
+        <!-- PROGRESS BAR CANVAS -->
+        <canvas id="debug_progressBar_canvas" width="630" height="91"></canvas>
         <br>
 
         <!-- GAME LOOP CONTROLS -->
         <table class="debug_table">
             <tr> 
-                <td class="debug_td_header">LOOP</td>
-                <td class="debug_td_header">LOGIC</td>
-                <td class="debug_td_header">AWAIT DRAW</td>
-                <td class="debug_td_header">DEBUG</td>
-                <td class="debug_td_header">HASHCACHE</td>
+                <td class="debug_td_header debug_center">LOOP</td>
+                <td class="debug_td_header debug_center">LOGIC</td>
+                <td class="debug_td_header debug_center">AWAIT DRAW</td>
+                <td class="debug_td_header debug_center">DEBUG</td>
+                <td class="debug_td_header debug_center">HASHCACHE</td>
+                <td class="debug_td_header debug_center">GRID:</td>
             </tr> 
             <tr> 
                 <td class="debug_td_short4">
@@ -469,14 +476,21 @@
                 <td class="debug_td_short4">
                     <button id="debug_toggleCacheFlag" class="debug_bgColor_on">ON</button>
                 </td> 
+                <td class="debug_td_short4">
+                    <button class="debug_bgColor_off" id="debug_test_toggleGridCanvas">OFF</button> 
+                </td>
             </tr>
         </tr>
         </table>
         <br>
+
+        <!-- CURRENT GAMESTATES -->
         <table class="debug_table">
             <tr> 
                 <td class="debug_td_header">CHANGE GS1</td>
                 <td class="debug_td_header">RESTART GS1</td>
+                <td class="debug_td_header">GAMESTATE1</td>
+                <td class="debug_td_header">GAMESTATE2</td>
             </tr>
             <tr>
                 <td> 
@@ -494,6 +508,8 @@
                 <td> 
                     <button id="debug_test_restartGS1">Restart GS1</button>
                 </td> 
+                <td class=""> <div class="" id="debug_GS1Text"></div>
+                <td class=""> <div class="" id="debug_GS2Text"></div>
             </tr>
         </table>
         <br>
@@ -603,7 +619,40 @@
 
                 <br>
             </div>
-
         </div>
+    </div>
+
+    <div>
+        <label class="debug_title">DEBUG TIMINGS</label>
+        <table class="debug_table">
+        </table>
+        <table class="debug_table">
+            <tr>
+                <td class="debug_td_header2">TOTAL </td>
+                <td class="debug_td_header2">Data Req</td>
+                <td class="debug_td_header2">Await Data</td>
+                <td class="debug_td_header2">HashCache</td>
+                <td class="debug_td_header2">DrawTimings</td>
+                <td class="debug_td_header2">Bars</td>
+            </tr>
+            <tr>
+                <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_total"></td>
+                <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_doDataRequest"></td>
+                <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_dataRequest"></td>
+                <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_hashCache"></td>
+                <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_drawTimings"></td>
+                <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_bars"></td>
+            </tr>
+        </table>
+        <table class="debug_table">
+            <tr>
+                <td class="debug_td_header2">LayerObjs</td>
+                <td class="debug_td_header2">showGamestate</td>
+            </tr>
+            <tr>
+                <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_layerObjs"></td>
+                <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_showGamestate"></td>
+            </tr>
+        </table>
     </div>
 </div>

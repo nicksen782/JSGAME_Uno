@@ -121,7 +121,7 @@ _APP.game = {
         },
 
         // Runs at the end of every game loop iteration. 
-        endOfLoopTasks: function(timestamp){
+        endOfLoopTasks: async function(timestamp){
             // Update the 
             if(timestamp){
                 // GAMESTATE CHANGES
@@ -130,7 +130,7 @@ _APP.game = {
             }
 
             if(_APP.debugActive){
-                _DEBUG.endOfLoopDraw_funcs(); 
+                await _new_DEBUG.debugTasks();
             }
 
             // Request the next frame.
@@ -171,9 +171,6 @@ _APP.game = {
         
             // Change to the set gamestate.
             _APP.game._changeGs1();
-        
-            // DEBUG
-            if(_APP.debugActive && _DEBUG){ _DEBUG.loop_display_func(); }
         },
 
         // Calculates the average frames per second.
@@ -255,7 +252,6 @@ _APP.game = {
                     this.frameCounter += 1;
 
                     let lastLoop_timestamp = performance.now();
-                    // this.lastLoop_timestamp = performance.now();
 
                     // Do not run the logic loop if the gamestate value is "".
                     if(_APP.game.gs1 != ""){
@@ -296,16 +292,6 @@ _APP.game = {
 
                                 this.frameDrawCounter += 1;
                             }
-                            // else if(_APP.debugActive && this.getDebugTimings){ 
-                            else if(_APP.debugActive){ 
-                                // console.log("getDebugTimings:", _APP.game.gs1);
-
-                                // Request the debug timings.
-                                _WEBW_V.SEND("_DEBUG.updateDebugTimings", { 
-                                    data: { }, 
-                                    refs:[]
-                                }, false, false);
-                            }
                         }
                     }
 
@@ -320,7 +306,6 @@ _APP.game = {
                     // End the loop and run any end of loop tasks.
                     this.endOfLoopTasks(false);
                 }
-
             }
             // No. 
             else{

@@ -580,6 +580,27 @@ _APP.utility = {
 
 // For loading customized wrappers for plug-ins.
 _APP.loader = {
+    // If debug is requested this function makes sure that it is allowed.
+    debugAuthCheck: function(params){
+        let debugActive = ("debug" in params && params.debug === '1') ? true : false;
+        if (debugActive && window.location.hostname !== 'localhost') {
+            _APP.debugActive = false;
+
+            // Change the 'debug' parameter in the URL to '0'.
+            let url = new URL(window.location.href);
+            let newParams = url.searchParams;
+            newParams.set('debug', '0');
+            url.search = newParams.toString();
+
+            // Update the URL in the address bar without reloading the page.
+            window.history.pushState({}, '', url.toString());
+
+            console.error("Debug is not availble from this location:", window.location.hostname);
+        }
+        else{
+            _APP.debugActive = debugActive;
+        }
+    },
     loadFiles: async function(){
         return new Promise(async (resolve,reject)=>{
             let relPath = ".";
@@ -587,7 +608,7 @@ _APP.loader = {
 
             // URL params can affect app settings.
             let params = _APP.utility.getUrlParams();
-            _APP.debugActive = ("debug" in params && params.debug=='1') ? true : false;
+            if( ("debug" in params && params.debug === '1') ? true : false ) { this.debugAuthCheck(params); }
 
             // Download these files sequentially as some depend on the others.
             await _APP.utility.addFile( { f:"css/uno.css"                  , t:"css" }, relPath); // GAME
@@ -788,9 +809,9 @@ _APP.start = async function(){
         // alert(`${_APP.configObj.appName} (JSGAMEV2 version) load time: ${loadTime.toFixed(2)}ms`);
 
         // Start the game loop.
-        // _APP.game.gameLoop.loop_start();
         setTimeout(()=>{ 
             _APP.game.gameLoop.loop_start(); 
+            if(_APP.debugActive){_new_DEBUG.toggleButtons1.setCurrentStates(); }
         }, 250);
         resolve();
     });

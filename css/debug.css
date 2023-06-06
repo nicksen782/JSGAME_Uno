@@ -106,6 +106,12 @@ div#debug_test_alwaysVisible {
   display: inline-block;
   vertical-align: top;
 }
+.debug_table2 {
+  border-collapse: collapse;
+  /* display: inline-block; */
+  vertical-align: top;
+  width: 100%;
+}
 .debug_table td {
   border: 1px solid lightgrey;
   /* padding: 5px; */
@@ -124,6 +130,23 @@ div#debug_test_alwaysVisible {
   min-width: 70px;
   padding: 5px;
   white-space: nowrap;
+}
+.debug_leftAlignText{
+  text-align: left !important;
+}
+.debug_td_header3 {
+  text-decoration: underline;
+  font-weight: bold;
+  text-align:center;
+/*   min-width: 70px; */
+  padding: 5px;
+  white-space: nowrap;
+}
+.debug_table2 td{
+  text-align:center; 
+}
+.debug_center{
+  text-align:center;
 }
 .debug_td_long {
   width: 260px;
@@ -220,6 +243,12 @@ div#debug_test_alwaysVisible {
   /* background-color: #00d4ff36; */
   /* background-color: rgba(255,255,255,0.5); */
 }
+#debug_navBarTabs3 {
+  border-bottom: 1px solid black;
+  /* min-width: 335px; */
+  /* background-color: #00d4ff36; */
+  /* background-color: rgba(255,255,255,0.5); */
+}
 
 div#debug_sideDiv {
   width: 650px;
@@ -237,6 +266,17 @@ div#debug_navBarViews {
 }
 div#debug_navBarViews2 {
   /* background-color: rgba(255,255,255,0.5); */
+}
+div#debug_navBarViews3 {
+  background-color: rgba(255,255,255,0.5);
+  /* font-family: monospace; */
+  /* white-space: pre; */
+  /* font-size: 12px; */
+  /* font-family: monospace; */
+  /* white-space: pre; */
+  height: 300px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 /* div#hashCacheList1 {
@@ -349,18 +389,29 @@ div#debug_hashCacheList1 {
     height: 400px;
     max-height: 400px;
     overflow-y: auto;
+    display: none;
 }
 
 .controls_navBarTabs2{
   width: 80px;
   /* font-size: 14px; */
 }
+.controls_navBarTabs3{
+  width: 110px;
+  height: 28px;
+  /* font-size: 14px; */
+  line-height: 24px;
+  vertical-align: top;
+  text-align: right;
+  font-size: 13px;
+  padding: 2px;
+}
 
-.hashCacheStats1_entry{ cursor: pointer; }
+.hashCacheStats1_entry{cursor: pointer;font-family: monospace;white-space: pre-wrap;}
 .hashCacheStats1_entry:nth-child(odd)  { background-color:darkgray; }
 .hashCacheStats1_entry:nth-child(even) { background-color:lightgray; }
 .hashCacheStats1_entry:hover{background-color: dodgerblue;}
-.hashCacheStats1_entry_perm{font-weight: bold;}
+/* .hashCacheStats1_entry_perm{font-weight: bold;} */
 
 .layerObjectsStats1_entry{cursor: pointer;display: block;}
 .layerObjectsStats1_entry:nth-child(odd)  { background-color:darkgray; }
@@ -368,7 +419,7 @@ div#debug_hashCacheList1 {
 .layerObjectsStats1_entry:hover{background-color: dodgerblue;}
 
 button#debug_test_toggleGridCanvas {
-    width: 45px;
+    /* width: 45px; */
 }
 
 #debug_layerObjEdit_contextMenu1 {
@@ -413,3 +464,64 @@ button#debug_test_toggleGridCanvas {
 .debug_hashCache_CUSTOM_CACHE {background-color: gold;color: black;}
 .debug_hashCache_INIT_PRECACHE{background-color: green;color: white;}
 .debug_hashCache_MODIFIED     {background-color: lightblue;}
+
+.debug_tab_hashCache_count{
+  background-color: #000000;
+  color: white;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 22px;
+  border-radius: 30%;
+  border: 1px solid black;
+  /* padding: 2px; */
+  font-size: 12px;
+  font-weight: bold;
+  font-family: monospace;
+  /* opacity: 0.75; */
+  /* font-size: 13px; */
+  line-height: 20px;
+  /* vertical-align: top; */
+  /* display: inline-block; */
+  text-align: center;
+}
+
+#debug_layerObjects_refreshDiv,
+#debug_hashCacheStats1_refreshDiv{
+  display: flex;
+  color: white;
+  font-family: monospace;
+  padding: 1%;
+  background-color: #353535;
+  justify-content: space-around;
+}
+#debug_layerObjects_refresh,
+#debug_hashCacheStats1_refresh{
+  cursor: pointer;
+  width: 110px;
+  text-align: center;
+  background-color: black;
+  border: 1px solid #5d5d5d;
+  font-weight:bold;
+}
+#debug_layerObjects_refresh:hover,
+#debug_hashCacheStats1_refresh:hover{
+  background-color: #525252;
+  border-color: black;
+}
+#debug_layerObjects_refresh:active,
+#debug_hashCacheStats1_refresh:active{ 
+  background-color:darkgray;
+}
+#debug_layerObjects_refreshLast,
+#debug_hashCacheStats1_refreshLast{
+  width: 300px;
+  text-align: right;
+  background-color: black;
+  text-align: center;
+}
+
+#debug_progressBar_canvas{
+  border: 1px solid black;
+}

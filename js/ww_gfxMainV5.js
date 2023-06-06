@@ -40,6 +40,7 @@ var gfxMainV5 = {
         timeIt(layerKey+"_C_createTilemaps"   , "reset"); 
         timeIt(layerKey+"_D_drawFromDataCache", "reset"); 
         timeIt(layerKey+"_E_drawImgDataCache" , "reset"); 
+        // timeIt("gfx", "reset");
     },
 
     // DEBUG: generates and returns some debug values. 
@@ -73,6 +74,96 @@ var gfxMainV5 = {
             }
         });
 
+        // Determine which hashCacheHash values are in use within _GFX.currentData layers.
+        let hashCacheHashesUnmodified = new Set();
+        let hashCacheHashesModified = new Set();
+        
+        let hashCacheStats2 = {
+            "ALL":{
+                "base": new Set(),//
+                "copy": new Set(),//
+                "baseHash": new Set(),//
+                "copyHash": new Set(),//
+            },
+            "PERM":{
+                "base": new Set(),//
+                "copy": new Set(),
+                "baseHash": new Set(),//
+                "copyHash": new Set(),
+            },
+            "TEMP":{
+                "base": new Set(),//
+                "copy": new Set(),
+                "baseHash": new Set(), //
+                "copyHash": new Set(),
+            },
+        };
+        // hashCacheHashesModified.add(tilemap.hashCacheHash)
+        // hashCacheHashesUnmodified.add(tilemap.hashCacheHash)
+        for(let i=0, len=this.layerKeys.length; i<len; i+=1){
+            let tilemaps = _GFX.currentData[this.layerKeys[i]].tilemaps;
+            for(let tilemapKey in tilemaps){
+                tilemap = tilemaps[tilemapKey];
+                // if(tilemap.removeHashOnRemoval){
+                //     console.log("TEMP: tilemap.removeHashOnRemoval:", tilemap.mapKey, tilemap.removeHashOnRemoval);
+                // }
+                // else{
+                //     console.log("PERM: tilemap.removeHashOnRemoval:", tilemap.mapKey, tilemap.removeHashOnRemoval);
+                // }
+
+                // Check for modifications (base not equal to individual hash.)
+                
+                // // The hashCacheHash_BASE and the hashCacheHash ARE the same.
+                if(tilemap.hashCacheHash == tilemap.hashCacheHash_BASE){ 
+                    hashCacheStats2.ALL.base.add(tilemap.hashCacheHash_BASE);
+                    if(tilemap.removeHashOnRemoval){ hashCacheStats2.TEMP.base.add(tilemap.hashCacheHash_BASE); }
+                    else                           { hashCacheStats2.PERM.base.add(tilemap.hashCacheHash_BASE); }
+                }
+
+                // Check if the hashCacheHash_BASE and the hashCacheHash ARE NOT the same.
+                else if(tilemap.hashCacheHash != tilemap.hashCacheHash_BASE){ 
+                    hashCacheStats2.ALL.copy.add(tilemap.hashCacheHash);
+                    if(tilemap.removeHashOnRemoval){ hashCacheStats2.TEMP.copy.add(tilemap.hashCacheHash); }
+                    else                           { hashCacheStats2.PERM.copy.add(tilemap.hashCacheHash); }
+                }
+                else{
+                //     console.log("BAD:", tilemap);
+                }
+            }
+        }
+        hashCacheStats2.ALL.baseHash  = _GFX.utilities._djb2Hash( [...hashCacheStats2.ALL.base] );
+        hashCacheStats2.ALL.copyHash  = _GFX.utilities._djb2Hash( [...hashCacheStats2.ALL.copy] );
+        hashCacheStats2.PERM.baseHash = _GFX.utilities._djb2Hash( [...hashCacheStats2.PERM.base] );
+        hashCacheStats2.PERM.copyHash = _GFX.utilities._djb2Hash( [...hashCacheStats2.PERM.copy] );
+        hashCacheStats2.TEMP.baseHash = _GFX.utilities._djb2Hash( [...hashCacheStats2.TEMP.base] );
+        hashCacheStats2.TEMP.copyHash = _GFX.utilities._djb2Hash( [...hashCacheStats2.TEMP.copy] );
+        // console.log(hashCacheStats2);
+
+        let partial_hashCache = new Map();
+        let hashCacheStats = Array.from(gfxCoreV5.hashCache.values()).map(d=>{
+            partial_hashCache.set(d.hashCacheHash, {
+                // mapKey             : d.mapKey,
+                relatedMapKey      : d.relatedMapKey,
+                ts                 : d.ts,
+                settings           : d.settings,
+                hasTransparency    : d.hasTransparency,
+                genTime            : d.genTime ?? -1,
+                w: d.w,
+                h: d.h,
+                text: d.text,
+
+                origin             : d.origin,
+                removeHashOnRemoval: d.removeHashOnRemoval,
+                hashCacheDataLength: d.hashCacheDataLength,
+                hashCacheHash      : d.hashCacheHash,
+                hashCacheHash_BASE : d.hashCacheHash_BASE,
+                isBase             : d.hashCacheHash == d.hashCacheHash_BASE,
+            });
+            return partial_hashCache.get(d.hashCacheHash);
+        });
+
+        messageFuncs.timings["gfx"]["hashCacheHashesUnmodified"] = [...hashCacheHashesUnmodified];
+        messageFuncs.timings["gfx"]["hashCacheHashesModified"] = [...hashCacheHashesModified];
         messageFuncs.timings["gfx"]["totalSize_all"]  = totalSize_all;
         messageFuncs.timings["gfx"]["totalSize_temp"] = totalSize_temp;
         messageFuncs.timings["gfx"]["totalSize_perm"] = totalSize_perm;
@@ -82,26 +173,18 @@ var gfxMainV5 = {
         messageFuncs.timings["gfx"]["totalSum"]     = totalSum;
         messageFuncs.timings["gfx"]["totalSumTemp"] = totalSumTemp;
         messageFuncs.timings["gfx"]["totalSumPerm"] = totalSumPerm;
-        
-        let hashCacheStats = Array.from(gfxCoreV5.hashCache.values()).map(d=>{
-            return {
-                mapKey             : d.mapKey,
-                relatedMapKey      : d.relatedMapKey,
-                ts                 : d.ts,
-                origin             : d.origin,
-                settings           : d.settings,
-                hasTransparency    : d.hasTransparency,
-                genTime            : d.genTime ?? -1,
-                hashCacheDataLength: d.hashCacheDataLength,
-                removeHashOnRemoval: d.removeHashOnRemoval,
-                hashCacheHash      : d.hashCacheHash,
-                hashCacheHash_BASE : d.hashCacheHash_BASE,
-                isBase             : d.hashCacheHash_BASE == d.hashCacheHash_BASE,
-            };
-        });
-
         messageFuncs.timings["gfx"]["hashCacheStats"] = hashCacheStats;
+        messageFuncs.timings["gfx"]["partial_hashCache"] = partial_hashCache;
+        messageFuncs.timings["gfx"]["hashCacheStats2"] = hashCacheStats2;
         messageFuncs.timings["gfx"].ALLTIMINGS = timeIt("", "getAll");
+
+        // console.log("gfx:", timeIt("gfx", "get"));
+        // Create a list of layerKeys for reuse.
+        // this.layerKeys = Object.keys(_GFX.layers);
+
+        // for(let i=0, len=this.layerKeys.length; i<len; i+=1){
+        //     this.clearTimingsValues(this.layerKeys[i]);
+        // }
     },
 
     // Applies changes to a layer.
@@ -263,7 +346,11 @@ var gfxMainV5 = {
         messageFuncs.timings["gfx"].version    = messageData.version;
         messageFuncs.timings["gfx"].ALLCLEAR   = messageData.ALLCLEAR;
 
-        if(debugActive){ this.updateDebugTimings(); }
+        if(debugActive){ 
+            // let ts = performance.now();
+            // this.updateDebugTimings();
+            // console.log(performance.now()-ts);
+        }
 
         messageFuncs.timings["gfx"]["gfx"] = + timeIt("gfx", "get").toFixed(3);
 
@@ -434,20 +521,7 @@ var gfxMainV5 = {
                         let blit = (firstRegion || !rec.src_img.hasTransparency) ? false : true;
                         
                         // Write the overlappedCopy to the imgDataCache.
-                        if(blit){
-                            gfxCoreV5.updateRegion_blit(
-                                overlappedCopy,      // source
-                                rec.src_img.w,       // srcWidth
-                                imgDataCache.data,   // destination
-                                imgDataCache.width,  // destWidth
-                                imgDataCache.height, // destHeight
-                                rec.dest_layer.x,    // dx
-                                rec.dest_layer.y,    // dy
-                                rec.dest_layer.w,    // dw
-                                rec.dest_layer.h,    // dh
-                            );
-                        }
-                        else{
+                        if(!blit){
                             gfxCoreV5.updateRegion_replace(
                                 overlappedCopy,      // source
                                 rec.src_img.w,       // srcWidth
@@ -459,7 +533,20 @@ var gfxMainV5 = {
                                 rec.dest_layer.w,    // dw
                                 rec.dest_layer.h,    // dh
                             );
-                        }
+                            }
+                            else{
+                                gfxCoreV5.updateRegion_blit(
+                                    overlappedCopy,      // source
+                                    rec.src_img.w,       // srcWidth
+                                    imgDataCache.data,   // destination
+                                    imgDataCache.width,  // destWidth
+                                    imgDataCache.height, // destHeight
+                                    rec.dest_layer.x,    // dx
+                                    rec.dest_layer.y,    // dy
+                                    rec.dest_layer.w,    // dw
+                                    rec.dest_layer.h,    // dh
+                                );
+                            }
     
                         // Unset firstRegion flag.
                         firstRegion = false;
@@ -637,13 +724,32 @@ var gfxMainV5 = {
                     // );
     
                     if(cacheHit){
-                        // Existing tilemap object. BASE, BASE_MODIFIED.
+                        // Existing tilemap object. BASE or BASE_MODIFIED.
                         if(modified_found || base_found){
                             map.imgData = cacheObj.imgData;
                             map.w = cacheObj.imgData.width;
                             map.h = cacheObj.imgData.height;
                             map.hasTransparency = cacheObj.hasTransparency;
                             map.origin = cacheObj.origin;
+
+                            // let debug_text = ``;
+                            // Is this a modified base?
+                            if(modified_found && map.hashCacheHash_BASE != map.hashCacheHash){
+                                // debug_text += `src: modified, map_origin: ${map.origin}, cacheObj_origin: ${cacheObj.origin}`;
+                                map.removeHashOnRemoval = true;
+                            }
+                            // Is this a base?
+                            else if(map.hashCacheHash_BASE == map.hashCacheHash){
+                                // debug_text += `src: base, map_origin: ${map.origin}, cacheObj_origin: ${cacheObj.origin}`;
+                                map.removeHashOnRemoval = cacheObj.removeHashOnRemoval;
+                            }
+                            // else{
+                                // console.log("NO THIS IS SOMETHING ELSE"); 
+                            // }
+
+                            // console.log(map.relatedMapKey, map.removeHashOnRemoval, "::", cacheObj.relatedMapKey, cacheObj.removeHashOnRemoval);
+                            // map.removeHashOnRemoval = true;
+                            // console.log(debug_text, `MAP: relatedMapKey: ${map.relatedMapKey || "CUSTOM"}, removeHashOnRemoval: ${map.removeHashOnRemoval}, :: CACHEOBJ: relatedMapKey: ${cacheObj.relatedMapKey || "CUSTOM"}, removeHashOnRemoval: ${cacheObj.removeHashOnRemoval}`);
                         }
                     }
                     else{
@@ -659,20 +765,30 @@ var gfxMainV5 = {
                             map.hasTransparency = cacheObj.hasTransparency;
                             map.origin = "BASE_MODIFIED";
                             map.genTime = performance.now() - map.genTime;
+                            map.removeHashOnRemoval = true;
                         }
     
                         // New tilemap object: CUSTOM.
                         // Cache: add to the hashCache with the removeHashOnRemoval flag set as received by this function.
                         // Cache: Set the origin to "CUSTOM".
-                        if(!base_found && !modified_found){
+                        else if(!base_found && !modified_found){
                             map.genTime = performance.now();
                             cacheObj = gfxCoreV5.createImageDataFromTilemap(map);
                             map.imgData = cacheObj.imgData;
                             map.w = cacheObj.imgData.width;
                             map.h = cacheObj.imgData.height;
                             map.hasTransparency = cacheObj.hasTransparency;
-                            map.origin = "CUSTOM";
+                            if(map.hashCacheHash != map.hashCacheHash_BASE){
+                                map.origin = "CUSTOM_MODIFIED";
+                            }
+                            else{
+                                map.origin = "CUSTOM";
+                            }
                             map.genTime = performance.now() - map.genTime;
+                            map.removeHashOnRemoval = true;
+                            // if(map.text){
+                                // console.log("map.mapKey:", map.origin, map.mapKey, map.text || "", map.hashCacheHash_BASE, map.hashCacheHash, map.hashCacheHash_BASE == map.hashCacheHash);
+                            // }
                         }
                     }
                     
@@ -689,7 +805,7 @@ var gfxMainV5 = {
                         if(addToCache){
                             let added = gfxCoreV5.addTilemapImagesToHashCache(
                                 { ["NEW_CACHE_OBJECT"]: map }, 
-                                map.origin
+                                map.origin, map.text
                             );
     
                             if(!added){
@@ -913,6 +1029,7 @@ var gfxMainV5 = {
         // Create the BASE tilemap images.
         let base_totalMapsCached = 0;
         let base_totalMapsGenerated = 0;
+        let cacheObj;
         let ts_createBasetilemapImagesAndHashes = performance.now();
         for(let tilesetKey in _GFX.tilesets){
             let th = _GFX.tilesets[tilesetKey].config.tileHeight;
@@ -973,7 +1090,7 @@ var gfxMainV5 = {
                     if(!gfxCoreV5.hashCache.has(map.hashCacheHash)){
                         let added = gfxCoreV5.addTilemapImagesToHashCache(
                             { ["NEW_CACHE_OBJECT"]: map }, 
-                            map.origin
+                            map.origin, map.text
                         );
                         if(added){ 
                             // console.log(`Added new hashCache entry: ${map.relatedMapKey}`); 
@@ -1158,6 +1275,13 @@ var gfxMainV5 = {
                 // console.log("_DEBUG.updateDebugTimings: ");
                 gfxMainV5.updateDebugTimings();
                 returnData = messageFuncs.timings["gfx"];
+
+                // CLEAR
+                for(let i=0, len1=this.layerKeys.length; i<len1; i+=1){
+                    this.clearTimingsValues(this.layerKeys[i]);
+                }
+                timeIt("gfx", "reset");
+
                 break; 
             }
     

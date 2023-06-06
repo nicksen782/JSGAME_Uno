@@ -453,17 +453,18 @@ var gfxCoreV5 = {
     },
 
     // Adds the tilemap image objects to the hashCache specified.
-    addTilemapImagesToHashCache: function(mapObjs, origin){
+    addTilemapImagesToHashCache: function(mapObjs, origin, text=false){
         // Get a handle the to hashCache.
         let cache = this.hashCache;
 
         // Make sure that the supplied origin is valid.
         let allowedOrigins = [
-            "BASE",
-            "BASE_MODIFIED",
-            "USER",
-            "USER_MODIFIED",
-            "CUSTOM",
+            "BASE",            // Image with default settings.
+            "USER",            // Image with default settings.
+            "CUSTOM",          // Image with default settings.
+            "BASE_MODIFIED",   // Image with custom settings.
+            "USER_MODIFIED",   // Image with custom settings.
+            "CUSTOM_MODIFIED", // Image with custom settings.
         ];
         if(allowedOrigins.indexOf(origin) == -1){ 
             console.log(`addTilemapImagesToHashCache: invalid origin: ${origin}`, mapObjs);
@@ -526,6 +527,7 @@ var gfxCoreV5 = {
                     hashCacheDataLength: hashCacheDataLength,     // Recalculated here.
                     origin             : origin,                  // Set by this function.
                     // mapKey             : map.mapKey,              // ???
+                    text: text,
                 });
 
                 return true;
@@ -837,12 +839,6 @@ var gfxCoreV5 = {
         tmiObj.genTime = genTime;
 
         return tmiObj;
-        // let added = this.addTilemapImagesToHashCache(
-        //     { [tilemapKey]: tmiObj }, 
-        //     "BASE"
-        // );
-        // mapCount += 1;
-        // if(added){ addedMapCount += 1; }
     },
     // CLEAR a region of the source image (represented as a Uint8Array).
     clearRegion: function(source, srcWidth, dx, dy, w, h) {
@@ -875,19 +871,6 @@ var gfxCoreV5 = {
             // Fill with 0s (RGBA)
             source.fill(0, start, end);  
         }
-
-        // Iterate through the region defined by x_start to x_end and y_start to y_end.
-        // for (let y = y_start; y < y_end; y++) {
-        //     for (let x = x_start; x < x_end; x++) {
-        //         // For each pixel in the region, set the RGBA values to 0 (clear pixel) in the source Uint8Array.
-                
-        //         // Calculate the starting index of the pixel in the source array.
-        //         let index = (y * srcWidth + x) << 2;  
-
-        //         // Clear the pixel.
-        //         source[index] = source[index + 1] = source[index + 2] = source[index + 3] = 0;  // Set RGBA values to 0.
-        //     }
-        // }
     },
     // COPY a region of the source to a new Uint8Array.
     copyRegion: function(source, srcWidth, dx, dy, w, h) {
@@ -937,28 +920,10 @@ var gfxCoreV5 = {
             resultIndex += (x_end - x_start) << 2;
         }
 
-        // // Iterate through the region defined by x_start to x_end and y_start to y_end.
-        // for (let y = y_start; y < y_end; y++) {
-        //     for (let x = x_start; x < x_end; x++) {
-        //         // For each pixel, copy the RGB and A values from the source data to the result.
-
-        //         // Calculate the starting index of the pixel in the source array.
-        //         let srcIndex = (y * srcWidth + x) * 4;
-
-        //         // Copy the pixel from the source to resultData (the destination.)
-        //         for (let k = 0; k < 4; k++) {
-        //             resultData[resultIndex + k] = source[srcIndex + k];
-        //         }
-
-        //         // Increment the result index for the next pixel.
-        //         resultIndex += 4;
-        //     }
-        // }
-
         // Return the result data.
         return resultData;
     },
-    // REPLACE a region in the destination with the source data (no blit support) (Uint8Array.)
+    // REPLACE a region in the destination with the source data (no blit support) (source is Uint8Array.)
     updateRegion_replace: function(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
         // Determine the start and end of the destination region in both dimensions.
         // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
@@ -991,6 +956,7 @@ var gfxCoreV5 = {
         }
     },
     // BLIT: Supports blitting for each pixel row that can use it. (updateRegion_replace is faster when blitting is NOT needed.)
+    // Source is Uint8Array.
     updateRegion_blit: function(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
         // Determine the start and end of the destination region in both dimensions.
         // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.

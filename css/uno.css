@@ -148,6 +148,7 @@ body{
     min-width: 335px;
     background-color: #00d4ff36;
 }
+.controls_navBarTabs3,
 .controls_navBarTabs2,
 .controls_navBarTabs{
     border: 1px solid black;
@@ -158,12 +159,15 @@ body{
     text-align: center;
     border-radius: 8px 8px 0px 0px;
     cursor: pointer;
+    position: relative;
 }
+.controls_navBarTabs3.active,
 .controls_navBarTabs2.active,
 .controls_navBarTabs.active{
     background-color: rgb(65 105 225);
     text-decoration:underline;
 }
+.controls_navBarTabs3:hover,
 .controls_navBarTabs2:hover,
 .controls_navBarTabs:hover{
     background-color: rgb(255 255 255 / 50%);

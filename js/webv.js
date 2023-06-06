@@ -67,11 +67,6 @@ var _WEBW_V = {
                         _GFX.tilesets = e.data.data;
                     }
                     
-                                        
-                    // Resolve differed promise?
-                    if(this.differedProms[e.data.mode]){ 
-                        this.differedProms[e.data.mode].resolve(); 
-                    }
                     break;
                 }
 
@@ -81,10 +76,6 @@ var _WEBW_V = {
                         _GFX.timings.initLayers = e.data.data.timings;
                     }
 
-                    // Resolve differed promise?
-                    if(this.differedProms[e.data.mode]){ 
-                        this.differedProms[e.data.mode].resolve(); 
-                    }
                     break;
                 }
 
@@ -92,33 +83,33 @@ var _WEBW_V = {
                     // Send data to afterDraw.
                     _GFX.funcs.afterDraw(e.data.data, false);
 
-                    // Resolve differed promise?
-                    if(this.differedProms[e.data.mode]){ 
-                        this.differedProms[e.data.mode].resolve(); 
-                    }
                     break;
                 }
 
                 case "_DEBUG.updateDebugTimings"     : {
+                    // console.log(e.data.data);
+                    // return e.data.data;
                     // Send data to afterDraw.
-                    _GFX.funcs.afterDraw(e.data.data, true);
+                    // _GFX.funcs.afterDraw(e.data.data, true);
+                    // _GFX.funcs.afterDraw(e.data.data, false);
 
-                    // Resolve differed promise?
-                    if(this.differedProms[e.data.mode]){ 
-                        this.differedProms[e.data.mode].resolve(); 
-                    }
+                    // if(_new_DEBUG.hashCache){
+                    //     _new_DEBUG.hashCache.display(e.data.data, true);
+                    // }
+
                     break;
                 }
 
                 // Unmatched function.
                 default     : { 
-                    // Resolve differed promise?
-                    if(this.differedProms[e.data.mode]){ 
-                        // console.log("RECEIVE: No specific response accept function for:", e.data.mode);
-                        this.differedProms[e.data.mode].resolve(); 
-                    }
+                    // console.log("RECEIVE: No specific RECEIVE function for:", e.data.mode);
                     break; 
                 }
+            }
+
+            // Resolve differed promise if applicable.
+            if(this.differedProms[e.data.mode]){ 
+                this.differedProms[e.data.mode].resolve(e.data); 
             }
         }
         else{ console.error(`ERROR: No mode? e.data: ${e.data}, e.data.mode: ${e.data.mode}, e:`, e); }
@@ -151,9 +142,9 @@ var _WEBW_V = {
             // Wait until finished?
             if(waitForResp){ 
                 this.differedProms[mode] = this.createDeferredPromise();
-                await this.differedProms[mode].promise;
+                let retData = await this.differedProms[mode].promise;
                 // delete this.differedProms[mode];
-                resolve(); 
+                resolve(retData); 
                 return; 
             }
             else{
