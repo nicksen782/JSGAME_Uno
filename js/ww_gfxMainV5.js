@@ -1265,14 +1265,14 @@ var gfxMainV5 = {
                 break; 
             }
             
-            case "_new_DEBUG.toggleDebugFlag"          : { 
-                // console.log("_new_DEBUG.toggleDebugFlag: ");
+            case "_DEBUG.toggleDebugFlag"          : { 
+                // console.log("_DEBUG.toggleDebugFlag: ");
                 debugActive = data.debugActive ?? false;
                 break; 
             }
     
-            case "_new_DEBUG.updateDebugTimings"          : { 
-                // console.log("_new_DEBUG.updateDebugTimings: ");
+            case "_DEBUG.updateDebugTimings"          : { 
+                // console.log("_DEBUG.updateDebugTimings: ");
                 gfxMainV5.updateDebugTimings();
                 returnData = messageFuncs.timings["gfx"];
 
@@ -1285,8 +1285,8 @@ var gfxMainV5 = {
                 break; 
             }
     
-            case "_new_DEBUG.toggleCacheFlag"          : { 
-                // console.log("_new_DEBUG.toggleCacheFlag: ");
+            case "_DEBUG.toggleCacheFlag"          : { 
+                // console.log("_DEBUG.toggleCacheFlag: ");
                 _GFX.configObj.disableCache = data.disableCache ?? false;
                 break; 
             }

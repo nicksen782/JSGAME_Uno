@@ -130,7 +130,7 @@ _APP.game = {
             }
 
             if(_APP.debugActive){
-                await _new_DEBUG.debugTasks();
+                await _DEBUG.debugTasks();
             }
 
             // Request the next frame.

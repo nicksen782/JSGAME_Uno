@@ -800,39 +800,39 @@ var _GFX = {
 
         // This is called after each draw completes.
         afterDraw: function(data={}, forceGraphicsDataUsed=false){
-            if(_APP.debugActive && _new_DEBUG){
+            if(_APP.debugActive && _DEBUG){
                 if(data == ""){ return; }
 
                 // DRAW TIMINGS.
                 // if(forceGraphicsDataUsed){
-                //     _new_DEBUG.timingsDisplay.gfx.dataIsUsed = false;
+                //     _DEBUG.timingsDisplay.gfx.dataIsUsed = false;
                 // }
                 // else{
-                //     _new_DEBUG.timingsDisplay.gfx.updateCache(data); 
+                //     _DEBUG.timingsDisplay.gfx.updateCache(data); 
                 // }
 
                 // // HASH CACHE VIEWER
-                // if(_new_DEBUG.hashCache){
-                //     _new_DEBUG.hashCache.display(data, forceGraphicsDataUsed);
+                // if(_DEBUG.hashCache){
+                //     _DEBUG.hashCache.display(data, forceGraphicsDataUsed);
                 // }
                 // else{
                 //     // hashCacheStats
-                //     _new_DEBUG.hashCacheStats1_totalSize_all  = ( `${(data["totalSize_all"]/1000).toFixed(2)} KB` );
-                //     _new_DEBUG.hashCacheStats1_totalSize_temp = ( `${(data["totalSize_temp"]/1000).toFixed(2)} KB` );
-                //     _new_DEBUG.hashCacheStats1_totalSize_perm = ( `${(data["totalSize_perm"]/1000).toFixed(2)} KB` );
-                //     _new_DEBUG.hashCacheStats1_totalSum     = ( `${(data["totalSum"])}` );
-                //     _new_DEBUG.hashCacheStats1_totalSumTemp = ( `${(data["totalSumTemp"])}` );
-                //     _new_DEBUG.hashCacheStats1_totalSumPerm = ( `${(data["totalSumPerm"])}` );
+                //     _DEBUG.hashCacheStats1_totalSize_all  = ( `${(data["totalSize_all"]/1000).toFixed(2)} KB` );
+                //     _DEBUG.hashCacheStats1_totalSize_temp = ( `${(data["totalSize_temp"]/1000).toFixed(2)} KB` );
+                //     _DEBUG.hashCacheStats1_totalSize_perm = ( `${(data["totalSize_perm"]/1000).toFixed(2)} KB` );
+                //     _DEBUG.hashCacheStats1_totalSum     = ( `${(data["totalSum"])}` );
+                //     _DEBUG.hashCacheStats1_totalSumTemp = ( `${(data["totalSumTemp"])}` );
+                //     _DEBUG.hashCacheStats1_totalSumPerm = ( `${(data["totalSumPerm"])}` );
     
-                //     _new_DEBUG.hashCacheStats1_hashCacheHashBASEsInUse = data["hashCacheHashBASEsInUse"];
-                //     _new_DEBUG.hashCacheStats1_hashCacheHashesInUse    = data["hashCacheHashesInUse"];
+                //     _DEBUG.hashCacheStats1_hashCacheHashBASEsInUse = data["hashCacheHashBASEsInUse"];
+                //     _DEBUG.hashCacheStats1_hashCacheHashesInUse    = data["hashCacheHashesInUse"];
                     
-                //     _new_DEBUG.hashCacheStats1_totalSum_genTimeAll  = data["totalSum_genTimeAll"]  ;
-                //     _new_DEBUG.hashCacheStats1_totalSum_genTimeTemp = data["totalSum_genTimeTemp"] ;
-                //     _new_DEBUG.hashCacheStats1_totalSum_genTimePerm = data["totalSum_genTimePerm"] ;
+                //     _DEBUG.hashCacheStats1_totalSum_genTimeAll  = data["totalSum_genTimeAll"]  ;
+                //     _DEBUG.hashCacheStats1_totalSum_genTimeTemp = data["totalSum_genTimeTemp"] ;
+                //     _DEBUG.hashCacheStats1_totalSum_genTimePerm = data["totalSum_genTimePerm"] ;
     
                 //     // Sort so that the removeHashOnRemoval entries appear first.
-                //     _new_DEBUG.hashCacheStats1 = data.hashCacheStats
+                //     _DEBUG.hashCacheStats1 = data.hashCacheStats
                 //     .sort((a, b) => {
                 //         if(a.removeHashOnRemoval.toString() >  b.removeHashOnRemoval.toString()){ return -1; }
                 //         if(a.removeHashOnRemoval.toString() <  b.removeHashOnRemoval.toString()){ return  1; }

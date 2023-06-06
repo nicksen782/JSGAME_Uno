@@ -126,7 +126,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         
         // this.anims.add();
 
-        if(_APP.debugActive && _new_DEBUG){ this.debug(gpInput); }
+        if(_APP.debugActive && _DEBUG){ this.debug(gpInput); }
 
         // return; 
         if(_APP.game.gs2 == "gamestart"){

@@ -9,10 +9,10 @@ var _WEBW_V = {
         "clearAllLayers",
         "generateCoreImageDataAssets",
         // DEBUG
-        "_new_DEBUG.toggleDebugFlag",
+        "_DEBUG.toggleDebugFlag",
         "requestHashCacheEntry",
-        "_new_DEBUG.toggleCacheFlag",
-        "_new_DEBUG.updateDebugTimings",
+        "_DEBUG.toggleCacheFlag",
+        "_DEBUG.updateDebugTimings",
     ],
     
     // Allowed RECEIVE "modes."
@@ -24,10 +24,10 @@ var _WEBW_V = {
         "clearAllLayers",
         "generateCoreImageDataAssets",
         // DEBUG
-        "_new_DEBUG.toggleDebugFlag",
+        "_DEBUG.toggleDebugFlag",
         "requestHashCacheEntry",
-        "_new_DEBUG.toggleCacheFlag",
-        "_new_DEBUG.updateDebugTimings",
+        "_DEBUG.toggleCacheFlag",
+        "_DEBUG.updateDebugTimings",
     ],
     
     // Differed promises allow the system to wait for a response from the WebWorker.
@@ -86,15 +86,15 @@ var _WEBW_V = {
                     break;
                 }
 
-                case "_new_DEBUG.updateDebugTimings"     : {
+                case "_DEBUG.updateDebugTimings"     : {
                     // console.log(e.data.data);
                     // return e.data.data;
                     // Send data to afterDraw.
                     // _GFX.funcs.afterDraw(e.data.data, true);
                     // _GFX.funcs.afterDraw(e.data.data, false);
 
-                    // if(_new_DEBUG.hashCache){
-                    //     _new_DEBUG.hashCache.display(e.data.data, true);
+                    // if(_DEBUG.hashCache){
+                    //     _DEBUG.hashCache.display(e.data.data, true);
                     // }
 
                     break;

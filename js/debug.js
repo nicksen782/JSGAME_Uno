@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-var _new_DEBUG = {
+var _DEBUG = {
     // Displays a canvas on top of all canvases with a grid drawn to it.
     gridCanvas: {
         canvas:null,
@@ -66,7 +66,7 @@ var _new_DEBUG = {
         },
         setCurrentStates: function(){
             let checks = [
-                { check: !_new_DEBUG.gridCanvas.canvas.classList.contains("displayNone"), elem: this.DOM["gridCanvasButton"] },
+                { check: !_DEBUG.gridCanvas.canvas.classList.contains("displayNone"), elem: this.DOM["gridCanvasButton"] },
                 { check:  _APP.game.gameLoop.running,                                     elem: this.DOM["toggleGameLoop"] },
                 { check: !_APP.game.gameLoop.skipLogic,                                   elem: this.DOM["toggleLogic"] },
                 { check:  _APP.configObj.awaitDraw,                                       elem: this.DOM["awaitDraw"] },
@@ -106,7 +106,7 @@ var _new_DEBUG = {
 
             // SHOW GRID
             this.DOM.gridCanvasButton.addEventListener("click", ()=>{
-                let home = _new_DEBUG.gridCanvas;
+                let home = _DEBUG.gridCanvas;
                 home.canvas.classList.toggle("displayNone");
                 if(home.canvas.classList.contains("displayNone")){
                     this.DOM.gridCanvasButton.innerText = "OFF";
@@ -200,7 +200,7 @@ var _new_DEBUG = {
                     } 
 
                     // Request and await the result.
-                    await _WEBW_V.SEND("_new_DEBUG.toggleDebugFlag", { 
+                    await _WEBW_V.SEND("_DEBUG.toggleDebugFlag", { 
                         data: { debugActive: _APP.debugActive }, 
                         refs:[]
                     }, true, false);
@@ -256,7 +256,7 @@ var _new_DEBUG = {
                     }
 
                     // Request and await the result.
-                    await _WEBW_V.SEND("_new_DEBUG.toggleCacheFlag", { 
+                    await _WEBW_V.SEND("_DEBUG.toggleCacheFlag", { 
                         data: { disableCache: _APP.configObj.disableCache }, 
                         refs:[]
                     }, true, false);
@@ -518,8 +518,8 @@ var _new_DEBUG = {
             this.DOM.GS2Text         = document.getElementById("debug_GS2Text");
         },
         display: function(){
-            _new_DEBUG.updateIfChanged(this.DOM.GS1Text        , _APP.game.gs1.trim() );
-            _new_DEBUG.updateIfChanged(this.DOM.GS2Text        , _APP.game.gs2.trim() );
+            _DEBUG.updateIfChanged(this.DOM.GS1Text        , _APP.game.gs1.trim() );
+            _DEBUG.updateIfChanged(this.DOM.GS2Text        , _APP.game.gs2.trim() );
 
             if(this.DOM.changeGs1Select.value != _APP.game.gs1){
                 this.DOM.changeGs1Select.value = _APP.game.gs1;
@@ -664,8 +664,8 @@ var _new_DEBUG = {
             // if(!this.values.lastForcedrun || performance.now() - this.values.lastForcedrun > this.values.lastForcedrunWait){
             // this.values.lastForcedrun = performance.now();
 
-            let updated1 = _new_DEBUG.hashCache.displayTop(data);
-            let updated2 = _new_DEBUG.hashCache.displayBottom(data);
+            let updated1 = _DEBUG.hashCache.displayTop(data);
+            let updated2 = _DEBUG.hashCache.displayBottom(data);
             if(forced || updated1 || updated2){
                 let newText = `Refreshed: ${this.getFormattedDateTime()}`;
                 if(this.DOM.refreshLast.innerText != newText){
@@ -1107,7 +1107,7 @@ var _new_DEBUG = {
                 if(!this.values.lastForcedrun || performance.now() - this.values.lastForcedrun > this.values.lastForcedrunWait){
                     this.values.lastForcedrun = performance.now();
                     // Request the debug timings.
-                    await _WEBW_V.SEND("_new_DEBUG.updateDebugTimings", { 
+                    await _WEBW_V.SEND("_DEBUG.updateDebugTimings", { 
                         data: { }, 
                         refs:[]
                     }, false, true);
@@ -1251,11 +1251,11 @@ var _new_DEBUG = {
             this.contextMenu1_close();
 
             // Switch to the LayerObj Edit tab.
-            if(_new_DEBUG.navBar1){
-                _new_DEBUG.navBar1.showOne("view_layerObjEdit");
+            if(_DEBUG.navBar1){
+                _DEBUG.navBar1.showOne("view_layerObjEdit");
             }
-            else if(_new_DEBUG.navBar1){
-                _new_DEBUG.navBar1.showOne("view_layerObjEdit")
+            else if(_DEBUG.navBar1){
+                _DEBUG.navBar1.showOne("view_layerObjEdit")
             }
             else{
                 console.log("Missing nav tab: 'view_layerObjEdit'");
@@ -1392,7 +1392,7 @@ var _new_DEBUG = {
 
             let elem = document.getElementById("layerObjectList1");
             if(!elem.hasAttribute("onmouseleave")){
-                elem.setAttribute("onmouseleave", "_new_DEBUG.layerObjs.highlightOnHover(0, 0, 0, 0, 0);"); 
+                elem.setAttribute("onmouseleave", "_DEBUG.layerObjs.highlightOnHover(0, 0, 0, 0, 0);"); 
             }
     
             // If the gamestate key is not in layerObjs then return.
@@ -1418,7 +1418,7 @@ var _new_DEBUG = {
             let fade;
     
             // TODO:
-            // oncontextmenu="event.preventDefault(); _new_DEBUG.loadLayerObj(gs_PLAYING, deckControl);"
+            // oncontextmenu="event.preventDefault(); _DEBUG.loadLayerObj(gs_PLAYING, deckControl);"
     
             let firstLayer = true; 
             for(let layerKey of layerKeys){ 
@@ -1472,9 +1472,9 @@ var _new_DEBUG = {
     
                         // Update the newText string.
                         newText += `<div ` +
-                        `onmouseenter="_new_DEBUG.layerObjs.highlightOnHover(${x}, ${y}, ${w}, ${h}, ${data.settings.rotation});"` + 
-                        `oncontextmenu="event.preventDefault(); _new_DEBUG.layerObjs.contextMenu1_open(event, '${_APP.game.gs1}','${layerObjKey}');" ` +
-                        `onclick="_new_DEBUG.layerObjs.displayLayerObject_console('${_APP.game.gs1}','${layerObjKey}');" ` +
+                        `onmouseenter="_DEBUG.layerObjs.highlightOnHover(${x}, ${y}, ${w}, ${h}, ${data.settings.rotation});"` + 
+                        `oncontextmenu="event.preventDefault(); _DEBUG.layerObjs.contextMenu1_open(event, '${_APP.game.gs1}','${layerObjKey}');" ` +
+                        `onclick="_DEBUG.layerObjs.displayLayerObject_console('${_APP.game.gs1}','${layerObjKey}');" ` +
                         `class="layerObjectsStats1_entry">` +
                         `${name} : ${data.className}\n  (${coords} ${dims})` +
                         `\n  ${settings}` + 
@@ -1656,14 +1656,14 @@ var _new_DEBUG = {
         },
         display: function(newData){
             // Frame counters.
-            _new_DEBUG.updateIfChanged(this.DOM.frameCounter    , (_APP.game.gameLoop.frameCounter/1000).toFixed(1)+"k" );
-            _new_DEBUG.updateIfChanged(this.DOM.frameDrawCounter, (_APP.game.gameLoop.frameDrawCounter/1000).toFixed(1)+"k" );
+            _DEBUG.updateIfChanged(this.DOM.frameCounter    , (_APP.game.gameLoop.frameCounter/1000).toFixed(1)+"k" );
+            _DEBUG.updateIfChanged(this.DOM.frameDrawCounter, (_APP.game.gameLoop.frameDrawCounter/1000).toFixed(1)+"k" );
 
             // Tilemap counts per layer. 
-            _new_DEBUG.updateIfChanged(this.DOM.L1_tms, Object.keys(_GFX.currentData["L1"].tilemaps).length.toString() );
-            _new_DEBUG.updateIfChanged(this.DOM.L2_tms, Object.keys(_GFX.currentData["L2"].tilemaps).length.toString() );
-            _new_DEBUG.updateIfChanged(this.DOM.L3_tms, Object.keys(_GFX.currentData["L3"].tilemaps).length.toString() );
-            _new_DEBUG.updateIfChanged(this.DOM.L4_tms, Object.keys(_GFX.currentData["L4"].tilemaps).length.toString() );
+            _DEBUG.updateIfChanged(this.DOM.L1_tms, Object.keys(_GFX.currentData["L1"].tilemaps).length.toString() );
+            _DEBUG.updateIfChanged(this.DOM.L2_tms, Object.keys(_GFX.currentData["L2"].tilemaps).length.toString() );
+            _DEBUG.updateIfChanged(this.DOM.L3_tms, Object.keys(_GFX.currentData["L3"].tilemaps).length.toString() );
+            _DEBUG.updateIfChanged(this.DOM.L4_tms, Object.keys(_GFX.currentData["L4"].tilemaps).length.toString() );
 
             // Current FPS.
             // Show average FPS, average ms per frame, how much off is the average ms per frame.
@@ -1671,34 +1671,34 @@ var _new_DEBUG = {
             let new_avgMsPerFrame = _APP.game.gameLoop.fpsCalc.avgMsPerFrame.toFixed(1) ?? 0;
             let msDiff            = (_APP.game.gameLoop.fpsCalc.avgMsPerFrame - _APP.game.gameLoop.msFrame).toFixed(1);
             testText = `AVG: ${new_average}, MS: ${new_avgMsPerFrame}, DELTA: ${msDiff}`;
-            _new_DEBUG.updateIfChanged(this.DOM.fpsDisplay, testText);
+            _DEBUG.updateIfChanged(this.DOM.fpsDisplay, testText);
 
             // Last draw: Individual timings.
-            _new_DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L1,  newData.ALLTIMINGS["L1___TOTAL"]            .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_A_L1,      newData.ALLTIMINGS["L1_A_clearLayer"]       .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_B_L1,      newData.ALLTIMINGS["L1_B_clearRemovedData"] .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_C_L1,      newData.ALLTIMINGS["L1_C_createTilemaps"]   .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_D_L1,      newData.ALLTIMINGS["L1_D_drawFromDataCache"].toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_E_L1,      newData.ALLTIMINGS["L1_E_drawImgDataCache"] .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L2,  newData.ALLTIMINGS["L2___TOTAL"]            .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_A_L2,      newData.ALLTIMINGS["L2_A_clearLayer"]       .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_B_L2,      newData.ALLTIMINGS["L2_B_clearRemovedData"] .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_C_L2,      newData.ALLTIMINGS["L2_C_createTilemaps"]   .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_D_L2,      newData.ALLTIMINGS["L2_D_drawFromDataCache"].toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_E_L2,      newData.ALLTIMINGS["L2_E_drawImgDataCache"] .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L3,  newData.ALLTIMINGS["L3___TOTAL"]            .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_A_L3,      newData.ALLTIMINGS["L3_A_clearLayer"]       .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_B_L3,      newData.ALLTIMINGS["L3_B_clearRemovedData"] .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_C_L3,      newData.ALLTIMINGS["L3_C_createTilemaps"]   .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_D_L3,      newData.ALLTIMINGS["L3_D_drawFromDataCache"].toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_E_L3,      newData.ALLTIMINGS["L3_E_drawImgDataCache"] .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L4,  newData.ALLTIMINGS["L4___TOTAL"]            .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_A_L4,      newData.ALLTIMINGS["L4_A_clearLayer"]       .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_B_L4,      newData.ALLTIMINGS["L4_B_clearRemovedData"] .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_C_L4,      newData.ALLTIMINGS["L4_C_createTilemaps"]   .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_D_L4,      newData.ALLTIMINGS["L4_D_drawFromDataCache"].toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_E_L4,      newData.ALLTIMINGS["L4_E_drawImgDataCache"] .toFixed(1)+"");
-            _new_DEBUG.updateIfChanged(this.DOM.timings_TOTAL_ALL, newData.ALLTIMINGS["gfx"].toFixed(1)+" ms");
+            _DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L1,  newData.ALLTIMINGS["L1___TOTAL"]            .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_A_L1,      newData.ALLTIMINGS["L1_A_clearLayer"]       .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_B_L1,      newData.ALLTIMINGS["L1_B_clearRemovedData"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_C_L1,      newData.ALLTIMINGS["L1_C_createTilemaps"]   .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_D_L1,      newData.ALLTIMINGS["L1_D_drawFromDataCache"].toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_E_L1,      newData.ALLTIMINGS["L1_E_drawImgDataCache"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L2,  newData.ALLTIMINGS["L2___TOTAL"]            .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_A_L2,      newData.ALLTIMINGS["L2_A_clearLayer"]       .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_B_L2,      newData.ALLTIMINGS["L2_B_clearRemovedData"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_C_L2,      newData.ALLTIMINGS["L2_C_createTilemaps"]   .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_D_L2,      newData.ALLTIMINGS["L2_D_drawFromDataCache"].toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_E_L2,      newData.ALLTIMINGS["L2_E_drawImgDataCache"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L3,  newData.ALLTIMINGS["L3___TOTAL"]            .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_A_L3,      newData.ALLTIMINGS["L3_A_clearLayer"]       .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_B_L3,      newData.ALLTIMINGS["L3_B_clearRemovedData"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_C_L3,      newData.ALLTIMINGS["L3_C_createTilemaps"]   .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_D_L3,      newData.ALLTIMINGS["L3_D_drawFromDataCache"].toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_E_L3,      newData.ALLTIMINGS["L3_E_drawImgDataCache"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L4,  newData.ALLTIMINGS["L4___TOTAL"]            .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_A_L4,      newData.ALLTIMINGS["L4_A_clearLayer"]       .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_B_L4,      newData.ALLTIMINGS["L4_B_clearRemovedData"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_C_L4,      newData.ALLTIMINGS["L4_C_createTilemaps"]   .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_D_L4,      newData.ALLTIMINGS["L4_D_drawFromDataCache"].toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_E_L4,      newData.ALLTIMINGS["L4_E_drawImgDataCache"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged(this.DOM.timings_TOTAL_ALL, newData.ALLTIMINGS["gfx"].toFixed(1)+" ms");
         },
     },
     // NavBar1 buttons for the left-side debug view.
@@ -1907,10 +1907,10 @@ var _new_DEBUG = {
         _APP.utility.timeIt("debug_total", "start");
 
         // Set the debug is running flag.
-        _new_DEBUG.debugRunning = true; 
+        _DEBUG.debugRunning = true; 
 
         // Reset timers.
-        _APP.utility.timeIt("_new_DEBUG.updateDebugTimings", "reset");
+        _APP.utility.timeIt("_DEBUG.updateDebugTimings", "reset");
         _APP.utility.timeIt("layerObjs.display", "reset");
         _APP.utility.timeIt("hashCache.display", "reset");
         _APP.utility.timeIt("drawTimings.display", "reset");
@@ -1928,36 +1928,36 @@ var _new_DEBUG = {
         // REQUEST TIMING DATA.
         let newData;
         if(doDataRequest){
-            _APP.utility.timeIt("_new_DEBUG.updateDebugTimings", "start");
-            newData = await _WEBW_V.SEND("_new_DEBUG.updateDebugTimings", {
+            _APP.utility.timeIt("_DEBUG.updateDebugTimings", "start");
+            newData = await _WEBW_V.SEND("_DEBUG.updateDebugTimings", {
                 data:{},
                 refs:[]
             }, true, true);
             newData = newData.data;
-            _APP.utility.timeIt("_new_DEBUG.updateDebugTimings", "stop");
+            _APP.utility.timeIt("_DEBUG.updateDebugTimings", "stop");
         }
 
         // showGamestate VIEWER
         _APP.utility.timeIt("showGamestate.display", "start");
-        _new_DEBUG.showGamestate.display(false);
+        _DEBUG.showGamestate.display(false);
         _APP.utility.timeIt("showGamestate.display", "stop");
 
         // LAYER OBJECTS VIEWER/EDITOR
         _APP.utility.timeIt("layerObjs.display", "start");
-        _new_DEBUG.layerObjs.display(false);
+        _DEBUG.layerObjs.display(false);
         _APP.utility.timeIt("layerObjs.display", "stop");
         
         // HASH CACHE VIEWER
         if(doDataRequest){
             _APP.utility.timeIt("hashCache.display", "start");
-            _new_DEBUG.hashCache.display(newData, false);
+            _DEBUG.hashCache.display(newData, false);
             _APP.utility.timeIt("hashCache.display", "stop");
         }
         
         // DRAW TIMINGS
         if(doDataRequest){
             _APP.utility.timeIt("drawTimings.display", "start");
-            _new_DEBUG.drawTimings.display(newData, false);
+            _DEBUG.drawTimings.display(newData, false);
             _APP.utility.timeIt("drawTimings.display", "stop");
         }
         
@@ -1967,13 +1967,13 @@ var _new_DEBUG = {
 
         // BARS
         _APP.utility.timeIt("bars.display", "start");
-        _new_DEBUG.updateTimingBars.display(newData, false);
+        _DEBUG.updateTimingBars.display(newData, false);
         _APP.utility.timeIt("bars.display", "stop");
 
         // Update changed elements. 
         this.updateIfChanged(document.getElementById("debug_timings_total")        , _APP.utility.timeIt("debug_total"              , "get").toFixed(1) + " ms");
         this.updateIfChanged(document.getElementById("debug_timings_doDataRequest"), doDataRequest ? "YES" : "NO");
-        this.updateIfChanged(document.getElementById("debug_timings_dataRequest")  , _APP.utility.timeIt("_new_DEBUG.updateDebugTimings", "get").toFixed(1) + " ms");
+        this.updateIfChanged(document.getElementById("debug_timings_dataRequest")  , _APP.utility.timeIt("_DEBUG.updateDebugTimings", "get").toFixed(1) + " ms");
         this.updateIfChanged(document.getElementById("debug_timings_hashCache")    , _APP.utility.timeIt("hashCache.display"        , "get").toFixed(1) + " ms");
         this.updateIfChanged(document.getElementById("debug_timings_layerObjs")    , _APP.utility.timeIt("layerObjs.display"        , "get").toFixed(1) + " ms");
         this.updateIfChanged(document.getElementById("debug_timings_drawTimings")  , _APP.utility.timeIt("drawTimings.display"      , "get").toFixed(1) + " ms");
@@ -1983,7 +1983,7 @@ var _new_DEBUG = {
         // if(this.runDebug_lastDuration > 8){
             // console.log(
             //     `DEBUG took this long: ${this.runDebug_lastDuration.toFixed(2)} ms` + 
-            //     `\n  _new_DEBUG.updateDebugTimings: ${_APP.utility.timeIt("_new_DEBUG.updateDebugTimings", "get").toFixed(2)} ms` +
+            //     `\n  _DEBUG.updateDebugTimings: ${_APP.utility.timeIt("_DEBUG.updateDebugTimings", "get").toFixed(2)} ms` +
             //     `\n  layerObjs.display        : ${_APP.utility.timeIt("layerObjs.display", "get").toFixed(2)} ms` +
             //     `\n  hashCache.display        : ${_APP.utility.timeIt("hashCache.display", "get").toFixed(2)} ms` +
             //     `\n  drawTimings.display      : ${_APP.utility.timeIt("drawTimings.display", "get").toFixed(2)} ms` +
@@ -2067,12 +2067,12 @@ var _new_DEBUG = {
         
         // Load the navBar1 tabs.
         this.navBar1.init();
-        // _new_DEBUG.navBar1.showOne("view_colorFinder");
-        _new_DEBUG.navBar1.showOne("view_drawStats");
-        // _new_DEBUG.navBar1.showOne("view_fade");
-        // _new_DEBUG.navBar1.showOne("view_hashCacheStats1");
-        // _new_DEBUG.navBar1.showOne("view_layerObjects");
-        // _new_DEBUG.navBar1.showOne("view_layerObjEdit");
+        // _DEBUG.navBar1.showOne("view_colorFinder");
+        _DEBUG.navBar1.showOne("view_drawStats");
+        // _DEBUG.navBar1.showOne("view_fade");
+        // _DEBUG.navBar1.showOne("view_hashCacheStats1");
+        // _DEBUG.navBar1.showOne("view_layerObjects");
+        // _DEBUG.navBar1.showOne("view_layerObjEdit");
         
         // Load the hashCache.
         
@@ -2090,12 +2090,12 @@ var _new_DEBUG = {
         
         // Load the navBar3 tabs.
         this.navBar3.init();
-        // _new_DEBUG.navBar3.showOne("view_all_base"); 
-        // _new_DEBUG.navBar3.showOne("view_perm_base");
-        // _new_DEBUG.navBar3.showOne("view_temp_base"); 
-        _new_DEBUG.navBar3.showOne("view_all_copy");
-        // _new_DEBUG.navBar3.showOne("view_temp"); 
-        // _new_DEBUG.navBar3.showOne("view_temp_copy");
+        // _DEBUG.navBar3.showOne("view_all_base"); 
+        // _DEBUG.navBar3.showOne("view_perm_base");
+        // _DEBUG.navBar3.showOne("view_temp_base"); 
+        _DEBUG.navBar3.showOne("view_all_copy");
+        // _DEBUG.navBar3.showOne("view_temp"); 
+        // _DEBUG.navBar3.showOne("view_temp_copy");
 
         // Set the output scaling (only in debug mode.)
         // let scaleSlider = document.getElementById("scaleSlider");
