@@ -685,6 +685,12 @@ var _DEBUG = {
 
             let top_changes = [];
             let lhcs2 = newData.hashCacheStats2;
+            if(!lhcs2){
+                console.log("MISSING: newData.hashCacheStats2");
+                performance.mark('displayTop_End');
+                performance.measure('displayTop', 'displayTop_Start', 'displayTop_End');
+                return false;
+            }
 
             // RECORD COUNTS
             if(newData.totalSize_all  != this.values.totalSize_all)  { this.values.totalSize_all  = newData.totalSize_all  ; top_changes.push( {elem: this.DOM.totalSize_all , value: (newData.totalSize_all/1000000) .toFixed(2).padStart(5, " ") + " MB" } ); }
@@ -904,6 +910,13 @@ var _DEBUG = {
             performance.mark('displayBottom_Start');
 
             let hasChanges = false;
+
+            if(!newData.hashCacheStats2){
+                console.log("MISSING: newData.hashCacheStats2");
+                performance.mark('displayBottom_End');
+                performance.measure('displayBottom', 'displayBottom_Start', 'displayBottom_End');
+                return false;
+            }
 
             // Gather data.
             let data = this.createDisplayBottomData(newData);
@@ -1673,6 +1686,11 @@ var _DEBUG = {
             testText = `AVG: ${new_average}, MS: ${new_avgMsPerFrame}, DELTA: ${msDiff}`;
             _DEBUG.updateIfChanged(this.DOM.fpsDisplay, testText);
 
+            if(!newData.ALLTIMINGS || !Object.keys(newData.ALLTIMINGS).length){
+                console.log("MISSING: newData.ALLTIMINGS");
+                return;
+            }
+
             // Last draw: Individual timings.
             _DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L1,  newData.ALLTIMINGS["L1___TOTAL"]            .toFixed(1)+"");
             _DEBUG.updateIfChanged(this.DOM.timings_A_L1,      newData.ALLTIMINGS["L1_A_clearLayer"]       .toFixed(1)+"");
@@ -1764,7 +1782,7 @@ var _DEBUG = {
         init   : _APP.navBar1.init,
     },
 
-    // TODO
+    // 
     updateTimingBars: {
         DOM: {
             debug_progressBar_canvas: null
@@ -1784,6 +1802,28 @@ var _DEBUG = {
             // Map the value to the width of the canvas
             return ((value / 100) * canvasWidth) << 0;
         },
+        drawSeparators: function(pos){
+            this.ctx.strokeStyle = '#fff';
+
+            // Set the line style to dotted
+            this.ctx.setLineDash([3, 3]);
+            
+            // Array of percentages for the lines
+            let percentages = [18, 36, 54, 72, 90];
+            
+            // Draw the lines
+            for(let i = 0; i < percentages.length; i++) {
+                let xPosition = pos.x + (percentages[i]/100) * pos.w;
+            
+                this.ctx.beginPath();
+                this.ctx.moveTo(xPosition, pos.y);
+                this.ctx.lineTo(xPosition, pos.y + pos.h);
+                this.ctx.stroke();
+            }
+            
+            // Reset the line style to solid
+            this.ctx.setLineDash([]);
+        },
         updateOneBar: function(barKey, newValue, newValue2=""){
             // Get the bar dimensions/position.
             let pos = this.positions[barKey];
@@ -1792,21 +1832,35 @@ var _DEBUG = {
             let newWidth = this.mapToWidth(newValue, pos.w);
 
             // Clear this bar.
-            this.ctx.clearRect(pos.x, pos.y, pos.w, pos.h);
-
+            this.ctx.clearRect(pos.x-2, pos.y-2, pos.w+4, pos.h+4);
+            
             // Draw the outer rectangle.
             this.ctx.strokeStyle = '#000';
-            this.ctx.strokeRect(pos.x-3, pos.y-3, pos.w+6, pos.h+6);
-            
-            // Draw the inner filled rectangle.
-            this.ctx.fillStyle = '#ddd';
+            this.ctx.strokeRect(pos.x-2, pos.y-2, pos.w+4, pos.h+4);
+
+            // Draw the inner filled rectangle. (full)
+            this.ctx.fillStyle = '#b0c4de';
+            this.ctx.fillRect(pos.x, pos.y, pos.w, pos.h);
+
+            // Draw the inner filled rectangle. (partial)
+            if     (newValue < 18){ this.ctx.fillStyle = '#18a521'; }
+            else if(newValue < 36){ this.ctx.fillStyle = '#1a3cac'; }
+            else if(newValue < 54){ this.ctx.fillStyle = '#a89922'; }
+            else if(newValue < 72){ this.ctx.fillStyle = '#df9e2f'; }
+            else if(newValue < 90){ this.ctx.fillStyle = '#fa3131'; }
+            else                  { this.ctx.fillStyle = '#ff0000'; }
             this.ctx.fillRect(pos.x, pos.y, newWidth, pos.h);
-            
+
+            // Draw the separation of ranges.
+            this.drawSeparators(pos);
+
             // Draw the newValue and newValue2 in the center of the bar.
             this.ctx.font = '15px Courier New, monospace';
             this.ctx.fillStyle = '#000';
             this.ctx.textAlign = "center";     // Center the text horizontally
-            this.ctx.fillText(newValue.toFixed(2)+"% " + newValue2 +"", pos.x + (pos.w / 2), pos.y + (pos.h / 2));
+            newValue  = newValue .toFixed(0).padStart(5, " ") + "%"
+            newValue2 = newValue2.toFixed(1).padStart(5+5, " ") + "ms"
+            this.ctx.fillText(newValue + " " + newValue2 +"", pos.x + (pos.w / 2), pos.y + (pos.h / 2));
         },
         init: function(){
             // Save the DOM.
@@ -1816,11 +1870,11 @@ var _DEBUG = {
             let dpr = window.devicePixelRatio || 1;
 
             // Set the size of the canvas in pixels, taking into account the device pixel ratio
-            this.DOM.progressBar_canvas.width  = this.DOM.progressBar_canvas.width * dpr;
+            this.DOM.progressBar_canvas.width  = this.DOM.progressBar_canvas.width  * dpr;
             this.DOM.progressBar_canvas.height = this.DOM.progressBar_canvas.height * dpr;
 
             // Set the size of the canvas in CSS pixels
-            this.DOM.progressBar_canvas.style.width = (this.DOM.progressBar_canvas.width / dpr) + "px";
+            this.DOM.progressBar_canvas.style.width  = (this.DOM.progressBar_canvas.width  / dpr) + "px";
             this.DOM.progressBar_canvas.style.height = (this.DOM.progressBar_canvas.height / dpr) + "px";
 
             this.ctx = this.DOM.progressBar_canvas.getContext("2d");
@@ -1837,46 +1891,85 @@ var _DEBUG = {
             this.ctx.font = 'bold 15px Courier New, monospace';
             this.ctx.textAlign = "left";     // 
             this.ctx.textBaseline = "middle";  // Center the text vertically
-            this.ctx.fillText("DEBUG", 5, this.positions.debugBar.y + this.positions.debugBar.h -8);
-            this.ctx.fillText("LOOP", 5, this.positions.LoopBar.y   + this.positions.LoopBar.h  -8);
-            this.ctx.fillText("DRAW", 5, this.positions.GfxBar.y    + this.positions.GfxBar.h   -8);
+            this.ctx.fillText("DEBUG:", 5, this.positions.debugBar.y + this.positions.debugBar.h -8);
+            this.ctx.fillText("LOOP :", 5, this.positions.LoopBar.y   + this.positions.LoopBar.h  -8);
+            this.ctx.fillText("DRAW :", 5, this.positions.GfxBar.y    + this.positions.GfxBar.h   -8);
 
             // Draw the initial bars display.
-            this.updateOneBar("debugBar", 0);
-            this.updateOneBar("LoopBar" , 0);
-            this.updateOneBar("GfxBar"  , 0);
+            // this.updateOneBar("debugBar", 0);
+            // this.updateOneBar("LoopBar" , 0);
+            // this.updateOneBar("GfxBar"  , 0);
         },
 
         last_debugTime: 0,
         last_loopTime : 0,
         last_drawTime : 0,
 
+        calcPercentOfFrameTime: function(value){
+            // Convert to percent of gameloop frame.
+            let percent = 100 * (value / _APP.game.gameLoop.msFrame)
+
+            // Keep the new value in the range of 0 - 100.
+            percent = Math.max(0, Math.min(100, percent));
+
+            // Return the completed value.
+            return percent;
+        },
+        display_one: function(barKey, newData){
+            if(!newData.ALLTIMINGS || !Object.keys(newData.ALLTIMINGS).length){
+                console.log("MISSING: newData.ALLTIMINGS");
+                return;
+            }
+
+            let data;
+            let percent;
+            let ms;
+
+            if(barKey == "debugBar"){
+                data = _APP.utility.timeIt("debug_total", "get");
+                percent = this.calcPercentOfFrameTime( data );
+                ms = data;
+            }
+            else if(barKey == "LoopBar") {
+                data = _APP.game.gameLoop.lastLoop_timestamp;
+                percent = this.calcPercentOfFrameTime( data );
+                ms = data;
+            }
+            else if(barKey == "GfxBar")  {
+                data = newData.ALLTIMINGS.gfx; 
+                percent = this.calcPercentOfFrameTime( data );
+                ms = data;
+            }
+            else{
+                return;
+            }
+
+            // Update the specific bar.
+            this.updateOneBar(barKey, percent, ms);
+        },
         display: function(newData){
-            // Calculate the new debugTime, loopTime, and drawTime
-            let debugTime = (100*(_APP.utility.timeIt("debug_total", "get") / _APP.game.gameLoop.msFrame));
-            let loopTime  = (100*(_APP.game.gameLoop.lastLoop_timestamp     / _APP.game.gameLoop.msFrame));
-            let drawTime  = (100*( newData.ALLTIMINGS.gfx                   / _APP.game.gameLoop.msFrame));
-        
-            // Ensure the new values are within the range 0 - 100.
-            debugTime = Math.max(0, Math.min(100, debugTime));
-            loopTime  = Math.max(0, Math.min(100, loopTime));
-            drawTime  = Math.max(0, Math.min(100, drawTime));
-        
-            // Update the bars with new times.
-            this.updateOneBar("debugBar", debugTime, `${_APP.utility.timeIt("debug_total", "get").toFixed(1)} ms`);
-            this.updateOneBar("LoopBar" , loopTime ,  `${_APP.game.gameLoop.lastLoop_timestamp.toFixed(1)} ms`);
-            this.updateOneBar("GfxBar"  , drawTime ,  `${ newData.ALLTIMINGS.gfx.toFixed(1)} ms`);
-        
-            // Update the last times. 
-            this.last_debugTime = debugTime;
-            this.last_loopTime  = loopTime;
-            this.last_drawTime  = drawTime;
+            if(!newData.ALLTIMINGS || !Object.keys(newData.ALLTIMINGS).length){
+                console.log("MISSING: newData.ALLTIMINGS");
+                return;
+            }
+
+            // Update all bars.
+            this.display_one("debugBar", newData);
+            this.display_one("LoopBar", newData);
+            this.display_one("GfxBar", newData);
         }
     },
 
-    // UTILITY.
+    // ** UTILITIES **
+    // ***************
+
+    // DOM value updater. Only changes if the value is different than the current value.
     updateIfChanged: function(elem, newValue, method="innerText"){
-        if(elem[method].trim() != newValue.toString().trim()){ elem[method] = newValue.toString().trim(); }
+        // Compare each value trimed.
+        if(elem[method].trim() != newValue.toString().trim()){ 
+            // Store the trimmed value.
+            elem[method] = newValue.toString().trim(); 
+        }
     },
 
     // ** DEBUG TASK RUNNER **
@@ -1892,7 +1985,12 @@ var _DEBUG = {
     // runDebug_wait: 1000 * 5, // 5 seconds
     runDebug_last: 0,
     runDebug_lastDuration: 0,
-    debugTasks: async function(){
+    doDummyDraw: false, 
+    // doDummyDrawCount: 0, 
+    // doDummyDrawCountMax: 10, 
+    doDummyDrawDelay: 250, 
+    doDummyDrawLast: 1000,
+    debugTasks: async function(newData){
         // Don't run debug until it is time. 
         let lastRunDiff = performance.now() - this.runDebug_last;
         if( !(this.runDebug_last == 0 | lastRunDiff > this.runDebug_wait) ){
@@ -1901,41 +1999,17 @@ var _DEBUG = {
         }
         // Store the timestamp for the next run.
         this.runDebug_last = performance.now();
-        // console.log("RUNNING");
-
-        let ts = performance.now();
-        _APP.utility.timeIt("debug_total", "start");
-
-        // Set the debug is running flag.
-        _DEBUG.debugRunning = true; 
-
+        
         // Reset timers.
-        _APP.utility.timeIt("_DEBUG.updateDebugTimings", "reset");
+        _APP.utility.timeIt("debug_total", "reset");
         _APP.utility.timeIt("layerObjs.display", "reset");
         _APP.utility.timeIt("hashCache.display", "reset");
         _APP.utility.timeIt("drawTimings.display", "reset");
         _APP.utility.timeIt("bars.display", "reset");
         _APP.utility.timeIt("showGamestate.display", "reset");
-
+        
+        _APP.utility.timeIt("debug_total", "start");
         // Determine if data needs to be requested.
-
-        let doDataRequest = false;
-        if(document.getElementById("debug_navBar1_tab_drawStats")      .classList.contains("active")){ doDataRequest = true; }
-        if(document.getElementById("debug_navBar1_tab_hashCacheStats1").classList.contains("active")){ doDataRequest = true; }
-        if(document.getElementById("debug_navBar1_tab_drawStats")      .classList.contains("active")){ doDataRequest = true; }
-        doDataRequest = true;
-
-        // REQUEST TIMING DATA.
-        let newData;
-        if(doDataRequest){
-            _APP.utility.timeIt("_DEBUG.updateDebugTimings", "start");
-            newData = await _WEBW_V.SEND("_DEBUG.updateDebugTimings", {
-                data:{},
-                refs:[]
-            }, true, true);
-            newData = newData.data;
-            _APP.utility.timeIt("_DEBUG.updateDebugTimings", "stop");
-        }
 
         // showGamestate VIEWER
         _APP.utility.timeIt("showGamestate.display", "start");
@@ -1948,32 +2022,31 @@ var _DEBUG = {
         _APP.utility.timeIt("layerObjs.display", "stop");
         
         // HASH CACHE VIEWER
-        if(doDataRequest){
-            _APP.utility.timeIt("hashCache.display", "start");
-            _DEBUG.hashCache.display(newData, false);
-            _APP.utility.timeIt("hashCache.display", "stop");
-        }
+        _APP.utility.timeIt("hashCache.display", "start");
+        _DEBUG.hashCache.display(newData, false);
+        _APP.utility.timeIt("hashCache.display", "stop");
         
         // DRAW TIMINGS
-        if(doDataRequest){
-            _APP.utility.timeIt("drawTimings.display", "start");
-            _DEBUG.drawTimings.display(newData, false);
-            _APP.utility.timeIt("drawTimings.display", "stop");
-        }
+        _APP.utility.timeIt("drawTimings.display", "start");
+        _DEBUG.drawTimings.display(newData, false);
+        _APP.utility.timeIt("drawTimings.display", "stop");
         
-        // DONE. 
-        this.runDebug_lastDuration = performance.now() - ts;
+        // DONE WITH DEBUG. 
         _APP.utility.timeIt("debug_total", "stop");
+        this.runDebug_lastDuration = performance.now() - _APP.utility.timeIt("debug_total", "get");
 
+        // this.display_one("debugBar", newData);
         // BARS
         _APP.utility.timeIt("bars.display", "start");
         _DEBUG.updateTimingBars.display(newData, false);
         _APP.utility.timeIt("bars.display", "stop");
 
+        // Add the bars.display time to the debug_total time.
+        _APP.utility.timeIt("debug_total", "set", _APP.utility.timeIt("bars.display", "get") + _APP.utility.timeIt("debug_total", "get"));
+        _DEBUG.updateTimingBars.display_one("debugBar", newData);
+
         // Update changed elements. 
         this.updateIfChanged(document.getElementById("debug_timings_total")        , _APP.utility.timeIt("debug_total"              , "get").toFixed(1) + " ms");
-        this.updateIfChanged(document.getElementById("debug_timings_doDataRequest"), doDataRequest ? "YES" : "NO");
-        this.updateIfChanged(document.getElementById("debug_timings_dataRequest")  , _APP.utility.timeIt("_DEBUG.updateDebugTimings", "get").toFixed(1) + " ms");
         this.updateIfChanged(document.getElementById("debug_timings_hashCache")    , _APP.utility.timeIt("hashCache.display"        , "get").toFixed(1) + " ms");
         this.updateIfChanged(document.getElementById("debug_timings_layerObjs")    , _APP.utility.timeIt("layerObjs.display"        , "get").toFixed(1) + " ms");
         this.updateIfChanged(document.getElementById("debug_timings_drawTimings")  , _APP.utility.timeIt("drawTimings.display"      , "get").toFixed(1) + " ms");
@@ -2068,8 +2141,8 @@ var _DEBUG = {
         // Load the navBar1 tabs.
         this.navBar1.init();
         // _DEBUG.navBar1.showOne("view_colorFinder");
-        _DEBUG.navBar1.showOne("view_drawStats");
-        // _DEBUG.navBar1.showOne("view_fade");
+        // _DEBUG.navBar1.showOne("view_drawStats");
+        _DEBUG.navBar1.showOne("view_fade");
         // _DEBUG.navBar1.showOne("view_hashCacheStats1");
         // _DEBUG.navBar1.showOne("view_layerObjects");
         // _DEBUG.navBar1.showOne("view_layerObjEdit");
@@ -2104,7 +2177,5 @@ var _DEBUG = {
 
         // Start the debug loop.
         // setTimeout(()=>this.debugTasks(), 1000);
-
-        console.log("new_DEBUG loaded");
     },
 };

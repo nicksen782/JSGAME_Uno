@@ -87,15 +87,10 @@ var _WEBW_V = {
                 }
 
                 case "_DEBUG.updateDebugTimings"     : {
-                    // console.log(e.data.data);
-                    // return e.data.data;
-                    // Send data to afterDraw.
-                    // _GFX.funcs.afterDraw(e.data.data, true);
-                    // _GFX.funcs.afterDraw(e.data.data, false);
-
-                    // if(_DEBUG.hashCache){
-                    //     _DEBUG.hashCache.display(e.data.data, true);
-                    // }
+                    // If debug is active and awaitDraw is active then run the debugTasks.
+                    if(_APP.debugActive && _APP.configObj.awaitDraw){
+                        _DEBUG.debugTasks(e.data.data);
+                    }
 
                     break;
                 }

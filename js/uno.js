@@ -534,11 +534,12 @@ _APP.utility = {
     },
 
     timeItData: {},
-    timeIt: function(key, func){
+    timeIt: function(key, func, value=false){
         // _APP.utility.timeIt("KEY_NAME", "start");
         // _APP.utility.timeIt("KEY_NAME", "stop");
         // _APP.utility.timeIt("KEY_NAME", "get");
         // _APP.utility.timeIt("KEY_NAME", "reset");
+        // _APP.utility.timeIt("KEY_NAME", "set", 14);
         // _APP.utility.timeIt("", "getAll");
         
         if     (func == "start"){
@@ -557,7 +558,10 @@ _APP.utility = {
             return this.timeItData[key].t;
         }
         else if(func == "get"){
-            return this.timeItData[key].t;
+            return this.timeItData[key] ? this.timeItData[key].t : 0;
+        }
+        else if(func == "set"){
+            return this.timeItData[key].t = value;
         }
         else if(func == "getAll"){
             let data = {};
@@ -608,7 +612,23 @@ _APP.loader = {
 
             // URL params can affect app settings.
             let params = _APP.utility.getUrlParams();
-            if( ("debug" in params && params.debug === '1') ? true : false ) { this.debugAuthCheck(params); }
+            if( ("debug" in params && params.debug === '1') ? true : false ) { 
+                // Make sure that debug can be activated.
+                this.debugAuthCheck(params); 
+
+                // Change these settings for debug mode.
+                if(_APP.debugActive){
+                    _APP.configObj.awaitDraw = true;
+                    // _APP.configObj.awaitDraw = false;
+                    // _APP.configObj.disableCache = true;
+                    // _APP.configObj.disableCache = false;
+                    // _APP.configObj.generateCoreImageDataAssets;
+                    // _APP.configObj.useGlobalOffsets = true;
+                    // _APP.configObj.useGlobalOffsets = false;
+                    // _APP.configObj.globalOffsets.x = 0;
+                    // _APP.configObj.globalOffsets.y = 0;
+                }
+            }
 
             // Download these files sequentially as some depend on the others.
             await _APP.utility.addFile( { f:"css/uno.css"                  , t:"css" }, relPath); // GAME

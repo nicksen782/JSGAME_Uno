@@ -803,66 +803,35 @@ var _GFX = {
             if(_APP.debugActive && _DEBUG){
                 if(data == ""){ return; }
 
-                // DRAW TIMINGS.
-                // if(forceGraphicsDataUsed){
-                //     _DEBUG.timingsDisplay.gfx.dataIsUsed = false;
-                // }
-                // else{
-                //     _DEBUG.timingsDisplay.gfx.updateCache(data); 
-                // }
-
-                // // HASH CACHE VIEWER
-                // if(_DEBUG.hashCache){
-                //     _DEBUG.hashCache.display(data, forceGraphicsDataUsed);
-                // }
-                // else{
-                //     // hashCacheStats
-                //     _DEBUG.hashCacheStats1_totalSize_all  = ( `${(data["totalSize_all"]/1000).toFixed(2)} KB` );
-                //     _DEBUG.hashCacheStats1_totalSize_temp = ( `${(data["totalSize_temp"]/1000).toFixed(2)} KB` );
-                //     _DEBUG.hashCacheStats1_totalSize_perm = ( `${(data["totalSize_perm"]/1000).toFixed(2)} KB` );
-                //     _DEBUG.hashCacheStats1_totalSum     = ( `${(data["totalSum"])}` );
-                //     _DEBUG.hashCacheStats1_totalSumTemp = ( `${(data["totalSumTemp"])}` );
-                //     _DEBUG.hashCacheStats1_totalSumPerm = ( `${(data["totalSumPerm"])}` );
+                // BACKGROUND COLOR CHANGES
+                if(data.newL1_bgColor){
+                    // Break out the rgb data.
+                    let [r,g,b,a] = data.newL1_bgColor;
+                    a = ( ( (a/255) * 100 ) |0 ) / 100;
     
-                //     _DEBUG.hashCacheStats1_hashCacheHashBASEsInUse = data["hashCacheHashBASEsInUse"];
-                //     _DEBUG.hashCacheStats1_hashCacheHashesInUse    = data["hashCacheHashesInUse"];
+                    // Create strings for comparison
+                    let currentString = _GFX.currentData.L1.canvas.style['background-color'];
+                    let newString;
+    
+                    // If the alpha is fully opaque then the browser will set to rgb, otherwise rgba. 
+                    if(a==1){ newString = `rgb(${r}, ${g}, ${b})`; }
+                    else    { newString = `rgba(${r}, ${g}, ${b}, ${a})`; }
                     
-                //     _DEBUG.hashCacheStats1_totalSum_genTimeAll  = data["totalSum_genTimeAll"]  ;
-                //     _DEBUG.hashCacheStats1_totalSum_genTimeTemp = data["totalSum_genTimeTemp"] ;
-                //     _DEBUG.hashCacheStats1_totalSum_genTimePerm = data["totalSum_genTimePerm"] ;
-    
-                //     // Sort so that the removeHashOnRemoval entries appear first.
-                //     _DEBUG.hashCacheStats1 = data.hashCacheStats
-                //     .sort((a, b) => {
-                //         if(a.removeHashOnRemoval.toString() >  b.removeHashOnRemoval.toString()){ return -1; }
-                //         if(a.removeHashOnRemoval.toString() <  b.removeHashOnRemoval.toString()){ return  1; }
-                //         if(a.removeHashOnRemoval.toString() == b.removeHashOnRemoval.toString()){ return  0; }
-                //     }); 
-                //     // .sort((a, b) => a.mapKey.localeCompare(b.mapKey));
-                // }
-            }
-
-            if(data.newL1_bgColor){
-                // Break out the rgb data.
-                let [r,g,b,a] = data.newL1_bgColor;
-                a = ( ( (a/255) * 100 ) |0 ) / 100;
-
-                // Create strings for comparison
-                let currentString = _GFX.currentData.L1.canvas.style['background-color'];
-                let newString;
-
-                // If the alpha is fully opaque then the browser will set to rgb, otherwise rgba. 
-                if(a==1){ newString = `rgb(${r}, ${g}, ${b})`; }
-                else    { newString = `rgba(${r}, ${g}, ${b}, ${a})`; }
-                
-                // Apply the new bgColorRgba if the currentString and newString do not match.
-                if(currentString!=newString){
-                    _GFX.currentData.L1.canvas.style['background-color'] = newString;
-                    // console.log(`Changed from: ${currentString} to ${newString}`, r,b,g,a);
+                    // Apply the new bgColorRgba if the currentString and newString do not match.
+                    if(currentString!=newString){
+                        _GFX.currentData.L1.canvas.style['background-color'] = newString;
+                        // console.log(`Changed from: ${currentString} to ${newString}`, r,b,g,a);
+                    }
+                    // else{
+                        // console.log(`SAME: DATA  : ${currentString} to ${newString}`, r,b,g,a);
+                    // }
                 }
-                // else{
-                    // console.log(`SAME: DATA  : ${currentString} to ${newString}`, r,b,g,a);
-                // }
+
+                // If debug is active and awaitDraw is active then run the debugTasks.
+                if(_APP.debugActive && _APP.configObj.awaitDraw){
+                    // console.log("normal afterDraw");
+                    _DEBUG.debugTasks(data);
+                }
             }
         },
     },

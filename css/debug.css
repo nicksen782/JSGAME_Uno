@@ -199,22 +199,26 @@ div#debug_test_alwaysVisible {
 
 .debug_progress-bar.level1,
 .debug_inner-bar.level1 {
-  background-color: #00cb0e;
+  background-color: #18a521;
 }
 .debug_progress-bar.level2,
 .debug_inner-bar.level2 {
-  background-color: #023dff;
+  background-color: #1a3cac;
 }
 .debug_progress-bar.level3,
 .debug_inner-bar.level3 {
-  background-color: #ffe200;
+  background-color: #a89922;
 }
 .debug_progress-bar.level4,
 .debug_inner-bar.level4 {
-  background-color: #da9c32;
+  background-color: #df9e2f;
 }
 .debug_progress-bar.level5,
 .debug_inner-bar.level5 {
+  background-color: #fa3131;
+}
+.debug_progress-bar.level6,
+.debug_inner-bar.level6 {
   background-color: #ff0000;
 }
 
@@ -524,4 +528,7 @@ button#debug_test_toggleGridCanvas {
 
 #debug_progressBar_canvas{
   border: 1px solid black;
+  /* background-color: lightsteelblue; */
+  /* background-color: khaki; */
+  background-color: darkgray;
 }

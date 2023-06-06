@@ -347,18 +347,13 @@ var gfxMainV5 = {
         messageFuncs.timings["gfx"].ALLCLEAR   = messageData.ALLCLEAR;
 
         if(debugActive){ 
-            // let ts = performance.now();
-            // this.updateDebugTimings();
-            // console.log(performance.now()-ts);
+            let ts = performance.now();
+            this.updateDebugTimings();
+            console.log(performance.now()-ts);
+            messageFuncs.timings["gfx"].updateDebugTimings = ts;
         }
 
         messageFuncs.timings["gfx"]["gfx"] = + timeIt("gfx", "get").toFixed(3);
-
-        // // Now that the timings are stored and will be sent, reset them.
-        // for(let i=0, len1=layerKeys.length; i<len1; i+=1){
-        //     this.clearTimingsValues(layerKeys[i]);
-        // }
-        // timeIt("gfx", "reset");
 
         // Return the timings.
         return messageFuncs.timings["gfx"];
@@ -1270,18 +1265,35 @@ var gfxMainV5 = {
                 debugActive = data.debugActive ?? false;
                 break; 
             }
-    
+            
             case "_DEBUG.updateDebugTimings"          : { 
-                // console.log("_DEBUG.updateDebugTimings: ");
-                gfxMainV5.updateDebugTimings();
-                returnData = messageFuncs.timings["gfx"];
+                if(data && data.dummy){
+                    // console.log("dummy:", data.dummy);
+                    
+                    // Get the keys to operate on.
+                    let keys = Object.keys(messageFuncs.timings["gfx"].ALLTIMINGS);
 
-                // CLEAR
-                for(let i=0, len1=this.layerKeys.length; i<len1; i+=1){
-                    this.clearTimingsValues(this.layerKeys[i]);
+                    // For each key reduce the value by 25% until 0.1. If < 0.1 then reduce to 0.
+                    let reducedTimings = {};
+
+                    for(let i=0, len=keys.length; i<len; i+=1){
+                        let key = keys[i];
+                        reducedTimings[key] = messageFuncs.timings["gfx"].ALLTIMINGS[key] / 10; 
+                        if(reducedTimings[key] < 0.1){ reducedTimings[key] = 0; }
+                    }
+
+                    // Replace the ALLTIMINGS with the reduced timings.
+                    // Keep the rest of messageFuncs.timings["gfx"] as it is.
+                    messageFuncs.timings["gfx"].ALLTIMINGS = reducedTimings;
+
+                    // Set the return data.
+                    returnData = messageFuncs.timings["gfx"];
                 }
-                timeIt("gfx", "reset");
-
+                else{
+                    // console.log("NOT dummy:", data);
+                    gfxMainV5.updateDebugTimings();
+                    returnData = messageFuncs.timings["gfx"];
+                }
                 break; 
             }
     

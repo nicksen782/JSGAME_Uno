@@ -68,7 +68,10 @@ function timeIt(key, func){
         return timeItData[key].t;
     }
     else if(func == "get"){
-        return timeItData[key].t;
+        return timeItData[key] ? timeItData[key].t : 0;
+    }
+    else if(func == "set"){
+        return timeItData[key].t = value;
     }
     else if(func == "getAll"){
         let data = {};
