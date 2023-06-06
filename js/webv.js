@@ -9,10 +9,10 @@ var _WEBW_V = {
         "clearAllLayers",
         "generateCoreImageDataAssets",
         // DEBUG
-        "_DEBUG.toggleDebugFlag",
+        "_new_DEBUG.toggleDebugFlag",
         "requestHashCacheEntry",
-        "_DEBUG.toggleCacheFlag",
-        "_DEBUG.updateDebugTimings",
+        "_new_DEBUG.toggleCacheFlag",
+        "_new_DEBUG.updateDebugTimings",
     ],
     
     // Allowed RECEIVE "modes."
@@ -24,10 +24,10 @@ var _WEBW_V = {
         "clearAllLayers",
         "generateCoreImageDataAssets",
         // DEBUG
-        "_DEBUG.toggleDebugFlag",
+        "_new_DEBUG.toggleDebugFlag",
         "requestHashCacheEntry",
-        "_DEBUG.toggleCacheFlag",
-        "_DEBUG.updateDebugTimings",
+        "_new_DEBUG.toggleCacheFlag",
+        "_new_DEBUG.updateDebugTimings",
     ],
     
     // Differed promises allow the system to wait for a response from the WebWorker.
@@ -86,7 +86,7 @@ var _WEBW_V = {
                     break;
                 }
 
-                case "_DEBUG.updateDebugTimings"     : {
+                case "_new_DEBUG.updateDebugTimings"     : {
                     // console.log(e.data.data);
                     // return e.data.data;
                     // Send data to afterDraw.

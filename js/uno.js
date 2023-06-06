@@ -655,10 +655,10 @@ _APP.loader = {
         await _WEBW_V.init();
         await _GFX.init();
         await _INPUT.customized.init(_APP.configObj.inputConfig);
-        if(_APP.debugActive && _DEBUG && _DEBUG.init){ await _DEBUG.init(); }
+        if(_APP.debugActive && _new_DEBUG && _new_DEBUG.init){ await _new_DEBUG.init(); }
         _APP.navBar1.init();
         
-        if(_APP.debugActive && _DEBUG && _DEBUG.init){ _APP.navBar1.showOne("view_debug"); }
+        if(_APP.debugActive && _new_DEBUG && _new_DEBUG.init){ _APP.navBar1.showOne("view_debug"); }
         else{
             _APP.navBar1.showOne("view_controls");
             // _APP.navBar1.showOne("view_input");

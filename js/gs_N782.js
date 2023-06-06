@@ -72,7 +72,7 @@ _APP.game.gamestates["gs_N782"] = {
         };
 
         // DEBUG
-        if(_APP.debugActive && _DEBUG){ this.debug(); }
+        if(_APP.debugActive && _new_DEBUG){ this.debug(); }
     },
 
     logoAnimations1 : function(){

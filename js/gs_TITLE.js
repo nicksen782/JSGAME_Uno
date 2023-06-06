@@ -235,7 +235,7 @@ _APP.game.gamestates["gs_TITLE"] = {
         else if(_APP.game.gs2 == "cardtest"){
         }
 
-        if(_APP.debugActive && _DEBUG){ this.debug(); }
+        if(_APP.debugActive && _new_DEBUG){ this.debug(); }
     },
 
     menuAction_playGameLocal  : function(){ _APP.game.changeGs1("gs_OPTIONS"); _APP.game.changeGs2("init"); },

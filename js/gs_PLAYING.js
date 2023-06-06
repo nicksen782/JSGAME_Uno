@@ -79,7 +79,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         // Run the debug init.
         if(_APP.debugActive && _DEBUG2){ 
             // DEBUG CURSOR.
-            _GFX.layerObjs.createOne(Cursor1, { x:5, y:5, layerObjKey: `debugCursor`   , layerKey: "L3", xyByGrid: true, settings:{rotation: 90} } );
+            _GFX.layerObjs.createOne(Cursor1, { x:5, y:5, layerObjKey: `debugCursor`   , layerKey: "L2", xyByGrid: true, settings:{rotation: 90} } );
             // _GFX.layerObjs.createOne(Cursor1, { x:5, y:6, layerObjKey: `debugCursor2`   , layerKey: "L3", xyByGrid: true, settings:{rotation: -90} } );
 
             _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); 
@@ -126,7 +126,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         
         // this.anims.add();
 
-        if(_APP.debugActive && _DEBUG){ this.debug(gpInput); }
+        if(_APP.debugActive && _new_DEBUG){ this.debug(gpInput); }
 
         // return; 
         if(_APP.game.gs2 == "gamestart"){

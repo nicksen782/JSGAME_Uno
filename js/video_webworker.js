@@ -36,10 +36,6 @@ const messageFuncs = {
     },
 };
 
-// Import the graphics modules (V4 or version 2).
-// importScripts("createGraphicsAssets.js");
-// importScripts("ww_sendGfxUpdatesV4.js");
-
 // Import the graphics module (V5 or version 5).
 importScripts("ww_gfxCoreV5.js");
 importScripts("ww_gfxMainV5.js");
@@ -258,10 +254,5 @@ self.onmessage = async function(event) {
     // VERSION 5 METHODS
     if(event.data.version == 5){ 
         gfxMainV5.messageHander(event);
-    }
-
-    // VERSION 2 METHODS
-    else if(event.data.version == 2){ 
-        messageFuncs.gfx.messageHander(event);
     }
 };

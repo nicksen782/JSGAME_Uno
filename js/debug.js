@@ -1,25 +1,5 @@
 // @ts-nocheck
 
-var _DEBUG = {
-};
-
-_DEBUG.init = async function(){
-    return new Promise(async (resolve,reject)=>{
-        await _new_DEBUG.init();
-
-        // _DEBUG.timingsDisplay.gfx.init();
-        // _DEBUG.timingsDisplay.loop.init();
-        // _DEBUG.timingsDisplay.debug.init();
-
-        // Init init2.
-        let ts_init2 = performance.now(); 
-        await _DEBUG2.init();
-        ts_init2 = performance.now() - ts_init2;
-        
-        resolve();
-    });
-}
-
 var _new_DEBUG = {
     // Displays a canvas on top of all canvases with a grid drawn to it.
     gridCanvas: {
@@ -187,43 +167,118 @@ var _new_DEBUG = {
             }, false);
 
             // DEBUG
+            let debug_inToggle = false;
             this.DOM.debugButton.addEventListener("click", ()=>{ 
-                _APP.debugActive = !_APP.debugActive;
-                if(_APP.debugActive){
-                    this.DOM.debugButton.classList.remove("debug_bgColor_off");
-                    this.DOM.debugButton.classList.add("debug_bgColor_on");
-                    this.DOM.debugButton.innerText = "ON";
-                } 
-                else {
-                    this.DOM.debugButton.classList.remove("debug_bgColor_on");
-                    this.DOM.debugButton.classList.add("debug_bgColor_off");
-                    this.DOM.debugButton.innerText = "OFF";
-                } 
-                _WEBW_V.SEND("_DEBUG.toggleDebugFlag", { 
-                    data: { debugActive: _APP.debugActive }, 
-                    refs:[]
-                }, false, false);
+                // Do not allow further toggles until this flag is false again.
+                if(debug_inToggle){ 
+                    // console.log("ALREADY IN DEBUG TOGGLE");
+                    return; 
+                }
+
+                // Set the toggle flag to true. 
+                debug_inToggle = true;
+
+                // Save the current running state for the gameloop and then pause the gameloop.
+                let wasRunning = _APP.game.gameLoop.running;
+                _APP.game.gameLoop.loop_stop(); 
+
+                // Wait before completing the task.
+                setTimeout(async ()=>{
+                    // Toggle the setting locally.
+                    _APP.debugActive = !_APP.debugActive;
+                    
+                    // Adjust the display of the toggle button.
+                    if(_APP.debugActive){
+                        this.DOM.debugButton.classList.remove("debug_bgColor_off");
+                        this.DOM.debugButton.classList.add("debug_bgColor_on");
+                        this.DOM.debugButton.innerText = "ON";
+                    } 
+                    else {
+                        this.DOM.debugButton.classList.remove("debug_bgColor_on");
+                        this.DOM.debugButton.classList.add("debug_bgColor_off");
+                        this.DOM.debugButton.innerText = "OFF";
+                    } 
+
+                    // Request and await the result.
+                    await _WEBW_V.SEND("_new_DEBUG.toggleDebugFlag", { 
+                        data: { debugActive: _APP.debugActive }, 
+                        refs:[]
+                    }, true, false);
+                    // Start the gameloop after a delay.
+                    if(wasRunning){
+                        setTimeout(()=>{
+                            // Start the loop.
+                            _APP.game.gameLoop.loop_start(); 
+
+                            // Clear the toggle flag.
+                            debug_inToggle = false;
+                        }, 1 * _APP.game.gameLoop.msFrame);
+                    }
+                    // Just clear the toggle flag.
+                    else{
+                        // Clear the toggle flag.
+                        debug_inToggle = false;
+                    }
+                }, 4 * _APP.game.gameLoop.msFrame);
             }, false);
 
             // HASH CACHE
-            this.DOM.toggleCacheButton.addEventListener("click", ()=>{ 
-                _APP.configObj.disableCache = !_APP.configObj.disableCache;
-                if(_APP.configObj.disableCache){
-                    this.DOM.toggleCacheButton.classList.remove("debug_bgColor_on");
-                    this.DOM.toggleCacheButton.classList.add("debug_bgColor_off");
-                    this.DOM.toggleCacheButton.innerText = "OFF";
-                } 
-                else {
-                    this.DOM.toggleCacheButton.classList.remove("debug_bgColor_off");
-                    this.DOM.toggleCacheButton.classList.add("debug_bgColor_on");
-                    this.DOM.toggleCacheButton.innerText = "ON";
-                } 
-                _WEBW_V.SEND("_DEBUG.toggleCacheFlag", { 
-                    data: { disableCache: _APP.configObj.disableCache }, 
-                    refs:[]
-                }, false, false);
-            }, false);
+            let hashCache_inToggle = false;
+            this.DOM.toggleCacheButton.addEventListener("click", async ()=>{ 
+                // Do not allow further toggles until this flag is false again.
+                if(hashCache_inToggle){ 
+                    // console.log("ALREADY IN HASHCACHE TOGGLE");
+                    return; 
+                }
 
+                // Set the toggle flag to true. 
+                hashCache_inToggle = true;
+
+                // Save the current running state for the gameloop and then pause the gameloop.
+                let wasRunning = _APP.game.gameLoop.running;
+                _APP.game.gameLoop.loop_stop(); 
+
+                // Wait before completing the task.
+                setTimeout(async ()=>{
+                    // Toggle the setting locally.
+                    _APP.configObj.disableCache = !_APP.configObj.disableCache;
+
+                    // Adjust the display of the toggle button.
+                    if(_APP.configObj.disableCache){
+                        this.DOM.toggleCacheButton.classList.remove("debug_bgColor_on");
+                        this.DOM.toggleCacheButton.classList.add("debug_bgColor_off");
+                        this.DOM.toggleCacheButton.innerText = "OFF";
+                    } 
+                    else {
+                        this.DOM.toggleCacheButton.classList.remove("debug_bgColor_off");
+                        this.DOM.toggleCacheButton.classList.add("debug_bgColor_on");
+                        this.DOM.toggleCacheButton.innerText = "ON";
+                    }
+
+                    // Request and await the result.
+                    await _WEBW_V.SEND("_new_DEBUG.toggleCacheFlag", { 
+                        data: { disableCache: _APP.configObj.disableCache }, 
+                        refs:[]
+                    }, true, false);
+
+                    // Start the gameloop after a delay.
+                    if(wasRunning){
+                        setTimeout(()=>{
+                            // Start the loop.
+                            _APP.game.gameLoop.loop_start(); 
+
+                            // Clear the toggle flag.
+                            hashCache_inToggle = false;
+                        }, 1 * _APP.game.gameLoop.msFrame);
+                    }
+                    // Just clear the toggle flag.
+                    else{
+                        // Clear the toggle flag.
+                        hashCache_inToggle = false;
+                    }
+                }, 4 * _APP.game.gameLoop.msFrame);
+
+            }, false);
 
             // Set initial toggle button states.
             this.setCurrentStates();
@@ -598,6 +653,12 @@ var _new_DEBUG = {
             return differences;
         },
         display:function(data, forced=false){
+            // If the hashCache is disabled then whatever data received may be incorrect. Skip.
+            if(_APP.configObj.disableCache){ 
+                // console.log(`hashCache.display: HASHCACHE IS DISABLED. _APP.configObj.disableCache: ${_APP.configObj.disableCache}`);
+                return; 
+            }
+
             // lastNormalrun
             // lastNormalrunWait
             // if(!this.values.lastForcedrun || performance.now() - this.values.lastForcedrun > this.values.lastForcedrunWait){
@@ -614,6 +675,12 @@ var _new_DEBUG = {
         },
         // Display of updated data.
         displayTop: function(newData){
+            // If the hashCache is disabled then whatever data received may be incorrect. Skip.
+            if(_APP.configObj.disableCache){ 
+                // console.log(`hashCache.display: HASHCACHE IS DISABLED. _APP.configObj.disableCache: ${_APP.configObj.disableCache}`);
+                return; 
+            }
+
             performance.mark('displayTop_Start');
 
             let top_changes = [];
@@ -828,6 +895,12 @@ var _new_DEBUG = {
             return data;
         },
         displayBottom: function(newData){
+            // If the hashCache is disabled then whatever data received may be incorrect. Skip.
+            if(_APP.configObj.disableCache){ 
+                // console.log(`hashCache.display: HASHCACHE IS DISABLED. _APP.configObj.disableCache: ${_APP.configObj.disableCache}`);
+                return; 
+            }
+
             performance.mark('displayBottom_Start');
 
             let hasChanges = false;
@@ -878,12 +951,14 @@ var _new_DEBUG = {
                     let newCount = newData.hashCacheStats2[key1][key2];
                     if( oldCount.innerText != newCount.size){ oldCount.innerText = newCount.size; }
 
-                    // Get the removals.
+                    // Get the removals and remove the value of undefined.
                     data.removals[key]  = new Set([...this.values.last_hashCacheStats2[key1][key2]].filter(x => !newData.hashCacheStats2[key1][key2].has(x)));
+                    data.removals[key].delete(undefined);
                     
-                    // Get the additions.
+                    // Get the additions and remove the value of undefined.
                     data.additions[key] = new Set([...newData.hashCacheStats2[key1][key2]]         .filter(x => !this.values.last_hashCacheStats2[key1][key2].has(x)));
-                    
+                    data.additions[key].delete(undefined);
+
                     // Update the stored current values. 
                     this.values.last_hashCacheStats2[key1][key2].clear()
                     for (let item of newData.hashCacheStats2[key1][key2]) {
@@ -895,9 +970,12 @@ var _new_DEBUG = {
                     // Remove the removals from the cloned nodes.
                     for(let hash of data.removals[key]){
                         let elem;
+                        // if(!hash){ console.log("REMOVE: Invalid hash", hash); continue; }
                         let cacheObj = newData.partial_hashCache.get(hash);
+
                         // After a hashCache clear it is very possible that the cacheObj does not have the former entries. 
                         if(!cacheObj){
+                            // console.log("REMOVE: Missing cacheObj", hash);
                             // if(!cacheObj.text){ continue; }
 
                             // We don't know the origin so we are just going to check all three and remove the element if we find it.
@@ -922,9 +1000,6 @@ var _new_DEBUG = {
                             }
                             continue; 
                         }
-                        // else if(!cacheObj.text){ 
-                            // continue; 
-                        // }
                         else if(cacheObj.origin == fragKeys[0]){ elem = data.fragments[key][fragKeys[0]].querySelector(`[hashcachehash='${hash.toString()}']`); if(elem){ count1 += 1; } }
                         else if(cacheObj.origin == fragKeys[1]){ elem = data.fragments[key][fragKeys[1]].querySelector(`[hashcachehash='${hash.toString()}']`); if(elem){ count2 += 1; } }
                         else if(cacheObj.origin == fragKeys[2]){ elem = data.fragments[key][fragKeys[2]].querySelector(`[hashcachehash='${hash.toString()}']`); if(elem){ count3 += 1; } }
@@ -941,7 +1016,12 @@ var _new_DEBUG = {
 
                     // Add the additions to the cloned nodes.
                     for(let hash of data.additions[key]){
+                        // if(!hash){ console.log("ADD: Invalid hash", hash, newData); continue; }
+
                         let cacheObj = newData.partial_hashCache.get(hash);
+
+                        if(!cacheObj){ console.log("ADD: Missing cacheObj", hash); continue; }
+                        
                         // if(!cacheObj.text){ continue; }
                         let entry = this.createEntryDiv(cacheObj);
                         if     (cacheObj.origin == fragKeys[0]){ data.fragments[key][fragKeys[0]].prepend(entry); count1 += 1; }
@@ -1027,7 +1107,7 @@ var _new_DEBUG = {
                 if(!this.values.lastForcedrun || performance.now() - this.values.lastForcedrun > this.values.lastForcedrunWait){
                     this.values.lastForcedrun = performance.now();
                     // Request the debug timings.
-                    await _WEBW_V.SEND("_DEBUG.updateDebugTimings", { 
+                    await _WEBW_V.SEND("_new_DEBUG.updateDebugTimings", { 
                         data: { }, 
                         refs:[]
                     }, false, true);
@@ -1171,8 +1251,8 @@ var _new_DEBUG = {
             this.contextMenu1_close();
 
             // Switch to the LayerObj Edit tab.
-            if(_DEBUG.navBar1){
-                _DEBUG.navBar1.showOne("view_layerObjEdit");
+            if(_new_DEBUG.navBar1){
+                _new_DEBUG.navBar1.showOne("view_layerObjEdit");
             }
             else if(_new_DEBUG.navBar1){
                 _new_DEBUG.navBar1.showOne("view_layerObjEdit")
@@ -1338,7 +1418,7 @@ var _new_DEBUG = {
             let fade;
     
             // TODO:
-            // oncontextmenu="event.preventDefault(); _DEBUG.loadLayerObj(gs_PLAYING, deckControl);"
+            // oncontextmenu="event.preventDefault(); _new_DEBUG.loadLayerObj(gs_PLAYING, deckControl);"
     
             let firstLayer = true; 
             for(let layerKey of layerKeys){ 
@@ -1827,10 +1907,10 @@ var _new_DEBUG = {
         _APP.utility.timeIt("debug_total", "start");
 
         // Set the debug is running flag.
-        _DEBUG.debugRunning = true; 
+        _new_DEBUG.debugRunning = true; 
 
         // Reset timers.
-        _APP.utility.timeIt("_DEBUG.updateDebugTimings", "reset");
+        _APP.utility.timeIt("_new_DEBUG.updateDebugTimings", "reset");
         _APP.utility.timeIt("layerObjs.display", "reset");
         _APP.utility.timeIt("hashCache.display", "reset");
         _APP.utility.timeIt("drawTimings.display", "reset");
@@ -1848,13 +1928,13 @@ var _new_DEBUG = {
         // REQUEST TIMING DATA.
         let newData;
         if(doDataRequest){
-            _APP.utility.timeIt("_DEBUG.updateDebugTimings", "start");
-            newData = await _WEBW_V.SEND("_DEBUG.updateDebugTimings", {
+            _APP.utility.timeIt("_new_DEBUG.updateDebugTimings", "start");
+            newData = await _WEBW_V.SEND("_new_DEBUG.updateDebugTimings", {
                 data:{},
                 refs:[]
             }, true, true);
             newData = newData.data;
-            _APP.utility.timeIt("_DEBUG.updateDebugTimings", "stop");
+            _APP.utility.timeIt("_new_DEBUG.updateDebugTimings", "stop");
         }
 
         // showGamestate VIEWER
@@ -1893,7 +1973,7 @@ var _new_DEBUG = {
         // Update changed elements. 
         this.updateIfChanged(document.getElementById("debug_timings_total")        , _APP.utility.timeIt("debug_total"              , "get").toFixed(1) + " ms");
         this.updateIfChanged(document.getElementById("debug_timings_doDataRequest"), doDataRequest ? "YES" : "NO");
-        this.updateIfChanged(document.getElementById("debug_timings_dataRequest")  , _APP.utility.timeIt("_DEBUG.updateDebugTimings", "get").toFixed(1) + " ms");
+        this.updateIfChanged(document.getElementById("debug_timings_dataRequest")  , _APP.utility.timeIt("_new_DEBUG.updateDebugTimings", "get").toFixed(1) + " ms");
         this.updateIfChanged(document.getElementById("debug_timings_hashCache")    , _APP.utility.timeIt("hashCache.display"        , "get").toFixed(1) + " ms");
         this.updateIfChanged(document.getElementById("debug_timings_layerObjs")    , _APP.utility.timeIt("layerObjs.display"        , "get").toFixed(1) + " ms");
         this.updateIfChanged(document.getElementById("debug_timings_drawTimings")  , _APP.utility.timeIt("drawTimings.display"      , "get").toFixed(1) + " ms");
@@ -1903,7 +1983,7 @@ var _new_DEBUG = {
         // if(this.runDebug_lastDuration > 8){
             // console.log(
             //     `DEBUG took this long: ${this.runDebug_lastDuration.toFixed(2)} ms` + 
-            //     `\n  _DEBUG.updateDebugTimings: ${_APP.utility.timeIt("_DEBUG.updateDebugTimings", "get").toFixed(2)} ms` +
+            //     `\n  _new_DEBUG.updateDebugTimings: ${_APP.utility.timeIt("_new_DEBUG.updateDebugTimings", "get").toFixed(2)} ms` +
             //     `\n  layerObjs.display        : ${_APP.utility.timeIt("layerObjs.display", "get").toFixed(2)} ms` +
             //     `\n  hashCache.display        : ${_APP.utility.timeIt("hashCache.display", "get").toFixed(2)} ms` +
             //     `\n  drawTimings.display      : ${_APP.utility.timeIt("drawTimings.display", "get").toFixed(2)} ms` +
@@ -1958,6 +2038,11 @@ var _new_DEBUG = {
                 // document.getElementById("outputContainer").append( document.getElementById("debug_test_gamestates") ); 
                 document.getElementById("outputContainer").append( document.getElementById("debug_sideDiv") ); 
     
+                // Init init2.
+                let ts_init2 = performance.now(); 
+                await _DEBUG2.init();
+                ts_init2 = performance.now() - ts_init2;
+
                 res(); 
             } );
         })();
