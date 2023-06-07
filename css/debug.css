@@ -292,9 +292,9 @@ div#debug_navBarViews3 {
 } */
 div#layerObjectList1 {
   font-family: monospace;
-  white-space: pre;
-  height: 500px;
-  max-height: 500px;
+  /* white-space: pre; */
+  height: 480px;
+  max-height: 480px;
   overflow-y: auto;
 }
 
@@ -417,7 +417,7 @@ div#debug_hashCacheList1 {
 .hashCacheStats1_entry:hover{background-color: dodgerblue;}
 /* .hashCacheStats1_entry_perm{font-weight: bold;} */
 
-.layerObjectsStats1_entry{cursor: pointer;display: block;}
+.layerObjectsStats1_entry{cursor: pointer;display: block;font-family: monospace;white-space: pre;}
 .layerObjectsStats1_entry:nth-child(odd)  { background-color:darkgray; }
 .layerObjectsStats1_entry:nth-child(even) { background-color:lightgray; }
 .layerObjectsStats1_entry:hover{background-color: dodgerblue;}

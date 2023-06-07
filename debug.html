@@ -197,24 +197,56 @@
         </div>
         <div id="debug_navBarViews3">
             <div id="debug_navBar3_view_all_base" class="controls_navBarViews">
+                <label class="debug_title">ORIGIN_CUSTOM:</label>
                 <div id="debug_hashCacheSection_view_all_base_ORIGIN_CUSTOM"></div>
+                <br>
+
+                <label class="debug_title">ORIGIN_USER:</label>
                 <div id="debug_hashCacheSection_view_all_base_ORIGIN_USER"></div>
+                <br>
+
+                <label class="debug_title">ORIGIN_BASE:</label>
                 <div id="debug_hashCacheSection_view_all_base_ORIGIN_BASE"></div>
+                <br>
             </div>
             <div id="debug_navBar3_view_all_copy" class="controls_navBarViews">
+                <label class="debug_title">ORIGIN_CUSTOM_MODIFIED:</label>
                 <div id="debug_hashCacheSection_view_all_copy_ORIGIN_CUSTOM_MODIFIED"></div>
+                <br>
+
+                <label class="debug_title">ORIGIN_USER_MODIFIED:</label>
                 <div id="debug_hashCacheSection_view_all_copy_ORIGIN_USER_MODIFIED"></div>
+                <br>
+                
+                <label class="debug_title">ORIGIN_BASE_MODIFIED:</label>
                 <div id="debug_hashCacheSection_view_all_copy_ORIGIN_BASE_MODIFIED"></div>
+                <br>
             </div>
             <div id="debug_navBar3_view_perm_base" class="controls_navBarViews">
+                <label class="debug_title">ORIGIN_CUSTOM:</label>
                 <div id="debug_hashCacheSection_view_perm_base_ORIGIN_CUSTOM"></div>
+                <br>
+
+                <label class="debug_title">ORIGIN_USER:</label>
                 <div id="debug_hashCacheSection_view_perm_base_ORIGIN_USER"></div>
+                <br>
+
+                <label class="debug_title">ORIGIN_BASE:</label>
                 <div id="debug_hashCacheSection_view_perm_base_ORIGIN_BASE"></div>
+                <br>
             </div>
             <div id="debug_navBar3_view_temp_base" class="controls_navBarViews">
+                <label class="debug_title">ORIGIN_CUSTOM:</label>
                 <div id="debug_hashCacheSection_view_temp_base_ORIGIN_CUSTOM"></div>
+                <br>
+
+                <label class="debug_title">ORIGIN_USER:</label>
                 <div id="debug_hashCacheSection_view_temp_base_ORIGIN_USER"></div>
+                <br>
+
+                <label class="debug_title">ORIGIN_BASE:</label>
                 <div id="debug_hashCacheSection_view_temp_base_ORIGIN_BASE"></div>
+                <br>
             </div>
         </div>
 
@@ -230,7 +262,26 @@
             <div id="debug_layerObjects_refreshLast">Refreshed: </div>
         </div>
 
-        <div id="layerObjectList1"></div>
+        <!--  -->
+        <div id="layerObjectList1">
+            <label class="debug_title">LAYER: L4:</label>
+            <div id="debug_layerObjectList1_L4"></div>
+            <br>
+
+            <label class="debug_title">LAYER: L2:</label>
+            <div id="debug_layerObjectList1_L3"></div>
+            <br>
+            
+            <label class="debug_title">LAYER: L3:</label>
+            <div id="debug_layerObjectList1_L2"></div>
+            <br>
+
+            <label class="debug_title">LAYER: L4:</label>
+            <div id="debug_layerObjectList1_L1"></div>
+            <br>
+
+        </div>
+
         <div id="debug_layerObjEdit_contextMenu1">
             <table class="debug_table">
                 <tr> 
@@ -633,20 +684,14 @@
                 <td class="debug_td_header2">HashCache</td>
                 <td class="debug_td_header2">DrawTimings</td>
                 <td class="debug_td_header2">Bars</td>
+                <td class="debug_td_header2">LayerObjs</td>
+                <td class="debug_td_header2">showGamestate</td>
             </tr>
             <tr>
                 <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_total"></td>
                 <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_hashCache"></td>
                 <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_drawTimings"></td>
                 <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_bars"></td>
-            </tr>
-        </table>
-        <table class="debug_table">
-            <tr>
-                <td class="debug_td_header2">LayerObjs</td>
-                <td class="debug_td_header2">showGamestate</td>
-            </tr>
-            <tr>
                 <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_layerObjs"></td>
                 <td class="debug_td_short2 debug_monospace debug_center" id="debug_timings_showGamestate"></td>
             </tr>

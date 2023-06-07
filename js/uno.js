@@ -534,7 +534,7 @@ _APP.utility = {
     },
 
     timeItData: {},
-    timeIt: function(key, func, value=false){
+    timeIt: function(key, func, value=0){
         // _APP.utility.timeIt("KEY_NAME", "start");
         // _APP.utility.timeIt("KEY_NAME", "stop");
         // _APP.utility.timeIt("KEY_NAME", "get");
@@ -543,18 +543,12 @@ _APP.utility = {
         // _APP.utility.timeIt("", "getAll");
         
         if     (func == "start"){
-            if(!this.timeItData[key]){ 
-                this.timeItData[key] = { t:0, s:0, e:0 }; 
-            }
-            this.timeItData[key].s = performance.now();
-            this.timeItData[key].e = performance.now();
-            this.timeItData[key].t = performance.now();
+            this.timeItData[key] = { t:0, s:performance.now(), e:0 };
             return this.timeItData[key].t;
         }
         else if(func == "stop"){
-            this.timeItData[key].t = performance.now() - this.timeItData[key].s;
-            this.timeItData[key].s = 0;
-            this.timeItData[key].e = 0;
+            this.timeItData[key].e = performance.now();
+            this.timeItData[key].t = this.timeItData[key].e - this.timeItData[key].s;
             return this.timeItData[key].t;
         }
         else if(func == "get"){
@@ -571,12 +565,7 @@ _APP.utility = {
             return data;
         }
         else if(func == "reset"){
-            if(!this.timeItData[key]){ 
-                this.timeItData[key] = { t:0, s:0, e:0 }; 
-            }
-            this.timeItData[key].t = 0;
-            this.timeItData[key].s = 0;
-            this.timeItData[key].e = 0;
+            this.timeItData[key] = { t:0, s:0, e:0 };
             return this.timeItData[key].t;
         }
     },

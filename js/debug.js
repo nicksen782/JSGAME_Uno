@@ -583,10 +583,6 @@ var _DEBUG = {
                 PERM: { base: new Set(), baseHash: null },
                 TEMP: { base: new Set(), baseHash: null },
             },
-
-            // hashCacheStats1                         : {},
-            // hashCacheStats1_hashCacheHashBASEsInUse : [],
-            // hashCacheStats1_hashCacheHashesInUse    : [],
         },
         // Requests that the WebWorker send the requested data to the console.
         toConsole: function(title, hash, hashBase){
@@ -657,6 +653,13 @@ var _DEBUG = {
             if(_APP.configObj.disableCache){ 
                 // console.log(`hashCache.display: HASHCACHE IS DISABLED. _APP.configObj.disableCache: ${_APP.configObj.disableCache}`);
                 return; 
+            }
+
+            // Do not update if the tab is not active.
+            let tab = _DEBUG.navBar1.DOM.view_hashCacheStats1.tab;
+            if(!tab.classList.contains("active")){ 
+                // console.log("tab not active"); 
+                return false; 
             }
 
             // lastNormalrun
@@ -1117,8 +1120,20 @@ var _DEBUG = {
     },
     // Manages the LayerObjs viewer/editor.
     layerObjs : {
+        changes: {
+            L1: false,
+            L2: false,
+            L3: false,
+            L4: false,
+        },
         DOM:{
             "contextMenu1": "debug_layerObjEdit_contextMenu1",
+
+            // Layer divs (L1 - L4)
+            "L1_div"   : "debug_layerObjectList1_L1",
+            "L2_div"   : "debug_layerObjectList1_L2",
+            "L3_div"   : "debug_layerObjectList1_L3",
+            "L4_div"   : "debug_layerObjectList1_L4",
 
             // SHARED
             "className"   : "debug_layerObjEdit_contextMenu1_className",
@@ -1151,6 +1166,18 @@ var _DEBUG = {
             "cardTableDiv" : "debug_cardTableDiv",
             "cardTable_attributes" : "debug_cardTable_attributes",
         },
+        srcDOM: {
+            L1: null, 
+            L2: null, 
+            L3: null, 
+            L4: null, 
+        },
+        frags: {
+            L1: null, 
+            L2: null, 
+            L3: null, 
+            L4: null, 
+        },
         highlightCanvas   : null,
         highlightCanvasCtx: null,
         lastNormalrun: 0,
@@ -1164,6 +1191,11 @@ var _DEBUG = {
             for(let elemKey in this.DOM){
                 this.DOM[elemKey] = document.getElementById(this.DOM[elemKey]);
             }
+
+            this.srcDOM.L1 = this.DOM.L1_div;
+            this.srcDOM.L2 = this.DOM.L2_div;
+            this.srcDOM.L3 = this.DOM.L3_div;
+            this.srcDOM.L4 = this.DOM.L4_div;
 
             // Create and add the highlight canvas to the top.
             // Save the canvas and the draw context.
@@ -1198,6 +1230,20 @@ var _DEBUG = {
                     this.display(true);
                 }
             }, false);
+
+            // Delegated listener.
+            let divs = [
+                this.DOM.L1_div,
+                this.DOM.L2_div,
+                this.DOM.L3_div,
+                this.DOM.L4_div
+            ];
+            for(let elem of divs){
+                elem.addEventListener("click"      , (e)=>this.delegatedListener(e), true);
+                elem.addEventListener("contextmenu", (e)=>this.delegatedListener(e), true);
+                elem.addEventListener("mouseenter" , (e)=>this.delegatedListener(e), true);
+                elem.addEventListener("mouseleave" , (e)=>this.delegatedListener(e), true);
+            }
         },
         
         // ** VIEWER **
@@ -1343,7 +1389,7 @@ var _DEBUG = {
         },
         display: function(forced){
             // Do not update if the tab is not active.
-            let tab = document.getElementById("debug_navBar1_tab_layerObjects");
+            let tab = _DEBUG.navBar1.DOM.view_layerObjects.tab;
             if(!tab.classList.contains("active")){ 
                 // console.log("tab not active"); 
                 return false; 
@@ -1351,22 +1397,15 @@ var _DEBUG = {
 
             // lastNormalrun
             // lastNormalrunWait
-            let updated1;
-            if(forced || !this.lastForcedrun || performance.now() - this.lastForcedrun > this.lastForcedrunWait){
-                this.lastForcedrun = performance.now();
+            // let updated1;
+            // if(forced || !this.lastForcedrun || performance.now() - this.lastForcedrun > this.lastForcedrunWait){
+                // this.lastForcedrun = performance.now();
                 updated1 = this.displayLayerObjects();
-            }
+            // }
 
             if(updated1){
                 let newText = `Refreshed: ${this.getFormattedDateTime()}`;
-                if(this.DOM.refreshLast.innerText != newText){
-                    this.DOM.refreshLast.innerText = newText;
-                    return true;
-                }
-                else{
-                    // console.log("1 layerObjs: no display update needed.");
-                    return false;
-                }
+                return _DEBUG.updateIfChanged2(this.DOM.refreshLast, "_DEBUG.vault.layerObjs.lastRefresh", newText )
             }
             else{
                 // console.log("2 layerObjs: no display update needed.");
@@ -1376,119 +1415,195 @@ var _DEBUG = {
         displayLayerObject_console: function(gs, key){
             data = _GFX.layerObjs.objs[gs][key];
             console.log(`LAYER OBJECT ENTRY: gs: '${gs}', key: '${key}'`);
-            console.log("  ", data);
             console.log(`  ACCESS: _GFX.layerObjs.objs['${gs}']['${key}']`);
+            console.log("  DATA  :", data);
+        },
+        
+
+        lastLayerHashes: {
+            L1: 0,
+            L2: 0,
+            L3: 0,
+            L4: 0,
+        },
+        createChildNodeClone: function(srcs=[]){
+            let arr = [];
+            for(let src of srcs){
+                let frag = document.createDocumentFragment();
+                let children = src.childNodes;
+                for (let child of children) { frag.appendChild(child.cloneNode(true)); }
+                arr.push(frag);
+            }
+            return arr; 
+        },
+        createEntryDiv: function(data){
+            let div_container = document.createElement("div");
+            div_container.classList.add("layerObjectsStats1_entry");
+            div_container.setAttribute("layerObjKey", data.layerObjKey);
+            div_container.setAttribute("layerKey"   , data.layerKey);
+            div_container.setAttribute("className"  , data.className);
+
+            let w = data.tmap[0];
+            let h = data.tmap[1];
+            let x = data.x;
+            let y = data.y;
+            if(data.xyByGrid){
+                w = w * _APP.configObj.dimensions.tileWidth;
+                h = h * _APP.configObj.dimensions.tileHeight;
+                x = x * _APP.configObj.dimensions.tileWidth;
+                y = y * _APP.configObj.dimensions.tileHeight;
+            }
+
+            let coords     = `x: ${x}, y: ${y}`;
+            let className  = `${data.className.padEnd(12, " ")}`;
+            let name       = `${data.layerObjKey}`;
+            let dims       = `w: ${w}, h: ${h}`;
+            let fade = data.settings.fade;
+            fade = typeof fade !== "number" ? "OFF" : fade;
+            let settingsDifferences = this.getSettingsDifferences(_GFX.defaultSettings, data.settings);
+            let activeSettingsArray = [];
+            let settings = ``;
+            for(let key in settingsDifferences){
+                activeSettingsArray.push(`${key.slice(0,3)}:${settingsDifferences[key]}`);
+            }
+            settings = activeSettingsArray.join(", ");
+
+            div_container.innerText = `` +
+            `${className} : ${name}` +
+            `\n  C: ${coords}, D: ${dims}` +
+            `\n  S: ${settings}` + 
+            `\n  P: ${data.text ? "(TEXT): '" + data.text.slice(0, 40) + "'" : ""}` +
+            ``;
+
+            return div_container;
+        },
+        delegatedListener: function(e){
+            let elem = e.target;
+            let isEntry = elem.classList.contains("layerObjectsStats1_entry");
+            if(!isEntry){ 
+                // console.log("NOT AN ENTRY", elem);
+                return; 
+            }
+
+            if(e.type == "click")      {
+                let layerObjKey = elem.getAttribute("layerObjKey");
+                let data = _GFX.layerObjs.objs[_APP.game.gs1][layerObjKey];
+                _DEBUG.layerObjs.displayLayerObject_console(_APP.game.gs1, data.layerObjKey);
+            }
+            if(e.type == "contextmenu"){
+                e.preventDefault(); 
+                let layerObjKey = elem.getAttribute("layerObjKey");
+                _DEBUG.layerObjs.contextMenu1_open( e, _APP.game.gs1, layerObjKey );
+            }
+            if(e.type == "mouseenter") {
+                let layerObjKey = elem.getAttribute("layerObjKey");
+                let data = _GFX.layerObjs.objs[_APP.game.gs1][layerObjKey];
+                let w = data.tmap[0];
+                let h = data.tmap[1];
+                let x = data.x;
+                let y = data.y;
+                if(data.xyByGrid){
+                    w = w * _APP.configObj.dimensions.tileWidth;
+                    h = h * _APP.configObj.dimensions.tileHeight;
+                    x = x * _APP.configObj.dimensions.tileWidth;
+                    y = y * _APP.configObj.dimensions.tileHeight;
+                }
+                _DEBUG.layerObjs.highlightOnHover(x, y, w, h, data.settings.rotation);
+            }
+            if(e.type == "mouseleave") { _DEBUG.layerObjs.highlightOnHover(0, 0, 0, 0, 0); }
         },
         displayLayerObjects: function(){
-            // Display the layerObjects for the current gamestate.
-            // Display the layeKeys in reverse order (L4 on top.)
-            // Display the layerObjects in reverse draw order (last on top.)
-            // let tab = document.getElementById("debug_navBar1_tab_layerObjects");
-            // if(!tab.classList.contains("active")){ return false; }
-
-            let elem = document.getElementById("layerObjectList1");
-            if(!elem.hasAttribute("onmouseleave")){
-                elem.setAttribute("onmouseleave", "_DEBUG.layerObjs.highlightOnHover(0, 0, 0, 0, 0);"); 
-            }
-    
             // If the gamestate key is not in layerObjs then return.
             if(! ( _APP.game.gs1 in _GFX.layerObjs.objs ) ){ return false; }
-    
-            // Get the list of layer keys and reverse them. 
-            let layerKeys = Object.keys(_GFX.currentData).reverse();
+ 
+            // Get the list of layer keys.
+            let layerKeys = Object.keys(_GFX.currentData);
             
-            // Get the list of layerObject keys and reverse them. 
-            let layerObjKeys = Object.keys(_GFX.layerObjs.objs[_APP.game.gs1]).reverse();
-    
-            // Get the current text.
-            let oldHash = elem.getAttribute("hash");
-            let newText = ``;
-    
-            // Go through all layer keys.
-            let layerTextSet = false;
-            let coords;
-            let name;
-            let dims;
-            let rotation;
-            let settings;
-            let fade;
-    
-            // TODO:
-            // oncontextmenu="event.preventDefault(); _DEBUG.loadLayerObj(gs_PLAYING, deckControl);"
-    
-            let firstLayer = true; 
-            for(let layerKey of layerKeys){ 
-                layerTextSet = false;
-    
-                // Go through all layerObjects for this gamestate.
-                for(let layerObjKey of layerObjKeys){ 
-                    // Break-out the data.
-                    data = _GFX.layerObjs.objs[_APP.game.gs1][layerObjKey];
-                    
-                    // Only work with layerObjs on the current layer. 
-                    if(data.layerKey == layerKey){
-                        // Display the layer header?
-                        if(!layerTextSet){ 
-                            if(!firstLayer){
-                                newText += "\n" + `LAYER: ${data.layerKey}:\n`; layerTextSet = true; 
-                            }
-                            else{
-                                newText += `LAYER: ${data.layerKey}:\n`; layerTextSet = true; 
-                                firstLayer = false; 
-                            }
-                            
-                        }
-                        
-                        let w = data.tmap[0];
-                        let h = data.tmap[1];
-                        let x = data.x;
-                        let y = data.y;
-                        if(data.xyByGrid){
-                            w = w * _APP.configObj.dimensions.tileWidth;
-                            h = h * _APP.configObj.dimensions.tileHeight;
-                            x = x * _APP.configObj.dimensions.tileWidth;
-                            y = y * _APP.configObj.dimensions.tileHeight;
-                        }
-                        // coords = `${data.x.toString().padStart(3, " ")}, ${data.y.toString().padStart(3, " ")}`;
-                        coords     = `x: ${data.x}, y: ${data.y}`;
-                        name       = `${layerObjKey.padEnd(16, " ")}`;
-                        dims       = `w: ${w}, h: ${h}`;
-                        fade = data.settings.fade;
-                        fade = typeof fade !== "number" ? "OFF" : fade;
-    
-                        let settingsDifferences = this.getSettingsDifferences(_GFX.defaultSettings, data.settings);
-                        let activeSettingsArray = [];
-                        let settings = ``;
-                        for(let key in settingsDifferences){
-                            activeSettingsArray.push(`${key}:${settingsDifferences[key]}`);
-                        }
-                        settings = activeSettingsArray.join(", ");
-    
-                        // settings = `fade: ${fade}, xFlip: ${data.settings.xFlip?"ON ":"OFF"}, yFlip: ${data.settings.yFlip?"ON ":"OFF"}, rotation: ${data.settings.rotation??0}`;
-    
-                        // Update the newText string.
-                        newText += `<div ` +
-                        `onmouseenter="_DEBUG.layerObjs.highlightOnHover(${x}, ${y}, ${w}, ${h}, ${data.settings.rotation});"` + 
-                        `oncontextmenu="event.preventDefault(); _DEBUG.layerObjs.contextMenu1_open(event, '${_APP.game.gs1}','${layerObjKey}');" ` +
-                        `onclick="_DEBUG.layerObjs.displayLayerObject_console('${_APP.game.gs1}','${layerObjKey}');" ` +
-                        `class="layerObjectsStats1_entry">` +
-                        `${name} : ${data.className}\n  (${coords} ${dims})` +
-                        `\n  ${settings}` + 
-                        `\n  ` + 
-                        `${data.text ? "(TEXT): '" + data.text.slice(0, 40) + "'" : ""}` +
-                        `</div>`;
+            /*
+            Go through each layer.
+            Only operate on layers that had changes.
+            Clone the current div.
+            Get the list of layerObjKeys for the layer.
+            Search the clone for all elems that need to be removed.
+            Update elems or add as needed.
+            Use the fragment to replace the children elems of the current div.
+            */
+           
+           // Set the hasChanges flag to initially be false.
+           let hasChanges = false;
+
+           // Go through each layer key...
+           for(let layerKey of layerKeys){ 
+               // Only operate on layers that had changes.
+               if(!_DEBUG.layerObjs.changes[layerKey]){ continue; }
+
+               // Set the hasChanges flag.
+               if(!hasChanges){ hasChanges = true; }
+
+                // Clone the current div.
+                [ this.frags[layerKey] ] = this.createChildNodeClone( [ this.srcDOM[layerKey] ] );
+
+                // Get the current list of entries for this layer.
+                let elems = this.frags[layerKey].querySelectorAll(`.layerObjectsStats1_entry`);
+
+                // Determine the layerObjKeys for this layer.
+                let loks_thisLayer = new Set();
+                for(let key in _GFX.layerObjs.objs[_APP.game.gs1]){
+                    if(_GFX.layerObjs.objs[_APP.game.gs1][key].layerKey == layerKey){
+                        loks_thisLayer.add(key);
                     }
                 }
+
+                // Remove elems that do not match a layerObj.
+                if(elems.length){
+                    for(let elem of elems){ 
+                        let elemLayerObjKey = elem.getAttribute("layerObjKey");
+                        if(!loks_thisLayer.has(elemLayerObjKey)){ 
+                            elem.remove();
+                        }
+                    }
+                    
+                }
+
+                // Go through the layerObjKeys for this layer. Update or add as needed.
+                for(let layerObjKey of loks_thisLayer){ 
+                    // Break-out the data.
+                    let data = _GFX.layerObjs.objs[_APP.game.gs1][layerObjKey];
+
+                    // Get this elem.
+                    let elem = this.frags[layerKey].querySelector(`.layerObjectsStats1_entry[layerObjKey='${layerObjKey}']`);
+
+                    // Create the replacement entry.
+                    let entry = this.createEntryDiv(data);
+
+                    // Was the elem found? 
+                    if(elem){
+                        // Does the elem match the entry?
+                        let same = elem.isEqualNode(entry);
+
+                        // Not the same?
+                        if(!same){
+                            // Replace the old elem with the new entry elem.
+                            this.frags[layerKey].replaceChild(entry, elem);
+                        }
+                    }
+
+                    // Elem not found. Add the element. 
+                    else{
+                        // Add the entry.
+                        this.frags[layerKey].prepend( entry );
+                    }
+                }
+
+                // Add the frag back to the source.
+                this.srcDOM[layerKey].replaceChildren(this.frags[layerKey]);
+
+                // Clear the layer changes flag.
+                _DEBUG.layerObjs.changes[layerKey] = false;
             }
-    
-            // If the newText is different than the currentText replace the elem.innerText with the newText.
-            let newHash = _GFX.utilities.djb2Hash( newText );
-            if(oldHash != newHash){
-                // console.log("Changing", maxLen);
-                elem.innerHTML = newText;
-                elem.setAttribute("hash", newHash);
-                return true;
-            }
+
+            // Return true on hasChanges and false if not hashChanges.
+            if(hasChanges){ return true; }
             return false;
         },
 
@@ -1950,6 +2065,9 @@ var _DEBUG = {
 
     // Stores values for later compare (and update.) (Needed by updateIfChanged2.)
     vault: {
+        layerObjs: {
+            lastRefresh: "",
+        },
         frameCounters:{
             "frameCounter"          : 0,
             "frameDrawCounter"      : 0,
@@ -2039,7 +2157,9 @@ var _DEBUG = {
 
             // Update the value in the vault.
             this.updateReference(window, oldValueRefStr, newValue);
+            return true;
         }
+        return false;
     },
 
     // ** DEBUG TASK RUNNER **
@@ -2080,11 +2200,11 @@ var _DEBUG = {
         this.runDebug_last = performance.now();
         
         // Reset timers.
-        _APP.utility.timeIt("debug_total", "reset");
-        _APP.utility.timeIt("layerObjs.display", "reset");
-        _APP.utility.timeIt("hashCache.display", "reset");
-        _APP.utility.timeIt("drawTimings.display", "reset");
-        _APP.utility.timeIt("bars.display", "reset");
+        _APP.utility.timeIt("debug_total",           "reset");
+        _APP.utility.timeIt("layerObjs.display",     "reset");
+        _APP.utility.timeIt("hashCache.display",     "reset");
+        _APP.utility.timeIt("drawTimings.display",   "reset");
+        _APP.utility.timeIt("bars.display",          "reset");
         _APP.utility.timeIt("showGamestate.display", "reset");
         
         _APP.utility.timeIt("debug_total", "start");
@@ -2130,8 +2250,8 @@ var _DEBUG = {
         performance.mark('END_bars.display');
 
         // Add the bars.display time to the debug_total time.
-        _APP.utility.timeIt("debug_total", "set", _APP.utility.timeIt("bars.display", "get") + _APP.utility.timeIt("debug_total", "get"));
-        _DEBUG.updateTimingBars.display_one("debugBar", newData);
+        // _APP.utility.timeIt("debug_total", "set", _APP.utility.timeIt("bars.display", "get") + _APP.utility.timeIt("debug_total", "get"));
+        // _DEBUG.updateTimingBars.display_one("debugBar", newData);
 
         performance.mark('END_debug_total');
 
@@ -2152,11 +2272,7 @@ var _DEBUG = {
 
         // if(this.runDebug_lastDuration > 8){
             // console.log(
-            //     `DEBUG took this long: ${this.runDebug_lastDuration.toFixed(2)} ms` + 
-            //     `\n  _DEBUG.updateDebugTimings: ${_APP.utility.timeIt("_DEBUG.updateDebugTimings", "get").toFixed(2)} ms` +
-            //     `\n  layerObjs.display        : ${_APP.utility.timeIt("layerObjs.display", "get").toFixed(2)} ms` +
-            //     `\n  hashCache.display        : ${_APP.utility.timeIt("hashCache.display", "get").toFixed(2)} ms` +
-            //     `\n  drawTimings.display      : ${_APP.utility.timeIt("drawTimings.display", "get").toFixed(2)} ms` +
+            //     `DEBUG took this long: ${_APP.utility.timeIt("debug_total"              , "get").toFixed(2)} ms` + 
             //     ``
             // );
         // }

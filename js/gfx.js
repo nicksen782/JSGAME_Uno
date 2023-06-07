@@ -358,6 +358,13 @@ var _GFX = {
                     }
                 }
 
+                // Save the layerChange if debug mode is on (for _DEBUG.layerObjs.)
+                if(_APP.debugActive){
+                    if(layer.changes){
+                        _DEBUG.layerObjs.changes[layerKey] = true;
+                    }
+                }
+
                 // Clear the changes flag.
                 layer.changes = false;
 
