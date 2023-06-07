@@ -349,7 +349,7 @@ var gfxMainV5 = {
         if(debugActive){ 
             let ts = performance.now();
             this.updateDebugTimings();
-            console.log(performance.now()-ts);
+            // console.log(performance.now()-ts);
             messageFuncs.timings["gfx"].updateDebugTimings = ts;
         }
 

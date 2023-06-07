@@ -518,8 +518,8 @@ var _DEBUG = {
             this.DOM.GS2Text         = document.getElementById("debug_GS2Text");
         },
         display: function(){
-            _DEBUG.updateIfChanged(this.DOM.GS1Text        , _APP.game.gs1.trim() );
-            _DEBUG.updateIfChanged(this.DOM.GS2Text        , _APP.game.gs2.trim() );
+            _DEBUG.updateIfChanged2(this.DOM.GS1Text, "_DEBUG.vault.gamestate.gs1", _APP.game.gs1 );
+            _DEBUG.updateIfChanged2(this.DOM.GS2Text, "_DEBUG.vault.gamestate.gs2", _APP.game.gs2 );
 
             if(this.DOM.changeGs1Select.value != _APP.game.gs1){
                 this.DOM.changeGs1Select.value = _APP.game.gs1;
@@ -681,14 +681,10 @@ var _DEBUG = {
                 return; 
             }
 
-            performance.mark('displayTop_Start');
-
             let top_changes = [];
             let lhcs2 = newData.hashCacheStats2;
             if(!lhcs2){
                 console.log("MISSING: newData.hashCacheStats2");
-                performance.mark('displayTop_End');
-                performance.measure('displayTop', 'displayTop_Start', 'displayTop_End');
                 return false;
             }
 
@@ -725,14 +721,9 @@ var _DEBUG = {
                     rec.elem.innerText = rec.value;
                 }
 
-                performance.mark('displayTop_End');
-                performance.measure('displayTop', 'displayTop_Start', 'displayTop_End');
-
                 return true;
             }
 
-            performance.mark('displayBottom_End');
-            performance.measure('displayTop', 'displayTop_Start', 'displayTop_End');
             return false;
         },
         
@@ -913,8 +904,6 @@ var _DEBUG = {
 
             if(!newData.hashCacheStats2){
                 console.log("MISSING: newData.hashCacheStats2");
-                performance.mark('displayBottom_End');
-                performance.measure('displayBottom', 'displayBottom_Start', 'displayBottom_End');
                 return false;
             }
 
@@ -928,9 +917,6 @@ var _DEBUG = {
                 !data.hasChanges.BASE_PERM &&
                 !data.hasChanges.BASE_TEMP
             ){
-                performance.mark('displayBottom_End');
-                performance.measure('displayBottom', 'displayBottom_Start', 'displayBottom_End');
-
                 return false;
             }
 
@@ -962,7 +948,7 @@ var _DEBUG = {
                     let key2 = data.strings[key].key2;
                     let oldCount = data.elems[key].counter;
                     let newCount = newData.hashCacheStats2[key1][key2];
-                    if( oldCount.innerText != newCount.size){ oldCount.innerText = newCount.size; }
+                    if( data.elems[key].counter != newCount.size){ oldCount.innerText = newCount.size; }
 
                     // Get the removals and remove the value of undefined.
                     data.removals[key]  = new Set([...this.values.last_hashCacheStats2[key1][key2]].filter(x => !newData.hashCacheStats2[key1][key2].has(x)));
@@ -1055,9 +1041,6 @@ var _DEBUG = {
                     if(count3){ sources[fragKeys[2]].replaceChildren( data.fragments[key][fragKeys[2]] ); }
                 }
             }
-
-            performance.mark('displayBottom_End');
-            performance.measure('displayBottom', 'displayBottom_Start', 'displayBottom_End');
 
             if(hasChanges){ return true; }
             return false;
@@ -1634,9 +1617,10 @@ var _DEBUG = {
         },
         init: function(){
             // Save DOM.
-            this.DOM.fpsDisplay     = document.getElementById("debug_fpsDisplay");
+            this.DOM.fpsDisplay       = document.getElementById("debug_fpsDisplay");
             this.DOM.frameCounter     = document.getElementById("debug_frameCounter");
             this.DOM.frameDrawCounter = document.getElementById("debug_frameDrawCounter");
+            this.DOM.frameDrawCounterDummy = document.getElementById("debug_frameDrawCounterDummy");
             this.DOM.L1_tms            = document.getElementById("debug_L1_tms");
             this.DOM.L2_tms            = document.getElementById("debug_L2_tms");
             this.DOM.L3_tms            = document.getElementById("debug_L3_tms");
@@ -1669,14 +1653,15 @@ var _DEBUG = {
         },
         display: function(newData){
             // Frame counters.
-            _DEBUG.updateIfChanged(this.DOM.frameCounter    , (_APP.game.gameLoop.frameCounter/1000).toFixed(1)+"k" );
-            _DEBUG.updateIfChanged(this.DOM.frameDrawCounter, (_APP.game.gameLoop.frameDrawCounter/1000).toFixed(1)+"k" );
+            _DEBUG.updateIfChanged2(this.DOM.frameCounter         , "_DEBUG.vault.frameCounters.frameCounter"         , (_APP.game.gameLoop.frameCounter    /1000).toFixed(1)+"k" );
+            _DEBUG.updateIfChanged2(this.DOM.frameDrawCounter     , "_DEBUG.vault.frameCounters.frameDrawCounter"     , (_APP.game.gameLoop.frameDrawCounter/1000).toFixed(1)+"k" );
+            _DEBUG.updateIfChanged2(this.DOM.frameDrawCounterDummy, "_DEBUG.vault.frameCounters.doDummyDrawCountTOTAL", (_DEBUG.doDummyDrawCountTOTAL       /1000).toFixed(1)+"k" );
 
             // Tilemap counts per layer. 
-            _DEBUG.updateIfChanged(this.DOM.L1_tms, Object.keys(_GFX.currentData["L1"].tilemaps).length.toString() );
-            _DEBUG.updateIfChanged(this.DOM.L2_tms, Object.keys(_GFX.currentData["L2"].tilemaps).length.toString() );
-            _DEBUG.updateIfChanged(this.DOM.L3_tms, Object.keys(_GFX.currentData["L3"].tilemaps).length.toString() );
-            _DEBUG.updateIfChanged(this.DOM.L4_tms, Object.keys(_GFX.currentData["L4"].tilemaps).length.toString() );
+            _DEBUG.updateIfChanged2(this.DOM.L1_tms, "_DEBUG.vault.tilemapCounters.L1_tilemaps", Object.keys(_GFX.currentData["L1"].tilemaps).length.toString() );
+            _DEBUG.updateIfChanged2(this.DOM.L2_tms, "_DEBUG.vault.tilemapCounters.L2_tilemaps", Object.keys(_GFX.currentData["L2"].tilemaps).length.toString() );
+            _DEBUG.updateIfChanged2(this.DOM.L3_tms, "_DEBUG.vault.tilemapCounters.L3_tilemaps", Object.keys(_GFX.currentData["L3"].tilemaps).length.toString() );
+            _DEBUG.updateIfChanged2(this.DOM.L4_tms, "_DEBUG.vault.tilemapCounters.L4_tilemaps", Object.keys(_GFX.currentData["L4"].tilemaps).length.toString() );
 
             // Current FPS.
             // Show average FPS, average ms per frame, how much off is the average ms per frame.
@@ -1684,7 +1669,7 @@ var _DEBUG = {
             let new_avgMsPerFrame = _APP.game.gameLoop.fpsCalc.avgMsPerFrame.toFixed(1) ?? 0;
             let msDiff            = (_APP.game.gameLoop.fpsCalc.avgMsPerFrame - _APP.game.gameLoop.msFrame).toFixed(1);
             testText = `AVG: ${new_average}, MS: ${new_avgMsPerFrame}, DELTA: ${msDiff}`;
-            _DEBUG.updateIfChanged(this.DOM.fpsDisplay, testText);
+            _DEBUG.updateIfChanged2(this.DOM.fpsDisplay, "_DEBUG.vault.frameCounters.fpsDisplay", testText);
 
             if(!newData.ALLTIMINGS || !Object.keys(newData.ALLTIMINGS).length){
                 console.log("MISSING: newData.ALLTIMINGS");
@@ -1692,31 +1677,31 @@ var _DEBUG = {
             }
 
             // Last draw: Individual timings.
-            _DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L1,  newData.ALLTIMINGS["L1___TOTAL"]            .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_A_L1,      newData.ALLTIMINGS["L1_A_clearLayer"]       .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_B_L1,      newData.ALLTIMINGS["L1_B_clearRemovedData"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_C_L1,      newData.ALLTIMINGS["L1_C_createTilemaps"]   .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_D_L1,      newData.ALLTIMINGS["L1_D_drawFromDataCache"].toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_E_L1,      newData.ALLTIMINGS["L1_E_drawImgDataCache"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L2,  newData.ALLTIMINGS["L2___TOTAL"]            .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_A_L2,      newData.ALLTIMINGS["L2_A_clearLayer"]       .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_B_L2,      newData.ALLTIMINGS["L2_B_clearRemovedData"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_C_L2,      newData.ALLTIMINGS["L2_C_createTilemaps"]   .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_D_L2,      newData.ALLTIMINGS["L2_D_drawFromDataCache"].toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_E_L2,      newData.ALLTIMINGS["L2_E_drawImgDataCache"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L3,  newData.ALLTIMINGS["L3___TOTAL"]            .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_A_L3,      newData.ALLTIMINGS["L3_A_clearLayer"]       .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_B_L3,      newData.ALLTIMINGS["L3_B_clearRemovedData"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_C_L3,      newData.ALLTIMINGS["L3_C_createTilemaps"]   .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_D_L3,      newData.ALLTIMINGS["L3_D_drawFromDataCache"].toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_E_L3,      newData.ALLTIMINGS["L3_E_drawImgDataCache"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_TOTAL_L4,  newData.ALLTIMINGS["L4___TOTAL"]            .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_A_L4,      newData.ALLTIMINGS["L4_A_clearLayer"]       .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_B_L4,      newData.ALLTIMINGS["L4_B_clearRemovedData"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_C_L4,      newData.ALLTIMINGS["L4_C_createTilemaps"]   .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_D_L4,      newData.ALLTIMINGS["L4_D_drawFromDataCache"].toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_E_L4,      newData.ALLTIMINGS["L4_E_drawImgDataCache"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged(this.DOM.timings_TOTAL_ALL, newData.ALLTIMINGS["gfx"].toFixed(1)+" ms");
+            _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_L1,  '_DEBUG.vault.ALLTIMINGS.L1___TOTAL'            , newData.ALLTIMINGS["L1___TOTAL"]            .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_A_L1,      '_DEBUG.vault.ALLTIMINGS.L1_A_clearLayer'       , newData.ALLTIMINGS["L1_A_clearLayer"]       .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_B_L1,      '_DEBUG.vault.ALLTIMINGS.L1_B_clearRemovedData' , newData.ALLTIMINGS["L1_B_clearRemovedData"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_C_L1,      '_DEBUG.vault.ALLTIMINGS.L1_C_createTilemaps'   , newData.ALLTIMINGS["L1_C_createTilemaps"]   .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_D_L1,      '_DEBUG.vault.ALLTIMINGS.L1_D_drawFromDataCache', newData.ALLTIMINGS["L1_D_drawFromDataCache"].toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_E_L1,      '_DEBUG.vault.ALLTIMINGS.L1_E_drawImgDataCache' , newData.ALLTIMINGS["L1_E_drawImgDataCache"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_L2,  '_DEBUG.vault.ALLTIMINGS.L2___TOTAL'            , newData.ALLTIMINGS["L2___TOTAL"]            .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_A_L2,      '_DEBUG.vault.ALLTIMINGS.L2_A_clearLayer'       , newData.ALLTIMINGS["L2_A_clearLayer"]       .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_B_L2,      '_DEBUG.vault.ALLTIMINGS.L2_B_clearRemovedData' , newData.ALLTIMINGS["L2_B_clearRemovedData"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_C_L2,      '_DEBUG.vault.ALLTIMINGS.L2_C_createTilemaps'   , newData.ALLTIMINGS["L2_C_createTilemaps"]   .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_D_L2,      '_DEBUG.vault.ALLTIMINGS.L2_D_drawFromDataCache', newData.ALLTIMINGS["L2_D_drawFromDataCache"].toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_E_L2,      '_DEBUG.vault.ALLTIMINGS.L2_E_drawImgDataCache' , newData.ALLTIMINGS["L2_E_drawImgDataCache"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_L3,  '_DEBUG.vault.ALLTIMINGS.L3___TOTAL'            , newData.ALLTIMINGS["L3___TOTAL"]            .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_A_L3,      '_DEBUG.vault.ALLTIMINGS.L3_A_clearLayer'       , newData.ALLTIMINGS["L3_A_clearLayer"]       .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_B_L3,      '_DEBUG.vault.ALLTIMINGS.L3_B_clearRemovedData' , newData.ALLTIMINGS["L3_B_clearRemovedData"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_C_L3,      '_DEBUG.vault.ALLTIMINGS.L3_C_createTilemaps'   , newData.ALLTIMINGS["L3_C_createTilemaps"]   .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_D_L3,      '_DEBUG.vault.ALLTIMINGS.L3_D_drawFromDataCache', newData.ALLTIMINGS["L3_D_drawFromDataCache"].toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_E_L3,      '_DEBUG.vault.ALLTIMINGS.L3_E_drawImgDataCache' , newData.ALLTIMINGS["L3_E_drawImgDataCache"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_L4,  '_DEBUG.vault.ALLTIMINGS.L4___TOTAL'            , newData.ALLTIMINGS["L4___TOTAL"]            .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_A_L4,      '_DEBUG.vault.ALLTIMINGS.L4_A_clearLayer'       , newData.ALLTIMINGS["L4_A_clearLayer"]       .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_B_L4,      '_DEBUG.vault.ALLTIMINGS.L4_B_clearRemovedData' , newData.ALLTIMINGS["L4_B_clearRemovedData"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_C_L4,      '_DEBUG.vault.ALLTIMINGS.L4_C_createTilemaps'   , newData.ALLTIMINGS["L4_C_createTilemaps"]   .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_D_L4,      '_DEBUG.vault.ALLTIMINGS.L4_D_drawFromDataCache', newData.ALLTIMINGS["L4_D_drawFromDataCache"].toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_E_L4,      '_DEBUG.vault.ALLTIMINGS.L4_E_drawImgDataCache' , newData.ALLTIMINGS["L4_E_drawImgDataCache"] .toFixed(1)+"");
+            _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_ALL, '_DEBUG.vault.ALLTIMINGS.gfx'                   , newData.ALLTIMINGS["gfx"].toFixed(1)+" ms");
         },
     },
     // NavBar1 buttons for the left-side debug view.
@@ -1963,12 +1948,97 @@ var _DEBUG = {
     // ** UTILITIES **
     // ***************
 
-    // DOM value updater. Only changes if the value is different than the current value.
-    updateIfChanged: function(elem, newValue, method="innerText"){
+    // Stores values for later compare (and update.) (Needed by updateIfChanged2.)
+    vault: {
+        frameCounters:{
+            "frameCounter"          : 0,
+            "frameDrawCounter"      : 0,
+            "doDummyDrawCountTOTAL" : 0,
+            "fpsDisplay": "",
+        },
+        tilemapCounters:{
+            "L1_tilemaps": 0,
+            "L2_tilemaps": 0,
+            "L3_tilemaps": 0,
+            "L4_tilemaps": 0,
+        },
+        gamestate:{
+            "gs1": "",
+            "gs2": "",
+        },
+        debugTimers:{
+            "debug_total"          : 0,
+            "hashCache_display"    : 0,
+            "layerObjs_display"    : 0,
+            "drawTimings_display"  : 0,
+            "bars_display"         : 0,
+            "showGamestate_display": 0,
+        },
+        ALLTIMINGS: {
+            "L1___TOTAL"             : 0,
+            "L1_A_clearLayer"        : 0,
+            "L1_B_clearRemovedData"  : 0,
+            "L1_C_createTilemaps"    : 0,
+            "L1_D_drawFromDataCache" : 0,
+            "L1_E_drawImgDataCache"  : 0,
+            "L2___TOTAL"             : 0,
+            "L2_A_clearLayer"        : 0,
+            "L2_B_clearRemovedData"  : 0,
+            "L2_C_createTilemaps"    : 0,
+            "L2_D_drawFromDataCache" : 0,
+            "L2_E_drawImgDataCache"  : 0,
+            "L3___TOTAL"             : 0,
+            "L3_A_clearLayer"        : 0,
+            "L3_B_clearRemovedData"  : 0,
+            "L3_C_createTilemaps"    : 0,
+            "L3_D_drawFromDataCache" : 0,
+            "L3_E_drawImgDataCache"  : 0,
+            "L4___TOTAL"             : 0,
+            "L4_A_clearLayer"        : 0,
+            "L4_B_clearRemovedData"  : 0,
+            "L4_C_createTilemaps"    : 0,
+            "L4_D_drawFromDataCache" : 0,
+            "L4_E_drawImgDataCache"  : 0,
+            "gfx"                    : 0,
+        },
+    },
+    
+    getReference: function(obj, str) {
+        const parts = str.split('.');
+        let ref = window;
+    
+        for (let i = 0; i < parts.length; i++) {
+            ref = ref[parts[i]];
+        }
+    
+        return ref;
+    },
+    updateReference: function(obj, str, newValue) {
+        const parts = str.split('.');
+        let ref = window;
+    
+        for (let i = 0; i < parts.length - 1; i++) {
+            ref = ref[parts[i]];
+        }
+    
+        ref[parts[parts.length - 1]] = newValue;
+    },
+
+    // DOM value updater. Only changes if the value is different than the current value. (works with _DEBUG.vault.)
+    updateIfChanged2: function(elem, oldValueRefStr, newValue, method="innerText"){
         // Compare each value trimed.
-        if(elem[method].trim() != newValue.toString().trim()){ 
-            // Store the trimmed value.
-            elem[method] = newValue.toString().trim(); 
+        let ref = this.getReference(window, oldValueRefStr);
+        if(undefined == ref){ console.log("bad ref", oldValueRefStr); return; }
+        
+        let oldValue = ref.toString().trim();
+        newValue = newValue.toString().trim();
+        if(oldValue != newValue){
+            // console.log("CHANGED", oldValueRefStr);
+            // Store the trimmed value to the DOM.
+            elem[method] = newValue; 
+
+            // Update the value in the vault.
+            this.updateReference(window, oldValueRefStr, newValue);
         }
     },
 
@@ -1986,10 +2056,19 @@ var _DEBUG = {
     runDebug_last: 0,
     runDebug_lastDuration: 0,
     doDummyDraw: false, 
+    doDummyDrawCountTOTAL: 0, 
     // doDummyDrawCount: 0, 
     // doDummyDrawCountMax: 10, 
     doDummyDrawDelay: 250, 
     doDummyDrawLast: 1000,
+    DOM:{
+        debug_timings_total        : null, 
+        debug_timings_hashCache    : null, 
+        debug_timings_layerObjs    : null, 
+        debug_timings_drawTimings  : null, 
+        debug_timings_bars         : null, 
+        debug_timings_showGamestate: null, 
+    },
     debugTasks: async function(newData){
         // Don't run debug until it is time. 
         let lastRunDiff = performance.now() - this.runDebug_last;
@@ -2009,49 +2088,67 @@ var _DEBUG = {
         _APP.utility.timeIt("showGamestate.display", "reset");
         
         _APP.utility.timeIt("debug_total", "start");
-        // Determine if data needs to be requested.
-
-        // showGamestate VIEWER
+        performance.mark('START_debug_total');
+        
+        // SHOWGAMESTATE VIEWER
+        performance.mark('START_showGamestate.display');
         _APP.utility.timeIt("showGamestate.display", "start");
         _DEBUG.showGamestate.display(false);
         _APP.utility.timeIt("showGamestate.display", "stop");
-
+        performance.mark('END_showGamestate.display');
+        
         // LAYER OBJECTS VIEWER/EDITOR
+        performance.mark('START_layerObjs.display');
         _APP.utility.timeIt("layerObjs.display", "start");
         _DEBUG.layerObjs.display(false);
         _APP.utility.timeIt("layerObjs.display", "stop");
+        performance.mark('END_layerObjs.display');
         
         // HASH CACHE VIEWER
+        performance.mark('START_hashCache.display');
         _APP.utility.timeIt("hashCache.display", "start");
         _DEBUG.hashCache.display(newData, false);
         _APP.utility.timeIt("hashCache.display", "stop");
+        performance.mark('END_hashCache.display');
         
         // DRAW TIMINGS
+        performance.mark('START_drawTimings.display');
         _APP.utility.timeIt("drawTimings.display", "start");
         _DEBUG.drawTimings.display(newData, false);
         _APP.utility.timeIt("drawTimings.display", "stop");
+        performance.mark('END_drawTimings.display');
         
         // DONE WITH DEBUG. 
         _APP.utility.timeIt("debug_total", "stop");
         this.runDebug_lastDuration = performance.now() - _APP.utility.timeIt("debug_total", "get");
 
-        // this.display_one("debugBar", newData);
         // BARS
+        performance.mark('START_bars.display');
         _APP.utility.timeIt("bars.display", "start");
         _DEBUG.updateTimingBars.display(newData, false);
         _APP.utility.timeIt("bars.display", "stop");
+        performance.mark('END_bars.display');
 
         // Add the bars.display time to the debug_total time.
         _APP.utility.timeIt("debug_total", "set", _APP.utility.timeIt("bars.display", "get") + _APP.utility.timeIt("debug_total", "get"));
         _DEBUG.updateTimingBars.display_one("debugBar", newData);
 
+        performance.mark('END_debug_total');
+
+        performance.measure('showGamestate.display', 'START_showGamestate.display', 'END_showGamestate.display');
+        performance.measure('layerObjs.display'    , 'START_layerObjs.display'    , 'END_layerObjs.display');
+        performance.measure('hashCache.display'    , 'START_hashCache.display'    , 'END_hashCache.display');
+        performance.measure('drawTimings.display'  , 'START_drawTimings.display'  , 'END_drawTimings.display');
+        performance.measure('bars.display'         , 'START_bars.display'         , 'END_bars.display');
+        performance.measure('debug_total'          , 'START_debug_total'          , 'END_debug_total');
+
         // Update changed elements. 
-        this.updateIfChanged(document.getElementById("debug_timings_total")        , _APP.utility.timeIt("debug_total"              , "get").toFixed(1) + " ms");
-        this.updateIfChanged(document.getElementById("debug_timings_hashCache")    , _APP.utility.timeIt("hashCache.display"        , "get").toFixed(1) + " ms");
-        this.updateIfChanged(document.getElementById("debug_timings_layerObjs")    , _APP.utility.timeIt("layerObjs.display"        , "get").toFixed(1) + " ms");
-        this.updateIfChanged(document.getElementById("debug_timings_drawTimings")  , _APP.utility.timeIt("drawTimings.display"      , "get").toFixed(1) + " ms");
-        this.updateIfChanged(document.getElementById("debug_timings_bars")         , _APP.utility.timeIt("bars.display"             , "get").toFixed(1) + " ms");
-        this.updateIfChanged(document.getElementById("debug_timings_showGamestate"), _APP.utility.timeIt("showGamestate.display"    , "get").toFixed(1) + " ms");
+        this.updateIfChanged2(this.DOM.debug_timings_total        , "_DEBUG.vault.debugTimers.debug_total"          , _APP.utility.timeIt("debug_total"              , "get").toFixed(1) + " ms");
+        this.updateIfChanged2(this.DOM.debug_timings_hashCache    , "_DEBUG.vault.debugTimers.hashCache_display"    , _APP.utility.timeIt("hashCache.display"        , "get").toFixed(1) + " ms");
+        this.updateIfChanged2(this.DOM.debug_timings_layerObjs    , "_DEBUG.vault.debugTimers.layerObjs_display"    , _APP.utility.timeIt("layerObjs.display"        , "get").toFixed(1) + " ms");
+        this.updateIfChanged2(this.DOM.debug_timings_drawTimings  , "_DEBUG.vault.debugTimers.drawTimings_display"  , _APP.utility.timeIt("drawTimings.display"      , "get").toFixed(1) + " ms");
+        this.updateIfChanged2(this.DOM.debug_timings_bars         , "_DEBUG.vault.debugTimers.bars_display"         , _APP.utility.timeIt("bars.display"             , "get").toFixed(1) + " ms");
+        this.updateIfChanged2(this.DOM.debug_timings_showGamestate, "_DEBUG.vault.debugTimers.showGamestate_display", _APP.utility.timeIt("showGamestate.display"    , "get").toFixed(1) + " ms");
 
         // if(this.runDebug_lastDuration > 8){
             // console.log(
@@ -2177,5 +2274,13 @@ var _DEBUG = {
 
         // Start the debug loop.
         // setTimeout(()=>this.debugTasks(), 1000);
+
+        // DEBUG DOM:
+        this.DOM.debug_timings_total         = document.getElementById("debug_timings_total");
+        this.DOM.debug_timings_hashCache     = document.getElementById("debug_timings_hashCache");
+        this.DOM.debug_timings_layerObjs     = document.getElementById("debug_timings_layerObjs");
+        this.DOM.debug_timings_drawTimings   = document.getElementById("debug_timings_drawTimings");
+        this.DOM.debug_timings_bars          = document.getElementById("debug_timings_bars");
+        this.DOM.debug_timings_showGamestate = document.getElementById("debug_timings_showGamestate");
     },
 };

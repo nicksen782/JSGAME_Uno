@@ -131,7 +131,7 @@ _APP.game = {
 
             // If debug is active and awaitDraw is active then run the debugTasks.
             if(_APP.debugActive && _APP.configObj.awaitDraw && _DEBUG.doDummyDraw){
-                console.log("doing dummy draw", _APP.game.gs1, _APP.game.gs2);
+                // console.log("doing dummy draw", _APP.game.gs1, _APP.game.gs2);
     
                 // Get new data.
                 _APP.utility.timeIt("_DEBUG.updateDebugTimings", "reset");
@@ -147,6 +147,7 @@ _APP.game = {
                 // Display the data.
                 await _DEBUG.debugTasks(newData);
                 
+                _DEBUG.doDummyDrawCountTOTAL += 1;
                 _DEBUG.doDummyDrawLast = performance.now();
                 _DEBUG.doDummyDraw = false;
                 // _DEBUG.doDummyDrawCount += 1;
