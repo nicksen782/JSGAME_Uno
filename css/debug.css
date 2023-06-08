@@ -529,3 +529,17 @@ button#debug_test_toggleGridCanvas {
 #debug_progressBar_canvas{
   border: 2px solid black;
 }
+
+.debug_layerObjects_showHide_label{
+  border-bottom: 1px solid black;
+  margin: 0px 5px 0px 0px;
+  cursor: pointer;
+  padding: 2px;
+  /* padding: 1px; */
+  width: 100px;
+  display: inline-block;
+  /* text-align: center; */
+}
+.debug_layerObjects_showHide_label:hover{
+  background-color: rgb(65 105 225 / 30%);
+}

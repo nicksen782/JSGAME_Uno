@@ -742,16 +742,15 @@ var _DEBUG = {
             }
         },
         createEntryDiv: function(rec){
+            // Create the new entry container and add classes and attributes.
             let div_container = document.createElement("div");
             div_container.classList.add("hashCacheStats1_entry");
             div_container.setAttribute("hashCacheHash", rec.hashCacheHash);
             div_container.setAttribute("hashCacheHash_BASE", rec.hashCacheHash_BASE);
             div_container.setAttribute("relatedMapKey", rec.relatedMapKey);
             div_container.setAttribute("origin", rec.origin);
-            // div_container.setAttribute("origin", rec.origin);
 
-            // if(rec.text){ _GFX.currentData[layer].tilemaps[tilemapKey].text = tilemap.text; }
-
+            // Generate the settings text.
             let settingsDifferences = this.getSettingsDifferences(_GFX.defaultSettings, rec.settings);
             let activeSettingsArray = [];
             let activeSettings = ``;
@@ -759,20 +758,21 @@ var _DEBUG = {
                 activeSettingsArray.push(`${key}:${settingsDifferences[key]}`);
             }
             activeSettings = activeSettingsArray.join(", ");
-            // console.log(rec);
+            
+            // Add the texts to the entry container.
             div_container.innerText = `` +
-            `'${rec.relatedMapKey ? (rec.relatedMapKey+"'").padEnd(18, " ") : ("CUSTOM'").padEnd(20, " ") }` +
-            `'${(rec.ts+"'").padEnd(14, " ")} w:${rec.w}, h:${rec.h}` +
+            `RelatedMapKey: ${rec.relatedMapKey ? ("'"+rec.relatedMapKey+"'").padEnd(18, " ") : ("["+"CUSTOM"+"]").padEnd(20, " ") }` +
             `\n  Bytes: ${(rec.hashCacheDataLength/1000).toFixed(2)} KB, genTime: ${rec.genTime.toFixed(2)} ms` + 
-            `\n` +
-            `${activeSettings ? "  " + activeSettings + "" : ""}` +
-            `\n` +
-            `${rec.text ? "  (TEXT): '" + rec.text.slice(0, 40) + "'" : ""}` +
+            `\n  ${"TS: '"+(rec.ts+"'").padEnd(14, " ")}, D: w: ${rec.w}, h: ${rec.h}` +
+            `\n  S:${activeSettings ? "" + activeSettings + "" : ""}` +
+            `\n  T: ${rec.text ? "'" + rec.text.slice(0, 40) + "'" : ""}` +
             `\n` +
             ``;
 
+            // Set the text as the title of this entry if the data contains text.
             if(rec.text){ div_container.title = rec.text; }
 
+            // Return the completed entry container.
             return div_container;
         },
         createChildNodeClone: function(srcs=[]){
@@ -1137,6 +1137,22 @@ var _DEBUG = {
             L3: false,
             L4: false,
         },
+        values: {
+            showHide_LayerObject: true,
+            showHide_PrintText  : true,
+            showHide_Cursor1    : true,
+            showHide_Card       : true,
+            showHide_UnoLetter  : true,
+            showHide_Border     : true,
+        },
+        classNames : [
+            "LayerObject",
+            "PrintText",
+            "Cursor1",
+            "Card",
+            "UnoLetter",
+            "Border",
+        ],
         DOM:{
             "contextMenu1": "debug_layerObjEdit_contextMenu1",
 
@@ -1255,6 +1271,30 @@ var _DEBUG = {
                 elem.addEventListener("mouseenter" , (e)=>this.delegatedListener(e), true);
                 elem.addEventListener("mouseleave" , (e)=>this.delegatedListener(e), true);
             }
+
+            // Checkboxes for className filters.
+            this.DOM.showHide_LayerObject = document.getElementById("debug_layerObjects_showHide_LayerObject");
+            this.DOM.showHide_PrintText   = document.getElementById("debug_layerObjects_showHide_PrintText");
+            this.DOM.showHide_Cursor1     = document.getElementById("debug_layerObjects_showHide_Cursor1");
+            this.DOM.showHide_Card        = document.getElementById("debug_layerObjects_showHide_Card");
+            this.DOM.showHide_UnoLetter   = document.getElementById("debug_layerObjects_showHide_UnoLetter");
+            this.DOM.showHide_Border   = document.getElementById("debug_layerObjects_showHide_Border");
+
+            // Add change event listeners.
+            this.DOM.showHide_LayerObject.addEventListener("change", ()=>{ this.values.showHide_LayerObject = this.DOM.showHide_LayerObject.checked; this.showHideByClassName(); }, false);
+            this.DOM.showHide_PrintText  .addEventListener("change", ()=>{ this.values.showHide_PrintText   = this.DOM.showHide_PrintText  .checked; this.showHideByClassName(); }, false);
+            this.DOM.showHide_Cursor1    .addEventListener("change", ()=>{ this.values.showHide_Cursor1     = this.DOM.showHide_Cursor1    .checked; this.showHideByClassName(); }, false);
+            this.DOM.showHide_Card       .addEventListener("change", ()=>{ this.values.showHide_Card        = this.DOM.showHide_Card       .checked; this.showHideByClassName(); }, false);
+            this.DOM.showHide_UnoLetter  .addEventListener("change", ()=>{ this.values.showHide_UnoLetter   = this.DOM.showHide_UnoLetter  .checked; this.showHideByClassName(); }, false);
+            this.DOM.showHide_Border     .addEventListener("change", ()=>{ this.values.showHide_Border      = this.DOM.showHide_Border     .checked; this.showHideByClassName(); }, false);
+
+            // Set the default states.
+            this.DOM.showHide_LayerObject.checked = this.values.showHide_LayerObject;
+            this.DOM.showHide_PrintText  .checked = this.values.showHide_PrintText;
+            this.DOM.showHide_Cursor1    .checked = this.values.showHide_Cursor1;
+            this.DOM.showHide_Card       .checked = this.values.showHide_Card;
+            this.DOM.showHide_UnoLetter  .checked = this.values.showHide_UnoLetter;
+            this.DOM.showHide_Border     .checked = this.values.showHide_Border;
         },
         
         // ** VIEWER **
@@ -1441,30 +1481,95 @@ var _DEBUG = {
             }
             return arr; 
         },
+        showHideByClassName: function(){
+            /*
+            For each displayed layer:
+            Based on attribute "className"
+            Show/hide based on the states of checkboxes.
+            */
+
+            // Get the list of layerKeys.
+            let layerKeys = Object.keys(_GFX.currentData);
+
+            // Go through each layerKey...
+            for(let layerKey of layerKeys){ 
+                let updateSource = false;
+
+                // Clone the source.
+                [ this.frags[layerKey] ] = this.createChildNodeClone( [ this.srcDOM[layerKey] ] );
+
+                // Go through each className...
+                for(let className of this.classNames){ 
+                    // Get the entries that have this className.
+                    let elems = this.frags[layerKey].querySelectorAll(`.layerObjectsStats1_entry[className='${className}']`);
+
+                    // Skip if there are not any matches.
+                    if(!elems.length){ continue; }
+                    
+                    // Go through the list of className matched entries...
+                    for(let elem of elems){
+                        // If the setting is to show...
+                        if(this.values[`showHide_${className}`]){
+                            // Remove the displayNone class if it IS already there.
+                            if(elem.classList.contains("displayNone")){
+                                elem.classList.remove("displayNone");
+                                
+                                // Set the updateSource flag.
+                                updateSource = true;
+                            }
+                        }
+                        else{
+                            // Add the displayNone class if it is NOT already there.
+                            if(!elem.classList.contains("displayNone")){
+                                elem.classList.add("displayNone");
+                                
+                                // Set the updateSource flag.
+                                updateSource = true;
+                            }
+                        }
+                    }
+                }
+
+                // If the updateSource flag is set then replace the source with the modified fragment.
+                if(updateSource){
+                    this.srcDOM[layerKey].replaceChildren(this.frags[layerKey]);
+                }
+            }
+        },
+
         createEntryDiv: function(data){
+            // Create the new entry container and add classes and attributes.
             let div_container = document.createElement("div");
             div_container.classList.add("layerObjectsStats1_entry");
             div_container.setAttribute("layerObjKey", data.layerObjKey);
             div_container.setAttribute("layerKey"   , data.layerKey);
             div_container.setAttribute("className"  , data.className);
 
+            // Should this element be hidden?
+            for(let className of this.classNames){ 
+                // If this entry className matches className AND the setting is to hide...
+                if(data.className == className && !this.values[`showHide_${className}`] ){ 
+                    // Add the displayNone class to hide this entry.
+                    div_container.classList.add("displayNone"); 
+                }
+            }
+
+            // Generate the dimensions text.
             let w = data.tmap[0];
             let h = data.tmap[1];
             let x = data.x;
             let y = data.y;
-            if(data.xyByGrid){
-                w = w * _APP.configObj.dimensions.tileWidth;
-                h = h * _APP.configObj.dimensions.tileHeight;
-                x = x * _APP.configObj.dimensions.tileWidth;
-                y = y * _APP.configObj.dimensions.tileHeight;
-            }
+            let dims       = `` + 
+                `x: ${data.xyByGrid ? x * _APP.configObj.dimensions.tileWidth  : x}, ` +
+                `y: ${data.xyByGrid ? y * _APP.configObj.dimensions.tileHeight : y}, ` +
+                `w: ${data.xyByGrid ? w * _APP.configObj.dimensions.tileWidth  : w}, ` +
+                `h: ${data.xyByGrid ? h * _APP.configObj.dimensions.tileHeight : h}`;
 
-            let coords     = `x: ${x}, y: ${y}`;
+            // Generate the className and name text.
             let className  = `${data.className.padEnd(12, " ")}`;
             let name       = `${data.layerObjKey}`;
-            let dims       = `w: ${w}, h: ${h}`;
-            let fade = data.settings.fade;
-            fade = typeof fade !== "number" ? "OFF" : fade;
+
+            // Generate the settings text.
             let settingsDifferences = this.getSettingsDifferences(_GFX.defaultSettings, data.settings);
             let activeSettingsArray = [];
             let settings = ``;
@@ -1473,13 +1578,15 @@ var _DEBUG = {
             }
             settings = activeSettingsArray.join(", ");
 
+            // Add the texts to the entry container.
             div_container.innerText = `` +
-            `${className} : ${name}` +
-            `\n  C: ${coords}, D: ${dims}` +
+            `C: ${className} : K: ${name}` +
+            `\n  D: ${dims}` +
             `\n  S: ${settings}` + 
             `\n  P: ${data.text ? "(TEXT): '" + data.text.slice(0, 40) + "'" : ""}` +
             ``;
 
+            // Return the completed entry container.
             return div_container;
         },
         delegatedListener: function(e){
@@ -1507,13 +1614,13 @@ var _DEBUG = {
                 let h = data.tmap[1];
                 let x = data.x;
                 let y = data.y;
-                if(data.xyByGrid){
-                    w = w * _APP.configObj.dimensions.tileWidth;
-                    h = h * _APP.configObj.dimensions.tileHeight;
-                    x = x * _APP.configObj.dimensions.tileWidth;
-                    y = y * _APP.configObj.dimensions.tileHeight;
-                }
-                _DEBUG.layerObjs.highlightOnHover(x, y, w, h, data.settings.rotation);
+                _DEBUG.layerObjs.highlightOnHover(
+                    ( data.xyByGrid ? x * _APP.configObj.dimensions.tileWidth  : x ), 
+                    ( data.xyByGrid ? y * _APP.configObj.dimensions.tileHeight : y ), 
+                    ( data.xyByGrid ? w * _APP.configObj.dimensions.tileWidth  : w ), 
+                    ( data.xyByGrid ? h * _APP.configObj.dimensions.tileHeight : h ), 
+                    data.settings.rotation
+                );
             }
             if(e.type == "mouseleave") { _DEBUG.layerObjs.highlightOnHover(0, 0, 0, 0, 0); }
         },
