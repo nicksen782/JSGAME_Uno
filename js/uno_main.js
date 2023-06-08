@@ -127,30 +127,11 @@ _APP.game = {
                 // GAMESTATE CHANGES
                 if(_APP.game.changeGs2_triggered){ _APP.game._changeGs2(); } 
                 if(_APP.game.changeGs1_triggered){ _APP.game._changeGs1(); } 
-            }
 
-            // If debug is active and awaitDraw is active then run the debugTasks.
-            if(_APP.debugActive && _APP.configObj.awaitDraw && _DEBUG.doDummyDraw){
-                // console.log("doing dummy draw", _APP.game.gs1, _APP.game.gs2);
-    
-                // Get new data.
-                _APP.utility.timeIt("_DEBUG.updateDebugTimings", "reset");
-                _APP.utility.timeIt("_DEBUG.updateDebugTimings", "start");
-                let newData = await _WEBW_V.SEND("_DEBUG.updateDebugTimings", {
-                    data:{ dummy: true },
-                    refs:[]
-                }, true, true);
-                newData = newData.data;
-                // console.log("DUMMY DATA:", newData);
-                _APP.utility.timeIt("_DEBUG.updateDebugTimings", "stop");
-    
-                // Display the data.
-                await _DEBUG.debugTasks(newData);
-                
-                _DEBUG.doDummyDrawCountTOTAL += 1;
-                _DEBUG.doDummyDrawLast = performance.now();
-                _DEBUG.doDummyDraw = false;
-                // _DEBUG.doDummyDrawCount += 1;
+                // If debug is active and awaitDraw is active then run the debugTasks for dummy draws.
+                if(_APP.debugActive && _DEBUG.doDummyDraw){
+                    await _DEBUG.debugTasks(2)
+                }
             }
 
             // Request the next frame.
@@ -271,16 +252,15 @@ _APP.game = {
                     this.lastLoopRun = timestamp - (this.delta % this.msFrame);
                     this.frameCounter += 1;
 
+                    _APP.utility.timeIt("loop_total", "reset");
+                    // _APP.utility.timeIt("draw_total", "reset");
                     let lastLoop_timestamp = performance.now();
+                    _APP.utility.timeIt("loop_total", "start");
 
                     // Do not run the logic loop if the gamestate value is "".
                     if(_APP.game.gs1 != ""){
-                        _APP.utility.timeIt("loop_total", "reset");
-                        _APP.utility.timeIt("draw_total", "reset");
-                        
                         // Do not run the logic loop if the skipLogic value is true.
                         if(!this.skipLogic){
-                            _APP.utility.timeIt("loop_total", "start");
                             // -- NETWORK --
                             //
 
@@ -300,8 +280,6 @@ _APP.game = {
                             // Render using the gamestate's render function.
                             else { _APP.game.gamestates[_APP.game.gs1].render(); }
 
-                            _APP.utility.timeIt("loop_total", "stop");
-
                             // -- DRAW --
                             // Determine if there are any draw updates. (Returns true/false and also sets _GFX.DRAWNEEDED.)
                             this.DRAWNEEDED_prev = _GFX.funcs.isDrawNeeded();
@@ -318,30 +296,19 @@ _APP.game = {
                                 else                                  {       await _GFX.funcs.sendGfxUpdates(true); }
 
                                 this.frameDrawCounter += 1;
-
+                                
                                 // DEBUG: Clear the dummyDraw values.
-                                if(_APP.debugActive){ 
-                                    _DEBUG.doDummyDraw = false; 
-                                    // _DEBUG.doDummyDrawCount = 0;
-                                    _DEBUG.doDummyDrawLast = performance.now(); 
-                                }
+                                if(_APP.debugActive){ _DEBUG.doDummyDraw = false; }
                             }
                             _APP.utility.timeIt("draw_total", "stop");
-
+                            
                             // DEBUG
-                            if(_APP.debugActive && !_GFX.DRAWNEEDED){
-                                if(
-                                    // _DEBUG.doDummyDrawCount < _DEBUG.doDummyDrawCountMax && 
-                                    performance.now() - _DEBUG.doDummyDrawLast > _DEBUG.doDummyDrawDelay
-                                ){
-                                    _DEBUG.doDummyDraw = true; 
-                                }
-                            }
+                            if(_APP.debugActive && !_GFX.DRAWNEEDED){ _DEBUG.doDummyDraw = true; }
                         }
                     }
-
+                    
+                    _APP.utility.timeIt("loop_total", "stop");
                     this.lastLoop_timestamp = performance.now() - lastLoop_timestamp;
-                    // console.log("this.lastLoop_timestamp:", this.lastLoop_timestamp.toFixed(1));
                     
                     // End the loop and run any end of loop tasks.
                     this.endOfLoopTasks(timestamp);

@@ -1267,33 +1267,8 @@ var gfxMainV5 = {
             }
             
             case "_DEBUG.updateDebugTimings"          : { 
-                if(data && data.dummy){
-                    // console.log("dummy:", data.dummy);
-                    
-                    // Get the keys to operate on.
-                    let keys = Object.keys(messageFuncs.timings["gfx"].ALLTIMINGS);
-
-                    // For each key reduce the value by 25% until 0.1. If < 0.1 then reduce to 0.
-                    let reducedTimings = {};
-
-                    for(let i=0, len=keys.length; i<len; i+=1){
-                        let key = keys[i];
-                        reducedTimings[key] = messageFuncs.timings["gfx"].ALLTIMINGS[key] / 10; 
-                        if(reducedTimings[key] < 0.1){ reducedTimings[key] = 0; }
-                    }
-
-                    // Replace the ALLTIMINGS with the reduced timings.
-                    // Keep the rest of messageFuncs.timings["gfx"] as it is.
-                    messageFuncs.timings["gfx"].ALLTIMINGS = reducedTimings;
-
-                    // Set the return data.
-                    returnData = messageFuncs.timings["gfx"];
-                }
-                else{
-                    // console.log("NOT dummy:", data);
-                    gfxMainV5.updateDebugTimings();
-                    returnData = messageFuncs.timings["gfx"];
-                }
+                gfxMainV5.updateDebugTimings();
+                returnData = messageFuncs.timings["gfx"];
                 break; 
             }
     

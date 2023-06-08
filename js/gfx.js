@@ -835,9 +835,12 @@ var _GFX = {
                 }
 
                 // If debug is active and awaitDraw is active then run the debugTasks.
-                if(_APP.debugActive && _APP.configObj.awaitDraw){
+                if(_APP.debugActive){
+                    // Save these timings.
+                    _DEBUG.savePrevGfxTimings(data);
+
                     // console.log("normal afterDraw");
-                    _DEBUG.debugTasks(data);
+                    _DEBUG.debugTasks(1);
                 }
             }
         },

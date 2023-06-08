@@ -527,8 +527,5 @@ button#debug_test_toggleGridCanvas {
 }
 
 #debug_progressBar_canvas{
-  border: 1px solid black;
-  /* background-color: lightsteelblue; */
-  /* background-color: khaki; */
-  background-color: darkgray;
+  border: 2px solid black;
 }

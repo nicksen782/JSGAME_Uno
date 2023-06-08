@@ -662,13 +662,11 @@ var _DEBUG = {
                 return false; 
             }
 
-            // lastNormalrun
-            // lastNormalrunWait
-            // if(!this.values.lastForcedrun || performance.now() - this.values.lastForcedrun > this.values.lastForcedrunWait){
-            // this.values.lastForcedrun = performance.now();
-
+            // Run the updates.
             let updated1 = _DEBUG.hashCache.displayTop(data);
             let updated2 = _DEBUG.hashCache.displayBottom(data);
+
+            // Update the refresh time (if an update took place.)
             if(forced || updated1 || updated2){
                 let newText = `Refreshed: ${this.getFormattedDateTime()}`;
                 if(this.DOM.refreshLast.innerText != newText){
@@ -901,8 +899,6 @@ var _DEBUG = {
                 return; 
             }
 
-            performance.mark('displayBottom_Start');
-
             let hasChanges = false;
 
             if(!newData.hashCacheStats2){
@@ -975,6 +971,7 @@ var _DEBUG = {
                         // if(!hash){ console.log("REMOVE: Invalid hash", hash); continue; }
                         let cacheObj = newData.partial_hashCache.get(hash);
 
+                        // Was NOT found in the hashCache.
                         // After a hashCache clear it is very possible that the cacheObj does not have the former entries. 
                         if(!cacheObj){
                             // console.log("REMOVE: Missing cacheObj", hash);
@@ -1002,6 +999,8 @@ var _DEBUG = {
                             }
                             continue; 
                         }
+
+                        // Was found in the hashCache.
                         else if(cacheObj.origin == fragKeys[0]){ elem = data.fragments[key][fragKeys[0]].querySelector(`[hashcachehash='${hash.toString()}']`); if(elem){ count1 += 1; } }
                         else if(cacheObj.origin == fragKeys[1]){ elem = data.fragments[key][fragKeys[1]].querySelector(`[hashcachehash='${hash.toString()}']`); if(elem){ count2 += 1; } }
                         else if(cacheObj.origin == fragKeys[2]){ elem = data.fragments[key][fragKeys[2]].querySelector(`[hashcachehash='${hash.toString()}']`); if(elem){ count3 += 1; } }
@@ -1026,9 +1025,17 @@ var _DEBUG = {
                         
                         // if(!cacheObj.text){ continue; }
                         let entry = this.createEntryDiv(cacheObj);
-                        if     (cacheObj.origin == fragKeys[0]){ data.fragments[key][fragKeys[0]].prepend(entry); count1 += 1; }
-                        else if(cacheObj.origin == fragKeys[1]){ data.fragments[key][fragKeys[1]].prepend(entry); count2 += 1; }
-                        else if(cacheObj.origin == fragKeys[2]){ data.fragments[key][fragKeys[2]].prepend(entry); count3 += 1; }
+                        
+                        let elem = data.fragments[key][cacheObj.origin].querySelector(`.hashCacheStats1_entry[hashcachehash='${hash}']`);
+                        if(elem){
+                            let same = elem.isEqualNode(entry);
+                            if(!same){ data.fragments[key][cacheObj.origin].replaceChild(entry, elem); }
+                        }
+                        else{ data.fragments[key][cacheObj.origin].prepend(entry);  }
+
+                        if     (cacheObj.origin == fragKeys[0]){ count1 += 1; }
+                        else if(cacheObj.origin == fragKeys[1]){ count2 += 1; }
+                        else if(cacheObj.origin == fragKeys[2]){ count3 += 1; }
                         else{
                             if(cacheObj.text){
                                 console.log("BAD ORIGIN:", cacheObj.text, cacheObj.isBase?"BASE":"COPY", "Invalid origin:", key, cacheObj.relatedMapKey||"NONE", "***", cacheObj.hashCacheHash_BASE, cacheObj.hashCacheHash, "***", cacheObj.origin, [fragKeys[0], fragKeys[1], fragKeys[2]]);
@@ -1105,11 +1112,15 @@ var _DEBUG = {
             refresh.addEventListener("click", async ()=>{
                 if(!this.values.lastForcedrun || performance.now() - this.values.lastForcedrun > this.values.lastForcedrunWait){
                     this.values.lastForcedrun = performance.now();
+
                     // Request the debug timings.
-                    await _WEBW_V.SEND("_DEBUG.updateDebugTimings", { 
-                        data: { }, 
+                    let newData = await _WEBW_V.SEND("_DEBUG.updateDebugTimings", {
+                        data:{},
                         refs:[]
-                    }, false, true);
+                    }, true, true);
+                    newData = newData.data;
+
+                    this.display(newData, true);
                 }
             }, false);
 
@@ -1387,7 +1398,7 @@ var _DEBUG = {
         
             return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec + " " + ampm;
         },
-        display: function(forced){
+        display: function(){
             // Do not update if the tab is not active.
             let tab = _DEBUG.navBar1.DOM.view_layerObjects.tab;
             if(!tab.classList.contains("active")){ 
@@ -1395,14 +1406,8 @@ var _DEBUG = {
                 return false; 
             }
 
-            // lastNormalrun
-            // lastNormalrunWait
-            // let updated1;
-            // if(forced || !this.lastForcedrun || performance.now() - this.lastForcedrun > this.lastForcedrunWait){
-                // this.lastForcedrun = performance.now();
-                updated1 = this.displayLayerObjects();
-            // }
-
+            // Run the update.
+            updated1 = this.displayLayerObjects();
             if(updated1){
                 let newText = `Refreshed: ${this.getFormattedDateTime()}`;
                 return _DEBUG.updateIfChanged2(this.DOM.refreshLast, "_DEBUG.vault.layerObjs.lastRefresh", newText )
@@ -1885,13 +1890,13 @@ var _DEBUG = {
     // 
     updateTimingBars: {
         DOM: {
-            debug_progressBar_canvas: null
+            progressBar_canvas: null
         },
         ctx: null,
         positions: {
-            "debugBar": { x:80, y:5+0  , w:540, h:20 },
-            "LoopBar" : { x:80, y:5+30 , w:540, h:20 },
-            "GfxBar"  : { x:80, y:5+60 , w:540, h:20 },
+            "debugBar": { x:70, y:5+0  , w:560, h:20 },
+            "LoopBar" : { x:70, y:5+30 , w:560, h:20 },
+            "GfxBar"  : { x:70, y:5+60 , w:560, h:20 },
         },
         mapToWidth: function(value, maxWidth) {
             canvasWidth = maxWidth; // this.ctx.canvas.width;
@@ -1977,14 +1982,16 @@ var _DEBUG = {
             this.DOM.progressBar_canvas.style.width  = (this.DOM.progressBar_canvas.width  / dpr) + "px";
             this.DOM.progressBar_canvas.style.height = (this.DOM.progressBar_canvas.height / dpr) + "px";
 
-            this.ctx = this.DOM.progressBar_canvas.getContext("2d");
+            // this.ctx = this.DOM.progressBar_canvas.getContext("2d", { alpha: true } );
+            this.ctx = this.DOM.progressBar_canvas.getContext("2d", { alpha: false } );
 
             // Scale all drawing operations by the dpr
             this.ctx.scale(dpr, dpr);
             this.ctx.translate(0.5, 0.5);
 
             // Clear the canvas
-            this.ctx.clearRect(0, 0, this.DOM.progressBar_canvas.width / dpr, this.DOM.progressBar_canvas.height / dpr);
+            this.ctx.fillStyle = '#a9a9a9'; // darkgray
+            this.ctx.fillRect(0, 0, this.DOM.progressBar_canvas.width / dpr, this.DOM.progressBar_canvas.height / dpr);
 
             // Draw the labels.
             this.ctx.fillStyle = '#000';
@@ -1996,9 +2003,9 @@ var _DEBUG = {
             this.ctx.fillText("DRAW :", 5, this.positions.GfxBar.y    + this.positions.GfxBar.h   -8);
 
             // Draw the initial bars display.
-            // this.updateOneBar("debugBar", 0);
-            // this.updateOneBar("LoopBar" , 0);
-            // this.updateOneBar("GfxBar"  , 0);
+            this.updateOneBar("debugBar", 0, 0);
+            this.updateOneBar("LoopBar" , 0, 0);
+            this.updateOneBar("GfxBar"  , 0, 0);
         },
 
         last_debugTime: 0,
@@ -2010,7 +2017,7 @@ var _DEBUG = {
             let percent = 100 * (value / _APP.game.gameLoop.msFrame)
 
             // Keep the new value in the range of 0 - 100.
-            percent = Math.max(0, Math.min(100, percent));
+            // percent = Math.max(0, Math.min(100, percent));
 
             // Return the completed value.
             return percent;
@@ -2026,16 +2033,19 @@ var _DEBUG = {
             let ms;
 
             if(barKey == "debugBar"){
-                data = _APP.utility.timeIt("debug_total", "get");
+                // data = _APP.utility.timeIt("debug_total", "get");
+                data = _DEBUG.runDebug_lastDuration;
                 percent = this.calcPercentOfFrameTime( data );
                 ms = data;
             }
             else if(barKey == "LoopBar") {
+                // data = _APP.utility.timeIt("loop_total", "get");
                 data = _APP.game.gameLoop.lastLoop_timestamp;
                 percent = this.calcPercentOfFrameTime( data );
                 ms = data;
             }
             else if(barKey == "GfxBar")  {
+                // data = _APP.utility.timeIt("draw_total", "get");
                 data = newData.ALLTIMINGS.gfx; 
                 percent = this.calcPercentOfFrameTime( data );
                 ms = data;
@@ -2062,6 +2072,51 @@ var _DEBUG = {
 
     // ** UTILITIES **
     // ***************
+
+    doDummyDraw: false, 
+    doDummyDrawCountTOTAL: 0, 
+    prevGfxTimings: {},
+    prevDummyGfxTimings: {},
+    savePrevGfxTimings: function(data){
+        this.prevGfxTimings = { ...data };
+        this.prevDummyGfxTimings = { ...data };
+    },
+    reducePrevGfxTimings: function(){
+        // Get the keys to operate on.
+        let keys = Object.keys(this.prevGfxTimings.ALLTIMINGS);
+    
+        // For each key, reduce the value by one-tenth of the original value.
+        let reducedTimings = {};
+    
+        for(let i = 0, len = keys.length; i < len; i += 1) {
+            let key = keys[i];
+
+            // If it is already 0 then do nothing.
+            if(this.prevGfxTimings.ALLTIMINGS[key] == 0){ reducedTimings[key] = 0; continue; }
+
+            // Decrement to 0 in x steps.
+            // let decrementValue = this.prevDummyGfxTimings.ALLTIMINGS[key] / 10; 
+            let decrementValue = this.prevDummyGfxTimings.ALLTIMINGS[key] / 5; 
+            reducedTimings[key] = this.prevGfxTimings.ALLTIMINGS[key] - decrementValue; 
+
+            // If the new value is less than 0.1 just set it to 0.
+            if(reducedTimings[key] < 0.1) { reducedTimings[key] = 0; }
+        }
+    
+        // Replace the ALLTIMINGS with the reduced timings.
+        // Update the values in prevGfxTimings to be used in the next iteration.
+        this.prevGfxTimings.ALLTIMINGS = reducedTimings;
+    
+        // Set the return data.
+        returnData = this.prevGfxTimings;
+        return returnData;
+    },
+    configDummyDraw: async function(){
+        // Reduce existing data.
+        _DEBUG.prevGfxTimings = _DEBUG.reducePrevGfxTimings();
+        _DEBUG.doDummyDrawCountTOTAL += 1;
+        _DEBUG.doDummyDraw = false;
+    },
 
     // Stores values for later compare (and update.) (Needed by updateIfChanged2.)
     vault: {
@@ -2165,22 +2220,10 @@ var _DEBUG = {
     // ** DEBUG TASK RUNNER **
     // ***********************
 
-    // runDebug_wait: 1000 * 0.25, // 0.25 seconds
-    // runDebug_wait: 1000 * 0.5, // 0.5 seconds
-    runDebug_wait: 1000 * 0.75, // 0.75 seconds
-    // runDebug_wait: 1000 * 1, // 1 seconds
-    // runDebug_wait: 1000 * 2, // 2 seconds
-    // runDebug_wait: 1000 * 3, // 3 seconds
-    // runDebug_wait: 1000 * 4, // 4 seconds
-    // runDebug_wait: 1000 * 5, // 5 seconds
+    runDebug_wait: 1000 * 0.25,
     runDebug_last: 0,
     runDebug_lastDuration: 0,
-    doDummyDraw: false, 
-    doDummyDrawCountTOTAL: 0, 
-    // doDummyDrawCount: 0, 
-    // doDummyDrawCountMax: 10, 
-    doDummyDrawDelay: 250, 
-    doDummyDrawLast: 1000,
+
     DOM:{
         debug_timings_total        : null, 
         debug_timings_hashCache    : null, 
@@ -2189,69 +2232,56 @@ var _DEBUG = {
         debug_timings_bars         : null, 
         debug_timings_showGamestate: null, 
     },
-    debugTasks: async function(newData){
+    debugTasks: async function(type=1){
         // Don't run debug until it is time. 
-        let lastRunDiff = performance.now() - this.runDebug_last;
-        if( !(this.runDebug_last == 0 | lastRunDiff > this.runDebug_wait) ){
-            // console.log("not ready", lastRunDiff.toFixed(2), this.runDebug_wait);
+        let debugCanRun     = (performance.now() - this.runDebug_last) > this.runDebug_wait;
+        if( !debugCanRun ){
+            // console.log("not ready", (performance.now() - this.runDebug_last).toFixed(2), this.runDebug_wait.toFixed(2));
             return;
         }
+
         // Store the timestamp for the next run.
-        this.runDebug_last = performance.now();
+        let debug_ts = performance.now();
         
-        // Reset timers.
-        _APP.utility.timeIt("debug_total",           "reset");
-        _APP.utility.timeIt("layerObjs.display",     "reset");
-        _APP.utility.timeIt("hashCache.display",     "reset");
-        _APP.utility.timeIt("drawTimings.display",   "reset");
-        _APP.utility.timeIt("bars.display",          "reset");
-        _APP.utility.timeIt("showGamestate.display", "reset");
-        
-        _APP.utility.timeIt("debug_total", "start");
+        // Get the last saved data.
+        newData = _DEBUG.prevGfxTimings;
+
+        // Dummy type?
+        if(type==2){
+            this.configDummyDraw();
+        }
+
         performance.mark('START_debug_total');
         
         // SHOWGAMESTATE VIEWER
         performance.mark('START_showGamestate.display');
-        _APP.utility.timeIt("showGamestate.display", "start");
         _DEBUG.showGamestate.display(false);
-        _APP.utility.timeIt("showGamestate.display", "stop");
         performance.mark('END_showGamestate.display');
         
         // LAYER OBJECTS VIEWER/EDITOR
         performance.mark('START_layerObjs.display');
-        _APP.utility.timeIt("layerObjs.display", "start");
         _DEBUG.layerObjs.display(false);
-        _APP.utility.timeIt("layerObjs.display", "stop");
         performance.mark('END_layerObjs.display');
         
         // HASH CACHE VIEWER
         performance.mark('START_hashCache.display');
-        _APP.utility.timeIt("hashCache.display", "start");
         _DEBUG.hashCache.display(newData, false);
-        _APP.utility.timeIt("hashCache.display", "stop");
         performance.mark('END_hashCache.display');
         
         // DRAW TIMINGS
         performance.mark('START_drawTimings.display');
-        _APP.utility.timeIt("drawTimings.display", "start");
         _DEBUG.drawTimings.display(newData, false);
-        _APP.utility.timeIt("drawTimings.display", "stop");
         performance.mark('END_drawTimings.display');
         
         // DONE WITH DEBUG. 
-        _APP.utility.timeIt("debug_total", "stop");
-        this.runDebug_lastDuration = performance.now() - _APP.utility.timeIt("debug_total", "get");
+        this.runDebug_lastDuration = performance.now() - debug_ts;
 
         // BARS
         performance.mark('START_bars.display');
-        _APP.utility.timeIt("bars.display", "start");
         _DEBUG.updateTimingBars.display(newData, false);
-        _APP.utility.timeIt("bars.display", "stop");
         performance.mark('END_bars.display');
 
-        // Add the bars.display time to the debug_total time.
-        // _APP.utility.timeIt("debug_total", "set", _APP.utility.timeIt("bars.display", "get") + _APP.utility.timeIt("debug_total", "get"));
-        // _DEBUG.updateTimingBars.display_one("debugBar", newData);
+        this.runDebug_last = performance.now();
 
         performance.mark('END_debug_total');
 
@@ -2261,21 +2291,6 @@ var _DEBUG = {
         performance.measure('drawTimings.display'  , 'START_drawTimings.display'  , 'END_drawTimings.display');
         performance.measure('bars.display'         , 'START_bars.display'         , 'END_bars.display');
         performance.measure('debug_total'          , 'START_debug_total'          , 'END_debug_total');
-
-        // Update changed elements. 
-        this.updateIfChanged2(this.DOM.debug_timings_total        , "_DEBUG.vault.debugTimers.debug_total"          , _APP.utility.timeIt("debug_total"              , "get").toFixed(1) + " ms");
-        this.updateIfChanged2(this.DOM.debug_timings_hashCache    , "_DEBUG.vault.debugTimers.hashCache_display"    , _APP.utility.timeIt("hashCache.display"        , "get").toFixed(1) + " ms");
-        this.updateIfChanged2(this.DOM.debug_timings_layerObjs    , "_DEBUG.vault.debugTimers.layerObjs_display"    , _APP.utility.timeIt("layerObjs.display"        , "get").toFixed(1) + " ms");
-        this.updateIfChanged2(this.DOM.debug_timings_drawTimings  , "_DEBUG.vault.debugTimers.drawTimings_display"  , _APP.utility.timeIt("drawTimings.display"      , "get").toFixed(1) + " ms");
-        this.updateIfChanged2(this.DOM.debug_timings_bars         , "_DEBUG.vault.debugTimers.bars_display"         , _APP.utility.timeIt("bars.display"             , "get").toFixed(1) + " ms");
-        this.updateIfChanged2(this.DOM.debug_timings_showGamestate, "_DEBUG.vault.debugTimers.showGamestate_display", _APP.utility.timeIt("showGamestate.display"    , "get").toFixed(1) + " ms");
-
-        // if(this.runDebug_lastDuration > 8){
-            // console.log(
-            //     `DEBUG took this long: ${_APP.utility.timeIt("debug_total"              , "get").toFixed(2)} ms` + 
-            //     ``
-            // );
-        // }
     },
 
     init: async function(){
@@ -2360,8 +2375,6 @@ var _DEBUG = {
         // _DEBUG.navBar1.showOne("view_layerObjects");
         // _DEBUG.navBar1.showOne("view_layerObjEdit");
         
-        // Load the hashCache.
-        
         // Load the HashCache viewer.
         this.hashCache.init();
 
@@ -2384,19 +2397,16 @@ var _DEBUG = {
         // _DEBUG.navBar3.showOne("view_temp_copy");
 
         // Set the output scaling (only in debug mode.)
-        // let scaleSlider = document.getElementById("scaleSlider");
-        // scaleSlider.value = "2.75";
-        // scaleSlider.dispatchEvent(new Event("input"));
-
-        // Start the debug loop.
-        // setTimeout(()=>this.debugTasks(), 1000);
+        let scaleSlider = document.getElementById("scaleSlider");
+        scaleSlider.value = "2.5";
+        scaleSlider.dispatchEvent(new Event("input"));
 
         // DEBUG DOM:
-        this.DOM.debug_timings_total         = document.getElementById("debug_timings_total");
-        this.DOM.debug_timings_hashCache     = document.getElementById("debug_timings_hashCache");
-        this.DOM.debug_timings_layerObjs     = document.getElementById("debug_timings_layerObjs");
-        this.DOM.debug_timings_drawTimings   = document.getElementById("debug_timings_drawTimings");
-        this.DOM.debug_timings_bars          = document.getElementById("debug_timings_bars");
-        this.DOM.debug_timings_showGamestate = document.getElementById("debug_timings_showGamestate");
+        // this.DOM.debug_timings_total         = document.getElementById("debug_timings_total");
+        // this.DOM.debug_timings_hashCache     = document.getElementById("debug_timings_hashCache");
+        // this.DOM.debug_timings_layerObjs     = document.getElementById("debug_timings_layerObjs");
+        // this.DOM.debug_timings_drawTimings   = document.getElementById("debug_timings_drawTimings");
+        // this.DOM.debug_timings_bars          = document.getElementById("debug_timings_bars");
+        // this.DOM.debug_timings_showGamestate = document.getElementById("debug_timings_showGamestate");
     },
 };

@@ -88,8 +88,11 @@ var _WEBW_V = {
 
                 case "_DEBUG.updateDebugTimings"     : {
                     // If debug is active and awaitDraw is active then run the debugTasks.
-                    if(_APP.debugActive && _APP.configObj.awaitDraw){
-                        _DEBUG.debugTasks(e.data.data);
+                    if(_APP.debugActive){
+                        // Save these timings.
+                        _DEBUG.savePrevGfxTimings(e.data.data);
+                        
+                        _DEBUG.debugTasks(1);
                     }
 
                     break;
