@@ -190,7 +190,8 @@ var gfxCoreV5 = {
     
             // Handle rotation (Uses temp copy then updates the ImageData by reference.)
             // Will return new width and height values for the image data (useful for rotation of non-square images.)
-            if(rotation)        { ({width, height} = this.rotateImageData(imageData, rotation)); }
+            // if(rotation)        { ({width, height} = this.rotateImageData(imageData, rotation)); }
+            if(rotation)        { ({width, height} = this.rotateImageData90(imageData)); }
     
             // Return the width and height (only useful for non-square image data.)
             return { width:width, height:height };
@@ -238,117 +239,83 @@ var gfxCoreV5 = {
             }
         },
 
-        // Flips image data horizontally. (By reference, changes source imageData.)
         flipImageDataHorizontally: function(imageData) {
             const width = imageData.width;
             const height = imageData.height;
-            const stride = width * 4; // precalculate stride
-            const data = imageData.data;
-
+            const data = new Uint32Array(imageData.data.buffer);
+            const bytesPerRow = width * 4;
+        
             for (let y = 0; y < height; y++) {
-                for (let x = 0; x < Math.floor(width / 2); x++) {
-                    // Calculate the index of the source pixel
-                    const srcIndex = y * stride + x * 4;
-
-                    // Calculate the index of the destination pixel (flipped horizontally)
-                    const destIndex = y * stride + (width - 1 - x) * 4;
-
-                    // Swap the pixel data
-                    const tempPixel = new Uint8Array(data.buffer, srcIndex, 4);
-                    data.set(new Uint8Array(data.buffer, destIndex, 4), srcIndex);
-                    data.set(tempPixel, destIndex);
+                // Calculate the index of the start of the row
+                const rowIndex = y * width;
+        
+                // Create a temporary copy of the row (reversed)
+                const tempRow = Array.from(data.slice(rowIndex, rowIndex + width)).reverse();
+        
+                // Replace the row in imageData with the reversed copy
+                for (let x = 0; x < width; x++) {
+                    data[rowIndex + x] = tempRow[x];
                 }
             }
+        
+            // Convert back to Uint8ClampedArray
+            imageData.data.set(new Uint8ClampedArray(data.buffer));
         },
-
-        // Flips image data vertically. (By reference, changes source image data.)
+        
         flipImageDataVertically: function(imageData) {
             const width = imageData.width;
             const height = imageData.height;
-            const stride = width * 4; // precalculate stride
-            const data = imageData.data;
-
+            const data = new Uint32Array(imageData.data.buffer);
+        
             for (let y = 0; y < Math.floor(height / 2); y++) {
+                // Calculate the index of the start of the row
+                const rowIndex = y * width;
+                const oppositeRowIndex = (height - y - 1) * width;
+        
+                // Create a temporary copy of the row
+                const tempRow = Array.from(data.slice(rowIndex, rowIndex + width));
+        
+                // Swap the row in imageData with the opposite row
                 for (let x = 0; x < width; x++) {
-                    // Calculate the index of the source pixel
-                    const srcIndex = y * stride + x * 4;
-
-                    // Calculate the index of the destination pixel (flipped vertically)
-                    const destIndex = (height - 1 - y) * stride + x * 4;
-
-                    // Swap the pixel data
-                    const tempPixel = new Uint8Array(data.buffer, srcIndex, 4);
-                    data.set(new Uint8Array(data.buffer, destIndex, 4), srcIndex);
-                    data.set(tempPixel, destIndex);
+                    data[rowIndex + x] = data[oppositeRowIndex + x];
+                    data[oppositeRowIndex + x] = tempRow[x];
                 }
             }
+        
+            // Convert back to Uint8ClampedArray
+            imageData.data.set(new Uint8ClampedArray(data.buffer));
         },
-        
-        // Rotates image data by the specified degrees. (Changes source image data. Uses temporary copy.)
-        allowedDegrees: [-90, 90, -180, 180, 270],
-        rotateImageData: function(imageData, degrees) {
-            // if(degrees == 0){
-            //     return {
-            //         width: imageData.width,
-            //         height: imageData.height
-            //     }
-            // }
 
-            // Only allow specific values for degrees.
-            if (this.allowedDegrees.indexOf(degrees) === -1) {
-                console.error('Invalid degrees. Only use these:', this.allowedDegrees);
-                return imageData;
-            }
         
-            // Break-out the imageData.
+        // Rotates image data by 90 degrees. (Changes source image data. Uses temporary copy.)
+        rotateImageData90: function(imageData){
+            // Break-out the object. 
             const { width, height, data } = imageData;
-        
-            // Create new ImageData.
-            const rotatedData = new Uint8Array(data.length);
-        
-             // Calculate these values in advance to avoid calculation inside the loop
-            const heightMinus1 = height - 1;
-            const widthMinus1 = width - 1;
 
-            // Rotate the image and store it in the rotatedData array
-            let targetX, targetY;
-            let newWidth, newHeight;
-            if (degrees % 180 === 0) {
-                newWidth = width;
-                newHeight = height;
-            } 
-            else {
-                newWidth = height;
-                newHeight = width;
-            }
-        
+            // 90 degree rotations require that the width and the height be swapped. 
+            const newWidth = height;
+            const newHeight = width;
+
+            // Create new array for the rotated data.
+            const rotatedData = new Uint8Array(newWidth * newHeight * 4);
             for (let y = 0; y < height; y++) {
                 for (let x = 0; x < width; x++) {
                     const sourceIndex = (y * width + x) * 4;
-        
-                    if (degrees === 90) {
-                        targetX = heightMinus1 - y; targetY = x;
-                    } 
-                    else if (degrees === -90 || degrees === 270) {
-                        targetX = y; 
-                        targetY = widthMinus1 - x;
-                    } 
-                    else if (degrees === 180 || degrees === -180) {
-                        targetX = widthMinus1 - x; 
-                        targetY = heightMinus1 - y;
-                    }
-        
+                    
+                    // Calculate the new position for this pixel
+                    const targetX = height - 1 - y;
+                    const targetY = x;
                     const targetIndex = (targetY * newWidth + targetX) * 4;
         
+                    // Copy the pixel data
                     rotatedData.set(data.subarray(sourceIndex, sourceIndex + 4), targetIndex);
                 }
             }
-        
-            // Update the imageData with the rotated data and dimensions
-            // NOTE: The source ImageData will have the width and height swapped on 90 degree rotations.
+
+            // Set the supplied data to the rotatedData.
             data.set(rotatedData);
-        
-            // Swap the width and the height if needed and return the dimensions.
+
+            // Return the width and the height of the rotated data.
             return {
                 width: newWidth,
                 height: newHeight
