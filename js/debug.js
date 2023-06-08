@@ -1143,7 +1143,7 @@ var _DEBUG = {
             showHide_Cursor1    : true,
             showHide_Card       : true,
             showHide_UnoLetter  : true,
-            showHide_Border     : true,
+            showHide_Border     : false,
         },
         classNames : [
             "LayerObject",

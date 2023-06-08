@@ -1254,8 +1254,67 @@ class LayerObject {
 
 // 
 class PrintText extends LayerObject{
+    /*
+    // Create one line as one LayerObject.
+    _GFX.layerObjs.createOne(PrintText, { text: "LINE OF TEXT: ", x:0, y: 0, layerObjKey: `textLine1`, layerKey: "L4", xyByGrid: true, });
+
+    // Create multiple lines as one LayerObject. (Width of the entire tilemap is determined by the longest line. Shorter lines are padded with spaces.)
+    _GFX.layerObjs.createOne(PrintText, { text: ["LINE 1", "THIS IS LINE 2"], x:0, y: 0, layerObjKey: `textLine1`, layerKey: "L4", xyByGrid: true, });
+
+    // Create multiple lines each being a separate LayerObject allowing each line to have different settings.
+    PrintText.genMultipleLines({
+        x:1, y:1, 
+        layerObjKey: "rules_text", tilesetKey: "font_tiles1", layerKey: "L4", 
+        settings: {},
+        settingsGreenText: { colorData: [ [ [255,255,255,255], [96,255,96,255] ]] },
+        settingsRedText  : { colorData: [ [ [255,255,255,255], [255,96,96,255] ]] },
+        lines: [
+            { t: `LINE WITH NO SETTINGS `                            },
+            { t: `LINE WITH INCLUDED SETTINGS `, s: this.settings     },
+            { t: `LINE WITH GREEN TEXT `       , s: settingsGreenText },
+            { t: `LINE WITH RED TEXT `         , s: settingsRedText   },
+        ]
+    });
+    */
+
     get text()   { return this._text; } 
     set text(value){ if( this._text !== value){ this._text = value; this._changed = true; } }
+
+    static genMultipleLines(config){
+        let line;
+        let settings;
+
+        // Get the x and y from the config.
+        let x = config.x;
+        let y = config.y;
+
+        // Create each line from the config.
+        for(let i=0, len=config.lines.length; i<len; i+=1){
+            // Get the text for this line (trim the right side of the line.)
+            line     = config.lines[i].t.trimRight();
+
+            // Get the settings for this line.
+            settings = config.lines[i].s ?? {};
+
+            // If the line has length then create the line with the text and settings for this line.
+            if(line.length){
+                // Create the line.
+                _GFX.layerObjs.createOne(PrintText, { 
+                    text: line, 
+                    x: x, 
+                    y: y,
+                    layerObjKey: `${config.layerObjKey}_L_${i}`, 
+                    layerKey   : config.layerKey   ?? "L4", 
+                    tilesetKey : config.tilesetKey ?? "font_tiles1", 
+                    xyByGrid   : true, 
+                    settings   : settings,
+                });
+            }
+
+            // Go to the next line down.
+            y+=1;
+        }
+    };
 
     constructor(config){
         super(config);

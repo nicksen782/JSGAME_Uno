@@ -361,6 +361,182 @@ class Card extends LayerObject{
     };
 };
 
+class Border extends LayerObject{
+    /*
+    Has static methods for building borders.
+    Borders are just a collection of LayerObjects for the corners, sides, and fills. 
+    There is no border management otherwise. You cannot change a border through methods here.
+    However, borders can still be changed through LayerObject methods if needed.
+    This class is basically identical to LayerObject but using it allows filtering in LayerObjects debug.
+    */
+
+    static createBorder(config){
+        /* 
+        Border.createBorder({
+            x:1, y:9, w: 26, h: 11, 
+            layerObjKey: `border1`, layerKey: "L4", xyByGrid: true, tilesetKey: "bg_tiles1"
+        });
+    
+        */
+        // A border uses 6 different tiles.
+        let tile_border_tl;
+        let tile_border_tr;
+        let tile_border_bl;
+        let tile_border_br;
+        let tile_border_vert;
+        let tile_border_horz;
+        config.borderType = config.borderType ?? 1;
+
+        // Border with transparency.
+        if(config.borderType == 1){
+            tile_border_tl   = _GFX.funcs.getTilemap("bg_tiles1", "border1_tl")[2];
+            tile_border_tr   = _GFX.funcs.getTilemap("bg_tiles1", "border1_tr")[2];
+            tile_border_bl   = _GFX.funcs.getTilemap("bg_tiles1", "border1_bl")[2];
+            tile_border_br   = _GFX.funcs.getTilemap("bg_tiles1", "border1_br")[2];
+            tile_border_vert = _GFX.funcs.getTilemap("bg_tiles1", "border1_row")[2];
+            tile_border_horz = _GFX.funcs.getTilemap("bg_tiles1", "border1_col")[2];
+        }
+        // Gameboard border.
+        else if(config.borderType == 2){
+            tile_border_tl   = _GFX.funcs.getTilemap("bg_tiles1", "border2_tl")[2];
+            tile_border_tr   = _GFX.funcs.getTilemap("bg_tiles1", "border2_tr")[2];
+            tile_border_bl   = _GFX.funcs.getTilemap("bg_tiles1", "border2_bl")[2];
+            tile_border_br   = _GFX.funcs.getTilemap("bg_tiles1", "border2_br")[2];
+            tile_border_vert = _GFX.funcs.getTilemap("bg_tiles1", "border2_row")[2];
+            tile_border_horz = _GFX.funcs.getTilemap("bg_tiles1", "border2_col")[2];
+        }
+        // Border with black instead of transparency.
+        else if(config.borderType == 3){
+            tile_border_tl   = _GFX.funcs.getTilemap("bg_tiles1", "border3_tl")[2];
+            tile_border_tr   = _GFX.funcs.getTilemap("bg_tiles1", "border3_tr")[2];
+            tile_border_bl   = _GFX.funcs.getTilemap("bg_tiles1", "border3_bl")[2];
+            tile_border_br   = _GFX.funcs.getTilemap("bg_tiles1", "border3_br")[2];
+            tile_border_vert = _GFX.funcs.getTilemap("bg_tiles1", "border3_row")[2];
+            tile_border_horz = _GFX.funcs.getTilemap("bg_tiles1", "border3_col")[2];
+        }
+    
+        // A border has 8 parts and thus 8 tilemaps. Potentially one more tilemap for the fill.
+        let tilemaps = {
+            // BORDER: CORNER: TOP-LEFT
+            corner_tl   : { 
+                layerObjKey: `${config.layerObjKey}_TL`, 
+                layerKey   : config.layerKey   ?? "L4", 
+                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tmap: new Uint8Array( [1, 1, tile_border_tl ] ),
+                x: config.x, y: config.y, 
+            },
+            // BORDER: CORNER: TOP-RIGHT
+            corner_tr   : { 
+                layerObjKey: `${config.layerObjKey}_TR`, 
+                layerKey   : config.layerKey   ?? "L4", 
+                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tmap: new Uint8Array( [1, 1, tile_border_tr ] ),
+                x: config.x+config.w-1, y: config.y, 
+            },
+            // BORDER: CORNER: BOTTOM-LEFT
+            corner_bl   : { 
+                layerObjKey: `${config.layerObjKey}_BL`, 
+                layerKey   : config.layerKey   ?? "L4", 
+                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tmap: new Uint8Array( [1, 1, tile_border_bl ] ),
+                x: config.x, y: config.y+config.h-1, 
+            },
+            // BORDER: CORNER: BOTTOM-RIGHT
+            corner_br   : { 
+                layerObjKey: `${config.layerObjKey}_BR`, 
+                layerKey   : config.layerKey   ?? "L4", 
+                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tmap: new Uint8Array( [1, 1, tile_border_br ] ),
+                x: config.x+config.w-1, y: config.y+config.h-1, 
+            },
+            
+            // BORDER: TOP
+            top   : { 
+                layerObjKey: `${config.layerObjKey}_T`, 
+                layerKey   : config.layerKey   ?? "L4", 
+                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tmap: new Uint8Array( [config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) ),
+                x: config.x+1, y: config.y, 
+            },
+            // BORDER: BOTTOM
+            bottom: { 
+                layerObjKey: `${config.layerObjKey}_B`,
+                layerKey   : config.layerKey   ?? "L4", 
+                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tmap: new Uint8Array([config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) ),
+                x: config.x+1, y: config.y + config.h-1, 
+            },
+            // BORDER: LEFT
+            left  : { 
+                layerObjKey: `${config.layerObjKey}_L`,
+                layerKey   : config.layerKey   ?? "L4", 
+                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tmap: new Uint8Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ),
+                x: config.x, y: config.y+1, 
+            },
+            // BORDER: RIGHT
+            right : { 
+                layerObjKey: `${config.layerObjKey}_R`,
+                layerKey   : config.layerKey   ?? "L4", 
+                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tmap: new Uint8Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ),
+                x: config.x+config.w-1, y: config.y+1, 
+            },
+        };
+
+        // Draw the border.
+        for(let key in tilemaps){
+            _GFX.layerObjs.createOne(Border, {
+                layerObjKey: tilemaps[key].layerObjKey, 
+                layerKey   : tilemaps[key].layerKey, 
+                tilesetKey : tilemaps[key].tilesetKey, 
+                tmap       : tilemaps[key].tmap,
+                x          : tilemaps[key].x, 
+                y          : tilemaps[key].y, 
+                xyByGrid: config.xyByGrid ?? false,
+                settings: config.settings,
+                removeHashOnRemoval: true, noResort: false,
+            });
+        }
+
+        // Fill the border?
+        if(config.fill){
+            tilemaps["fill"] = { 
+                layerObjKey: `${config.layerObjKey}_fill`, 
+                layerKey   : config.layerKey ?? "L4", 
+                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tmap: new Uint8Array(
+                    // Dimensions.
+                    [ config.w-2, config.h-2 ]
+                    // Tiles
+                    .concat(Array.from({ length: ((config.w-2) * (config.h-2)) }, () => config.fillTile))
+                ),
+                x:config.x+1, y:config.y+1,
+            }
+
+            // Draw the fill.
+            _GFX.layerObjs.createOne(Border, {
+                layerObjKey: tilemaps["fill"].layerObjKey, 
+                layerKey   : tilemaps["fill"].layerKey, 
+                tilesetKey : tilemaps["fill"].tilesetKey, 
+                tmap       : tilemaps["fill"].tmap, 
+                x          : tilemaps["fill"].x, 
+                y          : tilemaps["fill"].y, 
+                xyByGrid: true, settings: {},
+                removeHashOnRemoval: true, noResort: false,
+            });
+        }
+
+        // Return the tilemap data.
+        return tilemaps;
+    };
+    
+    constructor(config){
+        super(config);
+        this.className = this.constructor.name;
+    }
+};
+
 class Deck{
     /* 
     let deck = new Deck({
@@ -1041,49 +1217,49 @@ class Gameboard{
         let borderType_discard = 1;
 
         // border/fill: center
-        _APP.shared.border.createBorder1({
+        Border.createBorder({
             x:pos.centerBorder.x, y:pos.centerBorder.y, w: pos.centerBorder.w, h: pos.centerBorder.h, 
             layerObjKey: `cBorder`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1", 
             fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "border2_fill")[2], borderType: borderType_center 
         });
 
         // Border/fill: player 1
-        _APP.shared.border.createBorder1({
+        Border.createBorder({
             x:pos.p1Border.x, y:pos.p1Border.y, w: pos.p1Border.w, h: pos.p1Border.h, 
             layerObjKey: `p1Border`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1",
             fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "wood2")[2], borderType: borderType_player 
         });
         
         // Border/fill: player 2
-        _APP.shared.border.createBorder1({
+        Border.createBorder({
             x:pos.p2Border.x, y:pos.p2Border.y, w: pos.p2Border.w, h: pos.p2Border.h, 
             layerObjKey: `p2Border`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1",
             fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "wood2")[2], borderType: borderType_player 
         });
         
         // Border/fill: player 3
-        _APP.shared.border.createBorder1({
+        Border.createBorder({
             x:pos.p3Border.x, y:pos.p3Border.y, w: pos.p3Border.w, h: pos.p3Border.h, 
             layerObjKey: `p3Border`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1",
             fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "wood2")[2], borderType: borderType_player 
         });
         
         // Border/fill: player 4
-        _APP.shared.border.createBorder1({
+        Border.createBorder({
             x:pos.p4Border.x, y:pos.p4Border.y, w: pos.p4Border.w, h: pos.p4Border.h, 
             layerObjKey: `p4Border`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1",
             fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "wood2")[2], borderType: borderType_player 
         });
 
         // Border/fill: draw pile
-        _APP.shared.border.createBorder1({
+        Border.createBorder({
             x:pos.drawBorder.x, y:pos.drawBorder.y, w: pos.drawBorder.w, h: pos.drawBorder.h, 
             layerObjKey: `drapBorder`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1",
             fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "wood2")[2], borderType: borderType_draw 
         });
         
         // Border/fill: discard pile
-        _APP.shared.border.createBorder1({
+        Border.createBorder({
             x:pos.discBorder.x, y:pos.discBorder.y, w: pos.discBorder.w, h: pos.discBorder.h, 
             layerObjKey: `dispBorder`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1",
             fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "wood2")[2], borderType: borderType_discard 

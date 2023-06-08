@@ -41,7 +41,7 @@ _APP.game.gamestates["gs_TITLE"] = {
             _GFX.layerObjs.createOne(UnoLetter, { letter: "o", x:18, y: 5, layerObjKey: `letter_uno_o`, layerKey: "L1", xyByGrid: true, framesBeforeIndexChange: 15, framesIndex: 2 });
 
             let y = 12;
-            _APP.shared.border.createBorder1({
+            Border.createBorder({
                 x:2, y:y+=2, w: 24, h: 11, 
                 layerObjKey: `border1`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1"
             });
