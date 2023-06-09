@@ -3,6 +3,22 @@ _APP.shared = {
     genTimer: {
         timers:{},
 
+        // Get a timer object.
+        get: function(name, gamestate){
+            // EXAMPLE USAGE:
+            // _APP.shared.genTimer.get("timer1");
+            // _APP.shared.genTimer.get("timer1", _APP.game.gs1);
+
+            if(gamestate == undefined){ gamestate = _APP.game.gs1; }
+
+            if(!this.timers[gamestate][name]){ 
+                console.error("ERROR: genTimer:get: This timer does not exist:", name, gamestate);
+                return; 
+            }
+
+            return this.timers[gamestate][name];
+        },
+
         // Creates a timer. Check with check. Must be reset/recreated after it finishes before reusing.
         create: function(name, maxFrames, gamestate){
             // EXAMPLE USAGE:

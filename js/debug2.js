@@ -35,6 +35,28 @@ var _DEBUG2 = {
         showOne: _APP.navBar1.showOne,
         init   : _APP.navBar1.init,
     },
+    navBar_gs_PLAYING : {
+        // Holds the DOM for the nav buttons and nav views.
+        // debug_navBarTabs_gs_PLAYING
+        // debug_navBarViews_gs_PLAYING
+        DOM: {
+            'view_settings': {
+                'tab' : 'debug_navBar_gs_PLAYING_tab_settings',
+                'view': 'debug_navBar_gs_PLAYING_view_settings',
+            },
+            'view_deck': {
+                'tab' : 'debug_navBar_gs_PLAYING_tab_deck',
+                'view': 'debug_navBar_gs_PLAYING_view_deck',
+            },
+            'view_cardMove': {
+                'tab' : 'debug_navBar_gs_PLAYING_tab_cardMove',
+                'view': 'debug_navBar_gs_PLAYING_view_cardMove',
+            },
+        },
+        hideAll: _APP.navBar1.hideAll,
+        showOne: _APP.navBar1.showOne,
+        init   : _APP.navBar1.init,
+    },
     debugGamestate: {
         funcs: {
             // updateDisplayedValue: function(){},
@@ -454,6 +476,11 @@ var _DEBUG2 = {
             // _DEBUG2.navBar1.showOne("view_gs_N782");
             // _DEBUG2.navBar1.showOne("view_gs_TITLE");
             _DEBUG2.navBar1.showOne("view_gs_PLAYING");
+            
+            _DEBUG2.navBar_gs_PLAYING.init();
+            // _DEBUG2.navBar_gs_PLAYING.showOne("view_settings");
+            // _DEBUG2.navBar_gs_PLAYING.showOne("view_deck");
+            _DEBUG2.navBar_gs_PLAYING.showOne("view_cardMove");
 
             // KEYS
             let keys = [

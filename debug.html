@@ -142,6 +142,7 @@
         <span class="debug_fadeSliderText" id="fadeSliderL2Text">L2: OFF</span> <input type="range" class="debug_fadeSlider" id="fadeSliderL2" min="-1" max="11" step="1" value="0"> <br>
         <span class="debug_fadeSliderText" id="fadeSliderL3Text">L3: OFF</span> <input type="range" class="debug_fadeSlider" id="fadeSliderL3" min="-1" max="11" step="1" value="0"> <br>
         <span class="debug_fadeSliderText" id="fadeSliderL4Text">L4: OFF</span> <input type="range" class="debug_fadeSlider" id="fadeSliderL4" min="-1" max="11" step="1" value="0"> <br>
+        <br>
     </div>
 
     <!-- HASH CACHE STATS 1 -->
@@ -473,16 +474,6 @@
                         </td> 
                     </tr>
                     <tr> 
-                        <td class="debug_td_header2">COLOR</td>
-                        <td class="">
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_YELLOW');">YEL</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_BLUE');">BLU</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_GREEN');">GRE</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_RED');">RED</button>
-                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_BLACK');">BLA</button>
-                        </td> 
-                    </tr>
-                    <tr> 
                         <td class="debug_td_header2">VALUE</td>
                         <td class="">
                             <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_0');">0</button>
@@ -501,6 +492,16 @@
                             <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_WILD');">WI</button>
                             <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_WILD_DRAW4');">WD4</button>
                             <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustValue('CARD_BACK');">BAC</button>
+                        </td> 
+                    </tr>
+                    <tr> 
+                        <td class="debug_td_header2">COLOR</td>
+                        <td class="">
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_YELLOW');">YEL</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_BLUE');">BLU</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_GREEN');">GRE</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_RED');">RED</button>
+                            <button class="debug_button_card" onclick="_DEBUG.layerObjs.card_adjustColor('CARD_BLACK');">BLA</button>
                         </td> 
                     </tr>
                 </table>
@@ -609,89 +610,240 @@
             <div id="debug_navBar2_view_gs_CREDITS" class="controls_navBarViews">view: gs_CREDITS</div>
             <div id="debug_navBar2_view_gs_OPTIONS" class="controls_navBarViews">view: gs_OPTIONS</div>
             <div id="debug_navBar2_view_gs_PLAYING" class="controls_navBarViews">
-                <table class="debug_table">
-                    <tr> 
-                        <td class="debug_td_header">MESSAGE</td>
-                        <td class="debug_td_header">COLOR</td>
-                        <td class="debug_td_header">DIRECTION</td>
-                        <td class="debug_td_header">L1 BGCOLOR</td>
-                    </tr> 
-                    <tr> 
-                        <td class="">
-                            <select id="debug_PLAYING_messageSelect">
-                                <option value = "none"        >none</option>
-                                <option value = "tied"        >tied</option>
-                                <option value = "playsFirst"  >playsFirst</option>
-                                <option value = "reversed"    >reversed</option>
-                                <option value = "loseTurn"    >loseTurn</option>
-                                <option value = "skipLoseTurn">skipLoseTurn</option>
-                                <option value = "d2LoseTurn"  >d2LoseTurn</option>
-                                <option value = "d4LoseTurn"  >d4LoseTurn</option>
-                                <option value = "winsRound"   >winsRound</option>
-                                <option value = "playCancel"  >playCancel</option>
-                                <option value = "passCancel"  >passCancel</option>
-                                <option value = "wrongCard"   >wrongCard</option>
-                            </select>
-                            <button id="debug_PLAYING_messageButton">SET</button>
-                        </td> 
-                        <td> 
-                            <select id="debug_PLAYING_colorPlayerSelect">
-                                <option value = "P1">P1</option>
-                                <option value = "P2">P2</option>
-                                <option value = "P3">P3</option>
-                                <option value = "P4">P4</option>
-                            </select>
-                            <select id="debug_PLAYING_colorSelect">
-                                <option value = "CARD_BLACK" >BLACK</option>
-                                <option value = "CARD_YELLOW">YELLOW</option>
-                                <option value = "CARD_BLUE"  >BLUE</option>
-                                <option value = "CARD_RED"   >RED</option>
-                                <option value = "CARD_GREEN" >GREEN</option>
-                            </select>
-                            <button id="debug_PLAYING_colorButton">SET</button>
-                        </td> 
-                        <td> 
-                            <button id="debug_PLAYING_dirFButton">F</button>
-                            <button id="debug_PLAYING_dirNButton">N</button>
-                            <button id="debug_PLAYING_dirRButton">R</button>
-                        </td> 
-                        <td> 
-                            <select id="debug_PLAYING_bgColorSelect">
-                                <option value="0,0,0,0"        >CLEAR</option>
-                                <option value="0,0,0,255"      >BLACK</option>
-                                <option value="32,32,48,255"   >BLACK-ISH</option>
-                                <option value="255,255,255,255">WHITE</option>
-                                <option value="255,0,0,255"    >RED</option>
-                                <option value="0,255,0,255"    >GREEN</option>
-                                <option value="0,0,255,255"    >BLUE</option>
-                            </select>
-                            <button id="debug_PLAYING_bgColorButton">SET</button>
-                        </td> 
-                    </tr>
-                </tr>
-                </table>
-                
-                <div id="debug_cardAssignment_contextMenu">
+
+                <div id="debug_navBarTabs_gs_PLAYING">
+                    <div id="debug_navBar_gs_PLAYING_tab_settings" class="controls_navBarTabs">SETTINGS</div>
+                    <div id="debug_navBar_gs_PLAYING_tab_deck"     class="controls_navBarTabs">DECK</div>
+                    <div id="debug_navBar_gs_PLAYING_tab_cardMove" class="controls_navBarTabs">CARDMOVE</div>
                 </div>
-
-                <table class="debug_table">
-                    <!-- <tr> 
-                        <td class="debug_td_header">DRAW</td>
-                        <td class="debug_td_header">DISCARD</td>
-                        <td class="debug_td_header">P1</td>
-                        <td class="debug_td_header">P2</td>
-                        <td class="debug_td_header">P3</td>
-                        <td class="debug_td_header">P4</td>
-                    </tr>  -->
-                    <tr> <td class="debug_td_header">DRAW</td>   <td> <div id="debug_drawCards" class="debug_cardDisplay"></div> </td>   </tr>
-                    <tr> <td class="debug_td_header">DISCARD</td><td> <div id="debug_discardCards" class="debug_cardDisplay"></div> </td></tr>
-                    <tr> <td class="debug_td_header">P1</td>     <td> <div id="debug_P1Cards" class="debug_cardDisplay"></div> </td>     </tr>
-                    <tr> <td class="debug_td_header">P2</td>     <td> <div id="debug_P2Cards" class="debug_cardDisplay"></div> </td>     </tr>
-                    <tr> <td class="debug_td_header">P3</td>     <td> <div id="debug_P3Cards" class="debug_cardDisplay"></div> </td>     </tr>
-                    <tr> <td class="debug_td_header">P4</td>     <td> <div id="debug_P4Cards" class="debug_cardDisplay"></div> </td>     </tr>
-                </table>
-
+                <div id="debug_navBarViews_gs_PLAYING">
+                    <div id="debug_navBar_gs_PLAYING_view_settings" class="controls_navBarViews">
+                        <!-- GAME FLAGS -->
+                        <table class="debug_table">
+                            <tr> 
+                                <td class="debug_td_header">MESSAGE</td>
+                                <td class="debug_td_header">COLOR</td>
+                                <td class="debug_td_header">DIRECTION</td>
+                                <td class="debug_td_header">L1 BGCOLOR</td>
+                            </tr> 
+                            <tr> 
+                                <td class="">
+                                    <select id="debug_PLAYING_messageSelect">
+                                        <option value = "none"        >none</option>
+                                        <option value = "tied"        >tied</option>
+                                        <option value = "playsFirst"  >playsFirst</option>
+                                        <option value = "reversed"    >reversed</option>
+                                        <option value = "loseTurn"    >loseTurn</option>
+                                        <option value = "skipLoseTurn">skipLoseTurn</option>
+                                        <option value = "d2LoseTurn"  >d2LoseTurn</option>
+                                        <option value = "d4LoseTurn"  >d4LoseTurn</option>
+                                        <option value = "winsRound"   >winsRound</option>
+                                        <option value = "playCancel"  >playCancel</option>
+                                        <option value = "passCancel"  >passCancel</option>
+                                        <option value = "wrongCard"   >wrongCard</option>
+                                    </select>
+                                    <button id="debug_PLAYING_messageButton">SET</button>
+                                </td> 
+                                <td> 
+                                    <select id="debug_PLAYING_colorPlayerSelect">
+                                        <option value = "P1">P1</option>
+                                        <option value = "P2">P2</option>
+                                        <option value = "P3">P3</option>
+                                        <option value = "P4">P4</option>
+                                    </select>
+                                    <select id="debug_PLAYING_colorSelect">
+                                        <option value = "CARD_BLACK" >BLACK</option>
+                                        <option value = "CARD_YELLOW">YELLOW</option>
+                                        <option value = "CARD_BLUE"  >BLUE</option>
+                                        <option value = "CARD_RED"   >RED</option>
+                                        <option value = "CARD_GREEN" >GREEN</option>
+                                    </select>
+                                    <button id="debug_PLAYING_colorButton">SET</button>
+                                </td> 
+                                <td> 
+                                    <button id="debug_PLAYING_dirFButton">F</button>
+                                    <button id="debug_PLAYING_dirNButton">N</button>
+                                    <button id="debug_PLAYING_dirRButton">R</button>
+                                </td> 
+                                <td> 
+                                    <select id="debug_PLAYING_bgColorSelect">
+                                        <option value="0,0,0,0"        >CLEAR</option>
+                                        <option value="0,0,0,255"      >BLACK</option>
+                                        <option value="32,32,48,255"   >BLACK-ISH</option>
+                                        <option value="255,255,255,255">WHITE</option>
+                                        <option value="255,0,0,255"    >RED</option>
+                                        <option value="0,255,0,255"    >GREEN</option>
+                                        <option value="0,0,255,255"    >BLUE</option>
+                                    </select>
+                                    <button id="debug_PLAYING_bgColorButton">SET</button>
+                                </td> 
+                            </tr>
+                        </tr>
+                        </table>
+                    </div>
+                    <div id="debug_navBar_gs_PLAYING_view_deck"     class="controls_navBarViews">
+                        <!-- DECK -->
+                        <div id="debug_cardAssignment_contextMenu">
+                        </div>
+                        <table class="debug_table">
+                            <tr> <td class="debug_td_header">DRAW</td>   <td> <div id="debug_drawCards" class="debug_cardDisplay"></div> </td>   </tr>
+                            <tr> <td class="debug_td_header">DISCARD</td><td> <div id="debug_discardCards" class="debug_cardDisplay"></div> </td></tr>
+                            <tr> <td class="debug_td_header">P1</td>     <td> <div id="debug_P1Cards" class="debug_cardDisplay"></div> </td>     </tr>
+                            <tr> <td class="debug_td_header">P2</td>     <td> <div id="debug_P2Cards" class="debug_cardDisplay"></div> </td>     </tr>
+                            <tr> <td class="debug_td_header">P3</td>     <td> <div id="debug_P3Cards" class="debug_cardDisplay"></div> </td>     </tr>
+                            <tr> <td class="debug_td_header">P4</td>     <td> <div id="debug_P4Cards" class="debug_cardDisplay"></div> </td>     </tr>
+                        </table>
+                    </div>
+                    <div id="debug_navBar_gs_PLAYING_view_cardMove" class="controls_navBarViews">
+                        <!-- CARD MOVEMENTS -->
+                        <label class="debug_title">CARD SELECTS!</label>
+                        <table class="debug_table">
+                            <tr>
+                                <td class="debug_td_header3">..</td>
+                                <td class="debug_td_header3">CARD0</td>
+                                <td class="debug_td_header3">CARD1</td>
+                                <td class="debug_td_header3">CARD2</td>
+                                <td class="debug_td_header3">CARD3</td>
+                                <td class="debug_td_header3">CARD4</td>
+                            </tr>
+                                <tr>
+                                    <td class="debug_td_header3">P1</td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P1", layerObjKey: "P1_card_0" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P1", layerObjKey: "P1_card_0" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P1", layerObjKey: "P1_card_0" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P1", layerObjKey: "P1_card_1" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P1", layerObjKey: "P1_card_1" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P1", layerObjKey: "P1_card_1" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P1", layerObjKey: "P1_card_2" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P1", layerObjKey: "P1_card_2" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P1", layerObjKey: "P1_card_2" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P1", layerObjKey: "P1_card_3" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P1", layerObjKey: "P1_card_3" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P1", layerObjKey: "P1_card_3" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P1", layerObjKey: "P1_card_4" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P1", layerObjKey: "P1_card_4" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P1", layerObjKey: "P1_card_4" });'>DISC</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="debug_td_header3">P2</td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P2", layerObjKey: "P2_card_0" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P2", layerObjKey: "P2_card_0" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P2", layerObjKey: "P2_card_0" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P2", layerObjKey: "P2_card_1" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P2", layerObjKey: "P2_card_1" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P2", layerObjKey: "P2_card_1" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P2", layerObjKey: "P2_card_2" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P2", layerObjKey: "P2_card_2" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P2", layerObjKey: "P2_card_2" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P2", layerObjKey: "P2_card_3" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P2", layerObjKey: "P2_card_3" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P2", layerObjKey: "P2_card_3" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P2", layerObjKey: "P2_card_4" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P2", layerObjKey: "P2_card_4" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P2", layerObjKey: "P2_card_4" });'>DISC</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="debug_td_header3">P3</td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P3", layerObjKey: "P3_card_0" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P3", layerObjKey: "P3_card_0" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P3", layerObjKey: "P3_card_0" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P3", layerObjKey: "P3_card_1" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P3", layerObjKey: "P3_card_1" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P3", layerObjKey: "P3_card_1" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P3", layerObjKey: "P3_card_2" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P3", layerObjKey: "P3_card_2" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P3", layerObjKey: "P3_card_2" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P3", layerObjKey: "P3_card_3" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P3", layerObjKey: "P3_card_3" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P3", layerObjKey: "P3_card_3" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P3", layerObjKey: "P3_card_4" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P3", layerObjKey: "P3_card_4" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P3", layerObjKey: "P3_card_4" });'>DISC</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="debug_td_header3">P4</td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P4", layerObjKey: "P4_card_0" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P4", layerObjKey: "P4_card_0" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P4", layerObjKey: "P4_card_0" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P4", layerObjKey: "P4_card_1" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P4", layerObjKey: "P4_card_1" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P4", layerObjKey: "P4_card_1" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P4", layerObjKey: "P4_card_2" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P4", layerObjKey: "P4_card_2" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P4", layerObjKey: "P4_card_2" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P4", layerObjKey: "P4_card_3" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P4", layerObjKey: "P4_card_3" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P4", layerObjKey: "P4_card_3" });'>DISC</button>
+                                    </td>
+                                    <td class="">
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P4", layerObjKey: "P4_card_4" });'>SELE</button>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P4", layerObjKey: "P4_card_4" });'>BACK</button>
+                                        <br>
+                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P4", layerObjKey: "P4_card_4" });'>DISC</button>
+                                    </td>
+                                </tr>
+                        </table>
+                        <br>
+                    </div>
+                </div>
                 <br>
+
             </div>
         </div>
     </div>

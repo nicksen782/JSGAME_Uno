@@ -483,6 +483,10 @@ var _GFX = {
                     // Make sure that settings is an object.
                     tilemap.settings = this.correctSettings(tilemap.settings);
 
+                    // Ensure that x and y are integers.
+                    tilemap.x = tilemap.x | 0;
+                    tilemap.y = tilemap.y | 0;
+
                     // Does this tilemapKey already exist?
                     exists = _GFX.currentData[layer].tilemaps[tilemapKey] ? true : false;
 
@@ -1182,19 +1186,19 @@ class LayerObject {
         return this.orgConfig;
     };
 
-    // Render function.
+    // Force x and y values to be within the acceptable range.
     clampXandY(x, y, w, h){
         let maxX = _APP.configObj.dimensions.cols * _APP.configObj.dimensions.tileWidth;
         let maxY = _APP.configObj.dimensions.rows * _APP.configObj.dimensions.tileHeight;
-
+        
         // console.log(x,y,w,h, this);
-
+        
         // Min/Max x.
         x = Math.max(
             0-w, 
             Math.min(x, maxX+w)
         );
-        
+
         // Min/Max y.
         y = Math.max(
             0-h, 
@@ -1204,6 +1208,7 @@ class LayerObject {
         return { x:x, y:y };
     };
 
+    // Render function.
     render(onlyReturnLayerObjData=false){
         // Do not render unchanged LayerObjects.
         if(!this._changed){ return; }
@@ -1215,6 +1220,10 @@ class LayerObject {
             x = x * this.tw; 
             y = y * this.th;
         }
+
+        // Ensure that x and y are integers.
+        x = x | 0;
+        y = y | 0;
         
         // Clamp x and y to the acceptable range on screen.
         let w = this.tmap[0] * _APP.configObj.dimensions.tileWidth;
@@ -1351,6 +1360,10 @@ class PrintText extends LayerObject{
             x = x * this.tw; 
             y = y * this.th;
         }
+
+        // Ensure that x and y are integers.
+        x = x | 0;
+        y = y | 0;
 
         //
         let layerObjectData;

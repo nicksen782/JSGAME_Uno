@@ -359,6 +359,125 @@ class Card extends LayerObject{
         // Update the displayed color.
         this._change_color(this._color);
     };
+
+    // Card movements.
+    fromPos = { x:0, y:0 };
+    currPos = { x:0, y:0 };
+    toPos   = { x:0, y:0 };
+    movementDone = false;
+
+    // Sets up a card movement from point A to point B.
+    moveCardFromPosToPos(fromPos, toPos){
+        this.movementDone = false;
+        
+        // Store the fromPos, currPos and toPos.
+        this.fromPos = {...fromPos};
+        this.currPos = {...fromPos};
+        this.toPos   = {...toPos};
+        
+        // Move the card to the starting position.
+        this.x = this.currPos.x;
+        this.y = this.currPos.y;
+    };
+
+    // Sets up the "selected card" movement (uses: moveCardFromPosToPos.)
+    moveCardToSelected(currPlayer){
+        let from = { x:this.x, y:this.y };
+        let dest = { x:this.x, y:this.y };
+        if     (currPlayer == "P1"){ dest.y -= 2; } // Avoids covering the message box.
+        else if(currPlayer == "P2"){ dest.x += 2; } // Avoids covering the message box.
+        else if(currPlayer == "P3"){ dest.y += 2; } // Avoids covering the message box.
+        else if(currPlayer == "P4"){ dest.x -= 2; } // Avoids covering the message box.
+
+        this.moveCardFromPosToPos( from, dest );
+    };
+
+    // Sets up the "unselected card" movement (uses: moveCardFromPosToPos.)
+    moveCardToUnselected(currPlayer){
+        let from = { x:this.x, y:this.y };
+        let dest = { x:this.x, y:this.y };
+        if     (currPlayer == "P1"){ dest.y += 2; } 
+        else if(currPlayer == "P2"){ dest.x -= 2; } 
+        else if(currPlayer == "P3"){ dest.y -= 2; } 
+        else if(currPlayer == "P4"){ dest.x += 2; } 
+
+        this.moveCardFromPosToPos( from, dest );
+    };
+    moveCardToDiscard(currPlayer){
+        let from = { x:this.x, y:this.y };
+        let dest = { x:Deck.discardPos[0], y:Deck.discardPos[1] };
+        this.moveCardFromPosToPos( from, dest );
+    };
+
+    roundToNearestMultiple(number, multiple) {
+        var numOfDecimalPlaces = (multiple.toString().split('.')[1] || []).length;
+        return parseFloat((Math.round(number / multiple) * multiple).toFixed(numOfDecimalPlaces));
+    };
+
+    nextFrame() {
+        // CARD MOVEMENT
+        if(!this.movementDone){
+            // Move from currPos to toPos on x/y by changeVal.
+            let changeVal = 0.25;
+            let tolerance = 0.01; // Tolerance for considering as reached the position
+    
+            // Track which coords change.
+            let changedX = false;
+            let changedY = false;
+        
+            // Keep track of the previous position.
+            let prevX = this.currPos.x;
+            let prevY = this.currPos.y;
+        
+            // Move right: currPos.x moving towards toPos.x.
+            if      (this.currPos.x < this.toPos.x - tolerance) { this.currPos.x += changeVal; changedX = true; }
+            
+            // Move left: currPos.x moving towards toPos.x. 
+            else if (this.currPos.x > this.toPos.x + tolerance) { this.currPos.x -= changeVal; changedX = true; }
+        
+            // Move down: currPos.y moving towards toPos.y.
+            if      (this.currPos.y < this.toPos.y - tolerance) { this.currPos.y += changeVal; changedY = true; }
+            
+            // Move up: currPos.y moving towards toPos.y.
+            else if (this.currPos.y > this.toPos.y + tolerance) { this.currPos.y -= changeVal; changedY = true; }
+        
+            // Update the x/y position(s).
+            if(changedX) { this.x = this.roundToNearestMultiple(this.currPos.x, changeVal); }
+            if(changedY) { this.y = this.roundToNearestMultiple(this.currPos.y, changeVal); }
+        
+            // Is the movement done? Check if it's close to the target and moving away.
+            if (
+                // If "close enough" with tolerance.
+                (
+                    Math.abs(this.x - this.toPos.x) <= tolerance && 
+                    Math.abs(this.y - this.toPos.y) <= tolerance
+                ) 
+                
+                || 
+    
+                // If "close enough" and considering the rounding.
+                (
+                    (this.currPos.x - prevX) * (this.toPos.x - this.currPos.x) < 0 ||
+                    (this.currPos.y - prevY) * (this.toPos.y - this.currPos.y) < 0
+                )
+            ) {
+                // Set the x and y directly to toPos values.
+                this.x = this.toPos.x;
+                this.y = this.toPos.y;
+        
+                // Set the current position to the target position to ensure it's exactly reached.
+                this.currPos.x = this.x;
+                this.currPos.y = this.y;
+        
+                // Set the flag for the movement being completed.
+                this.movementDone = true;
+            }
+        }
+
+        // OTHER
+        //
+    };
+
 };
 
 class Border extends LayerObject{
@@ -576,7 +695,7 @@ class Deck{
     // static wildCursorPos  = [ [9 ,15], [12,15], [15,15], [18,15] ]; // CURSORS IN WILD MENU  : wild_pos_cursor
     // static pauseCursorPos = [ [8 ,12], [8 ,13], [8 ,14], [8 ,15] ]; // CURSORS IN PAUSE MENU : pause_pos_cursor
     static drawPos        = [ 10,11 ]; // Draw Pile          : draw_pos
-    static discardPos     = [ 15,11 ]; // Discard Pile       : discard_pos
+    static discardPos     = [ 16,11 ]; // Discard Pile       : discard_pos
     static drawPosBelow   = [ 10,15 ]; // Under Draw Pile    : draw_pos_below
     static discardPosBelow= [ 15,15 ]; // Under Discard Pile : discard_pos_below
 
