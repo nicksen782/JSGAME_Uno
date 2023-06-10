@@ -571,6 +571,13 @@ var gfxMainV5 = {
                         continue; 
                     }
                     
+                    if(curr_map.hidden != newMap.hidden){
+                        filtered_newMapKeys.push(newMapKey);
+                        filtered_newMapData[newMapKey] = newMap;
+                        // console.log(`${newMapKey}: Changed 'hidden': curr: ${curr_map.hidden}, new: ${newMap.hidden}`)
+                        // filtered_reasons[newMapKey] = `${newMapKey}: Changed 'hidden': curr: ${curr_map.hidden}, new: ${newMap.hidden}`;
+                    }
+
                     let settings_same = _GFX.utilities.areSettingsObjectsEqual(curr_map.settings, newMap.settings);
                     if(!settings_same){ 
                         filtered_newMapKeys.push(newMapKey);
@@ -579,7 +586,7 @@ var gfxMainV5 = {
                         // filtered_reasons[newMapKey] = `${newMapKey}: Changed settings: curr: ${JSON.stringify(curr_map.settings)}, new: ${JSON.stringify(newMap.settings)}`;
                         continue; 
                     }
-    
+
                     let tmap_same = _GFX.utilities.areArraysEqual(curr_map.tmap, newMap.tmap);
                     if(!tmap_same){ 
                         filtered_newMapKeys.push(newMapKey);
@@ -850,6 +857,12 @@ var gfxMainV5 = {
                             // console.log(`to imgDataCache: ${layerKey} ${allMapKeys[i]} ${map.relatedMapKey}`);
                         // }
     
+                        // Skip the drawing of any maps that have their hidden flag set.
+                        if(map.hidden){ 
+                            // console.log("Skipping hidden map:", allMapKeys[i]);
+                            continue; 
+                        }
+
                         // If the noResort flag is set then push to the flicker array.
                         if(!map.noResort){ part1.push( allMapKeys[i] ); }
                         

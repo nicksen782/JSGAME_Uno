@@ -128,8 +128,8 @@ var _GFX = {
 
                 // ADD or CHANGED
                 if(
-                    layerData.tilemaps[mapKey].hashPrev == 0 ||
-                    layerData.tilemaps[mapKey].hashPrev != layerData.tilemaps[mapKey].hash
+                    tilemap.hashPrev == 0 ||
+                    tilemap.hashPrev != tilemap.hash
                 ){ 
                     this.GFX_UPDATE_DATA[layerKey]["CHANGES"][mapKey] = tilemap; 
                     this.GFX_UPDATE_DATA[layerKey].changes = true; 
@@ -507,6 +507,7 @@ var _GFX = {
                         // Location.
                         tilemap.x, 
                         tilemap.y, 
+                        tilemap.hidden ?? false, 
 
                         // Uniqueness of this tilemap.
                         tilemap.ts,                       // Tileset
@@ -526,8 +527,9 @@ var _GFX = {
                             y        : tilemap.y,
                             w        : tilemap.w,
                             h        : tilemap.h,
+                            hidden   : tilemap.hidden ?? false,
                             settings : tilemap.settings,
-                            mapKey : tilemapKey,
+                            mapKey   : tilemapKey,
                             
                             text : tilemap.text,
                             removeHashOnRemoval: tilemap.removeHashOnRemoval ?? true,
@@ -1093,7 +1095,9 @@ class LayerObject {
     // get tilesetKey() { return this._tilesetKey; } 
     get settings()   { return this._settings; } 
     get xyByGrid()   { return this._xyByGrid; } 
+    get hidden()     { return this._hidden; } 
     
+    set hidden(value)     { if( this._hidden     !== value){ this._hidden     = value; this._changed = true; } }
     set x(value)          { if( this._x          !== value){ this._x          = value; this._changed = true; } }
     set y(value)          { if( this._y          !== value){ this._y          = value; this._changed = true; } }
     set tmap(value)       { if( this._tmap       !== value){ this._tmap       = value; this._changed = true; } }
@@ -1169,6 +1173,8 @@ class LayerObject {
         // x,y positioning (grid or pixel based.)
         this.xyByGrid = config.xyByGrid ?? false;
         
+        this.hidden = config.hidden ?? false;
+
         // Change detection.
         this._changed = true;
     };
@@ -1243,6 +1249,7 @@ class LayerObject {
             removeHashOnRemoval: this.removeHashOnRemoval,
             noResort           : this.noResort,
         });
+        layerObjectData[this.layerObjKey].hidden = this.hidden;
 
         if(onlyReturnLayerObjData){ 
             layerObjectData[this.layerObjKey].layerKey = this.layerKey;
@@ -1378,6 +1385,7 @@ class PrintText extends LayerObject{
             removeHashOnRemoval: this.removeHashOnRemoval,
             noResort           : this.noResort,
         });
+        layerObjectData[this.layerObjKey].hidden = this.hidden;
         this.tmap = layerObjectData[this.layerObjKey].tmap;
 
         // Clamp x and y to the acceptable range on screen.

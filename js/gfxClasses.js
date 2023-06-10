@@ -403,9 +403,25 @@ class Card extends LayerObject{
 
         this.moveCardFromPosToPos( from, dest );
     };
-    moveCardToDiscard(currPlayer){
+    moveCardToDiscard(){
+        let discPos = Deck.discardPos;
         let from = { x:this.x, y:this.y };
-        let dest = { x:Deck.discardPos[0], y:Deck.discardPos[1] };
+        let dest = { x: discPos[0], y: discPos[1] };
+        this.moveCardFromPosToPos( from, dest );
+    };
+
+    moveDrawCardToHome(playerKey, cardSlot){
+        let cardPos = Deck.cardPos[playerKey][cardSlot];
+        let drawPos = Deck.drawPos;
+        let from = { x: drawPos[0], y: drawPos[1] };
+        let dest = { x: cardPos[0], y: cardPos[1] };
+        this.moveCardFromPosToPos( from, dest );
+    };
+    
+    moveCardToHome(playerKey, cardSlot){
+        let cardPos = Deck.cardPos[playerKey][cardSlot];
+        let from = { x: this.x, y: this.y };
+        let dest = { x: cardPos[0], y: cardPos[1] };
         this.moveCardFromPosToPos( from, dest );
     };
 
@@ -486,7 +502,7 @@ class Border extends LayerObject{
     Borders are just a collection of LayerObjects for the corners, sides, and fills. 
     There is no border management otherwise. You cannot change a border through methods here.
     However, borders can still be changed through LayerObject methods if needed.
-    This class is basically identical to LayerObject but using it allows filtering in LayerObjects debug.
+    This class is basically identical to LayerObject. but using it allows filtering in LayerObjects debug.
     */
 
     static createBorder(config){

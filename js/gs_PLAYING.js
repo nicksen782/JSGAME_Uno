@@ -39,10 +39,6 @@ _APP.game.gamestates["gs_PLAYING"] = {
         // add: function(){ console.log("add :", this.parent); },
     },
 
-    // Move card to discard pile.
-    moveCardToDiscardPile(card_layerObjKey, card){
-    },
-
     // Run once upon changing to this game state.
     init: function(){
         // Clear the screen and the graphics caches.
@@ -107,7 +103,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
                 card        : null,
                 start: function(){
                     _APP.shared.genTimer.create(this.timerKey, 60);
-                    this.card = _GFX.layerObjs.getOne(obj.layerObjKey),
+                    this.card = _GFX.layerObjs.getOne(obj.layerObjKey);
                     this.card.moveCardToSelected(obj.playerKey); 
                     this.started=true; 
                 }
@@ -121,7 +117,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
                 card     : obj.card,
                 start: function(){
                     _APP.shared.genTimer.create(this.timerKey, 60);
-                    this.card = _GFX.layerObjs.getOne(obj.layerObjKey),
+                    this.card = _GFX.layerObjs.getOne(obj.layerObjKey);
                     this.card.moveCardToUnselected(obj.playerKey); 
                     this.started=true; 
                 }
@@ -135,8 +131,37 @@ _APP.game.gamestates["gs_PLAYING"] = {
                 card     : obj.card,
                 start: function(){
                     _APP.shared.genTimer.create(this.timerKey, 60);
-                    this.card = _GFX.layerObjs.getOne(obj.layerObjKey),
-                    this.card.moveCardToDiscard(obj.playerKey); 
+                    this.card = _GFX.layerObjs.getOne(obj.layerObjKey);
+                    this.card.moveCardToDiscard(); 
+                    this.started=true; 
+                }
+            };
+        }
+        else if(type == "draw"){
+            cardMovement = {
+                timerKey : obj.timerKey, 
+                started  : obj.started, 
+                finished : obj.finished, 
+                card     : obj.card,
+                start: function(){
+                    _APP.shared.genTimer.create(this.timerKey, 60);
+                    this.card = _GFX.layerObjs.getOne(obj.layerObjKey);
+                    this.card.moveDrawCardToHome(obj.playerKey, obj.cardSlot); 
+                    this.started=true; 
+                }
+            };
+        }
+        else if(type == "home"){
+            cardMovement = {
+                timerKey : obj.timerKey, 
+                started  : obj.started, 
+                finished : obj.finished, 
+                card     : obj.card,
+                start: function(){
+                    _APP.shared.genTimer.create(this.timerKey, 60);
+                    this.card = _GFX.layerObjs.getOne(obj.layerObjKey);
+                    let [playerKey, cardSlot] = obj.layerObjKey.split("_card_");
+                    this.card.moveCardToHome(playerKey, +cardSlot); 
                     this.started=true; 
                 }
             };
@@ -206,7 +231,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         if(this.cardMovements.length){ canRunGameLogic = this.handleCardMovements(); }
 
         else if(canRunGameLogic){
-            console.log("GAME LOGIC");
+            // console.log("GAME LOGIC");
             // let card;
             // card = this.getNextCardFromDrawpile();
             // if(card){

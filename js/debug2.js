@@ -250,12 +250,151 @@ var _DEBUG2 = {
                     _GFX.funcs.updateL1BgColorRgba(value);
                 }, false);
 
+                // DECK SETTINGS.
+                this.settings.init(this);
+
                 // DECK CONTROL.
                 this.deckControl.init(this);
+
+                // CARD MOVE.
+                this.cardMove.init(this);
             },
             init: function(){
                 _DEBUG2.navBar1.showOne("view_gs_PLAYING");
                 this.inited = true; 
+            },
+            settings: {
+                parent:null,
+                DOM: { 
+                    // "contextMenu"   : "debug_cardAssignment_contextMenu",
+                },
+                init: function(parent){
+                    this.parent = parent;
+                    for(let elemKey in this.DOM){
+                        this.DOM[elemKey] = document.getElementById(this.DOM[elemKey]);
+                    }
+                },
+            },
+            cardMove: {
+                parent:null,
+                DOM: { 
+                    "cardMoveTable"   : "debug_cardMoveTable",
+                },
+                createBr  : function(){
+                    let elem = document.createElement("br");
+                    return elem;
+                },
+                createSelectButton  : function(playerKey, layerObjKey){
+                    let elem = document.createElement("button");
+                    elem.style.width = "56px";
+                    elem.innerText = "SELE";
+                    let timerKey = "moveCardToSelected";
+                    elem.onclick = function(){
+                        _APP.game.gamestates.gs_PLAYING.addCardMovement(
+                            "selected"  , { 
+                                timerKey   : timerKey   , 
+                                playerKey  : playerKey  , 
+                                layerObjKey: layerObjKey 
+                        });
+                    };
+                    return elem;
+                },
+                createUnselectButton: function(playerKey, layerObjKey){
+                    let elem = document.createElement("button");
+                    elem.style.width = "56px";
+                    elem.innerText = "BACK";
+                    let timerKey = "moveCardToUnselected";
+                    elem.onclick = function(){
+                        _APP.game.gamestates.gs_PLAYING.addCardMovement(
+                            "unselected"  , { 
+                                timerKey   : timerKey   , 
+                                playerKey  : playerKey  , 
+                                layerObjKey: layerObjKey 
+                        });
+                    };
+                    return elem;
+                },
+                createDiscButton    : function(playerKey, layerObjKey){
+                    let elem = document.createElement("button");
+                    elem.style.width = "56px";
+                    elem.innerText = "DISC";
+                    let timerKey = "moveCardToDiscard";
+                    elem.onclick = function(){
+                        _APP.game.gamestates.gs_PLAYING.addCardMovement(
+                            "discard"  , { 
+                                timerKey   : timerKey   , 
+                                playerKey  : playerKey  , 
+                                layerObjKey: layerObjKey 
+                        });
+                    };
+                    return elem;
+                },
+                createDrawButton    : function(playerKey, layerObjKey){
+                    let elem = document.createElement("button");
+                    elem.style.width = "56px";
+                    elem.innerText = "DRAW";
+                    let timerKey = "moveDrawToCard";
+                    elem.onclick = function(){
+                        let [playerKey, cardSlot] = layerObjKey.split("_card_");
+                        _APP.game.gamestates.gs_PLAYING.addCardMovement(
+                            "draw"  , { 
+                                timerKey   : timerKey   , 
+                                playerKey  : playerKey  , 
+                                layerObjKey: layerObjKey,
+                                cardSlot   : cardSlot,
+                        });
+                    };
+                    return elem;
+                },
+                createHomeButton    : function(playerKey, layerObjKey){
+                    let elem = document.createElement("button");
+                    elem.style.width = "56px";
+                    elem.innerText = "HOME";
+                    let timerKey = "moveCardHome";
+                    elem.onclick = function(){
+                        _APP.game.gamestates.gs_PLAYING.addCardMovement(
+                            "home"  , { 
+                                timerKey   : timerKey   , 
+                                playerKey  : playerKey  , 
+                                layerObjKey: layerObjKey 
+                        });
+                    };
+                    return elem;
+                },
+                buildUi: function(){
+                    let layerObjKeys = {
+                        "P1": [ "P1_card_0", "P1_card_1", "P1_card_2", "P1_card_3", "P1_card_4" ], 
+                        "P2": [ "P2_card_0", "P2_card_1", "P2_card_2", "P2_card_3", "P2_card_4" ], 
+                        "P3": [ "P3_card_0", "P3_card_1", "P3_card_2", "P3_card_3", "P3_card_4" ], 
+                        "P4": [ "P4_card_0", "P4_card_1", "P4_card_2", "P4_card_3", "P4_card_4" ], 
+                    };
+                    let table = this.DOM.cardMoveTable;
+                    for(let playerKey in layerObjKeys){
+                        let tr = table.insertRow(-1);
+                        let td = tr.insertCell();
+                        td.classList.add("debug_td_header3")
+                        td.innerText = playerKey;
+                        for(let layerObjKey of layerObjKeys[playerKey]){
+                            td = tr.insertCell();
+                            td.append(
+                                this.createSelectButton(playerKey, layerObjKey),
+                                this.createUnselectButton(playerKey, layerObjKey),
+                                this.createBr(),
+                                this.createDiscButton(playerKey, layerObjKey),
+                                this.createDrawButton(playerKey, layerObjKey),
+                                this.createBr(),
+                                this.createHomeButton(playerKey, layerObjKey),
+                            );
+                        }
+                    }
+                },
+                init: function(parent){
+                    this.parent = parent;
+                    for(let elemKey in this.DOM){
+                        this.DOM[elemKey] = document.getElementById(this.DOM[elemKey]);
+                    }
+                    this.buildUi();
+                },
             },
             deckControl: {
                 parent:null,

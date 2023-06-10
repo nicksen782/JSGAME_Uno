@@ -696,8 +696,8 @@
                     </div>
                     <div id="debug_navBar_gs_PLAYING_view_cardMove" class="controls_navBarViews">
                         <!-- CARD MOVEMENTS -->
-                        <label class="debug_title">CARD SELECTS!</label>
-                        <table class="debug_table">
+                        <label class="debug_title">CARDMOVE!</label>
+                        <table class="debug_table" id="debug_cardMoveTable">
                             <tr>
                                 <td class="debug_td_header3">..</td>
                                 <td class="debug_td_header3">CARD0</td>
@@ -706,144 +706,11 @@
                                 <td class="debug_td_header3">CARD3</td>
                                 <td class="debug_td_header3">CARD4</td>
                             </tr>
-                                <tr>
-                                    <td class="debug_td_header3">P1</td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P1", layerObjKey: "P1_card_0" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P1", layerObjKey: "P1_card_0" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P1", layerObjKey: "P1_card_0" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P1", layerObjKey: "P1_card_1" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P1", layerObjKey: "P1_card_1" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P1", layerObjKey: "P1_card_1" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P1", layerObjKey: "P1_card_2" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P1", layerObjKey: "P1_card_2" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P1", layerObjKey: "P1_card_2" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P1", layerObjKey: "P1_card_3" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P1", layerObjKey: "P1_card_3" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P1", layerObjKey: "P1_card_3" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P1", layerObjKey: "P1_card_4" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P1", layerObjKey: "P1_card_4" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P1", layerObjKey: "P1_card_4" });'>DISC</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="debug_td_header3">P2</td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P2", layerObjKey: "P2_card_0" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P2", layerObjKey: "P2_card_0" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P2", layerObjKey: "P2_card_0" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P2", layerObjKey: "P2_card_1" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P2", layerObjKey: "P2_card_1" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P2", layerObjKey: "P2_card_1" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P2", layerObjKey: "P2_card_2" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P2", layerObjKey: "P2_card_2" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P2", layerObjKey: "P2_card_2" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P2", layerObjKey: "P2_card_3" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P2", layerObjKey: "P2_card_3" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P2", layerObjKey: "P2_card_3" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P2", layerObjKey: "P2_card_4" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P2", layerObjKey: "P2_card_4" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P2", layerObjKey: "P2_card_4" });'>DISC</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="debug_td_header3">P3</td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P3", layerObjKey: "P3_card_0" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P3", layerObjKey: "P3_card_0" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P3", layerObjKey: "P3_card_0" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P3", layerObjKey: "P3_card_1" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P3", layerObjKey: "P3_card_1" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P3", layerObjKey: "P3_card_1" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P3", layerObjKey: "P3_card_2" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P3", layerObjKey: "P3_card_2" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P3", layerObjKey: "P3_card_2" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P3", layerObjKey: "P3_card_3" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P3", layerObjKey: "P3_card_3" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P3", layerObjKey: "P3_card_3" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P3", layerObjKey: "P3_card_4" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P3", layerObjKey: "P3_card_4" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P3", layerObjKey: "P3_card_4" });'>DISC</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="debug_td_header3">P4</td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P4", layerObjKey: "P4_card_0" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P4", layerObjKey: "P4_card_0" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P4", layerObjKey: "P4_card_0" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P4", layerObjKey: "P4_card_1" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P4", layerObjKey: "P4_card_1" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P4", layerObjKey: "P4_card_1" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P4", layerObjKey: "P4_card_2" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P4", layerObjKey: "P4_card_2" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P4", layerObjKey: "P4_card_2" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P4", layerObjKey: "P4_card_3" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P4", layerObjKey: "P4_card_3" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P4", layerObjKey: "P4_card_3" });'>DISC</button>
-                                    </td>
-                                    <td class="">
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("selected"  , { timerKey: "moveCardToSelected"  , playerKey: "P4", layerObjKey: "P4_card_4" });'>SELE</button>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("unselected", { timerKey: "moveCardToUnselected", playerKey: "P4", layerObjKey: "P4_card_4" });'>BACK</button>
-                                        <br>
-                                        <button onclick='_APP.game.gamestates.gs_PLAYING.addCardMovement("discard"   , { timerKey: "moveCardToDiscard"   , playerKey: "P4", layerObjKey: "P4_card_4" });'>DISC</button>
-                                    </td>
-                                </tr>
                         </table>
                         <br>
                     </div>
-                </div>
-                <br>
 
+                </div>
             </div>
         </div>
     </div>

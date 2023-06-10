@@ -1554,6 +1554,13 @@ var _DEBUG = {
                 }
             }
 
+            // Is the entry have the setting of 'hidden' set?
+            let hidden;
+            if(data.hidden){
+                // console.log("is hidden");
+                hidden = ` (HIDDEN)`;
+            }
+
             // Generate the dimensions text.
             let w = data.tmap[0];
             let h = data.tmap[1];
@@ -1580,7 +1587,7 @@ var _DEBUG = {
 
             // Add the texts to the entry container.
             div_container.innerText = `` +
-            `C: ${className} : K: ${name}` +
+            `C: ${className} : K: ${name}` + `${hidden ? hidden : ""}` +
             `\n  D: ${dims}` +
             `\n  S: ${settings}` + 
             `\n  P: ${data.text ? "(TEXT): '" + data.text.slice(0, 40) + "'" : ""}` +
