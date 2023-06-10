@@ -319,6 +319,7 @@
                 <tr> <td class="debug_td_header2">x</td>           <td class="" id="debug_layerObjEdit_contextMenu1_x"></td> </tr>
                 <tr> <td class="debug_td_header2">y</td>           <td class="" id="debug_layerObjEdit_contextMenu1_y"></td> </tr>
                 <tr> <td class="debug_td_header2">rotation</td>    <td class="" id="debug_layerObjEdit_contextMenu1_rotation"></td> </tr>
+                <tr> <td class="debug_td_header2">hidden</td>      <td class="" id="debug_layerObjEdit_contextMenu1_hidden"></td> </tr>
             </table>
         </div>
     </div>
@@ -334,11 +335,13 @@
                     <td class="debug_td_header2">className</td>
                     <td class="debug_td_header2">tilesetKey</td>
                     <td class="debug_td_header2">layerObjKey</td>
+                    <td class="debug_td_header2">hidden</td>
                 </tr>
                 <tr>
                     <td class="" id="debug_layerObjEdit_className"></td>
                     <td class="" id="debug_layerObjEdit_tilesetKey"></td>
                     <td class="" id="debug_layerObjEdit_layerObjKey"></td>
+                    <td class="" id="debug_layerObjEdit_hidden"></td>
                 </tr>
             </table>
             <br>
@@ -378,15 +381,17 @@
                     </td> 
                 </tr>
                 <tr> 
-                    <td class="debug_td_header2">Adjust X</td>
+                    <td class="debug_td_header2">Adjust HIDDEN</td>
                     <td class="">
-                        <button onclick="_DEBUG.layerObjs.adjustX(-1);">LEFT</button>
-                        <button onclick="_DEBUG.layerObjs.adjustX(+1);">RIGHT</button>
+                        <button onclick="_DEBUG.layerObjs.adjustHidden(true);">TRUE</button>
+                        <button onclick="_DEBUG.layerObjs.adjustHidden(false);">FALSE</button>
                     </td> 
                 </tr>
                 <tr> 
-                    <td class="debug_td_header2">Adjust Y</td>
+                    <td class="debug_td_header2">Adjust X/Y</td>
                     <td class="">
+                        <button onclick="_DEBUG.layerObjs.adjustX(-1);">LEFT</button>
+                        <button onclick="_DEBUG.layerObjs.adjustX(+1);">RIGHT</button>
                         <button onclick="_DEBUG.layerObjs.adjustY(-1);">UP</button>
                         <button onclick="_DEBUG.layerObjs.adjustY(+1);">DOWN</button>
                     </td> 

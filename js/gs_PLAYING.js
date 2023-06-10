@@ -19,9 +19,9 @@ MAX CARDS EXPECTED TO BE ON SCREEN DURING END OF ROUND:
 _APP.game.gamestates["gs_PLAYING"] = {
     gameSettings: {
         P1  : "HUMAN",
-        P2  : "HUMAN",
+        P2  : "NONE",
         P3  : "HUMAN",
-        P4  : "HUMAN",
+        P4  : "NONE",
         WIN : "atZeroCards", // ["at500pts", "atZeroCards"]
         DRAW: "one",         // ["one", "until"]
         

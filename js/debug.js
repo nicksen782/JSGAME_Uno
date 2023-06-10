@@ -1171,6 +1171,7 @@ var _DEBUG = {
             "x"           : "debug_layerObjEdit_contextMenu1_x",
             "y"           : "debug_layerObjEdit_contextMenu1_y",
             "rotation"    : "debug_layerObjEdit_contextMenu1_rotation", 
+            "hidden"      : "debug_layerObjEdit_contextMenu1_hidden", 
             
             // SHARED
             "layerObjectTableDiv" : "debug_layerObjectTableDiv",
@@ -1183,6 +1184,7 @@ var _DEBUG = {
             "edit_y"          : "debug_layerObjEdit_y",
             "edit_rotation"   : "debug_layerObjEdit_rotation", 
             "edit_fade"       : "debug_layerObjEdit_fade", 
+            "edit_hidden"     : "debug_layerObjEdit_hidden", 
             
             // PRINTTEXT
             "printTextTableDiv"   : "debug_printTextTableDiv",
@@ -1327,6 +1329,7 @@ var _DEBUG = {
             this.DOM["x"]           .innerText = data.x
             this.DOM["y"]           .innerText = data.y
             this.DOM["rotation"]    .innerText = data.settings.rotation;
+            this.DOM["hidden"]      .innerText = data.hidden;
 
             // Set the position of the context menu and display it
             let top  = Math.max(0, e.layerY - 20);
@@ -1364,6 +1367,7 @@ var _DEBUG = {
             this.DOM["edit_y"]          .innerText = data.y;
             this.DOM["edit_rotation"]   .innerText = data.settings.rotation;
             this.DOM["edit_fade"]       .innerText = data.settings.fade;
+            this.DOM["edit_hidden"]     .innerText = data.hidden;
 
             // Show/Hide DOM specific to the className.
             let elems = document.querySelectorAll(".debug_classDiv");
@@ -1761,6 +1765,22 @@ var _DEBUG = {
             let data = _GFX.layerObjs.objs[gs][key];
             data.setSetting("rotation", rotation);
             this.DOM["edit_rotation"]          .innerText = data.settings.rotation;
+        },
+        adjustLayerKey: function(newValue){
+            let gs   = this.DOM["edit_gs"].innerText;
+            let key  = this.DOM["edit_layerObjKey"].innerText;
+            if(!gs || !key){ console.log("NOT LOADED"); return; }
+            let data = _GFX.layerObjs.objs[gs][key];
+            data.layerKey = newValue;
+            this.DOM["edit_layerKey"]            .innerText = data.layerKey;
+        },
+        adjustHidden: function(newValue){
+            let gs   = this.DOM["edit_gs"].innerText;
+            let key  = this.DOM["edit_layerObjKey"].innerText;
+            if(!gs || !key){ console.log("NOT LOADED"); return; }
+            let data = _GFX.layerObjs.objs[gs][key];
+            data.hidden = newValue;
+            this.DOM["edit_hidden"]            .innerText = data.hidden;
         },
 
         // PRINTTEXT

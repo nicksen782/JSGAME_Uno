@@ -875,7 +875,8 @@ class Deck{
                     xyByGrid   : true,
                     x          : pos[0], 
                     y          : pos[1], 
-                    settings: { rotation: rotation }
+                    settings: { rotation: rotation }, 
+                    hidden: true,
                 } );
             }
         }

@@ -1103,14 +1103,13 @@ class LayerObject {
     set tmap(value)       { if( this._tmap       !== value){ this._tmap       = value; this._changed = true; } }
     set layerKey(value)   { if( this._layerKey   !== value){ 
         // Remove the existing layerObject from it's previous layer.
-        // _GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").layerKey = "L1";
         if(this._layerKey && this.layerObjKey && _GFX.currentData[this._layerKey].tilemaps[this.layerObjKey]){
-            console.log(`REMOVING: layerKey: ${this._layerKey}, layerObjKey: ${this.layerObjKey}`);
+            // console.log(`REMOVING: layerKey: ${this._layerKey}, layerObjKey: ${this.layerObjKey}`);
             _GFX.funcs.removeLayerObj(this._layerKey, this.layerObjKey);
-            // _GFX.currentData["L2"].tilemaps["N782_oneStar_anim2_10"];
         }
 
-        this._layerKey   = value; this._changed = true; 
+        this._layerKey   = value; 
+        this._changed = true; 
     } }
     // set tilesetKey(value) { if( this._tilesetKey !== value){ this._tilesetKey = value; this._changed = true; } }
     set settings(value)   { 
