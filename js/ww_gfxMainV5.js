@@ -441,6 +441,11 @@ var gfxMainV5 = {
                             // Get the map from the current graphics cache.
                             let map = tilemaps[mapKey2]; 
                             
+                            // Do not restore the region if the overlapped tilemap is hidden.
+                            // let regionTilemap = _GFX.currentData[layerKey].tilemaps[mapKey2];
+                            // if(regionTilemap.hidden){ continue; }
+                            if(map.hidden){ continue; }
+
                             // Create rectangle dimensions for the map.
                             rect2 = { x:map.x, y:map.y, w:map.w, h:map.h };
     
@@ -499,7 +504,6 @@ var gfxMainV5 = {
                 let firstRegion = true;
                 for(let regionKey in regions){
                     region = regions[regionKey];
-    
                     for(let rec of region){
                         // Create a copy of the overlapped region from the source ImageData.
                         let overlappedCopy = gfxCoreV5.copyRegion(
@@ -528,20 +532,20 @@ var gfxMainV5 = {
                                 rec.dest_layer.w,    // dw
                                 rec.dest_layer.h,    // dh
                             );
-                            }
-                            else{
-                                gfxCoreV5.updateRegion_blit(
-                                    overlappedCopy,      // source
-                                    rec.src_img.w,       // srcWidth
-                                    imgDataCache.data,   // destination
-                                    imgDataCache.width,  // destWidth
-                                    imgDataCache.height, // destHeight
-                                    rec.dest_layer.x,    // dx
-                                    rec.dest_layer.y,    // dy
-                                    rec.dest_layer.w,    // dw
-                                    rec.dest_layer.h,    // dh
-                                );
-                            }
+                        }
+                        else{
+                            gfxCoreV5.updateRegion_blit(
+                                overlappedCopy,      // source
+                                rec.src_img.w,       // srcWidth
+                                imgDataCache.data,   // destination
+                                imgDataCache.width,  // destWidth
+                                imgDataCache.height, // destHeight
+                                rec.dest_layer.x,    // dx
+                                rec.dest_layer.y,    // dy
+                                rec.dest_layer.w,    // dw
+                                rec.dest_layer.h,    // dh
+                            );
+                        }
     
                         // Unset firstRegion flag.
                         firstRegion = false;
@@ -574,6 +578,10 @@ var gfxMainV5 = {
                     if(curr_map.hidden != newMap.hidden){
                         filtered_newMapKeys.push(newMapKey);
                         filtered_newMapData[newMapKey] = newMap;
+
+                        // Set the hiddenTransition flag. It will be used by drawImgDataCacheFromDataCache and also cleared by it.
+                        newMap.hiddenTransition = true;
+
                         // console.log(`${newMapKey}: Changed 'hidden': curr: ${curr_map.hidden}, new: ${newMap.hidden}`)
                         // filtered_reasons[newMapKey] = `${newMapKey}: Changed 'hidden': curr: ${curr_map.hidden}, new: ${newMap.hidden}`;
                     }
@@ -612,6 +620,7 @@ var gfxMainV5 = {
                     _GFX.currentData[layerKey].tilemaps[newMapKey].settings = newMap.settings;
                     _GFX.currentData[layerKey].tilemaps[newMapKey].hash     = newMap.hash;
                     _GFX.currentData[layerKey].tilemaps[newMapKey].hashPrev = newMap.hashPrev;
+                    _GFX.currentData[layerKey].tilemaps[newMapKey].hiddenTransition = newMap.hiddenTransition;
                 }
     
                 // if(Object.keys(filtered_reasons).length){
@@ -957,9 +966,33 @@ var gfxMainV5 = {
                         gfxCoreV5.transforms.applyFadeToImageDataArray(imgData.data, layer.fade.currFade);
                     }
     
-                    // 
-                    // let ts = performance.now();
-                    if(map.hasTransparency){
+                    //.A blit writes only non-transparent pixels of the source to the destination.
+                    // A reverse-blit only writes the source to transparent pixel at the destination.
+                    let blit = map.hasTransparency;
+                    let reverseBlit = map.hiddenTransition;
+
+                    // If a map WAS hidden but now is NOT then a reverse blit is needed so that restoring the map does not overlap anything else.
+                    // This effectively draws the image behind everything that would overlap it.
+                    // Blit is by row. Rows not having transparent pixels are skipped.
+                    if(reverseBlit){
+                        gfxCoreV5.updateRegion_reverseBlit(
+                            imgData.data,        // source
+                            imgData.width,       // srcWidth
+                            imgDataCache.data,   // destination
+                            imgDataCache.width,  // destWidth
+                            imgDataCache.height, // destHeight
+                            map.x,               // x
+                            map.y,               // y
+                            map.w,               // w
+                            map.h,               // h
+                        );
+
+                        // Clear the hiddenTransition flag.
+                        map.hiddenTransition = false;
+                    }
+                    // Blits are needed when drawing images that contain transparency. 
+                    // Blit is by row. Source rows not having transparent pixesl are replaced instead of blitted.
+                    else if(blit){
                         gfxCoreV5.updateRegion_blit(
                             imgData.data,        // source
                             imgData.width,       // srcWidth
@@ -972,6 +1005,8 @@ var gfxMainV5 = {
                             map.h,               // h
                         );
                     }
+                    // If the image does not have transparent pixels then skip the blit and do the simpler replace instead.
+                    // Replace is by row.
                     else{
                         gfxCoreV5.updateRegion_replace(
                             imgData.data,        // source
@@ -985,9 +1020,6 @@ var gfxMainV5 = {
                             map.h,               // h
                         );
                     }
-
-                    // ts = performance.now() - ts;
-                    // if(ts >= 0.3){ console.log(ts.toFixed(2), imgData.data.byteLength, layerKey, mapKey); }
                 }
             },
             drawImgDataCacheToCanvas      : function(layerKey){

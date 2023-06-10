@@ -924,6 +924,7 @@ var gfxCoreV5 = {
     },
     // BLIT: Supports blitting for each pixel row that can use it. (updateRegion_replace is faster when blitting is NOT needed.)
     // Source is Uint8Array.
+    // Only writes non-transparent pixels to the destination.
     updateRegion_blit: function(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
         // Determine the start and end of the destination region in both dimensions.
         // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
@@ -957,7 +958,7 @@ var gfxCoreV5 = {
             let srcRowStart  = srcOffset;
             let srcRowEnd    = srcOffset + ((x_end - x_start) << 2);
 
-            // Get the row.
+            // Get the source row.
             let sourceRowView = source.subarray(srcRowStart, srcRowEnd);
             sourceRow.set(sourceRowView, 0);
 
@@ -978,7 +979,7 @@ var gfxCoreV5 = {
             }
             
             // Does the source row have any transparent pixels?
-            // No need to blit if there are no transparent pixels in the source.
+            // No need to blit if there are not transparent pixels in the source.
             if(hasTransparentPixels){
                 // Retrieve the destination row. (This includes existing data at the destination.)
                 let destRowEnd = destOffset + ((x_end - x_start) << 2);
@@ -1008,6 +1009,86 @@ var gfxCoreV5 = {
         }
     },
 
+    // REVERSE-BLIT: Supports blitting for each pixel row that can use it. (updateRegion_replace is faster when blitting is NOT needed.)
+    // Source is Uint8Array.
+    // This only writes to transparent pixels at the destination.
+    updateRegion_reverseBlit: function(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
+        // Determine the start and end of the destination region in both dimensions.
+        // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
+        let x_start = dx < 0              ? 0          : dx;
+        let y_start = dy < 0              ? 0          : dy;
+
+        // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
+        let x_end   = dx + w > destWidth  ? destWidth  : dx + w;
+        let y_end   = dy + h > destHeight ? destHeight : dy + h;
+
+        // If the entire destination region outside the valid source area, exit the function early.
+        // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
+        if (x_start >= destWidth || y_start >= destHeight || x_end <= 0 || y_end <= 0) {
+            return;
+        }
+    
+        // This will work row by row with a normal array.
+        // let maxRowLength = Math.max(w, destWidth) << 2;
+        let maxRowLength = w << 2;
+        let sourceRow = new Uint8Array(maxRowLength);
+        let destRow = new Uint8Array(maxRowLength);
+    
+        // Iterate through the region defined by x_start to x_end and y_start to y_end.
+        for (let y = y_start; y < y_end; y++) {
+            // Compute the start and end offsets in the source and the destination arrays.
+            let srcOffset = (((y - dy) * w + (x_start - dx)) << 2);
+            let destOffset = (y * destWidth + x_start) << 2;
+            let destRowStart = destOffset;
+            let destRowEnd = destOffset + ((x_end - x_start) << 2);
+
+            // Calculate the row end and start.
+            let srcRowStart  = srcOffset;
+            let srcRowEnd    = srcOffset + ((x_end - x_start) << 2);
+
+            // Get the source row.
+            let sourceRowView = source.subarray(srcRowStart, srcRowEnd);
+            sourceRow.set(sourceRowView, 0);
+    
+            // Retrieve the destination row. (This includes existing data at the destination.)
+            destRow.set(destination.subarray(destRowStart, destRowEnd), 0);
+            
+            // Check if the destination row contains any transparent pixels
+            let hasTransparentPixels = false;
+            for (let i = 3; i < sourceRowView.length; i += 4) {
+                // Check if the current pixel is transparent.
+                if (destRow[i] === 0) {
+                    // Yes, mark that the row contains at least one transparent pixel.
+                    hasTransparentPixels = true; 
+                    
+                    // Stop looking for transparent pixels.
+                    break; 
+                }
+            }
+
+            // If there are transparent pixels at the destination, perform the reverse blit operation
+            if (hasTransparentPixels) {
+                // For the blitting process, update pixel-by-pixel for each row.
+                for (let i = 0; i < sourceRowView.length; i += 4) {
+                    // Check if the destination pixel is transparent.
+                    // If it's transparent, update the pixel in the destRow with the source pixel.
+                    if (destRow[i+3] === 0) {
+                        destRow[i]   = sourceRowView[i];
+                        destRow[i+1] = sourceRowView[i+1];
+                        destRow[i+2] = sourceRowView[i+2];
+                        destRow[i+3] = sourceRowView[i+3];
+                    }
+                }
+
+                // Write the entire row (modified) at once from the destRow to the destination.
+                destination.set(destRow, destRowStart);
+            }
+
+            // If there are no transparent pixels then skip writing this row.
+            // else{}
+        }
+    },
+    
     // **************
     // TEST FUNCTIONS
     // **************
