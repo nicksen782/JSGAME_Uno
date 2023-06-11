@@ -283,6 +283,9 @@
             <label class="debug_layerObjects_showHide_label debug_no-highlight">
                 <input type="checkbox" id="debug_layerObjects_showHide_Border" value="1">Border
             </label>
+            <label class="debug_layerObjects_showHide_label debug_no-highlight">
+                <input type="checkbox" id="debug_layerObjects_showHide_hidden" value="1">(HIDDEN)
+            </label>
         </div>
 
         <!--  -->
@@ -620,6 +623,7 @@
                     <div id="debug_navBar_gs_PLAYING_tab_settings" class="controls_navBarTabs">SETTINGS</div>
                     <div id="debug_navBar_gs_PLAYING_tab_deck"     class="controls_navBarTabs">DECK</div>
                     <div id="debug_navBar_gs_PLAYING_tab_cardMove" class="controls_navBarTabs">CARDMOVE</div>
+                    <div id="debug_navBar_gs_PLAYING_tab_flags" class="controls_navBarTabs">FLAGS</div>
                 </div>
                 <div id="debug_navBarViews_gs_PLAYING">
                     <div id="debug_navBar_gs_PLAYING_view_settings" class="controls_navBarViews">
@@ -714,7 +718,17 @@
                         </table>
                         <br>
                     </div>
-
+                    <div id="debug_navBar_gs_PLAYING_view_flags" class="controls_navBarViews">
+                        <label class="debug_title">FLAGS1!</label>
+                        <table class="debug_table" id="debug_cardMoveTable">
+                            <tr> <td class="debug_td_header">dealing                   </td><td class="debug_td_short" id="debug_flags_dealing">                   ?</td> </tr>
+                            <tr> <td class="debug_td_header">determineHighestCard      </td><td class="debug_td_short" id="debug_flags_determineHighestCard">      ?</td> </tr>
+                            <tr> <td class="debug_td_header">cardMovements             </td><td class="debug_td_short" id="debug_flags_cardMovements">             ?</td> </tr>
+                            <tr> <td class="debug_td_header">winner                    </td><td class="debug_td_short" id="debug_flags_winner">                    ?</td> </tr>
+                            <tr> <td class="debug_td_header">ready_determineHighestCard</td><td class="debug_td_short" id="debug_flags_ready_determineHighestCard">?</td> </tr>
+                            <tr> <td class="debug_td_header">tied_determineHighestCard </td><td class="debug_td_short" id="debug_flags_tied_determineHighestCard"> ?</td> </tr>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

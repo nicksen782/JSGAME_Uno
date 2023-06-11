@@ -1137,6 +1137,7 @@ var _DEBUG = {
             L3: false,
             L4: false,
         },
+        // True means to show. False means to hide.
         values: {
             showHide_LayerObject: true,
             showHide_PrintText  : true,
@@ -1144,6 +1145,7 @@ var _DEBUG = {
             showHide_Card       : true,
             showHide_UnoLetter  : true,
             showHide_Border     : false,
+            showHide_hidden     : false,
         },
         classNames : [
             "LayerObject",
@@ -1281,6 +1283,7 @@ var _DEBUG = {
             this.DOM.showHide_Card        = document.getElementById("debug_layerObjects_showHide_Card");
             this.DOM.showHide_UnoLetter   = document.getElementById("debug_layerObjects_showHide_UnoLetter");
             this.DOM.showHide_Border   = document.getElementById("debug_layerObjects_showHide_Border");
+            this.DOM.showHide_hidden   = document.getElementById("debug_layerObjects_showHide_hidden");
 
             // Add change event listeners.
             this.DOM.showHide_LayerObject.addEventListener("change", ()=>{ this.values.showHide_LayerObject = this.DOM.showHide_LayerObject.checked; this.showHideByClassName(); }, false);
@@ -1289,6 +1292,7 @@ var _DEBUG = {
             this.DOM.showHide_Card       .addEventListener("change", ()=>{ this.values.showHide_Card        = this.DOM.showHide_Card       .checked; this.showHideByClassName(); }, false);
             this.DOM.showHide_UnoLetter  .addEventListener("change", ()=>{ this.values.showHide_UnoLetter   = this.DOM.showHide_UnoLetter  .checked; this.showHideByClassName(); }, false);
             this.DOM.showHide_Border     .addEventListener("change", ()=>{ this.values.showHide_Border      = this.DOM.showHide_Border     .checked; this.showHideByClassName(); }, false);
+            this.DOM.showHide_hidden     .addEventListener("change", ()=>{ this.values.showHide_hidden      = this.DOM.showHide_hidden     .checked; this.showHideByClassName(); }, false);
 
             // Set the default states.
             this.DOM.showHide_LayerObject.checked = this.values.showHide_LayerObject;
@@ -1297,6 +1301,7 @@ var _DEBUG = {
             this.DOM.showHide_Card       .checked = this.values.showHide_Card;
             this.DOM.showHide_UnoLetter  .checked = this.values.showHide_UnoLetter;
             this.DOM.showHide_Border     .checked = this.values.showHide_Border;
+            this.DOM.showHide_hidden     .checked = this.values.showHide_hidden;
         },
         
         // ** VIEWER **
@@ -1512,8 +1517,8 @@ var _DEBUG = {
                     
                     // Go through the list of className matched entries...
                     for(let elem of elems){
-                        // If the setting is to show...
-                        if(this.values[`showHide_${className}`]){
+                        // If this is hidden
+                        if(this.values.showHide_hidden && elem.getAttribute("hidden" == "false")){
                             // Remove the displayNone class if it IS already there.
                             if(elem.classList.contains("displayNone")){
                                 elem.classList.remove("displayNone");
@@ -1522,6 +1527,18 @@ var _DEBUG = {
                                 updateSource = true;
                             }
                         }
+
+                        // If the setting is to show...
+                        else if(this.values[`showHide_${className}`]){
+                            // Remove the displayNone class if it IS already there.
+                            if(elem.classList.contains("displayNone")){
+                                elem.classList.remove("displayNone");
+                                
+                                // Set the updateSource flag.
+                                updateSource = true;
+                            }
+                        }
+
                         else{
                             // Add the displayNone class if it is NOT already there.
                             if(!elem.classList.contains("displayNone")){
@@ -1548,6 +1565,7 @@ var _DEBUG = {
             div_container.setAttribute("layerObjKey", data.layerObjKey);
             div_container.setAttribute("layerKey"   , data.layerKey);
             div_container.setAttribute("className"  , data.className);
+            div_container.setAttribute("hidden"     , data.hidden);
 
             // Should this element be hidden?
             for(let className of this.classNames){ 
@@ -1556,6 +1574,9 @@ var _DEBUG = {
                     // Add the displayNone class to hide this entry.
                     div_container.classList.add("displayNone"); 
                 }
+            }
+            if(!this.values.showHide_hidden && data.hidden){
+                div_container.classList.add("displayNone"); 
             }
 
             // Is the entry have the setting of 'hidden' set?

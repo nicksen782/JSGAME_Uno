@@ -813,7 +813,7 @@ var _GFX = {
 
         // This is called after each draw completes.
         afterDraw: function(data={}, forceGraphicsDataUsed=false){
-            if(_APP.debugActive && _DEBUG){
+            if(_APP.debugActive){
                 if(data == ""){ return; }
 
                 // BACKGROUND COLOR CHANGES

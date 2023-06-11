@@ -52,6 +52,10 @@ var _DEBUG2 = {
                 'tab' : 'debug_navBar_gs_PLAYING_tab_cardMove',
                 'view': 'debug_navBar_gs_PLAYING_view_cardMove',
             },
+            'view_flags': {
+                'tab' : 'debug_navBar_gs_PLAYING_tab_flags',
+                'view': 'debug_navBar_gs_PLAYING_view_flags',
+            },
         },
         hideAll: _APP.navBar1.hideAll,
         showOne: _APP.navBar1.showOne,
@@ -258,10 +262,77 @@ var _DEBUG2 = {
 
                 // CARD MOVE.
                 this.cardMove.init(this);
+
+                // FLAGS.
+                this.flags.init(this);
             },
             init: function(){
                 _DEBUG2.navBar1.showOne("view_gs_PLAYING");
                 this.inited = true; 
+            },
+            flags: {
+                parent:null,
+                values : {
+                    dealing                    : null, // Flag
+                    determineHighestCard       : null, // Flag
+                    winner                     : null, // Var
+                    ready_determineHighestCard : null, // Flag
+                    tied_determineHighestCard  : null, // Flag
+                    cardMovements              : null, // Length (not a flag.)
+                },
+                DOM: { 
+                    "dealing"                   : "debug_flags_dealing",
+                    "determineHighestCard"      : "debug_flags_determineHighestCard",
+                    "winner"                    : "debug_flags_winner",
+                    "ready_determineHighestCard": "debug_flags_ready_determineHighestCard",
+                    "tied_determineHighestCard" : "debug_flags_tied_determineHighestCard",
+                    "cardMovements"             : "debug_flags_cardMovements",
+                },
+                init: function(parent){
+                    this.parent = parent;
+                    for(let elemKey in this.DOM){
+                        this.DOM[elemKey] = document.getElementById(this.DOM[elemKey]);
+                    }
+                },
+                checkForChanges: function(){
+                    if(_APP.game.gamestates.gs_PLAYING.flags.dealing              !== this.values.dealing){
+                        let key = "dealing";
+                        this.values[key] = _APP.game.gamestates.gs_PLAYING.flags[key];
+                        this.DOM[key].innerText = this.values[key].toString();
+                    }
+                    if(_APP.game.gamestates.gs_PLAYING.flags.dealingCounter       !== this.values.dealingCounter){
+                        let key = "dealingCounter";
+                        this.values[key] = _APP.game.gamestates.gs_PLAYING.flags[key];
+                        this.DOM[key].innerText = this.values[key].toString();
+                    }
+                    if(_APP.game.gamestates.gs_PLAYING.flags.determineHighestCard !== this.values.determineHighestCard){
+                        let key = "determineHighestCard";
+                        this.values[key] = _APP.game.gamestates.gs_PLAYING.flags[key];
+                        this.DOM[key].innerText = this.values[key].toString();
+                    }
+
+                    if(_APP.game.gamestates.gs_PLAYING.flags.winner !== this.values.winner){
+                        let key = "winner";
+                        this.values[key] = _APP.game.gamestates.gs_PLAYING.flags[key];
+                        this.DOM[key].innerText = this.values[key].toString();
+                    }
+                    if(_APP.game.gamestates.gs_PLAYING.flags.ready_determineHighestCard !== this.values.ready_determineHighestCard){
+                        let key = "ready_determineHighestCard";
+                        this.values[key] = _APP.game.gamestates.gs_PLAYING.flags[key];
+                        this.DOM[key].innerText = this.values[key].toString();
+                    }
+                    if(_APP.game.gamestates.gs_PLAYING.flags.tied_determineHighestCard !== this.values.tied_determineHighestCard){
+                        let key = "tied_determineHighestCard";
+                        this.values[key] = _APP.game.gamestates.gs_PLAYING.flags[key];
+                        this.DOM[key].innerText = this.values[key].toString();
+                    }
+
+                    if(_APP.game.gamestates.gs_PLAYING.cardMovements.length !== this.values.cardMovements){
+                        let key = "cardMovements";
+                        this.values[key] = _APP.game.gamestates.gs_PLAYING[key].length;
+                        this.DOM[key].innerText = this.values[key].toString();
+                    }
+                },
             },
             settings: {
                 parent:null,
@@ -286,6 +357,7 @@ var _DEBUG2 = {
                 },
                 createSelectButton  : function(playerKey, layerObjKey){
                     let elem = document.createElement("button");
+                    elem.title = layerObjKey;
                     elem.style.width = "56px";
                     elem.innerText = "SELE";
                     let timerKey = "moveCardToSelected";
@@ -301,6 +373,7 @@ var _DEBUG2 = {
                 },
                 createUnselectButton: function(playerKey, layerObjKey){
                     let elem = document.createElement("button");
+                    elem.title = layerObjKey;
                     elem.style.width = "56px";
                     elem.innerText = "BACK";
                     let timerKey = "moveCardToUnselected";
@@ -316,6 +389,7 @@ var _DEBUG2 = {
                 },
                 createDiscButton    : function(playerKey, layerObjKey){
                     let elem = document.createElement("button");
+                    elem.title = layerObjKey;
                     elem.style.width = "56px";
                     elem.innerText = "DISC";
                     let timerKey = "moveCardToDiscard";
@@ -331,6 +405,7 @@ var _DEBUG2 = {
                 },
                 createDrawButton    : function(playerKey, layerObjKey){
                     let elem = document.createElement("button");
+                    elem.title = layerObjKey;
                     elem.style.width = "56px";
                     elem.innerText = "DRAW";
                     let timerKey = "moveDrawToCard";
@@ -348,6 +423,7 @@ var _DEBUG2 = {
                 },
                 createHomeButton    : function(playerKey, layerObjKey){
                     let elem = document.createElement("button");
+                    elem.title = layerObjKey;
                     elem.style.width = "56px";
                     elem.innerText = "HOME";
                     let timerKey = "moveCardHome";
@@ -601,6 +677,7 @@ var _DEBUG2 = {
             },
             gs1: function(){
                 this.deckControl.checkForDeckChanges();
+                this.flags.checkForChanges();
             },
             anim1: function(){
             },
@@ -619,7 +696,8 @@ var _DEBUG2 = {
             _DEBUG2.navBar_gs_PLAYING.init();
             // _DEBUG2.navBar_gs_PLAYING.showOne("view_settings");
             // _DEBUG2.navBar_gs_PLAYING.showOne("view_deck");
-            _DEBUG2.navBar_gs_PLAYING.showOne("view_cardMove");
+            // _DEBUG2.navBar_gs_PLAYING.showOne("view_cardMove");
+            _DEBUG2.navBar_gs_PLAYING.showOne("view_flags");
 
             // KEYS
             let keys = [

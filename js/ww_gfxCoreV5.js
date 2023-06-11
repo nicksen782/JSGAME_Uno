@@ -156,16 +156,17 @@ var gfxCoreV5 = {
 
             // Handle rotation modifications.
             if (rotation) {
-                // A rotate 90.
+                // A rotate 90 (or -270).
                 if (rotation == 90 || rotation == -270) {
                     rotation = 90;
                 }
-                // A rotate -90. Same as a rotate 90 with xflip.
+                // A rotate -90 (or 270). Equivalent to a 90 degrees rotation followed by x and y flipping.
                 else if (rotation == -90 || rotation == 270) {
                     rotation = 90;
                     xFlip = !xFlip;
+                    yFlip = !yFlip;
                 }
-                // A rotate 180. Same as rotation 0 with xFlip and yFlip.
+                // A rotate 180 (or -180). Same as rotation 0 with xFlip and yFlip.
                 else if (rotation == 180 || rotation == -180) {
                     rotation = 0;
                     xFlip = !xFlip;

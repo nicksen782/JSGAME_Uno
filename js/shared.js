@@ -20,10 +20,11 @@ _APP.shared = {
         },
 
         // Creates a timer. Check with check. Must be reset/recreated after it finishes before reusing.
-        create: function(name, maxFrames, gamestate){
+        create: function(name, maxFrames, gamestate, callback=null){
             // EXAMPLE USAGE:
             // _APP.shared.genTimer.create("timer1", 60);
             // _APP.shared.genTimer.create("timer1", 60, _APP.game.gs1);
+            // _APP.shared.genTimer.create("timer1", 60, _APP.game.gs1, function(){ console.log("I am the callback"); } );
 
             if(gamestate == undefined){ gamestate = _APP.game.gs1; }
             if(this.timers[gamestate] == undefined){ this.timers[gamestate] = {}; }
@@ -32,6 +33,7 @@ _APP.shared = {
                 finished  : false,
                 maxFrames : maxFrames,
                 frameCount: 0,
+                callback: callback,
             };
         },
 
@@ -53,6 +55,7 @@ _APP.shared = {
                 finished  : false,
                 maxFrames : this.timers[gamestate][name].maxFrames,
                 frameCount: 0,
+                callback: this.timers[gamestate][name].callback,
             };
         },
 
@@ -105,6 +108,13 @@ _APP.shared = {
                 this.timers[gamestate][name].frameCount += 1;
             }
 
+            if(this.timers[gamestate][name].finished){ 
+                // console.log( "FINISHED:", _APP.shared.genTimer.get(name) );
+                if(this.timers[gamestate][name].callback){
+                    this.timers[gamestate][name].callback();
+                };
+                return true; 
+            };
             return this.timers[gamestate][name].finished;
         },
     },
