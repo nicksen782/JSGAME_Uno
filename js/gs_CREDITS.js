@@ -73,7 +73,7 @@ _APP.game.gamestates["gs_CREDITS"] = {
         }
 
 
-        if(_APP.debugActive && _DEBUG){ this.debug(); }
+        if(_APP.debugActive){ this.debug(); }
     },
 
     // Should be called by the game loop.

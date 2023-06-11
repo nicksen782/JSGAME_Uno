@@ -276,7 +276,7 @@ _APP.game.gamestates["gs_JSG"] = {
         // console.log("MAIN:", _APP.game.gs1);
 
         // DEBUG
-        // if(_APP.debugActive && _DEBUG){ this.debug(); }
+        // if(_APP.debugActive){ this.debug(); }
     },
 
     // Draws the card on the discard pile (Only draws the card.)

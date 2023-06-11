@@ -641,6 +641,8 @@ _APP.loader = {
                 _APP.utility.addFile( {f:"js/gs_PLAYING.js", t:"js" }, relPath), // GAME
             ];
             await Promise.all(files2);
+            
+            await _APP.utility.addFile( {f:"js/gs_PLAYING2.js", t:"js" }, relPath), // GAME
 
             resolve();
         });
@@ -664,10 +666,10 @@ _APP.loader = {
         await _WEBW_V.init();
         await _GFX.init();
         await _INPUT.customized.init(_APP.configObj.inputConfig);
-        if(_APP.debugActive && _DEBUG && _DEBUG.init){ await _DEBUG.init(); }
+        if(_APP.debugActive  && _DEBUG.init){ await _DEBUG.init(); }
         _APP.navBar1.init();
         
-        if(_APP.debugActive && _DEBUG && _DEBUG.init){ _APP.navBar1.showOne("view_debug"); }
+        if(_APP.debugActive && _DEBUG.init){ _APP.navBar1.showOne("view_debug"); }
         else{
             _APP.navBar1.showOne("view_controls");
             // _APP.navBar1.showOne("view_input");
