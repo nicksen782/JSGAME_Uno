@@ -273,20 +273,14 @@ var _DEBUG2 = {
             flags: {
                 parent:null,
                 values : {
-                    dealing                    : null, // Flag
-                    determineHighestCard       : null, // Flag
-                    winner                     : null, // Var
-                    ready_determineHighestCard : null, // Flag
-                    tied_determineHighestCard  : null, // Flag
-                    cardMovements              : null, // Length (not a flag.)
+                    flags1Text: "",
+                    flags2Text: "",
+                    cardsText: "",
                 },
                 DOM: { 
-                    "dealing"                   : "debug_flags_dealing",
-                    "determineHighestCard"      : "debug_flags_determineHighestCard",
-                    "winner"                    : "debug_flags_winner",
-                    "ready_determineHighestCard": "debug_flags_ready_determineHighestCard",
-                    "tied_determineHighestCard" : "debug_flags_tied_determineHighestCard",
-                    "cardMovements"             : "debug_flags_cardMovements",
+                    "flags1Text"    : "debug_flags_flags",
+                    "flags2Text"    : "debug_flags_flags2",
+                    "cardMovements" : "debug_flags_cardMovements",
                 },
                 init: function(parent){
                     this.parent = parent;
@@ -295,43 +289,66 @@ var _DEBUG2 = {
                     }
                 },
                 checkForChanges: function(){
-                    if(_APP.game.gamestates.gs_PLAYING.flags.dealing              !== this.values.dealing){
-                        let key = "dealing";
-                        this.values[key] = _APP.game.gamestates.gs_PLAYING.flags[key];
-                        this.DOM[key].innerText = this.values[key].toString();
-                    }
-                    if(_APP.game.gamestates.gs_PLAYING.flags.dealingCounter       !== this.values.dealingCounter){
-                        let key = "dealingCounter";
-                        this.values[key] = _APP.game.gamestates.gs_PLAYING.flags[key];
-                        this.DOM[key].innerText = this.values[key].toString();
-                    }
-                    if(_APP.game.gamestates.gs_PLAYING.flags.determineHighestCard !== this.values.determineHighestCard){
-                        let key = "determineHighestCard";
-                        this.values[key] = _APP.game.gamestates.gs_PLAYING.flags[key];
-                        this.DOM[key].innerText = this.values[key].toString();
+                    // Get a list of flags.
+                    let flags = Object.keys(_APP.game.gamestates.gs_PLAYING.flags);
+
+                    // Get max length of the flag keys.
+                    let labelLen = 0;
+                    for(let flag of flags){
+                        if(flag.length > labelLen){ labelLen = flag.length; }
                     }
 
-                    if(_APP.game.gamestates.gs_PLAYING.flags.winner !== this.values.winner){
-                        let key = "winner";
-                        this.values[key] = _APP.game.gamestates.gs_PLAYING.flags[key];
-                        this.DOM[key].innerText = this.values[key].toString();
+                    // Update flags.
+                    let newText = ``;
+                    for(let flag of flags){
+                        newText += `${flag.padEnd(labelLen, " ")}: ${_APP.game.gamestates.gs_PLAYING.flags[flag]}\n`;
                     }
-                    if(_APP.game.gamestates.gs_PLAYING.flags.ready_determineHighestCard !== this.values.ready_determineHighestCard){
-                        let key = "ready_determineHighestCard";
-                        this.values[key] = _APP.game.gamestates.gs_PLAYING.flags[key];
-                        this.DOM[key].innerText = this.values[key].toString();
-                    }
-                    if(_APP.game.gamestates.gs_PLAYING.flags.tied_determineHighestCard !== this.values.tied_determineHighestCard){
-                        let key = "tied_determineHighestCard";
-                        this.values[key] = _APP.game.gamestates.gs_PLAYING.flags[key];
-                        this.DOM[key].innerText = this.values[key].toString();
+                    if(newText != this.values.flags1Text){
+                        this.values.flags1Text = newText; 
+                        this.DOM.flags1Text.innerText = newText;
                     }
 
-                    if(_APP.game.gamestates.gs_PLAYING.cardMovements.length !== this.values.cardMovements){
-                        let key = "cardMovements";
-                        this.values[key] = _APP.game.gamestates.gs_PLAYING[key].length;
-                        this.DOM[key].innerText = this.values[key].toString();
+
+                    // Get a list of flags.
+                    let flags2 = Object.keys(_APP.game.gamestates.gs_PLAYING.flags2);
+
+                    // Get max length of the flag keys.
+                    labelLen = 0;
+                    for(let flag of flags2){
+                        if(flag.length > labelLen){ labelLen = flag.length; }
                     }
+
+                    // Update flags.
+                    newText = ``;
+                    for(let flag of flags2){
+                        newText += `${flag.padEnd(labelLen, " ")}: ${_APP.game.gamestates.gs_PLAYING.flags2[flag]}\n`;
+                    }
+                    if(newText != this.values.flags2Text){
+                        this.values.flags2Text = newText; 
+                        this.DOM.flags2Text.innerText = newText;
+                    }
+
+                    // Update card movements.
+                    if(_APP.game.gamestates.gs_PLAYING.cardMovements.length){
+                        newText = ``;
+                        for(let cardMovement of _APP.game.gamestates.gs_PLAYING.cardMovements){
+                            if(!cardMovement.started){ continue; }
+                            let timer = _APP.shared.genTimer.get(cardMovement.timerKey);
+                            newText += `T:${timer.frameCount}/${timer.maxFrames}`;
+                            newText += `, F:${cardMovement.func}`;
+                            newText += `, C:${cardMovement.card.color.replace("CARD_", "")}, V:${cardMovement.card.value.replace("CARD_", "")}`;
+                            newText += `\n`;
+                        }
+                        if(newText != this.values.cardsText){
+                            this.values.newText = newText; 
+                            this.DOM.cardMovements.innerText = newText;
+                        }
+                    }
+                    else{
+                        this.values.newText = "NONE"; 
+                        this.DOM.cardMovements.innerText = "NONE";
+                    }
+
                 },
             },
             settings: {
@@ -351,6 +368,7 @@ var _DEBUG2 = {
                 DOM: { 
                     "cardMoveTable"   : "debug_cardMoveTable",
                 },
+
                 createBr  : function(){
                     let elem = document.createElement("br");
                     return elem;
@@ -365,8 +383,10 @@ var _DEBUG2 = {
                         _APP.game.gamestates.gs_PLAYING.addCardMovement(
                             "selected"  , { 
                                 timerKey   : timerKey   , 
+                                timerFrames: 20,
                                 playerKey  : playerKey  , 
-                                layerObjKey: layerObjKey 
+                                layerObjKey: layerObjKey ,
+                                movementSpeed: _APP.game.gamestates.gs_PLAYING.movementSpeeds.dealOneCard,
                         });
                     };
                     return elem;
@@ -381,8 +401,10 @@ var _DEBUG2 = {
                         _APP.game.gamestates.gs_PLAYING.addCardMovement(
                             "unselected"  , { 
                                 timerKey   : timerKey   , 
+                                timerFrames: 20,
                                 playerKey  : playerKey  , 
-                                layerObjKey: layerObjKey 
+                                layerObjKey: layerObjKey ,
+                                movementSpeed: _APP.game.gamestates.gs_PLAYING.movementSpeeds.dealOneCard,
                         });
                     };
                     return elem;
@@ -393,12 +415,15 @@ var _DEBUG2 = {
                     elem.style.width = "56px";
                     elem.innerText = "DISC";
                     let timerKey = "moveCardToDiscard";
-                    elem.onclick = function(){
+                    elem.onclick = ()=>{
+                        console.log("this:", this);
                         _APP.game.gamestates.gs_PLAYING.addCardMovement(
                             "discard"  , { 
                                 timerKey   : timerKey   , 
+                                timerFrames: 20,
+                                movementSpeed: _APP.game.gamestates.gs_PLAYING.movementSpeeds.dealOneCard,
                                 playerKey  : playerKey  , 
-                                layerObjKey: layerObjKey 
+                                layerObjKey  : layerObjKey  , 
                         });
                     };
                     return elem;
@@ -414,6 +439,8 @@ var _DEBUG2 = {
                         _APP.game.gamestates.gs_PLAYING.addCardMovement(
                             "draw"  , { 
                                 timerKey   : timerKey   , 
+                                timerFrames: 20,
+                                movementSpeed: _APP.game.gamestates.gs_PLAYING.movementSpeeds.dealOneCard,
                                 playerKey  : playerKey  , 
                                 layerObjKey: layerObjKey,
                                 cardSlot   : cardSlot,
@@ -431,6 +458,8 @@ var _DEBUG2 = {
                         _APP.game.gamestates.gs_PLAYING.addCardMovement(
                             "home"  , { 
                                 timerKey   : timerKey   , 
+                                timerFrames: 20,
+                                movementSpeed: _APP.game.gamestates.gs_PLAYING.movementSpeeds.dealOneCard,
                                 playerKey  : playerKey  , 
                                 layerObjKey: layerObjKey 
                         });

@@ -550,3 +550,14 @@ button#debug_test_toggleGridCanvas {
 .debug_layerObjects_showHide_label:hover{
   background-color: rgb(65 105 225 / 30%);
 }
+
+#debug_flags_flags{
+    font-size: 14px;
+    width: 300px;
+    height:2em;
+  }
+  #debug_flags_flags2{
+    font-size: 14px;
+    width: 210px;
+    height:2em;
+}

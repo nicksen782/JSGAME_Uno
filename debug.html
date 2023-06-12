@@ -718,16 +718,26 @@
                         </table>
                         <br>
                     </div>
+
                     <div id="debug_navBar_gs_PLAYING_view_flags" class="controls_navBarViews">
-                        <label class="debug_title">FLAGS1!</label>
-                        <table class="debug_table" id="debug_cardMoveTable">
-                            <tr> <td class="debug_td_header">dealing                   </td><td class="debug_td_short" id="debug_flags_dealing">                   ?</td> </tr>
-                            <tr> <td class="debug_td_header">determineHighestCard      </td><td class="debug_td_short" id="debug_flags_determineHighestCard">      ?</td> </tr>
-                            <tr> <td class="debug_td_header">cardMovements             </td><td class="debug_td_short" id="debug_flags_cardMovements">             ?</td> </tr>
-                            <tr> <td class="debug_td_header">winner                    </td><td class="debug_td_short" id="debug_flags_winner">                    ?</td> </tr>
-                            <tr> <td class="debug_td_header">ready_determineHighestCard</td><td class="debug_td_short" id="debug_flags_ready_determineHighestCard">?</td> </tr>
-                            <tr> <td class="debug_td_header">tied_determineHighestCard </td><td class="debug_td_short" id="debug_flags_tied_determineHighestCard"> ?</td> </tr>
+                        <label class="debug_title">FLAGS/VARS!</label>
+                        <table class="debug_table">
+                            <tr><td class="debug_td_header">FLAGS1</td></tr>
+                            <tr><td class="debug_monospace" id="debug_flags_flags"></td> </tr>
                         </table>
+
+                        <table class="debug_table">
+                            <tr><td class="debug_td_header">FLAGS2</td></tr>
+                            <tr><td class="debug_monospace" id="debug_flags_flags2"></td> </tr>
+                        </table>
+                        <br>
+
+                        <label class="debug_title">CARDMOVEMENTS!</label>
+                        <table class="debug_table">
+                            <tr> <td class="debug_td_header">cardMovements</td><td class="debug_monospace" id="debug_flags_cardMovements">             ?</td> </tr>
+                        </table>
+                        <br>
+
                     </div>
                 </div>
             </div>

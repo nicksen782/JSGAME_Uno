@@ -19,9 +19,9 @@ MAX CARDS EXPECTED TO BE ON SCREEN DURING END OF ROUND:
 _APP.game.gamestates["gs_PLAYING"] = {
     gameSettings: {
         P1  : "HUMAN",
-        P2  : "NONE",
+        P2  : "HUMAN",
         P3  : "HUMAN",
-        P4  : "NONE",
+        P4  : "HUMAN",
         WIN : "atZeroCards", // ["at500pts", "atZeroCards"]
         DRAW: "one",         // ["one", "until"]
         
@@ -34,11 +34,6 @@ _APP.game.gamestates["gs_PLAYING"] = {
     gameBoard:null,
     deck:null,
 
-    anims: {
-        objs:{},
-        // add: function(){ console.log("add :", this.parent); },
-    },
-
     // Run once upon changing to this game state.
     init: function(){
         // Clear the screen and the graphics caches.
@@ -48,12 +43,6 @@ _APP.game.gamestates["gs_PLAYING"] = {
 
         // Set the L1 background color.
         _GFX.funcs.updateL1BgColorRgba([32,32,48,255]);
-
-        // Create the gameboard graphics.
-        // this.gameBoard.parent = this;
-        
-        // Set parent for anims.
-        this.anims.parent = this;
 
         // Create the deck.
         this.deck = new Deck({});
@@ -65,106 +54,104 @@ _APP.game.gamestates["gs_PLAYING"] = {
             gameSettings : this.gameSettings,
         });
 
+        // Init the gameBoard and the deck.
         this.gameBoard.initPlayers();
+        this.gameBoard.currentPlayer = "P1";
+        this.gameBoard.setDirectionIndicators("F");
+        this.gameBoard.updatePlayerText();
         this.deck.storeGameBoard(this.gameBoard);
         this.deck.createCardPlaceholders();
 
-        // Set gamestate 2.
-        _APP.game.changeGs2("getFirstPlayer");
+        // Create general wait timers.
+        _APP.shared.genTimer.create("genWaitTimer1", 0);
+        _APP.shared.genTimer.create("genWaitTimer2", 0);
 
         // Run the debug init.
         if(_APP.debugActive && _DEBUG2){ 
             // DEBUG CURSOR.
-            _GFX.layerObjs.createOne(Cursor1, { x:5, y:5, layerObjKey: `debugCursor`   , layerKey: "L2", xyByGrid: true, settings:{rotation: 90} } );
-            // _GFX.layerObjs.createOne(Cursor1, { x:5, y:6, layerObjKey: `debugCursor2`   , layerKey: "L3", xyByGrid: true, settings:{rotation: -90} } );
+            // _GFX.layerObjs.createOne(Cursor1, { x:5, y:5, layerObjKey: `debugCursor`   , layerKey: "L2", xyByGrid: true, settings:{rotation: 90} } );
 
             _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); 
         }
 
-        // this.gameBoard.displayMessage("playsFirst", "P1", false);
-
-        // GAME RESET.
+        // Set gamestate 2.
+        _APP.game.changeGs2("gamestart");
 
         // Set the inited flag.
         this.inited = true;
     },
 
     // State of card movement.
-    cardMovements: [
-        // { card: null,   : false, timerKey: "" }
-    ],
+    cardMovements: [],
     addCardMovement: function(type, obj){
-        let cardMovement;
+        let cardMovement = {
+            layerObjKey  : obj.layerObjKey,
+            timerKey     : obj.timerKey, 
+            timerFrames  : obj.timerFrames ?? 20,
+            movementSpeed: obj.movementSpeed ?? 1,
+            started      : obj.started, 
+            card         : obj.card ?? null,
+            finished     : obj.finished, 
+            finish       : obj.finish ?? (()=>{}),
+            playerKey    : obj.playerKey ?? null,
+            cardSlot     : obj.cardSlot ?? null,
+            func: "",
+        };
         if(type == "selected"){
-            cardMovement = {
-                timerKey    : obj.timerKey, 
-                started     : false, 
-                finished    : false, 
-                card        : null,
-                start: function(){
-                    _APP.shared.genTimer.create(this.timerKey, 60);
-                    this.card = _GFX.layerObjs.getOne(obj.layerObjKey);
-                    this.card.moveCardToSelected(obj.playerKey); 
-                    this.started=true; 
-                }
-            };
+            cardMovement.func = "moveCardToSelected";
+            cardMovement.start = (function(){
+                _APP.shared.genTimer.create(cardMovement.timerKey, obj.timerFrames);
+                cardMovement.timer = _APP.shared.genTimer.get(cardMovement.timerKey);
+                cardMovement.card = _GFX.layerObjs.getOne(obj.layerObjKey);
+                cardMovement.card.moveCardToSelected(obj.playerKey, obj.movementSpeed); 
+                cardMovement.started=true; 
+                cardMovement.card.hidden = false;
+            });
         }
         else if(type == "unselected"){
-            cardMovement = {
-                timerKey : obj.timerKey, 
-                started  : obj.started, 
-                finished : obj.finished, 
-                card     : obj.card,
-                start: function(){
-                    _APP.shared.genTimer.create(this.timerKey, 60);
-                    this.card = _GFX.layerObjs.getOne(obj.layerObjKey);
-                    this.card.moveCardToUnselected(obj.playerKey); 
-                    this.started=true; 
-                }
-            };
+            cardMovement.func = "moveCardToUnselected";
+            cardMovement.start = (function(){
+                _APP.shared.genTimer.create(cardMovement.timerKey, cardMovement.timerFrames);
+                cardMovement.timer = _APP.shared.genTimer.get(cardMovement.timerKey);
+                cardMovement.card = _GFX.layerObjs.getOne(cardMovement.layerObjKey);
+                cardMovement.card.moveCardToUnselected(cardMovement.playerKey, cardMovement.movementSpeed); 
+                cardMovement.started=true; 
+                cardMovement.card.hidden = false;
+            });
         }
         else if(type == "discard"){
-            cardMovement = {
-                timerKey : obj.timerKey, 
-                started  : obj.started, 
-                finished : obj.finished, 
-                card     : obj.card,
-                start: function(){
-                    _APP.shared.genTimer.create(this.timerKey, 60);
-                    this.card = _GFX.layerObjs.getOne(obj.layerObjKey);
-                    this.card.moveCardToDiscard(); 
-                    this.started=true; 
-                }
-            };
+            cardMovement.func = "moveCardToDiscard";
+            cardMovement.start = (function(){
+                _APP.shared.genTimer.create(cardMovement.timerKey, cardMovement.timerFrames);
+                cardMovement.timer = _APP.shared.genTimer.get(cardMovement.timerKey);
+                cardMovement.card = _GFX.layerObjs.getOne(cardMovement.layerObjKey);
+                cardMovement.card.moveCardToDiscard(cardMovement.movementSpeed); 
+                cardMovement.started=true; 
+                cardMovement.card.hidden = false;
+            });
         }
         else if(type == "draw"){
-            cardMovement = {
-                timerKey : obj.timerKey, 
-                started  : obj.started, 
-                finished : obj.finished, 
-                card     : obj.card,
-                start: function(){
-                    _APP.shared.genTimer.create(this.timerKey, 60);
-                    this.card = _GFX.layerObjs.getOne(obj.layerObjKey);
-                    this.card.moveDrawCardToHome(obj.playerKey, obj.cardSlot); 
-                    this.started=true; 
-                }
+            cardMovement.func = "moveDrawCardToHome";
+            cardMovement.start = function(){
+                _APP.shared.genTimer.create(cardMovement.timerKey, cardMovement.timerFrames);
+                cardMovement.timer = _APP.shared.genTimer.get(cardMovement.timerKey);
+                cardMovement.card = _GFX.layerObjs.getOne(cardMovement.layerObjKey);
+                cardMovement.card.moveDrawCardToHome(cardMovement.playerKey, cardMovement.cardSlot, cardMovement.movementSpeed); 
+                cardMovement.started=true; 
+                cardMovement.card.hidden = false;
             };
         }
         else if(type == "home"){
-            cardMovement = {
-                timerKey : obj.timerKey, 
-                started  : obj.started, 
-                finished : obj.finished, 
-                card     : obj.card,
-                start: function(){
-                    _APP.shared.genTimer.create(this.timerKey, 60);
-                    this.card = _GFX.layerObjs.getOne(obj.layerObjKey);
-                    let [playerKey, cardSlot] = obj.layerObjKey.split("_card_");
-                    this.card.moveCardToHome(playerKey, +cardSlot); 
-                    this.started=true; 
-                }
-            };
+            cardMovement.func = "home";
+            cardMovement.start = (function(){
+                let [playerKey, cardSlot] = cardMovement.layerObjKey.split("_card_");
+                _APP.shared.genTimer.create(cardMovement.timerKey, cardMovement.timerFrames);
+                cardMovement.timer = _APP.shared.genTimer.get(cardMovement.timerKey);
+                cardMovement.card = _GFX.layerObjs.getOne(cardMovement.layerObjKey);
+                cardMovement.card.moveCardToHome(playerKey, +cardSlot, cardMovement.movementSpeed); 
+                cardMovement.started=true; 
+                cardMovement.card.hidden = false;
+            });
         }
         else{
             console.error("addCardMovement: Unknown type specified:", type);
@@ -173,7 +160,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         this.cardMovements.push(cardMovement);
     },
     handleCardMovements: function(){
-        let canRunGameLogic = true;
+        let clearFinish = false; 
         // Go through each record in the cardMovements array...
         for(let recIndex in this.cardMovements){
             // Get the record.
@@ -181,34 +168,53 @@ _APP.game.gamestates["gs_PLAYING"] = {
 
             // If this record is NOT finished...
             if(!rec.finished){
-                // Set canRunGameLogic to false.
-                canRunGameLogic = false;
-
                 // Start the movement if needed.
-                if(!rec.started){ rec.start(); break; }
+                if(!rec.started && rec.start){ rec.start(); }
 
                 // If the movement is not done then run the next frame.
-                if(!rec.card.movementDone){ 
-                    rec.card.nextFrame(); 
-                }
+                if(!rec.card.movementDone){ rec.card.nextFrame(); }
+
                 // Movement done has the timer finished?
                 else if(_APP.shared.genTimer.check( rec.timerKey )){ 
-                    // Reset the timer.
-                    _APP.shared.genTimer.reset( rec.timerKey ); 
+                    // Run the finish function if it is present.
+                    if(rec.finish){ rec.finish(); }
 
                     // Set finished to true.
                     rec.finished = true;
+                    clearFinish = true; 
                 }
             }
         }
 
         // Remove all finished movements.
-        this.cardMovements = this.cardMovements.filter(d=>!d.finished);
-
-        // Return the canRunGameLogic flag.
-        return canRunGameLogic;
+        if(clearFinish){
+            this.cardMovements = this.cardMovements.filter(d=>!d.finished);
+        }
     },
     
+    flags: {
+        // SHARED
+
+        // getFirstPlayer::
+        dealing                    : false, // Flag
+        determineHighestCard       : false, // Flag
+        firstPlayer                : "",    // Var
+        ready_determineHighestCard : false, // Flag
+        tied_determineHighestCard  : false, // Flag
+        dealing_firstTurn          : false, // Flag
+        dealing_firstTurnCardPos   : 0,     // Var
+    },
+    flags2: {
+        // playerTurn::
+        playerTurn_start : false, // Flag
+        playerTurn       : false, // Flag
+        playerDraws2     : false, // Flag 
+        playerSkipped    : false, // Flag 
+        playerReverse    : false, // Flag 
+        playerDraws4     : false, // Flag 
+        playerColorChange: false, // Flag 
+    },
+
     // Main function of this game state. Calls other functions/handles logic, etc.
     main: function(){
         // Run init and return if this gamestate is not yet inited.
@@ -226,85 +232,74 @@ _APP.game.gamestates["gs_PLAYING"] = {
             return;
         }
 
-        // Are there any card movement animations active?
-        let canRunGameLogic = true; 
-        if(this.cardMovements.length){ canRunGameLogic = this.handleCardMovements(); }
+        // Are there any card movement animations active? (blocking to the rest of the game loop until complete.)
+        if(this.cardMovements.length){ this.handleCardMovements(); }
 
-        else if(canRunGameLogic){
-            // console.log("GAME LOGIC");
-            // let card;
-            // card = this.getNextCardFromDrawpile();
-            // if(card){
-            //     _GFX.layerObjs.createOne(Card, { size: "sm", color:card.color, value: card.value , x:0, y:0, layerObjKey: "p1card", layerKey: "L1", xyByGrid: true } );
-            //     card.location = "CARD_LOCATION_PLAYER1";
-            // }
+        // Wait? (general.) 
+        // If the check returns false then the statement completes, does nothing and does not allow the game to continue.
+        // If the check returned true then the timer is finished and this statement is ignored.
+        else if(!_APP.shared.genTimer.check("genWaitTimer1")){ }
+        else if(!_APP.shared.genTimer.check("genWaitTimer2")){ }
 
-            // this.getNextCardFromDrawpile().location="CARD_LOCATION_PLAYER2"
-            // this.getNextCardFromDrawpile().location="CARD_LOCATION_PLAYER3"
-            // this.getNextCardFromDrawpile().location="CARD_LOCATION_PLAYER4"
-            // this.getNextCardFromDrawpile().location="CARD_LOCATION_DISCARD"
-            // this.getNextCardFromDrawpile().location="CARD_LOCATION_DRAW"
-            
-            // this.anims.add();
-
-            // return; 
-            if(_APP.game.gs2 == "gamestart"){
-                // Set flags.
-                // _APP.shared.genTimer.create("timer1", 60); // After turn
-                // _APP.shared.genTimer.create("timer2", 60); // 
-                // _APP.shared.genTimer.create("timer3", 60); // 
-                // _APP.shared.genTimer.create("timer4", 60); // 
-
-                _APP.game.gs2 = "getFirstPlayer";
-            }
-            else if(_APP.game.gs2 == "getFirstPlayer"){
-                if(0){
-                    // Shuffle the deck.
-                    this.deck.shuffleDeck();
-                }
-                else if(0){
-                }
-                else if(0){
-                }
-                else if(0){
-                }
-                else if(0){
-                }
-                else{
-                }
-
-                // Deal 1 card to each player. 
-
-                // What cards were they, who had them, and what is their value?
-                // Highest value card gets to be first player. 
-
-                // Set the current player.
-                // this.gameBoard.setCurrentPlayer(winningPlayerKey);
-
-                // // Reset the deck.
-                // this.deck.resetDeck();
-
-                // // Shuffle the deck.
-                // this.deck.shuffleDeck();
-
-                // Switch to the main dealing mode.
-                // _APP.game.changeGs2("dealing");
-            }
-            else if(_APP.game.gs2 == "dealing"){
-                // Deal 1 card to each player in order of P1 to P4 until each player has 7 cards.
-
-
-                // // Set the current color and indicator.
-                // this.gameBoard.setColorIndicators("CARD_BLACK");
-
-                // // Add the direction indicators.
-                // this.gameBoard.setDirectionIndicators("F");
-
-                // Determine who goes first.
-
-                // Pause
-            }
+        // 
+        else {
+            // console.log(_APP.game.gs2);
+            // This runs at the start of each round. 
+            if     (_APP.game.gs2 == "gamestart")     { this.gamestart(); }
+            else if(_APP.game.gs2 == "getFirstPlayer"){ this.getFirstPlayer(); }
             else if(_APP.game.gs2 == "playerTurn"){
+                if(this.flags.playerTurn_start){
+                    console.log("run once.", "playerTurn!", this.gameBoard.currentPlayer);
+                    this.gameBoard.updatePlayerText();
+                    this.deck.updateUnderPiles();
+
+                    // Show the current color.
+                    let discardCard = _GFX.layerObjs.getOne("discard_card");
+                    this.gameBoard.setColorIndicators(this.gameBoard.currentPlayer, discardCard.color);
+
+                    // Check flags.
+                    let skipTurn = false;
+                    let mustDraw = false;
+                    if(this.flags2.playerDraws2)     { skipTurn = true; mustDraw = true; }
+                    if(this.flags2.playerSkipped)    { skipTurn = true; mustDraw = true; }
+                    if(this.flags2.playerReverse)    { skipTurn = true; mustDraw = true; }
+                    if(this.flags2.playerDraws4)     { skipTurn = true; mustDraw = true; }
+                    if(this.flags2.playerColorChange){}
+
+                    if(mustDraw){
+                        if     (this.flags2.playerDraws2){
+                            this.gameBoard.displayMessage("d2LoseTurn"  , this.gameBoard.currentPlayer, false);
+                        }
+                        else if(this.flags2.playerDraws4){
+                            this.gameBoard.displayMessage("d4LoseTurn"  , this.gameBoard.currentPlayer, false);
+                        }
+                    }
+
+                    if(skipTurn){
+                        if(this.flags2.playerSkipped){}
+                        if(this.flags2.playerReverse){}
+                        if(this.flags2.playerDraws2){}
+                        if(this.flags2.playerDraws4){}
+                        
+                        this.gameBoard.displayMessage("skipLoseTurn", this.gameBoard.currentPlayer, false);
+                        this.gameBoard.displayMessage("reversed"    , this.gameBoard.currentPlayer, false);
+                        this.gameBoard.displayMessage("loseTurn"    , this.gameBoard.currentPlayer, false);
+                        
+                        // if(this.flags.playerDraws2 || this.flags.playerDraws4){}
+                        // this.flags2.playerSkipped
+                        // this.flags2.playerReverse
+
+                        // Display message.
+                        // Change directions?
+                        // Set next player.
+                    }
+                    //
+                    this.flags.playerTurn_start = false;
+                    this.flags.playerTurn = true;
+                }
+                else if(this.flags.playerTurn){
+                    console.log("run many.", "playerTurn!", this.gameBoard.currentPlayer);
+                }
                 //.Is the player allowed to play? (skip, draw, reverse)
 
                 // Reveal the current player's cards.
@@ -330,21 +325,22 @@ _APP.game.gamestates["gs_PLAYING"] = {
             }
             else if(_APP.game.gs2 == "winner"){
             }
+            else if(_APP.game.gs2 == "endOfRound"){
+            }
         }
 
-        if(_APP.debugActive && _DEBUG){ this.debug(gpInput); }
+        if(_APP.debugActive){ this.debug(gpInput); }
     },
 
     // Should be called by the game loop.
     // Calls debug functions specific to this gamestate.
     debug: function(gpInput){
         // DEBUG CURSOR.
-        _GFX.layerObjs.getOne("debugCursor").nextFrame();
-        // _GFX.layerObjs.getOne("debugCursor2").nextFrame();
-        if(gpInput.P1.held.BTN_SR && gpInput.P1.press.BTN_UP)   { _GFX.layerObjs.getOne("debugCursor").y--; }
-        if(gpInput.P1.held.BTN_SR && gpInput.P1.press.BTN_DOWN) { _GFX.layerObjs.getOne("debugCursor").y++; }
-        if(gpInput.P1.held.BTN_SR && gpInput.P1.press.BTN_LEFT) { _GFX.layerObjs.getOne("debugCursor").x--; }
-        if(gpInput.P1.held.BTN_SR && gpInput.P1.press.BTN_RIGHT){ _GFX.layerObjs.getOne("debugCursor").x++; }
+        // _GFX.layerObjs.getOne("debugCursor").nextFrame();
+        // if(gpInput.P1.held.BTN_SR && gpInput.P1.press.BTN_UP)   { _GFX.layerObjs.getOne("debugCursor").y--; }
+        // if(gpInput.P1.held.BTN_SR && gpInput.P1.press.BTN_DOWN) { _GFX.layerObjs.getOne("debugCursor").y++; }
+        // if(gpInput.P1.held.BTN_SR && gpInput.P1.press.BTN_LEFT) { _GFX.layerObjs.getOne("debugCursor").x--; }
+        // if(gpInput.P1.held.BTN_SR && gpInput.P1.press.BTN_RIGHT){ _GFX.layerObjs.getOne("debugCursor").x++; }
 
         if(_APP.debugActive && _DEBUG2){ _DEBUG2.debugGamestate.run(_APP.game.gs1, _APP.game.gs2)}
     },

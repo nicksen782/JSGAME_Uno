@@ -364,10 +364,11 @@ class Card extends LayerObject{
     fromPos = { x:0, y:0 };
     currPos = { x:0, y:0 };
     toPos   = { x:0, y:0 };
+    movementSpeed = 1;
     movementDone = false;
 
     // Sets up a card movement from point A to point B.
-    moveCardFromPosToPos(fromPos, toPos){
+    moveCardFromPosToPos(fromPos, toPos, speed=1){
         this.movementDone = false;
         
         // Store the fromPos, currPos and toPos.
@@ -375,123 +376,104 @@ class Card extends LayerObject{
         this.currPos = {...fromPos};
         this.toPos   = {...toPos};
         
+        // Set movement speed.
+        this.movementSpeed = speed;
+
         // Move the card to the starting position.
         this.x = this.currPos.x;
         this.y = this.currPos.y;
     };
 
     // Sets up the "selected card" movement (uses: moveCardFromPosToPos.)
-    moveCardToSelected(currPlayer){
+    moveCardToSelected(currPlayer, speed=1){
         let from = { x:this.x, y:this.y };
         let dest = { x:this.x, y:this.y };
-        if     (currPlayer == "P1"){ dest.y -= 2; } // Avoids covering the message box.
-        else if(currPlayer == "P2"){ dest.x += 2; } // Avoids covering the message box.
-        else if(currPlayer == "P3"){ dest.y += 2; } // Avoids covering the message box.
-        else if(currPlayer == "P4"){ dest.x -= 2; } // Avoids covering the message box.
+        if     (currPlayer == "P1"){ dest.y -= 3; } // Avoids covering the message box.
+        else if(currPlayer == "P2"){ dest.x += 3; } // Avoids covering the message box.
+        else if(currPlayer == "P3"){ dest.y += 3; } // Avoids covering the message box.
+        else if(currPlayer == "P4"){ dest.x -= 3; } // Avoids covering the message box.
 
-        this.moveCardFromPosToPos( from, dest );
+        this.moveCardFromPosToPos( from, dest, speed );
     };
 
     // Sets up the "unselected card" movement (uses: moveCardFromPosToPos.)
-    moveCardToUnselected(currPlayer){
+    moveCardToUnselected(currPlayer, speed=1){
         let from = { x:this.x, y:this.y };
         let dest = { x:this.x, y:this.y };
-        if     (currPlayer == "P1"){ dest.y += 2; } 
-        else if(currPlayer == "P2"){ dest.x -= 2; } 
-        else if(currPlayer == "P3"){ dest.y -= 2; } 
-        else if(currPlayer == "P4"){ dest.x += 2; } 
+        if     (currPlayer == "P1"){ dest.y += 3; } 
+        else if(currPlayer == "P2"){ dest.x -= 3; } 
+        else if(currPlayer == "P3"){ dest.y -= 3; } 
+        else if(currPlayer == "P4"){ dest.x += 3; } 
 
-        this.moveCardFromPosToPos( from, dest );
+        this.moveCardFromPosToPos( from, dest, speed );
     };
-    moveCardToDiscard(){
+    moveCardToDiscard(speed=1){
         let discPos = Deck.discardPos;
         let from = { x:this.x, y:this.y };
         let dest = { x: discPos[0], y: discPos[1] };
-        this.moveCardFromPosToPos( from, dest );
+        this.moveCardFromPosToPos( from, dest, speed );
     };
 
-    moveDrawCardToHome(playerKey, cardSlot){
+    // Sends a card from it's current position to the draw pile position.
+    moveDrawCardToHome(playerKey, cardSlot, speed=1){
         let cardPos = Deck.cardPos[playerKey][cardSlot];
         let drawPos = Deck.drawPos;
         let from = { x: drawPos[0], y: drawPos[1] };
         let dest = { x: cardPos[0], y: cardPos[1] };
-        this.moveCardFromPosToPos( from, dest );
+        this.moveCardFromPosToPos( from, dest, speed );
     };
     
-    moveCardToHome(playerKey, cardSlot){
+    moveCardToHome(playerKey, cardSlot, speed=1){
         let cardPos = Deck.cardPos[playerKey][cardSlot];
         let from = { x: this.x, y: this.y };
         let dest = { x: cardPos[0], y: cardPos[1] };
-        this.moveCardFromPosToPos( from, dest );
+        this.moveCardFromPosToPos( from, dest, speed );
     };
 
+    // UNUSED
     roundToNearestMultiple(number, multiple) {
         var numOfDecimalPlaces = (multiple.toString().split('.')[1] || []).length;
         return parseFloat((Math.round(number / multiple) * multiple).toFixed(numOfDecimalPlaces));
+        // return parseFloat((Math.ceil(number / multiple) * multiple).toFixed(numOfDecimalPlaces));
+        // return parseFloat((Math.floor(number / multiple) * multiple).toFixed(numOfDecimalPlaces));
     };
 
     nextFrame() {
-        // CARD MOVEMENT
-        if(!this.movementDone){
-            // Move from currPos to toPos on x/y by changeVal.
-            let changeVal = 0.25;
-            let tolerance = 0.01; // Tolerance for considering as reached the position
-    
-            // Track which coords change.
-            let changedX = false;
-            let changedY = false;
+        // If movement is already done, do nothing.
+        if(!this.movementDone) {
+            // Calculate the total distances to be covered in x and y directions.
+            let totalDistanceX = this.toPos.x - this.fromPos.x;
+            let totalDistanceY = this.toPos.y - this.fromPos.y;
         
-            // Keep track of the previous position.
-            let prevX = this.currPos.x;
-            let prevY = this.currPos.y;
+            // Calculate the increments per frame.
+            let incrementX = totalDistanceX / this.movementSpeed;
+            let incrementY = totalDistanceY / this.movementSpeed;
         
-            // Move right: currPos.x moving towards toPos.x.
-            if      (this.currPos.x < this.toPos.x - tolerance) { this.currPos.x += changeVal; changedX = true; }
-            
-            // Move left: currPos.x moving towards toPos.x. 
-            else if (this.currPos.x > this.toPos.x + tolerance) { this.currPos.x -= changeVal; changedX = true; }
+            // Update the current position.
+            this.currPos.x += incrementX;
+            this.currPos.y += incrementY;
         
-            // Move down: currPos.y moving towards toPos.y.
-            if      (this.currPos.y < this.toPos.y - tolerance) { this.currPos.y += changeVal; changedY = true; }
-            
-            // Move up: currPos.y moving towards toPos.y.
-            else if (this.currPos.y > this.toPos.y + tolerance) { this.currPos.y -= changeVal; changedY = true; }
+            // Check if we are close or past the target in the X direction.
+            if ((incrementX > 0 && this.currPos.x >= this.toPos.x) ||
+                (incrementX < 0 && this.currPos.x <= this.toPos.x)) {
+                this.currPos.x = this.toPos.x; // Snap to final position.
+            }
         
-            // Update the x/y position(s).
-            if(changedX) { this.x = this.roundToNearestMultiple(this.currPos.x, changeVal); }
-            if(changedY) { this.y = this.roundToNearestMultiple(this.currPos.y, changeVal); }
+            // Check if we are close or past the target in the Y direction.
+            if ((incrementY > 0 && this.currPos.y >= this.toPos.y) ||
+                (incrementY < 0 && this.currPos.y <= this.toPos.y)) {
+                this.currPos.y = this.toPos.y; // Snap to final position.
+            }
         
-            // Is the movement done? Check if it's close to the target and moving away.
-            if (
-                // If "close enough" with tolerance.
-                (
-                    Math.abs(this.x - this.toPos.x) <= tolerance && 
-                    Math.abs(this.y - this.toPos.y) <= tolerance
-                ) 
-                
-                || 
-    
-                // If "close enough" and considering the rounding.
-                (
-                    (this.currPos.x - prevX) * (this.toPos.x - this.currPos.x) < 0 ||
-                    (this.currPos.y - prevY) * (this.toPos.y - this.currPos.y) < 0
-                )
-            ) {
-                // Set the x and y directly to toPos values.
-                this.x = this.toPos.x;
-                this.y = this.toPos.y;
+            // Update the position. (They remain unrounded here but are rounded down before actual draw.)
+            this.x = this.currPos.x;
+            this.y = this.currPos.y;
         
-                // Set the current position to the target position to ensure it's exactly reached.
-                this.currPos.x = this.x;
-                this.currPos.y = this.y;
-        
-                // Set the flag for the movement being completed.
+            // Check if movement is done.
+            if (this.currPos.x === this.toPos.x && this.currPos.y === this.toPos.y) {
                 this.movementDone = true;
             }
         }
-
-        // OTHER
-        //
     };
 
 };
@@ -696,6 +678,12 @@ class Deck{
         "CARD_8": 8,
         "CARD_9": 9,
     };
+    static playerCardLocations = {
+        "P1": "CARD_LOCATION_PLAYER1",
+        "P2": "CARD_LOCATION_PLAYER2",
+        "P3": "CARD_LOCATION_PLAYER3",
+        "P4": "CARD_LOCATION_PLAYER4",
+    };
     static cardPos = {
         P1: [ [7 ,24], [10,24], [13,24], [16,24], [19,24] ], // CARDS: p1_pos
         P2: [ [1 ,7 ], [1 ,10], [1 ,13], [1 ,16], [1 ,19] ], // CARDS: p2_pos
@@ -710,10 +698,10 @@ class Deck{
     };
     // static wildCursorPos  = [ [9 ,15], [12,15], [15,15], [18,15] ]; // CURSORS IN WILD MENU  : wild_pos_cursor
     // static pauseCursorPos = [ [8 ,12], [8 ,13], [8 ,14], [8 ,15] ]; // CURSORS IN PAUSE MENU : pause_pos_cursor
-    static drawPos        = [ 10,11 ]; // Draw Pile          : draw_pos
+    static drawPos        = [ 9 ,11 ]; // Draw Pile          : draw_pos
     static discardPos     = [ 16,11 ]; // Discard Pile       : discard_pos
-    static drawPosBelow   = [ 10,15 ]; // Under Draw Pile    : draw_pos_below
-    static discardPosBelow= [ 15,15 ]; // Under Discard Pile : discard_pos_below
+    static drawPosBelow   = [ 9,15 ]; // Under Draw Pile    : draw_pos_below
+    static discardPosBelow= [ 16,15 ]; // Under Discard Pile : discard_pos_below
 
     constructor(config){
         this.className = this.constructor.name;
@@ -880,12 +868,64 @@ class Deck{
                 } );
             }
         }
+
+        // DRAW: placeholders. (left side)
+        _GFX.layerObjs.createOne(Card, { 
+            size       : "lg", 
+            color      : "CARD_BLACK",
+            value      : "CARD_BACK", 
+            layerObjKey: `draw_card`, 
+            layerKey   : "L2", 
+            xyByGrid   : true,
+            x          : Deck.drawPos[0], 
+            y          : Deck.drawPos[1], 
+            settings: { rotation: 0 }, 
+            hidden: false,
+        } );
+        _GFX.layerObjs.createOne(LayerObject, { 
+            tilesetKey: `bg_tiles1`, 
+            layerObjKey: `drawBelow`, 
+            layerKey   : "L2", 
+            tmap       : _GFX.funcs.getTilemap("bg_tiles1", "underPileL4"), 
+            xyByGrid   : true,
+            x          : Deck.drawPosBelow[0], 
+            y          : Deck.drawPosBelow[1], 
+            settings: { rotation: 0 }, 
+            hidden: false,
+        } );
+
+        // DISCARD: placeholders. (right side)
+        _GFX.layerObjs.createOne(Card, { 
+            size       : "lg", 
+            color      : "CARD_BLACK",
+            value      : "CARD_BACK", 
+            layerObjKey: `discard_card`, 
+            layerKey   : "L2", 
+            xyByGrid   : true,
+            x          : Deck.discardPos[0], 
+            y          : Deck.discardPos[1], 
+            settings: { rotation: 0 }, 
+            hidden: true,
+        } );
+        _GFX.layerObjs.createOne(LayerObject, { 
+            tilesetKey: `bg_tiles1`, 
+            layerObjKey: `discardBelow`, 
+            layerKey   : "L2", 
+            tmap       : _GFX.funcs.getTilemap("bg_tiles1", "underPileL0"), 
+            xyByGrid   : true,
+            x          : Deck.discardPosBelow[0], 
+            y          : Deck.discardPosBelow[1], 
+            settings: { rotation: 0 }, 
+            hidden: false,
+        } );
     };
 
+    // TODO
     // Flip player cards up.
     flipPlayerCardsUp(playerKey){
     };
     
+    // TODO
     // Flip player cards down.
     flipPlayerCardsDown(playerKey){
         for(let i=0, len=Deck.cardPos[playerKey].length; i<len; i+=1){
@@ -955,43 +995,71 @@ class Deck{
 
     // Get the next card from the draw pile (no assignment, just returns a card.)
     getNextCardFromDrawpile(){
-            // Filter out only the available cards.
-            let availableCards = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
+        // Filter out only the available cards.
+        let availableCards = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
 
-            // Are there any available cards in the draw pile?
-            if(availableCards.length == 0){
-                // No cards left. Convert the discard pile to the draw pile and shuffle those cards.
-                for(let card of this.deck){
-                    if(card.location == "CARD_LOCATION_DISCARD"){
-                        card.location = "CARD_LOCATION_DRAW"
-                    };
-                }
-        
-                // Filter out only the available cards.
-                // availableCards = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
-                
-                // Shuffle these cards.
-                // this.shuffleArray(availableCards);
-                
-                // Shuffle the deck.
-                this.shuffleDeck();
-                
-                // Filter out only the available cards.
-                availableCards = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
-    
-                if(availableCards.length){
-                    // Return the next card.
-                    return availableCards[0];
-                }
-                else{
-                    console.log("OUT OF CARDS", availableCards);
-                    return false;
-                }
+        // Are there any available cards in the draw pile?
+        if(availableCards.length == 0){
+            // No cards left. Convert the discard pile to the draw pile and shuffle those cards.
+            for(let card of this.deck){
+                if(card.location == "CARD_LOCATION_DISCARD"){
+                    card.location = "CARD_LOCATION_DRAW"
+                };
             }
-            else{
+    
+            // Filter out only the available cards.
+            // availableCards = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
+            
+            // Shuffle these cards.
+            // this.shuffleArray(availableCards);
+            
+            // Shuffle the deck.
+            this.shuffleDeck();
+            
+            // Filter out only the available cards.
+            availableCards = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
+
+            if(availableCards.length){
                 // Return the next card.
                 return availableCards[0];
             }
+            else{
+                console.log("OUT OF CARDS", availableCards);
+                return false;
+            }
+        }
+        else{
+            // Return the next card.
+            return availableCards[0];
+        }
+    };
+
+    //
+    updateDiscardCard(card){
+        // Get the displayed discard card.
+        let cardObj = _GFX.layerObjs.getOne("discard_card");
+
+        // Change the card to represent the card that was discarded.
+        cardObj.change_wholeCard("lg", card.color, card.value);
+    };
+
+    // TODO
+    updateUnderPiles(){
+        let drawCount    = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW").length;
+        let drawBelow      = _GFX.layerObjs.getOne("drawBelow");
+        if     (drawCount == 0  ) { drawBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL0");}
+        else if(drawCount <  27 ) { drawBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL1");}
+        else if(drawCount <  54 ) { drawBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL2");}
+        else if(drawCount <  81 ) { drawBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL3");}
+        else                      { drawBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL4");}
+
+        let discardCount = this.deck.filter(d=>d.location=="CARD_LOCATION_DISCARD").length;
+        let discardBelow   = _GFX.layerObjs.getOne("discardBelow");
+        if     (discardCount == 0  ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL0");}
+        else if(discardCount <  27 ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL1");}
+        else if(discardCount <  54 ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL2");}
+        else if(discardCount <  81 ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL3");}
+        else                         { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL4");}
     };
 
     // NORMAL PLAY:
@@ -1028,9 +1096,11 @@ class Gameboard{
             P4: { type: "NONE", active:false },
         };
 
+        this.activePlayerKeys = [];
         this.currentColor     = "CARD_BLACK";
         this.currentDirection = "F";
         this.currentPlayer    = "P1";
+        // this.currentPlayer    = ""; //"P1";
 
         this.createGameBoard();
         // this.initPlayers();
@@ -1118,7 +1188,10 @@ class Gameboard{
         let data;
         if(!textKey_msgBox)  { 
             data = pos["msgBox"].msgBox;
-            _GFX.layerObjs.createOne(PrintText, { text: " "  , x:data.x, y:data.y, layerObjKey: data.layerObjKey, layerKey: data.layerKey, xyByGrid: true });   
+            _GFX.layerObjs.createOne(PrintText, { 
+                text: " "  , x:data.x, y:data.y, layerObjKey: data.layerObjKey, layerKey: data.layerKey, xyByGrid: true,
+                settings: { bgColorRgba: [32, 32, 32, 168] }
+            });   
             textKey_msgBox   = _GFX.layerObjs.getOne( pos["msgBox"].msgBox.layerObjKey   );
         }
 
@@ -1164,21 +1237,39 @@ class Gameboard{
         else                                     { this.players["P4"].active = false; }
         this.players["P4"].type = this.parent.gameSettings.P4; 
 
+        //
+        this.activePlayerKeys = Object.keys(this.players).filter(d=>this.players[d].active);;
+
         // Add the text. (For each active player.)
-        this.updatePlayerText();
+        // this.updatePlayerText();
     };
 
-    // TODO
-    // Set current player.
-    setCurrentPlayer(playerKey){
-        // Set the playerKey value. 
-        this.currentPlayer = playerKey;
+    // Sets the new currentPlayer based on currentPlayer and currentDirection.
+    setNextPlayer(){
+        // Get the active players.
+        let players = Object.keys(this.players).filter(d=>this.players[d].active);
+        let currentPlayerIndex;
 
-        // Hide the active player indicators.
-        //
-        
-        // Show the active player indicator for the active player.
-        //
+        // Get the current player index in the list of active players. 
+        currentPlayerIndex = players.indexOf(this.currentPlayer);
+
+        // Get the next player based on direction.
+        let nextPlayerIndex;
+        if     (this.currentDirection == "F"){
+            // Next index too far? Reset to 0.
+            if     (1 + currentPlayerIndex >= players.length){ nextPlayerIndex = 0; }
+            // Allowable.
+            else{ nextPlayerIndex = currentPlayerIndex + 1}
+        }
+        else if(this.currentDirection == "R"){
+            // Next index too low? Reset to max -1.
+            if( -1 + currentPlayerIndex <= players.length){ nextPlayerIndex = players.length -1; }
+            // Allowable.
+            else{ nextPlayerIndex = currentPlayerIndex - 1}
+        }
+
+        // Set the new player.
+        this.currentPlayer = players[nextPlayerIndex];
     };
 
     // Set color indicators.
@@ -1293,7 +1384,6 @@ class Gameboard{
             let data;
             if(!textKey_uno)  { 
                 data = pos[playerKey].uno;
-                // console.log("Adding uno:", playerKey, data);
                 _GFX.layerObjs.createOne(PrintText, { text: "    "  , x:data.x, y:data.y, layerObjKey: data.layerObjKey, layerKey: data.layerKey, xyByGrid: true });   
                 textKey_uno   = _GFX.layerObjs.getOne( pos[playerKey].uno.layerObjKey   );
             }
@@ -1315,10 +1405,10 @@ class Gameboard{
 
             // Get the card count for the player.
             let location;
-            if     (playerKey == 1){ location = CARD_LOCATION_PLAYER1; }
-            else if(playerKey == 2){ location = CARD_LOCATION_PLAYER2; }
-            else if(playerKey == 3){ location = CARD_LOCATION_PLAYER3; }
-            else if(playerKey == 4){ location = CARD_LOCATION_PLAYER4; }
+            if     (playerKey == "P1"){ location = "CARD_LOCATION_PLAYER1"; }
+            else if(playerKey == "P2"){ location = "CARD_LOCATION_PLAYER2"; }
+            else if(playerKey == "P3"){ location = "CARD_LOCATION_PLAYER3"; }
+            else if(playerKey == "P4"){ location = "CARD_LOCATION_PLAYER4"; }
             let cardCount = this.parent.deck.deck.filter(d=>d.location==location).length;
 
             // Update "UNO" and the card count.
@@ -1329,7 +1419,7 @@ class Gameboard{
                 _GFX.layerObjs.removeOne( textKey_uno.layerObjKey );
             }
             
-            textKey_count.text = cardCount.toString(); // centered
+            textKey_count.text = cardCount.toString(); // centered?
             textKey_name .text = playerKey;
             textKey_cards.text = "CARDS";
         }
