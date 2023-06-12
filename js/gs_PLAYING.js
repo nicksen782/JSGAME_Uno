@@ -54,10 +54,16 @@ _APP.game.gamestates["gs_PLAYING"] = {
             gameSettings : this.gameSettings,
         });
 
+        // Create the colorChanger menu.
+        this.colorChanger = new ColorChanger({
+            parent       : this,
+        });
+
         // Init the gameBoard and the deck.
         this.gameBoard.initPlayers();
         this.gameBoard.currentPlayer = "P1";
-        this.gameBoard.setDirectionIndicators("F");
+        // this.gameBoard.setDirectionIndicators("F");
+        this.gameBoard.setDirectionIndicators("R");
         this.gameBoard.updatePlayerText(true);
         this.deck.storeGameBoard(this.gameBoard);
         this.deck.createCardPlaceholders();
@@ -248,6 +254,9 @@ _APP.game.gamestates["gs_PLAYING"] = {
         else if(!_APP.shared.genTimer.check("genWaitTimer4")){ }
         else if(!_APP.shared.genTimer.check("genWaitTimer5")){ }
         else if(!_APP.shared.genTimer.check("genWaitTimer6")){ }
+        else if(this.colorChanger.active){
+            this.action_changeColor(gpInput);
+        }
 
         // 
         else {
@@ -257,7 +266,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
             else if(_APP.game.gs2 == "getFirstPlayer"){ this.getFirstPlayer(); }
             else if(_APP.game.gs2 == "playerTurn"){
                 if(this.flags2.playerTurn_start){
-                    console.log("run once.", "playerTurn!", this.gameBoard.currentPlayer);
+                    // console.log("run once.", "playerTurn!", this.gameBoard.currentPlayer);
                     this.gameBoard.updatePlayerText();
                     this.deck.updateUnderPiles();
 
@@ -266,15 +275,24 @@ _APP.game.gamestates["gs_PLAYING"] = {
                     this.gameBoard.setColorIndicators(this.gameBoard.currentPlayer, discardCard.color);
 
                     // Check flags.
+                    let colorChange = false;
                     let skipTurn = false;
                     let mustDraw = false;
-                    if(this.flags2.playerDraws2)     { skipTurn = true; mustDraw = true; }
-                    if(this.flags2.playerSkipped)    { skipTurn = true; mustDraw = false; }
-                    if(this.flags2.playerReverse)    { skipTurn = true; mustDraw = false; }
-                    if(this.flags2.playerDraws4)     { skipTurn = true; mustDraw = true; }
-                    if(this.flags2.playerColorChange){}
+                    if(this.flags2.playerDraws2)     { mustDraw = true; }
+                    if(this.flags2.playerSkipped)    { skipTurn = true; }
+                    if(this.flags2.playerReverse)    { skipTurn = true; }
+                    if(this.flags2.playerDraws4)     { mustDraw = true; }
+                    if(this.flags2.playerColorChange){ colorChange = true; }
 
-                    if(mustDraw){
+                    // This would only happen on the first turn. 
+                    if(colorChange){
+                        // console.log("color change!");
+                        this.flags2.playerTurn_start = false;
+                        this.flags2.playerTurn = true;
+                        this.colorChanger.show();
+                    }
+
+                    else if(mustDraw){
                         console.log("mustDraw");
                         if     (this.flags2.playerDraws2){
                             this.action_draw(this.gameBoard.currentPlayer, 2);
@@ -285,6 +303,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
                             this.gameBoard.displayMessage("d4LoseTurn"  , this.gameBoard.currentPlayer, false);
                         }
 
+                        // Reset flags.
                         this.flags2.playerTurn_start = false;
                         this.flags2.playerTurn = false
                         this.flags2.playerDraws2 = false;
@@ -293,11 +312,15 @@ _APP.game.gamestates["gs_PLAYING"] = {
                         this.flags2.playerDraws4 = false;
                         this.flags2.playerColorChange = false;
 
+                        console.log("skipTurn");
+                        console.log("  Due to Draw2 or Draw4");
                         _APP.shared.genTimer.create("genWaitTimer6", 60, _APP.game.gs1, ()=>{
                             this.gameBoard.displayMessage("none", this.gameBoard.currentPlayer, false);
                             this.flags2.playerTurn_start = true;
                             this.flags2.playerTurn = false;
+                            console.log(`BEFORE: setNextPlayer: currentPlayer: ${this.gameBoard.currentPlayer}, currentDirection: ${this.gameBoard.currentDirection}`);
                             this.gameBoard.setNextPlayer();
+                            console.log(`BEFORE: setNextPlayer: currentPlayer: ${this.gameBoard.currentPlayer}, currentDirection: ${this.gameBoard.currentDirection}`);
                         });
                     }
 
@@ -307,6 +330,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
                         // action_skip
                         // TODO: Maybe the logic of reverse should be handled at the end of a hand instead of the beginning?
                         if(this.flags2.playerReverse){
+                            console.log("  Due to reverse");
                             // Act like a skip if the number of players is exactly 2.
                             if(this.gameBoard.activePlayerKeys.length == 2){
                                 this.gameBoard.displayMessage("reversed"    , this.gameBoard.currentPlayer, false);
@@ -317,6 +341,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
                             this.gameBoard.flipDirectionIndicators();
                         }
                         else if(this.flags2.playerSkipped){
+                            console.log("  Due to skip");
                             this.gameBoard.displayMessage("skipLoseTurn", this.gameBoard.currentPlayer, false);
                         }
 
@@ -332,7 +357,9 @@ _APP.game.gamestates["gs_PLAYING"] = {
                             this.gameBoard.displayMessage("none", this.gameBoard.currentPlayer, false);
                             this.flags2.playerTurn_start = true;
                             this.flags2.playerTurn = false;
+                            console.log(`BEFORE: setNextPlayer: currentPlayer: ${this.gameBoard.currentPlayer}, currentDirection: ${this.gameBoard.currentDirection}`);
                             this.gameBoard.setNextPlayer();
+                            console.log(`BEFORE: setNextPlayer: currentPlayer: ${this.gameBoard.currentPlayer}, currentDirection: ${this.gameBoard.currentDirection}`);
                         });
                     }
 

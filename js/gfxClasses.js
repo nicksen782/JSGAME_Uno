@@ -139,6 +139,10 @@ class Cursor1 extends LayerObject{
         blue   : [36 , 72 , 170, 255], // 
         green  : [0  , 145, 0  , 255], // 
     };
+    static frames_type1 = [
+    ];
+    static frames_type2 = [
+    ];
 
     constructor(config){
         config.tilesetKey = "sprite_tiles1";
@@ -147,12 +151,20 @@ class Cursor1 extends LayerObject{
 
         this.tilesetKey = "sprite_tiles1";
 
-        this.frames = [
-            _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f1"),
-            _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f2"),
-            // _GFX.funcs.getTilemap("sprite_tiles1", "cursor2_f1"),
-            // _GFX.funcs.getTilemap("sprite_tiles1", "cursor2_f2"),
-        ];
+        this.cursorType = config.cursorType ?? 1;
+
+        if(this.cursorType == 1){
+            this.frames = [
+                _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f1"),
+                _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f2"),
+            ];
+        }
+        else if(this.cursorType == 2){
+            this.frames = [
+                _GFX.funcs.getTilemap("sprite_tiles1", "cursor2_f1"),
+                _GFX.funcs.getTilemap("sprite_tiles1", "cursor2_f2"),
+            ];
+        }
 
         // DEBUG
         // let tileId1 = this.frames[0][2];
@@ -1109,6 +1121,151 @@ class Deck{
     // Players not actively adding to the score only show the back card.
 };
 
+class ColorChanger{
+    static text = [
+        // `              ` ,
+        `  CHOOSE COLOR  ` ,
+        `` ,
+        `` ,
+        ``, //`  YELBLUREDGRE  ` ,
+        ``, //`  YELBLUREDGRE  ` ,
+        ``, //`  YELBLUREDGRE  ` ,
+        `` ,
+        `` ,
+        `  DPAD: CHANGE  `,
+        `     A: SELECT  ` ,
+    ];
+    static pos = { 
+        box: { x:6, y:9 },
+        yellow: { x: 8, y:12 },
+        blue  : { x:11, y:12 },
+        red   : { x:14, y:12 },
+        green : { x:17, y:12 },
+    };
+    static cursorsPos = [
+        {x: 8+1, y:15, color: "CARD_YELLOW" },
+        {x:11+1, y:15, color: "CARD_BLUE"   },
+        {x:14+1, y:15, color: "CARD_RED"    },
+        {x:17+1, y:15, color: "CARD_GREEN"  },
+    ];
+    static colors = {
+        white : [255, 255, 255 , 255],
+        yellow : [255, 182, 85 , 255],
+        blue   : [36 , 72 , 170, 255],
+        red    : [218, 0  , 0  , 255],
+        green  : [0  , 145, 0  , 255],
+    };
+
+    constructor(config){
+        this.parent       = config.parent;
+        this.active = false;
+
+        // Create the print text.
+        _GFX.layerObjs.createOne(PrintText, { 
+            hidden: true,
+            text       : ColorChanger.text, 
+            x          : ColorChanger.pos.box.x, 
+            y          : ColorChanger.pos.box.y, 
+            layerObjKey: "color_changer_text", 
+            layerKey   : "L3", 
+            xyByGrid   : true,
+            // settings   : { bgColorRgba: [32, 32, 32, 168] }
+            settings   : { bgColorRgba: [0, 0, 0, 200] }
+        });
+
+        // Create the cursor.
+        this.cursorsPosIndex = 0;
+        this.framesCounter = 0;
+        this.framesBeforeIndexChange = 15;
+        _GFX.layerObjs.createOne(Cursor1, { 
+            hidden: true,
+            x           : ColorChanger.cursorsPos[this.cursorsPosIndex].x, 
+            y           : ColorChanger.cursorsPos[this.cursorsPosIndex].y, 
+            layerObjKey : `color_changer_cursor`, 
+            layerKey    : "L4", 
+            xyByGrid    : true, 
+            cursorType  : 1,
+            settings    : { 
+                rotation: 0,
+            }
+        } );
+
+        // Add the colors.
+        let tmp = [
+            { layerObjKey: "color_changer_yellow", x:ColorChanger.pos.yellow.x, y:ColorChanger.pos.yellow.y, tmap: new Uint8Array( [ 3, 3 ].concat(Array.from({ length: 3 * 3 }, () => _GFX.funcs.getTilemap("bg_tiles1", "solid_yellow")[2] )) ) },
+            { layerObjKey: "color_changer_blue"  , x:ColorChanger.pos.blue.x  , y:ColorChanger.pos.blue.y  , tmap: new Uint8Array( [ 3, 3 ].concat(Array.from({ length: 3 * 3 }, () => _GFX.funcs.getTilemap("bg_tiles1", "solid_blue")[2]   )) ) },
+            { layerObjKey: "color_changer_red"   , x:ColorChanger.pos.red.x   , y:ColorChanger.pos.red.y   , tmap: new Uint8Array( [ 3, 3 ].concat(Array.from({ length: 3 * 3 }, () => _GFX.funcs.getTilemap("bg_tiles1", "solid_red")[2]    )) ) },
+            { layerObjKey: "color_changer_green" , x:ColorChanger.pos.green.x , y:ColorChanger.pos.green.y , tmap: new Uint8Array( [ 3, 3 ].concat(Array.from({ length: 3 * 3 }, () => _GFX.funcs.getTilemap("bg_tiles1", "solid_green")[2]  )) ) },
+        ];
+        for(let rec of tmp){
+            _GFX.layerObjs.createOne(LayerObject, {
+                hidden: true,
+                layerObjKey: rec.layerObjKey, 
+                layerKey   : "L4", 
+                tilesetKey : "bg_tiles1", 
+                tmap       : rec.tmap, 
+                x          : rec.x, 
+                y          : rec.y, 
+                xyByGrid: true, 
+                settings: {},
+                removeHashOnRemoval: true, 
+                noResort: false,
+            });
+        }
+
+        // Store the elems for later use.
+        this.elems = {
+            text   : _GFX.layerObjs.getOne("color_changer_text"),
+            cursor : _GFX.layerObjs.getOne("color_changer_cursor"),
+            yellow : _GFX.layerObjs.getOne("color_changer_yellow"),
+            blue   : _GFX.layerObjs.getOne("color_changer_blue"),
+            red    : _GFX.layerObjs.getOne("color_changer_red"),
+            green  : _GFX.layerObjs.getOne("color_changer_green"),
+        };
+
+        this.changeCursorColor();
+    }
+    show(){
+        for(let elemKey in this.elems){ this.elems[elemKey].hidden = false; }
+        this.active = true;
+    };
+    hide(){
+        for(let elemKey in this.elems){ this.elems[elemKey].hidden = true; }
+        this.active = false;
+    };
+    accept() {
+        let newColor = ColorChanger.cursorsPos[this.cursorsPosIndex].color;
+        this.parent.gameBoard.setColorIndicators(this.parent.gameBoard.currentPlayer, newColor);
+        this.hide();
+    };
+    moveCursor(xDir) {
+        // Change the cursor position.
+        let color_changer_cursor = _GFX.layerObjs.getOne("color_changer_cursor");
+        if(xDir == 1){
+            if(1 + this.cursorsPosIndex >= ColorChanger.cursorsPos.length){ this.cursorsPosIndex = 0; }
+            else{ this.cursorsPosIndex += 1;}
+        }
+        else if(xDir == -1){
+            if(this.cursorsPosIndex -1 < 0){ this.cursorsPosIndex = ColorChanger.cursorsPos.length -1; }
+            else{ this.cursorsPosIndex -= 1;}
+        }
+        color_changer_cursor.x = ColorChanger.cursorsPos[this.cursorsPosIndex].x;
+        color_changer_cursor.y = ColorChanger.cursorsPos[this.cursorsPosIndex].y;
+
+        // Change the cursor color.
+        this.changeCursorColor();
+    };
+    changeCursorColor(){
+        if     (this.cursorsPosIndex == 0){ this.elems.cursor.setSetting("colorData", [ [ColorChanger.colors.white, ColorChanger.colors.yellow] ]); }
+        else if(this.cursorsPosIndex == 1){ this.elems.cursor.setSetting("colorData", [ [ColorChanger.colors.white, ColorChanger.colors.blue  ] ]); }
+        else if(this.cursorsPosIndex == 2){ this.elems.cursor.setSetting("colorData", [ [ColorChanger.colors.white, ColorChanger.colors.red   ] ]); }
+        else if(this.cursorsPosIndex == 3){ this.elems.cursor.setSetting("colorData", [ [ColorChanger.colors.white, ColorChanger.colors.green ] ]); }
+    };
+    nextFrame() {
+        // Update cursor frame.
+        this.elems.cursor.nextFrame();
+    }
+}
 class Gameboard{
     constructor(config){
         this.parent       = config.parent;
@@ -1137,7 +1294,7 @@ class Gameboard{
         // this.gameBoard.displayMessage("playsFirst", "P1", false);
         let pos = {
             msgBox: {
-                msgBox  : { x:7, y:18, w:13 , h:3, layerKey: "L4", layerObjKey: "msgBox_text" },
+                msgBox      : { x:7, y:18, w:13 , h:3, layerKey: "L4", layerObjKey: "msgBox_text" },
             }
         }
 
@@ -1221,6 +1378,9 @@ class Gameboard{
             textKey_msgBox   = _GFX.layerObjs.getOne( pos["msgBox"].msgBox.layerObjKey   );
         }
 
+        textKey_msgBox.x = pos["msgBox"].msgBox.x;
+        textKey_msgBox.y = pos["msgBox"].msgBox.y;
+
         // Remove the layerObject.
         if(msgKey == "none"){ 
             // Removing an already removed object does not throw an error.
@@ -1273,7 +1433,7 @@ class Gameboard{
     // Sets the new currentPlayer based on currentPlayer and currentDirection.
     setNextPlayer(){
         // Get the active players.
-        let players = Object.keys(this.players).filter(d=>this.players[d].active);
+        let players = Object.keys(this.players).filter(d => this.players[d].active);
         let currentPlayerIndex;
 
         // Get the current player index in the list of active players. 
@@ -1281,22 +1441,23 @@ class Gameboard{
 
         // Get the next player based on direction.
         let nextPlayerIndex;
-        if     (this.currentDirection == "F"){
+        if (this.currentDirection == "F") {
             // Next index too far? Reset to 0.
-            if     (1 + currentPlayerIndex >= players.length){ nextPlayerIndex = 0; }
+            if (1 + currentPlayerIndex >= players.length) { nextPlayerIndex = 0; }
             // Allowable.
-            else{ nextPlayerIndex = currentPlayerIndex + 1}
+            else { nextPlayerIndex = currentPlayerIndex + 1 }
         }
-        else if(this.currentDirection == "R"){
+        else if (this.currentDirection == "R") {
             // Next index too low? Reset to max -1.
-            if( -1 + currentPlayerIndex <= players.length){ nextPlayerIndex = players.length -1; }
+            if (currentPlayerIndex - 1 < 0) { nextPlayerIndex = players.length - 1; }
             // Allowable.
-            else{ nextPlayerIndex = currentPlayerIndex - 1}
+            else { nextPlayerIndex = currentPlayerIndex - 1 }
         }
 
         // Set the new player.
         this.currentPlayer = players[nextPlayerIndex];
     };
+
 
     // Set color indicators.
     setColorIndicators(playerKey, color){
@@ -1352,6 +1513,7 @@ class Gameboard{
         // _APP.shared.gameBoard.setDirectionIndicators("F");
         // _APP.shared.gameBoard.setDirectionIndicators("N");
         // _APP.shared.gameBoard.setDirectionIndicators("R");
+        // console.log("this.currentDirection WAS:", this.currentDirection);
         this.currentDirection = dir;
         if(dir == "F"){
             _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionF_tl"), x:5, y:5, layerObjKey: `direction_tl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
@@ -1372,6 +1534,8 @@ class Gameboard{
             _GFX.layerObjs.removeOne( "direction_bl" );
             _GFX.layerObjs.removeOne( "direction_br" );
         }
+
+        // console.log("this.currentDirection IS NOW:", this.currentDirection);
     };
 
     // Update the text for each player corner.

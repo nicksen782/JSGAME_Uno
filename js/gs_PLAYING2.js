@@ -79,6 +79,9 @@
                     }
                 }
 
+                // DEBUG: Force the winner.
+                // winner.playerKeys = ["P1"];
+
                 // One winner?
                 if(winner.playerKeys.length == 1){
                     // console.log("winner:", winner.playerKeys.length, winner.playerKeys);
@@ -215,15 +218,15 @@
                             // Get the next card in the deck and assign to the discard pile.
                             // The first card cannot be wild draw 4. 
                             let location_DRAW    = this.deck.deck.filter(d => d.location == "CARD_LOCATION_DRAW" && d.value != "CARD_WILD_DRAW4");
-                            // let discardCard = location_DRAW[0];
-                            let discardCard = this.deck.deck.find(d => 
-                                d.location == "CARD_LOCATION_DRAW" && 
-                                // d.value == "CARD_WILD_DRAW4"
-                                // d.value == "CARD_DRAW2"
-                                // d.value == "CARD_SKIP"
-                                d.value == "CARD_REV"
-                                // d.value == "CARD_WILD"
-                            );
+                            let discardCard = location_DRAW[0];
+                            // let discardCard = this.deck.deck.find(d => 
+                            //     d.location == "CARD_LOCATION_DRAW" && 
+                            //     // d.value == "CARD_WILD_DRAW4"
+                            //     // d.value == "CARD_DRAW2"
+                            //     // d.value == "CARD_SKIP"
+                            //     // d.value == "CARD_REV"
+                            //     d.value == "CARD_WILD"
+                            // );
                             discardCard.location = "CARD_LOCATION_DISCARD";
                             
                             // Display the discard card.
@@ -284,6 +287,12 @@
             }
         },
 
+        action_changeColor: function(gp_input){
+            this.colorChanger.nextFrame();
+            if(gp_input.P1.release.BTN_LEFT) { this.colorChanger.moveCursor(-1); }
+            if(gp_input.P1.release.BTN_RIGHT){ this.colorChanger.moveCursor(1); }
+            if(gp_input.P1.release.BTN_A)    { this.colorChanger.accept(); }
+        },
         action_draw: function(playerKey, numCards){
             // Ready the temp_card for use.
             let tempCard = _GFX.layerObjs.getOne("temp_card");
