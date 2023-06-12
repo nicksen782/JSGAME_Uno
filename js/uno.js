@@ -1,6 +1,8 @@
 // @ts-nocheck
 
 _APP.debugActive = false;
+_APP.debug2Active = false;
+
 // _APP.debugActive = true;
 _APP.configObj = {
     appName: "UNO!",
@@ -578,6 +580,7 @@ _APP.loader = {
         let debugActive = ("debug" in params && params.debug === '1') ? true : false;
         if (debugActive && window.location.hostname !== 'localhost') {
             _APP.debugActive = false;
+            _APP.debug2Active = false;
 
             // Change the 'debug' parameter in the URL to '0'.
             let url = new URL(window.location.href);
@@ -592,6 +595,7 @@ _APP.loader = {
         }
         else{
             _APP.debugActive = debugActive;
+            _APP.debug2Active = debugActive;
         }
     },
     loadFiles: async function(){

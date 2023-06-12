@@ -12,7 +12,7 @@ _APP.shared = {
             if(gamestate == undefined){ gamestate = _APP.game.gs1; }
 
             if(!this.timers[gamestate][name]){ 
-                console.error("ERROR: genTimer:get: This timer does not exist:", name, gamestate);
+                console.error("ERROR: genTimer:get: This timer does not exist:", `name: '${name}', gamestate: '${gamestate}'`);
                 return; 
             }
             
@@ -28,7 +28,7 @@ _APP.shared = {
             if(gamestate == undefined){ gamestate = _APP.game.gs1; }
     
             if(!this.timers[gamestate][name]){ 
-                console.error("ERROR: genTimer:get: This timer does not exist:", name, gamestate);
+                console.error("ERROR: genTimer:get: This timer does not exist:", `name: '${name}', gamestate: '${gamestate}'`);
                 return; 
             }
 
@@ -104,7 +104,7 @@ _APP.shared = {
             if(gamestate == undefined){ gamestate = _APP.game.gs1; }
 
             if(!this.timers[gamestate][name]){ 
-                console.error("ERROR: genTimer:reset: This timer does not exist:", name, gamestate);
+                console.error("ERROR: genTimer:reset: This timer does not exist:", `name: '${name}', gamestate: '${gamestate}'`);
                 return; 
             }
     
@@ -126,7 +126,7 @@ _APP.shared = {
             if(gamestate == undefined){ gamestate = _APP.game.gs1; }
 
             if(!this.timers[gamestate][name]){ 
-                console.error("ERROR: genTimer:finish: This timer does not exist:", name, gamestate);
+                console.error("ERROR: genTimer:finish: This timer does not exist:", `name: '${name}', gamestate: '${gamestate}'`);
                 return; 
             }
     
@@ -148,7 +148,7 @@ _APP.shared = {
             if(gamestate == undefined){ gamestate = _APP.game.gs1; }
 
             if(!this.timers[gamestate][name]){ 
-                console.error("ERROR: genTimer:check: This timer does not exist:", name, gamestate);
+                console.error("ERROR: genTimer:check: This timer does not exist:", `name: '${name}', gamestate: '${gamestate}'`);
                 return; 
             }
 

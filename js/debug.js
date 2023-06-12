@@ -62,6 +62,7 @@ var _DEBUG = {
             toggleLogic      : null,
             awaitDraw        : null,
             debugButton      : null,
+            debug2Button      : null,
             toggleCacheButton: null,
         },
         setCurrentStates: function(){
@@ -71,6 +72,7 @@ var _DEBUG = {
                 { check: !_APP.game.gameLoop.skipLogic,                                   elem: this.DOM["toggleLogic"] },
                 { check:  _APP.configObj.awaitDraw,                                       elem: this.DOM["awaitDraw"] },
                 { check:  _APP.debugActive,                                               elem: this.DOM["debugButton"] },
+                { check:  _APP.debug2Active,                                              elem: this.DOM["debug2Button"] },
                 { check: !_APP.configObj.disableCache,                                    elem: this.DOM["toggleCacheButton"] },
             ];
             let classes = [
@@ -100,6 +102,7 @@ var _DEBUG = {
             this.DOM.toggleLogic       = document.getElementById("debug_test_toggleLogic");
             this.DOM.awaitDraw         = document.getElementById("debug_test_toggleDrawAsync");
             this.DOM.debugButton       = document.getElementById("debug_toggleDebugFlag");
+            this.DOM.debug2Button      = document.getElementById("debug_toggleDebug2Flag");
             this.DOM.toggleCacheButton = document.getElementById("debug_toggleCacheFlag");
             
             // Add toggle logic/event listeners.
@@ -204,6 +207,7 @@ var _DEBUG = {
                         data: { debugActive: _APP.debugActive }, 
                         refs:[]
                     }, true, false);
+
                     // Start the gameloop after a delay.
                     if(wasRunning){
                         setTimeout(()=>{
@@ -214,12 +218,44 @@ var _DEBUG = {
                             debug_inToggle = false;
                         }, 1 * _APP.game.gameLoop.msFrame);
                     }
+
                     // Just clear the toggle flag.
                     else{
                         // Clear the toggle flag.
                         debug_inToggle = false;
                     }
                 }, 4 * _APP.game.gameLoop.msFrame);
+            }, false);
+
+            // DEBUG2
+            let debug2_inToggle = false;
+            this.DOM.debug2Button.addEventListener("click", ()=>{ 
+                // Do not allow further toggles until this flag is false again.
+                if(debug2_inToggle){ 
+                    // console.log("ALREADY IN DEBUG TOGGLE");
+                    return; 
+                }
+
+                // Set the toggle flag to true. 
+                debug2_inToggle = true;
+
+                // Toggle the setting locally.
+                _APP.debug2Active = !_APP.debug2Active;
+                
+                // Adjust the display of the toggle button.
+                if(_APP.debug2Active){
+                    this.DOM.debug2Button.classList.remove("debug_bgColor_off");
+                    this.DOM.debug2Button.classList.add("debug_bgColor_on");
+                    this.DOM.debug2Button.innerText = "ON";
+                } 
+                else {
+                    this.DOM.debug2Button.classList.remove("debug_bgColor_on");
+                    this.DOM.debug2Button.classList.add("debug_bgColor_off");
+                    this.DOM.debug2Button.innerText = "OFF";
+                } 
+
+                // Clear the toggle flag.
+                debug2_inToggle = false;
             }, false);
 
             // HASH CACHE

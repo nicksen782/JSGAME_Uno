@@ -58,13 +58,17 @@ _APP.game.gamestates["gs_PLAYING"] = {
         this.gameBoard.initPlayers();
         this.gameBoard.currentPlayer = "P1";
         this.gameBoard.setDirectionIndicators("F");
-        this.gameBoard.updatePlayerText();
+        this.gameBoard.updatePlayerText(true);
         this.deck.storeGameBoard(this.gameBoard);
         this.deck.createCardPlaceholders();
 
         // Create general wait timers.
         _APP.shared.genTimer.create("genWaitTimer1", 0);
         _APP.shared.genTimer.create("genWaitTimer2", 0);
+        _APP.shared.genTimer.create("genWaitTimer3", 0);
+        _APP.shared.genTimer.create("genWaitTimer4", 0);
+        _APP.shared.genTimer.create("genWaitTimer5", 0);
+        _APP.shared.genTimer.create("genWaitTimer6", 0);
 
         // Run the debug init.
         if(_APP.debugActive && _DEBUG2){ 
@@ -240,6 +244,10 @@ _APP.game.gamestates["gs_PLAYING"] = {
         // If the check returned true then the timer is finished and this statement is ignored.
         else if(!_APP.shared.genTimer.check("genWaitTimer1")){ }
         else if(!_APP.shared.genTimer.check("genWaitTimer2")){ }
+        else if(!_APP.shared.genTimer.check("genWaitTimer3")){ }
+        else if(!_APP.shared.genTimer.check("genWaitTimer4")){ }
+        else if(!_APP.shared.genTimer.check("genWaitTimer5")){ }
+        else if(!_APP.shared.genTimer.check("genWaitTimer6")){ }
 
         // 
         else {
@@ -248,7 +256,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
             if     (_APP.game.gs2 == "gamestart")     { this.gamestart(); }
             else if(_APP.game.gs2 == "getFirstPlayer"){ this.getFirstPlayer(); }
             else if(_APP.game.gs2 == "playerTurn"){
-                if(this.flags.playerTurn_start){
+                if(this.flags2.playerTurn_start){
                     console.log("run once.", "playerTurn!", this.gameBoard.currentPlayer);
                     this.gameBoard.updatePlayerText();
                     this.deck.updateUnderPiles();
@@ -261,44 +269,86 @@ _APP.game.gamestates["gs_PLAYING"] = {
                     let skipTurn = false;
                     let mustDraw = false;
                     if(this.flags2.playerDraws2)     { skipTurn = true; mustDraw = true; }
-                    if(this.flags2.playerSkipped)    { skipTurn = true; mustDraw = true; }
-                    if(this.flags2.playerReverse)    { skipTurn = true; mustDraw = true; }
+                    if(this.flags2.playerSkipped)    { skipTurn = true; mustDraw = false; }
+                    if(this.flags2.playerReverse)    { skipTurn = true; mustDraw = false; }
                     if(this.flags2.playerDraws4)     { skipTurn = true; mustDraw = true; }
                     if(this.flags2.playerColorChange){}
 
                     if(mustDraw){
+                        console.log("mustDraw");
                         if     (this.flags2.playerDraws2){
+                            this.action_draw(this.gameBoard.currentPlayer, 2);
                             this.gameBoard.displayMessage("d2LoseTurn"  , this.gameBoard.currentPlayer, false);
                         }
                         else if(this.flags2.playerDraws4){
+                            this.action_draw(this.gameBoard.currentPlayer, 4);
                             this.gameBoard.displayMessage("d4LoseTurn"  , this.gameBoard.currentPlayer, false);
                         }
+
+                        this.flags2.playerTurn_start = false;
+                        this.flags2.playerTurn = false
+                        this.flags2.playerDraws2 = false;
+                        this.flags2.playerSkipped = false;
+                        this.flags2.playerReverse = false;
+                        this.flags2.playerDraws4 = false;
+                        this.flags2.playerColorChange = false;
+
+                        _APP.shared.genTimer.create("genWaitTimer6", 60, _APP.game.gs1, ()=>{
+                            this.gameBoard.displayMessage("none", this.gameBoard.currentPlayer, false);
+                            this.flags2.playerTurn_start = true;
+                            this.flags2.playerTurn = false;
+                            this.gameBoard.setNextPlayer();
+                        });
                     }
 
-                    if(skipTurn){
-                        if(this.flags2.playerSkipped){}
-                        if(this.flags2.playerReverse){}
-                        if(this.flags2.playerDraws2){}
-                        if(this.flags2.playerDraws4){}
-                        
-                        this.gameBoard.displayMessage("skipLoseTurn", this.gameBoard.currentPlayer, false);
-                        this.gameBoard.displayMessage("reversed"    , this.gameBoard.currentPlayer, false);
-                        this.gameBoard.displayMessage("loseTurn"    , this.gameBoard.currentPlayer, false);
-                        
-                        // if(this.flags.playerDraws2 || this.flags.playerDraws4){}
-                        // this.flags2.playerSkipped
-                        // this.flags2.playerReverse
+                    // End the turn. Handle other actions.
+                    else if(skipTurn){
+                        console.log("skipTurn");
+                        // action_skip
+                        // TODO: Maybe the logic of reverse should be handled at the end of a hand instead of the beginning?
+                        if(this.flags2.playerReverse){
+                            // Act like a skip if the number of players is exactly 2.
+                            if(this.gameBoard.activePlayerKeys.length == 2){
+                                this.gameBoard.displayMessage("reversed"    , this.gameBoard.currentPlayer, false);
+                                // this.gameBoard.displayMessage("loseTurn"    , this.gameBoard.currentPlayer, false);
+                            }
 
-                        // Display message.
-                        // Change directions?
-                        // Set next player.
+                            // Flip the direction.
+                            this.gameBoard.flipDirectionIndicators();
+                        }
+                        else if(this.flags2.playerSkipped){
+                            this.gameBoard.displayMessage("skipLoseTurn", this.gameBoard.currentPlayer, false);
+                        }
+
+                        this.flags2.playerTurn_start = false;
+                        this.flags2.playerTurn = false
+                        this.flags2.playerDraws2 = false;
+                        this.flags2.playerSkipped = false;
+                        this.flags2.playerReverse = false;
+                        this.flags2.playerDraws4 = false;
+                        this.flags2.playerColorChange = false;
+
+                        _APP.shared.genTimer.create("genWaitTimer6", 60, _APP.game.gs1, ()=>{
+                            this.gameBoard.displayMessage("none", this.gameBoard.currentPlayer, false);
+                            this.flags2.playerTurn_start = true;
+                            this.flags2.playerTurn = false;
+                            this.gameBoard.setNextPlayer();
+                        });
                     }
+
+                    // Continue the turn. 
+                    else{
+                        console.log("normal");
+                        this.flags2.playerTurn_start = false;
+                        this.flags2.playerTurn = true;
+                    }
+
+                    // this.flags2.playerTurn_start = false;
                     //
-                    this.flags.playerTurn_start = false;
-                    this.flags.playerTurn = true;
+                    // debugger;
                 }
-                else if(this.flags.playerTurn){
-                    console.log("run many.", "playerTurn!", this.gameBoard.currentPlayer);
+                else if(this.flags2.playerTurn){
+                    // console.log("run many.", "playerTurn!", this.gameBoard.currentPlayer);
                 }
                 //.Is the player allowed to play? (skip, draw, reverse)
 

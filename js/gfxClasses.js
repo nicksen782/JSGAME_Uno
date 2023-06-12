@@ -371,6 +371,13 @@ class Card extends LayerObject{
     moveCardFromPosToPos(fromPos, toPos, speed=1){
         this.movementDone = false;
         
+        // Make sure that the incoming numbers are integers.
+        // Helpful if a movement command is repeated since the current values may be decimal.
+        fromPos.x = fromPos.x | 0;
+        fromPos.y = fromPos.y | 0;
+        toPos.x = toPos.x | 0;
+        toPos.y = toPos.y | 0;
+
         // Store the fromPos, currPos and toPos.
         this.fromPos = {...fromPos};
         this.currPos = {...fromPos};
@@ -684,6 +691,12 @@ class Deck{
         "P3": "CARD_LOCATION_PLAYER3",
         "P4": "CARD_LOCATION_PLAYER4",
     };
+    static playerCardRotations = {
+        "P1": 0,
+        "P2": 90,
+        "P3": 180,
+        "P4": -90,
+    };
     static cardPos = {
         P1: [ [7 ,24], [10,24], [13,24], [16,24], [19,24] ], // CARDS: p1_pos
         P2: [ [1 ,7 ], [1 ,10], [1 ,13], [1 ,16], [1 ,19] ], // CARDS: p2_pos
@@ -918,6 +931,20 @@ class Deck{
             settings: { rotation: 0 }, 
             hidden: false,
         } );
+
+        // TEMP CARD. Used when drawing cards and then hidden.
+        _GFX.layerObjs.createOne(Card, { 
+            size       : "sm", 
+            color      : "CARD_BLACK",
+            value      : "CARD_BACK", 
+            layerObjKey: `temp_card`, 
+            layerKey   : "L2", 
+            xyByGrid   : true,
+            x          : Deck.drawPos[0], 
+            y          : Deck.drawPos[1], 
+            settings: { rotation: 0 }, 
+            hidden: true,
+        } );
     };
 
     // TODO
@@ -1043,7 +1070,6 @@ class Deck{
         cardObj.change_wholeCard("lg", card.color, card.value);
     };
 
-    // TODO
     updateUnderPiles(){
         let drawCount    = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW").length;
         let drawBelow      = _GFX.layerObjs.getOne("drawBelow");
@@ -1317,6 +1343,11 @@ class Gameboard{
     };
 
     // Set direction indicators.
+    flipDirectionIndicators(){
+        if     (this.currentDirection == "F"){ this.setDirectionIndicators("R");}
+        else if(this.currentDirection == "R"){ this.setDirectionIndicators("F");}
+    };
+
     setDirectionIndicators(dir){
         // _APP.shared.gameBoard.setDirectionIndicators("F");
         // _APP.shared.gameBoard.setDirectionIndicators("N");
@@ -1334,6 +1365,7 @@ class Gameboard{
             _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_bl"), x:5, y:20, layerObjKey: `direction_bl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
             _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_br"), x:20, y:20, layerObjKey: `direction_br`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
         }
+        // DEBUG
         else if(dir == "N"){
             _GFX.layerObjs.removeOne( "direction_tl" );
             _GFX.layerObjs.removeOne( "direction_tr" );
@@ -1343,7 +1375,7 @@ class Gameboard{
     };
 
     // Update the text for each player corner.
-    updatePlayerText(){
+    updatePlayerText(ignoreWinOrUno=false){
         let pos = {
             P1: {
                 uno  : { x:23, y:24, layerKey: "L4", layerObjKey: "p1Text_uno"   },
@@ -1412,11 +1444,13 @@ class Gameboard{
             let cardCount = this.parent.deck.deck.filter(d=>d.location==location).length;
 
             // Update "UNO" and the card count.
-            if     (cardCount == 1 && _APP.game.gs2 == "playerTurn"){ textKey_uno.text   = "UNO!"; }
-            else if(cardCount == 0 && _APP.game.gs2 == "playerTurn"){ textKey_uno.text   = "WIN!"; }
-            else                   { 
-                // Removing an already removed object does not throw an error.
-                _GFX.layerObjs.removeOne( textKey_uno.layerObjKey );
+            if(!ignoreWinOrUno){
+                if     (cardCount == 1 && _APP.game.gs2 == "playerTurn"){ textKey_uno.text   = "UNO!"; }
+                else if(cardCount == 0 && _APP.game.gs2 == "playerTurn"){ textKey_uno.text   = "WIN!"; }
+                else                   { 
+                    // Removing an already removed object does not throw an error.
+                    _GFX.layerObjs.removeOne( textKey_uno.layerObjKey );
+                }
             }
             
             textKey_count.text = cardCount.toString(); // centered?

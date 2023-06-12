@@ -540,6 +540,7 @@
                 <td class="debug_td_header debug_center">LOGIC</td>
                 <td class="debug_td_header debug_center">AWAIT DRAW</td>
                 <td class="debug_td_header debug_center">DEBUG</td>
+                <td class="debug_td_header debug_center">DEBUG2</td>
                 <td class="debug_td_header debug_center">HASHCACHE</td>
                 <td class="debug_td_header debug_center">GRID:</td>
             </tr> 
@@ -555,6 +556,9 @@
                 </td> 
                 <td class="debug_td_short4">
                     <button id="debug_toggleDebugFlag" class="debug_bgColor_on">ON</button>
+                </td> 
+                <td class="debug_td_short4">
+                    <button id="debug_toggleDebug2Flag" class="debug_bgColor_on">ON</button>
                 </td> 
                 <td class="debug_td_short4">
                     <button id="debug_toggleCacheFlag" class="debug_bgColor_on">ON</button>
@@ -720,7 +724,7 @@
                     </div>
 
                     <div id="debug_navBar_gs_PLAYING_view_flags" class="controls_navBarViews">
-                        <label class="debug_title">FLAGS/VARS!</label>
+                        <!-- <label class="debug_title">FLAGS/VARS!</label> -->
                         <table class="debug_table">
                             <tr><td class="debug_td_header">FLAGS1</td></tr>
                             <tr><td class="debug_monospace" id="debug_flags_flags"></td> </tr>
@@ -732,9 +736,16 @@
                         </table>
                         <br>
 
-                        <label class="debug_title">CARDMOVEMENTS!</label>
+                        <!-- <label class="debug_title">CARDMOVEMENTS!</label> -->
                         <table class="debug_table">
                             <tr> <td class="debug_td_header">cardMovements</td><td class="debug_monospace" id="debug_flags_cardMovements">             ?</td> </tr>
+                        </table>
+                        <br>
+
+                        <!-- <label class="debug_title">TIMERS!</label> -->
+                        <table class="debug_table">
+                            <tr><td class="debug_td_header">TIMERS</td></tr>
+                            <tr><td class="debug_monospace" id="debug_flags_timers"></td> </tr>
                         </table>
                         <br>
 
