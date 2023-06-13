@@ -1,15 +1,5 @@
 (() => {
     const funcs = {
-        gamestart: function() {
-            // Shuffle the deck.
-            this.deck.shuffleDeck();
-
-            // Set next gs2.
-            _APP.game.gs2 = "getFirstPlayer";
-
-            // Set dealing flag.
-            this.flags.dealing = true;
-        },
         movementSpeeds:{
             // GetFirstPlayer.
             dealOneCard  : 20, // Dealing (this.flags.dealing)
@@ -23,7 +13,28 @@
             draw2       : 20,
             draw4       : 15,
         },
-        
+
+        resetFlags: function(){
+            // Reset flags.
+            this.flags2.playerTurn_start = false;
+            this.flags2.playerTurn = false
+            this.flags2.playerDraws2 = false;
+            this.flags2.playerSkipped = false;
+            this.flags2.playerReverse = false;
+            this.flags2.playerDraws4 = false;
+            this.flags2.playerColorChange = false;
+        },
+
+        gamestart: function() {
+            // Shuffle the deck.
+            this.deck.shuffleDeck();
+
+            // Set next gs2.
+            _APP.game.gs2 = "getFirstPlayer";
+
+            // Set dealing flag.
+            this.flags.dealing = true;
+        },
         getFirstPlayer: function() {
             // Handle dealing of a card to each active player.
             if(this.flags.dealing){
@@ -105,51 +116,50 @@
                     this.gameBoard.displayMessage("tied", "", false);
                 }
 
-                let func = (playerKey)=>{
-                    let _this = this;
-                    _APP.game.gamestates.gs_PLAYING.addCardMovement(
-                        "discard"  , { 
-                            timerKey   : "moveCardToDiscard"+`${playerKey}_card_2`   , 
-                            timerFrames: 0,
-                            movementSpeed: _this.movementSpeeds.returnOneCard,
-                            playerKey  : playerKey  , 
-                            layerObjKey: `${playerKey}_card_2`,
-                            cardSlot   : 2,
-                            finish: function(){ 
-                                // Find the first instance of this card in the deck.
-                                let cardInDeck = _this.deck.deck.find(d=>
-                                    d.color==this.card.color && 
-                                    d.value==this.card.value && 
-                                    d.location != "CARD_LOCATION_DISCARD" &&
-                                    d.location != "CARD_LOCATION_DRAW"
-                                );
-                                // Change the location to discard.
-                                cardInDeck.location = "CARD_LOCATION_DISCARD";
-                                
-                                // Set the card LayerObject to hidden.
-                                let cardObj = this.card;
-                                cardObj.hidden = true;
-                                
-                                // Use the card LayerObject to update the displayed discard card.
-                                _this.deck.updateDiscardCard(this.card);
-
-                                // Unhide the discard card.
-                                _GFX.layerObjs.getOne("discard_card").hidden = false;
-
-                                _APP.shared.genTimer.removeOne(this.timerKey, null);
-                            }
-                        }
-                    );
-                };
-
                 // Return the cards to the draw pile.
                 _APP.shared.genTimer.create("genWaitTimer1", 10);
                 for(let playerIndex in this.gameBoard.activePlayerKeys){
                     let playerKey = this.gameBoard.activePlayerKeys[playerIndex];
-                    if(playerIndex == 0){ _APP.shared.genTimer.create("genWaitTimer2", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }) }
-                    if(playerIndex == 1){ _APP.shared.genTimer.create("genWaitTimer3", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }) }
-                    if(playerIndex == 2){ _APP.shared.genTimer.create("genWaitTimer4", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }) }
-                    if(playerIndex == 3){ _APP.shared.genTimer.create("genWaitTimer5", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }) }
+                    _APP.shared.funcQueue.create(`discard_${playerKey}_card_2`, _APP.game.gs1, {
+                        args: [playerKey],
+                        bind: this,
+                        func: function(playerKey){
+                            let _this = this;
+                            _APP.game.gamestates.gs_PLAYING.addCardMovement(
+                                "discard"  , { 
+                                    timerKey   : "moveCardToDiscard"+`${playerKey}_card_2`   , 
+                                    timerFrames: 0,
+                                    movementSpeed: _this.movementSpeeds.returnOneCard,
+                                    playerKey  : playerKey  , 
+                                    layerObjKey: `${playerKey}_card_2`,
+                                    cardSlot   : 2,
+                                    finish: function(){ 
+                                        // Find the first instance of this card in the deck.
+                                        let cardInDeck = _this.deck.deck.find(d=>
+                                            d.color==this.card.color && 
+                                            d.value==this.card.value && 
+                                            d.location != "CARD_LOCATION_DISCARD" &&
+                                            d.location != "CARD_LOCATION_DRAW"
+                                        );
+                                        // Change the location to discard.
+                                        cardInDeck.location = "CARD_LOCATION_DISCARD";
+                                        
+                                        // Set the card LayerObject to hidden.
+                                        let cardObj = this.card;
+                                        cardObj.hidden = true;
+                                        
+                                        // Use the card LayerObject to update the displayed discard card.
+                                        _this.deck.updateDiscardCard(this.card);
+        
+                                        // Unhide the discard card.
+                                        _GFX.layerObjs.getOne("discard_card").hidden = false;
+        
+                                        _APP.shared.genTimer.removeOne(this.timerKey, null);
+                                    }
+                                }
+                            );
+                        }
+                    });
                 }
             }
             else if(this.flags.ready_determineHighestCard){
@@ -189,7 +199,7 @@
                 // Start deal animation.
                 _APP.game.gamestates.gs_PLAYING.addCardMovement(
                     "draw"  , { 
-                        timerKey   : "moveDrawToCard"+layerObjKey   , 
+                        timerKey   : "moveDrawToCard_"+layerObjKey   , 
                         timerFrames: 0,
                         movementSpeed: this.movementSpeeds.dealingMany,
                         playerKey  : this.gameBoard.currentPlayer  , 
@@ -218,15 +228,15 @@
                             // Get the next card in the deck and assign to the discard pile.
                             // The first card cannot be wild draw 4. 
                             let location_DRAW    = this.deck.deck.filter(d => d.location == "CARD_LOCATION_DRAW" && d.value != "CARD_WILD_DRAW4");
-                            let discardCard = location_DRAW[0];
-                            // let discardCard = this.deck.deck.find(d => 
-                            //     d.location == "CARD_LOCATION_DRAW" && 
-                            //     // d.value == "CARD_WILD_DRAW4"
-                            //     // d.value == "CARD_DRAW2"
-                            //     // d.value == "CARD_SKIP"
-                            //     // d.value == "CARD_REV"
-                            //     d.value == "CARD_WILD"
-                            // );
+                            // let discardCard = location_DRAW[0];
+                            let discardCard = this.deck.deck.find(d => 
+                                d.location == "CARD_LOCATION_DRAW" && 
+                                // d.value == "CARD_WILD_DRAW4"
+                                d.value == "CARD_DRAW2"
+                                // d.value == "CARD_SKIP"
+                                // d.value == "CARD_REV"
+                                // d.value == "CARD_WILD"
+                            );
                             discardCard.location = "CARD_LOCATION_DISCARD";
                             
                             // Display the discard card.
@@ -241,14 +251,14 @@
                             // Add a movement to move the card from the draw pile to the discard pile. 
                             _APP.game.gamestates.gs_PLAYING.addCardMovement(
                                 "discard"  , { 
-                                    timerKey     : "moveCardToDiscard" + `_initialDiscard`, 
+                                    timerKey     : `moveCardInitialDiscard`, 
                                     timerFrames  : 20,
                                     movementSpeed: this.movementSpeeds.dealOneCard,
                                     layerObjKey  : `discard_card`,
                                     finish       : function(){ _APP.shared.genTimer.removeOne(this.timerKey, null); }
                             });
 
-                            _APP.shared.genTimer.create("genWaitTimer2", 60, _APP.game.gs1, ()=>{
+                            _APP.shared.genTimer.create("genWaitTimer1", 60, _APP.game.gs1, ()=>{
                                 this.gameBoard.currentPlayer = this.flags.firstPlayer;
                                 this.gameBoard.setColorIndicators(this.gameBoard.currentPlayer, discardCard.color);
                                 
@@ -260,7 +270,7 @@
                                 if     (discardCard.value == "CARD_DRAW2")     { this.flags2.playerDraws2  = true; }
                                 else if(discardCard.value == "CARD_SKIP")      { this.flags2.playerSkipped = true; }
                                 else if(discardCard.value == "CARD_REV")       { this.flags2.playerReverse = true; }
-                                else if(discardCard.value == "CARD_WILD")      { this.flags2.playerDraws4  = true; this.flags2.playerColorChange = true; }
+                                else if(discardCard.value == "CARD_WILD")      { this.flags2.playerColorChange = true; }
                                 else if(discardCard.value == "CARD_WILD_DRAW4"){ this.flags2.playerDraws4  = true; this.flags2.playerColorChange = true; }
     
                                 // Change gamestate 2.
@@ -270,9 +280,7 @@
                                 this.flags2.playerTurn_start = true;
 
                                 // Clear the no longer needed timer keys.
-                                // _APP.shared.genTimer.removeOne("tied_determineHighestCard", null);
-                                // _APP.shared.genTimer.removeOne("ready_determineHighestCard", null);
-                                _APP.shared.genTimer.removeFinished(null, ["genWaitTimer1", "genWaitTimer2", , "genWaitTimer3", , "genWaitTimer4", , "genWaitTimer5", "genWaitTimer6"]);
+                                _APP.shared.genTimer.removeFinished(null, this.timerKeysKeep);
                             });
                         });
                     }
@@ -287,82 +295,202 @@
             }
         },
 
+        // Actions based on cards: WILD, WILD_DRAW4, DRAW2, SKIP, REVERSE
         action_changeColor: function(gp_input){
             this.colorChanger.nextFrame();
             if(gp_input.P1.release.BTN_LEFT) { this.colorChanger.moveCursor(-1); }
             if(gp_input.P1.release.BTN_RIGHT){ this.colorChanger.moveCursor(1); }
-            if(gp_input.P1.release.BTN_A)    { this.colorChanger.accept(); }
-        },
-        action_draw: function(playerKey, numCards){
-            // Ready the temp_card for use.
-            let tempCard = _GFX.layerObjs.getOne("temp_card");
-            // Set the initial location to the draw pile.
-            tempCard.x = Deck.drawPos[0]; 
-            tempCard.y = Deck.drawPos[1];
-            // Set the rotation to match the player card rotation.
-            tempCard.setSetting("rotation", Deck.playerCardRotations[playerKey]);
-            tempCard.hidden = false;
+            if(gp_input.P1.release.BTN_A)    { 
+                // Set flags to continue the player's turn after the colorChange has completed.
+                this.flags2.playerTurn_start = false;
+                this.flags2.playerTurn = true;
 
-            let func = (playerKey)=>{
-                let _this = this;
-                _APP.game.gamestates.gs_PLAYING.addCardMovement(
-                    "draw"  , { 
-                        timerKey   : "moveDrawToCard"+`${playerKey}`   , 
-                        timerFrames: 10,
-                        movementSpeed: _this.movementSpeeds.draw2,
-                        playerKey  : playerKey  , 
-                        layerObjKey: "temp_card", // `${playerKey}_card_2`,
-                        cardSlot   : 0,
-                        finish: function(){ 
-                            tempCard.hidden = true;
-                            let newCard = _this.deck.getNextCardFromDrawpile();
-                            newCard.location = Deck.playerCardLocations[playerKey];
-                            // console.log(newCard);
-                            _APP.shared.genTimer.removeOne(this.timerKey, null);
-                        }
+                // Accept the color change.
+                this.colorChanger.accept(); 
+            }
+        },
+        action_draw: function(config){
+            /*
+                let config = {
+                    endDelay: 30,
+                    playerKey: "P1",
+                    numCards: 2,
+                    msgName: "d2LoseTurn",
+                    // msgName: "d4LoseTurn",
+                };
+            */
+
+            // Ensure that the number of cards specified is valid.
+            if( !(config.numCards >= 1 && config.numCards < 4) ){
+                console.error("ERROR");
+                return;
+            }
+            
+            // Display the message if specified.
+            if     (config.msgName == "d2LoseTurn"){ this.gameBoard.displayMessage("d2LoseTurn"  , config.playerKey, false); }
+            else if(config.msgName == "d4LoseTurn"){ this.gameBoard.displayMessage("d4LoseTurn"  , config.playerKey, false); }
+
+            // Queue the individual draw card functions.
+            for(let i=0; i<config.numCards; i+=1){
+                _APP.shared.funcQueue.create(`drawCard_${i+1}_of_${config.numCards}`, _APP.game.gs1, {
+                    args: [config.playerKey, 0],
+                    bind: this,
+                    func: function(playerKey, cardSlot){
+                        // Get the temp_card.
+                        let tempCard = _GFX.layerObjs.getOne("temp_card");
+                
+                        // Set the initial location to the draw pile.
+                        tempCard.x = Deck.drawPos[0]; 
+                        tempCard.y = Deck.drawPos[1];
+                        
+                        // Set the rotation for the temp_card to match the player card rotation.
+                        tempCard.setSetting("rotation", Deck.playerCardRotations[playerKey]);
+                
+                        // Unhide the temp-card.
+                        tempCard.hidden = false;
+
+                        let _this = this;
+                        _APP.game.gamestates.gs_PLAYING.addCardMovement(
+                            "draw"  , { 
+                                timerKey     : "moveDrawToCard_"+`${playerKey}`, 
+                                timerFrames  : 10,
+                                movementSpeed: _this.movementSpeeds.draw2,
+                                playerKey    : playerKey  , 
+                                layerObjKey  : "temp_card",
+                                cardSlot     : cardSlot,
+                                finish: function(){ 
+                                    tempCard.hidden = true;
+                                    let newCard = _this.deck.getNextCardFromDrawpile();
+                                    newCard.location = Deck.playerCardLocations[playerKey];
+                                    _APP.shared.genTimer.removeOne(this.timerKey, null);
+                                }
+                            }
+                        );
+                        
                     }
-                );
-            };
+                });
+            }
 
-            if(numCards == 1){
-                _APP.shared.genTimer.create("genWaitTimer2", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }); 
-            }
-            if(numCards == 2){
-                _APP.shared.genTimer.create("genWaitTimer2", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }); 
-                _APP.shared.genTimer.create("genWaitTimer3", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }); 
-            }
-            else if(numCards == 3){
-                _APP.shared.genTimer.create("genWaitTimer2", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }); 
-                _APP.shared.genTimer.create("genWaitTimer3", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }); 
-                _APP.shared.genTimer.create("genWaitTimer4", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }); 
-            }
-            else if(numCards == 4){
-                _APP.shared.genTimer.create("genWaitTimer2", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }); 
-                _APP.shared.genTimer.create("genWaitTimer3", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }); 
-                _APP.shared.genTimer.create("genWaitTimer4", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }); 
-                _APP.shared.genTimer.create("genWaitTimer5", 1, _APP.game.gs1, ()=>{ func.bind(this)(playerKey); }); 
-            }
-            else{
-                console.error("Invalid numCards for action_draw.");
-            }
+            // Add the removal of the displayed message.
+            // Also end the player's turn.
+            _APP.shared.funcQueue.create(`removeDrawMessage_${config.numCards}`, _APP.game.gs1, {
+                args: [],
+                bind: this,
+                func: function(){
+                    // Set flags and change to the next player.
+                    this.flags2.playerTurn_start = true;
+                    this.flags2.playerTurn = false;
+                    this.gameBoard.setNextPlayer();
+                    
+                    // Add a delay before continuing?
+                    if(config.endDelay){
+                        // Wait to clear the message.
+                        _APP.shared.genTimer.create("drawWait", config.endDelay, _APP.game.gs1, ()=>{
+                            if(config.msgName){
+                                this.gameBoard.displayMessage("none", this.gameBoard.currentPlayer, false);
+                            }
+                        });
+                    }
+                    // Clear the message immediately.
+                    else if(config.msgName){
+                        this.gameBoard.displayMessage("none", this.gameBoard.currentPlayer, false);
+                    }
+                },
+            });
         },
-        action_skip: function(playerKey){
+        action_skip: function(config){
+            // Display the message if specified.
+            if     (config.msgName == "skipLoseTurn"){ this.gameBoard.displayMessage("skipLoseTurn"  , config.playerKey, false); }
+
+            // Add the removal of the displayed message.
+            // Also end the player's turn.
+            _APP.shared.funcQueue.create(`removeSkipMessage_${config.numCards}`, _APP.game.gs1, {
+                args: [],
+                bind: this,
+                func: function(){
+                    // Set flags and change to the next player.
+                    this.flags2.playerTurn_start = true;
+                    this.flags2.playerTurn = false;
+                    this.gameBoard.setNextPlayer();
+                    
+                    // Add a delay before continuing?
+                    if(config.endDelay){
+                        // Wait to clear the message.
+                        _APP.shared.genTimer.create("skipWait", config.endDelay, _APP.game.gs1, ()=>{
+                            if(config.msgName){
+                                this.gameBoard.displayMessage("none", this.gameBoard.currentPlayer, false);
+                            }
+                        });
+                    }
+                    // Clear the message immediately.
+                    else if(config.msgName){
+                        this.gameBoard.displayMessage("none", this.gameBoard.currentPlayer, false);
+                    }
+                },
+            });
+        },
+        action_reverse: function(config){
+            // Display the message if specified.
+            if     (config.msgName == "reversed"){ this.gameBoard.displayMessage("reversed"  , config.playerKey, false); }
+    
+            // Add the removal of the displayed message.
+            // Also end the player's turn.
+            _APP.shared.funcQueue.create(`removeReverseMessage_${config.numCards}`, _APP.game.gs1, {
+                args: [],
+                bind: this,
+                func: function(){
+                    // Flip the direction.
+                    this.gameBoard.flipDirectionIndicators();
+
+                    // Set flags and change to the next player.
+                    this.flags2.playerTurn_start = true;
+                    this.flags2.playerTurn = false;
+                    this.gameBoard.setNextPlayer();
+                    
+                    // Add a delay before continuing?
+                    if(config.endDelay){
+                        // Wait to clear the message.
+                        _APP.shared.genTimer.create("reverseWait", config.endDelay, _APP.game.gs1, ()=>{
+                            if(config.msgName){
+                                this.gameBoard.displayMessage("none", this.gameBoard.currentPlayer, false);
+                            }
+                        });
+                    }
+                    // Clear the message immediately.
+                    else if(config.msgName){
+                        this.gameBoard.displayMessage("none", this.gameBoard.currentPlayer, false);
+                    }
+                },
+            });
+        },
+
+        //
+        moveToDiscard: function(config){
         },
     };
     
     const assign = function() {
         // Get all the keys of funcs.
         let keys = Object.keys(funcs);
+
+        // Get the destination for the contents of "funcs."
         let newParent = _APP.game.gamestates["gs_PLAYING"];
         
+        // For each key in funcs...
         for(let i = 0, len = keys.length; i < len; i++) {
+            // If the type is "function" assign but also bind to the destination parent.
             if(typeof funcs[keys[i]] === "function"){
                 newParent[keys[i]] = funcs[keys[i]].bind(newParent);
             }
+            // Otherwise just copy.
             else{
                 newParent[keys[i]] = funcs[keys[i]];
             }
         }
+
+        // Remove the values here. They have been copied.
+        delete funcs;
+        delete assign;
     };
     
     assign();

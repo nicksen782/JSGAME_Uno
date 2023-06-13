@@ -178,4 +178,45 @@ _APP.shared = {
             return this.timers[gamestate][name].finished;
         },
     },
+
+    // A queue of functions intended to be run once each and sequentially.
+    funcQueue: {
+        funcs: {},
+        create: function(name, gamestate, funcObj){
+            // Make sure that a function was specified.
+            if(!funcObj.func){ 
+                console.error("ERROR: funcQueue:get: A function was not specified.", `name: '${name}', gamestate: '${gamestate}'`);
+                return; 
+            }
+
+            // Add the gamestate key to the funcs object if it is missing.
+            if(this.funcs[gamestate] == undefined){ this.funcs[gamestate] = []; }
+
+            // Add the function.
+            let newEntry = {
+                name: name,
+                func: funcObj.func,
+                args: funcObj.args ?? [],
+                bind: funcObj.bind
+            };
+            this.funcs[gamestate].push(newEntry);
+            return newEntry;
+        },
+        runNext: function(gamestate){
+            // Add the gamestate key to the funcs object if it is missing.
+            if(this.funcs[gamestate] == undefined){ this.funcs[gamestate] = []; }
+
+            // Don't run if there are not any queued functions.
+            if(!this.funcs[gamestate].length){ return true; }
+
+            // Remove the first funcObj.
+            let funcObj = this.funcs[gamestate].shift();
+
+            // Run the funcObj.
+            funcObj.func.bind(funcObj.bind)(...funcObj.args);
+
+            // The funcObj is no longer part of this.funcs[gamestate].
+            return false;
+        }
+    },
 };

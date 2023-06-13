@@ -283,7 +283,8 @@ var _DEBUG2 = {
                     "flags1Text"    : "debug_flags_flags",
                     "flags2Text"    : "debug_flags_flags2",
                     "cardMovements" : "debug_flags_cardMovements",
-                    "timersText"    : "debug_flags_timers",
+                    "timers1Text"    : "debug_flags_timers1",
+                    "timers2Text"    : "debug_flags_timers2",
                 },
                 init: function(parent){
                     this.parent = parent;
@@ -354,14 +355,23 @@ var _DEBUG2 = {
 
 
                     // Update timer data.
-                    let keys = Object.keys(_APP.shared.genTimer.timers[_APP.game.gs1]);
+                    let keys = Object.keys(_APP.shared.genTimer.timers[_APP.game.gs1]).filter(d=> !_APP.game.gamestates.gs_PLAYING.timerKeysKeep.includes(d) )
                     newText = ``;
                     for(let name of keys){
                         let timer = _APP.shared.genTimer.get(name);
                         // newText += `N:${name} ::  T:${timer.frameCount}/${timer.maxFrames}\n`;
-                        newText += `T: ${ (timer.frameCount +"/"+ timer.maxFrames).padEnd(7, " ")} :: N: ${name}\n`;
+                        newText += `T: ${ (timer.frameCount +"/"+ timer.maxFrames).padEnd(6, " ")} :: ${name}\n`;
                     }
-                    this.DOM.timersText.innerHTML = newText;
+                    this.DOM.timers2Text.innerHTML = newText;
+
+                    keys = _APP.game.gamestates.gs_PLAYING.timerKeysKeep;
+                    newText = ``;
+                    for(let name of keys){
+                        let timer = _APP.shared.genTimer.get(name);
+                        // newText += `N:${name} ::  T:${timer.frameCount}/${timer.maxFrames}\n`;
+                        newText += `T: ${ (timer.frameCount +"/"+ timer.maxFrames).padEnd(6, " ")} :: ${name}\n`;
+                    }
+                    this.DOM.timers1Text.innerHTML = newText;
                 },
             },
             settings: {
