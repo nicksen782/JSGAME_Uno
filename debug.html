@@ -693,6 +693,50 @@
                             </tr>
                         </tr>
                         </table>
+                        <br>
+
+                        <table class="debug_table">
+                            <tr>
+                                <td class="debug_td_header"></td>
+                                <td class="debug_td_header">P1</td>
+                                <td class="debug_td_header">P2</td>
+                                <td class="debug_td_header">P3</td>
+                                <td class="debug_td_header">P4</td>
+                                <td class="debug_td_header">ALL</td>
+                            </tr>
+                            <tr>
+                                <td class="debug_td_header">FLIP-UP</td>
+                                <td class=""> <button onclick='_APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsUp("P1");'>UP</button></td>
+                                <td class=""> <button onclick='_APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsUp("P2");'>UP</button></td>
+                                <td class=""> <button onclick='_APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsUp("P3");'>UP</button></td>
+                                <td class=""> <button onclick='_APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsUp("P4");'>UP</button></td>
+                                <td class=""> 
+                                    <button onclick='
+                                    _APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsUp("P1");
+                                    _APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsUp("P2");
+                                    _APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsUp("P3");
+                                    _APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsUp("P4");
+                                    '>UP</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="debug_td_header">FLIP-DOWN</td>
+                                <td class=""> <button onclick='_APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsDown("P1");'>DN</button></td>
+                                <td class=""> <button onclick='_APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsDown("P2");'>DN</button></td>
+                                <td class=""> <button onclick='_APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsDown("P3");'>DN</button></td>
+                                <td class=""> <button onclick='_APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsDown("P4");'>DN</button></td>
+                                <td class=""> 
+                                    <button onclick='
+                                    _APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsDown("P1");
+                                    _APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsDown("P2");
+                                    _APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsDown("P3");
+                                    _APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsDown("P4");
+                                    '>DN</button>
+                                </td>
+                            </tr>
+                        </table>
+                        <br>
+
                     </div>
                     <div id="debug_navBar_gs_PLAYING_view_deck"     class="controls_navBarViews">
                         <!-- DECK -->
@@ -738,7 +782,14 @@
 
                         <!-- <label class="debug_title">CARDMOVEMENTS!</label> -->
                         <table class="debug_table">
-                            <tr> <td class="debug_td_header">cardMovements</td><td class="debug_monospace" id="debug_flags_cardMovements">             ?</td> </tr>
+                            <tr> 
+                                <td class="debug_td_header">cardMovements</td>
+                                <td class="debug_td_header">funcQueue</td>
+                            </tr> 
+                            <tr> 
+                                <td class="debug_monospace" id="debug_flags_cardMovements">             ?</td> 
+                                <td class="debug_monospace" id="debug_flags_funcQueue">             ?</td>
+                            </tr>
                         </table>
                         <br>
 

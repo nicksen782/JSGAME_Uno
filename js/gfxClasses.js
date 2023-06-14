@@ -731,6 +731,7 @@ class Deck{
     constructor(config){
         this.className = this.constructor.name;
         this.gameBoard = null;
+        this.parent    = config.parent;
 
         // Create the deck (in order.)
         this.deck = [
@@ -959,33 +960,93 @@ class Deck{
         } );
     };
 
-    // TODO
     // Flip player cards up.
-    flipPlayerCardsUp(playerKey){
+    flipPlayerCardsUp(playerKey, row=0){
+        // Get the current color.
+        let currentColor = this.gameBoard.currentColor;
+
+        // Get the player's cards.
+        let location = Deck.playerCardLocations[playerKey];
+        let playerCards = this.deck.filter(d => d.location == location);
+
+        // Filter those cards by color.
+        let colors = {
+            "CARD_YELLOW": playerCards.filter(d => d.color == "CARD_YELLOW"),
+            "CARD_BLUE"  : playerCards.filter(d => d.color == "CARD_BLUE"),
+            "CARD_GREEN" : playerCards.filter(d => d.color == "CARD_GREEN"),
+            "CARD_RED"   : playerCards.filter(d => d.color == "CARD_RED"),
+            "CARD_BLACK" : playerCards.filter(d => d.color == "CARD_BLACK")
+        };
+
+        // Start playerCards_sorted.
+        let playerCards_sorted = colors["CARD_BLACK"].concat(colors[currentColor]);
+
+        // Add the remaining colors excluding black and the current color.
+        for (let color in colors) {
+            if (color !== "CARD_BLACK" && color !== currentColor) {
+                playerCards_sorted = playerCards_sorted.concat(colors[color]);
+            }
+        }
+
+        // Display up to 5 cards.
+        // Get the layer objects for the cards.
+        let cards_layerObjs = [
+            _GFX.layerObjs.getOne( `${playerKey}_card_0` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_1` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_2` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_3` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_4` ),
+        ];
+        
+        // Each row has up to 5 cards in it. So, each row starts on a multiple of 5 (including 0.)
+        let cardsToDisplay = playerCards_sorted.slice( (row*5), 5);
+
+        // Show the cards face-up.
+        for(let i=0; i<cards_layerObjs.length; i+=1){
+            // If we have a card here then display it.
+            if(cardsToDisplay[i]){
+                cards_layerObjs[i].hidden = false;
+                cards_layerObjs[i].change_wholeCard("sm", cardsToDisplay[i].color, cardsToDisplay[i].value);
+            }
+            // No card. Hide it.
+            else{
+                cards_layerObjs[i].hidden = true;
+            }
+        }
     };
     
-    // TODO
     // Flip player cards down.
     flipPlayerCardsDown(playerKey){
-        for(let i=0, len=Deck.cardPos[playerKey].length; i<len; i+=1){
-            let layerObjKey = `${playerKey}_card_${i}`;
-            let pos = Deck.cardPos[playerKey][i];
-    
-            _GFX.layerObjs.getOne(layerObjKey);
-            
-            // // Create clear tilemap as placeholder.
-            // _GFX.layerObjs.createOne(Card, { 
-            //     size       : "sm", 
-            //     color      : "CARD_BLACK",
-            //     value      : "CARD_BACK", 
-            //     layerObjKey: `${key}_card_${i}`, 
-            //     layerKey   : "L2", 
-            //     xyByGrid   : true,
-            //     x          : pos[0], 
-            //     y          : pos[1], 
-            //     settings: { rotation: rotation }
-            // } );
+        let location = Deck.playerCardLocations[playerKey];
+        let playerCards = this.deck.filter(d => d.location == location);
+        
+        // Display up to 5 cards.
+        // Get the layer objects for the cards.
+        let cards_layerObjs = [
+            _GFX.layerObjs.getOne( `${playerKey}_card_0` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_1` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_2` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_3` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_4` ),
+        ];
+        
+        // Each row has up to 5 cards in it. So, each row starts on a multiple of 5 (including 0.)
+        let row = 0;
+        let cardsToDisplay = playerCards.slice( (row*5), 5);
+
+        // Show the cards face-down.
+        for(let i=0; i<cards_layerObjs.length; i+=1){
+            // If we have a card here then display it.
+            if(cardsToDisplay[i]){
+                cards_layerObjs[i].hidden = false;
+                cards_layerObjs[i].change_wholeCard("sm", "CARD_BLACK", "CARD_BACK");
+            }
+            // No card. Hide it.
+            else{
+                cards_layerObjs[i].hidden = true;
+            }
         }
+
     };
 
     // Sets the location of each card to the DRAW_PILE.
@@ -1099,26 +1160,6 @@ class Deck{
         else if(discardCount <  81 ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL3");}
         else                         { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL4");}
     };
-
-    // NORMAL PLAY:
-    // DRAW PILE (UNO BACK) (LARGE)
-    // DISCARD PILE FACE-UP CARD (LARGE)
-    // PLAYER1 CARDS (DISPLAY OF 5.) (SMALL)
-    // PLAYER2 CARDS (DISPLAY OF 5.) (SMALL)
-    // PLAYER3 CARDS (DISPLAY OF 5.) (SMALL)
-    // PLAYER4 CARDS (DISPLAY OF 5.) (SMALL)
-    // PLAYER MOVING CARD TO DISCARD PILE. (SMALL)
-    // PLAYER MOVING CARD FROM DRAW PILE. (SMALL)
-    // Non-active players only show the back card.
-
-    // END OF ROUND PLAY:
-    // PLAYER1 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
-    // PLAYER2 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
-    // PLAYER3 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
-    // PLAYER4 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
-    // DISPLAY CARD: 1 (LARGE) (reuse of discard pile)
-    // PLAYER MOVING CARD TO BE THE DISPLAY CARD. (SMALL) (reuse of card moving to draw pile.)
-    // Players not actively adding to the score only show the back card.
 };
 
 class ColorChanger{
@@ -1136,24 +1177,24 @@ class ColorChanger{
         `     A: SELECT  ` ,
     ];
     static pos = { 
-        box: { x:6, y:9 },
+        box   : { x: 6, y: 9 },
         yellow: { x: 8, y:12 },
         blue  : { x:11, y:12 },
         red   : { x:14, y:12 },
         green : { x:17, y:12 },
     };
     static cursorsPos = [
-        {x: 8+1, y:15, color: "CARD_YELLOW" },
-        {x:11+1, y:15, color: "CARD_BLUE"   },
-        {x:14+1, y:15, color: "CARD_RED"    },
-        {x:17+1, y:15, color: "CARD_GREEN"  },
+        {x: ColorChanger.pos.yellow.x + 1, y: ColorChanger.pos.yellow.y + 3, color: "CARD_YELLOW" },
+        {x: ColorChanger.pos.blue  .x + 1, y: ColorChanger.pos.blue  .y + 3, color: "CARD_BLUE"   },
+        {x: ColorChanger.pos.red   .x + 1, y: ColorChanger.pos.red   .y + 3, color: "CARD_RED"    },
+        {x: ColorChanger.pos.green .x + 1, y: ColorChanger.pos.green .y + 3, color: "CARD_GREEN"  },
     ];
     static colors = {
-        white : [255, 255, 255 , 255],
-        yellow : [255, 182, 85 , 255],
-        blue   : [36 , 72 , 170, 255],
-        red    : [218, 0  , 0  , 255],
-        green  : [0  , 145, 0  , 255],
+        white  : [255, 255, 255, 255],
+        yellow : [255, 182,  85, 255],
+        blue   : [ 36,  72, 170, 255],
+        red    : [218,   0,   0, 255],
+        green  : [  0, 145,   0, 255],
     };
 
     constructor(config){
@@ -1192,10 +1233,10 @@ class ColorChanger{
 
         // Add the colors.
         let tmp = [
-            { layerObjKey: "color_changer_yellow", x:ColorChanger.pos.yellow.x, y:ColorChanger.pos.yellow.y, tmap: new Uint8Array( [ 3, 3 ].concat(Array.from({ length: 3 * 3 }, () => _GFX.funcs.getTilemap("bg_tiles1", "solid_yellow")[2] )) ) },
-            { layerObjKey: "color_changer_blue"  , x:ColorChanger.pos.blue.x  , y:ColorChanger.pos.blue.y  , tmap: new Uint8Array( [ 3, 3 ].concat(Array.from({ length: 3 * 3 }, () => _GFX.funcs.getTilemap("bg_tiles1", "solid_blue")[2]   )) ) },
-            { layerObjKey: "color_changer_red"   , x:ColorChanger.pos.red.x   , y:ColorChanger.pos.red.y   , tmap: new Uint8Array( [ 3, 3 ].concat(Array.from({ length: 3 * 3 }, () => _GFX.funcs.getTilemap("bg_tiles1", "solid_red")[2]    )) ) },
-            { layerObjKey: "color_changer_green" , x:ColorChanger.pos.green.x , y:ColorChanger.pos.green.y , tmap: new Uint8Array( [ 3, 3 ].concat(Array.from({ length: 3 * 3 }, () => _GFX.funcs.getTilemap("bg_tiles1", "solid_green")[2]  )) ) },
+            { layerObjKey: "color_changer_yellow", x: ColorChanger.pos.yellow.x, y: ColorChanger.pos.yellow.y, tmap: this.createFillMap(3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_yellow")[2]) },
+            { layerObjKey: "color_changer_blue"  , x: ColorChanger.pos.blue.x  , y: ColorChanger.pos.blue.y  , tmap: this.createFillMap(3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_blue")  [2]) },
+            { layerObjKey: "color_changer_red"   , x: ColorChanger.pos.red.x   , y: ColorChanger.pos.red.y   , tmap: this.createFillMap(3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_red")   [2]) },
+            { layerObjKey: "color_changer_green" , x: ColorChanger.pos.green.x , y: ColorChanger.pos.green.y , tmap: this.createFillMap(3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_green") [2]) },
         ];
         for(let rec of tmp){
             _GFX.layerObjs.createOne(LayerObject, {
@@ -1223,21 +1264,39 @@ class ColorChanger{
             green  : _GFX.layerObjs.getOne("color_changer_green"),
         };
 
+        // Set the cursor color.
         this.changeCursorColor();
     }
+
+    // Creates a fill map using tileId and the specified width and height.
+    createFillMap(w, h, tileId){
+        return new Uint8Array( 
+            [ w, h ]
+            .concat(
+                Array.from( { length: w * h }, () => tileId )
+            ) )
+    };
+
+    // Unhides the LayerObjects used by this class.
     show(){
         for(let elemKey in this.elems){ this.elems[elemKey].hidden = false; }
         this.active = true;
     };
+
+    // Hides the LayerObjects used by this class.
     hide(){
         for(let elemKey in this.elems){ this.elems[elemKey].hidden = true; }
         this.active = false;
     };
+
+    // Accepts the color choice based on the cursorsPosIndex.color.
     accept() {
         let newColor = ColorChanger.cursorsPos[this.cursorsPosIndex].color;
         this.parent.gameBoard.setColorIndicators(this.parent.gameBoard.currentPlayer, newColor);
         this.hide();
     };
+
+    // Horizontal movement of the cursor and color changes to the cursor.
     moveCursor(xDir) {
         // Change the cursor position.
         let color_changer_cursor = _GFX.layerObjs.getOne("color_changer_cursor");
@@ -1255,18 +1314,30 @@ class ColorChanger{
         // Change the cursor color.
         this.changeCursorColor();
     };
+
+    // Changes the cursor's color.
     changeCursorColor(){
         if     (this.cursorsPosIndex == 0){ this.elems.cursor.setSetting("colorData", [ [ColorChanger.colors.white, ColorChanger.colors.yellow] ]); }
         else if(this.cursorsPosIndex == 1){ this.elems.cursor.setSetting("colorData", [ [ColorChanger.colors.white, ColorChanger.colors.blue  ] ]); }
         else if(this.cursorsPosIndex == 2){ this.elems.cursor.setSetting("colorData", [ [ColorChanger.colors.white, ColorChanger.colors.red   ] ]); }
         else if(this.cursorsPosIndex == 3){ this.elems.cursor.setSetting("colorData", [ [ColorChanger.colors.white, ColorChanger.colors.green ] ]); }
     };
+
+    // Runs the next frame for the Cursor1 instance.
     nextFrame() {
         // Update cursor frame.
         this.elems.cursor.nextFrame();
     }
 }
+
 class Gameboard{
+    static pos_colorIndicators = {
+        P1: { x:8 , y:22, w: 12, h:1 , layerKey: "L1", layerObjKey: "p1ColorBar", tilesetKey: "bg_tiles1" },
+        P2: { x:5 , y:8 , w: 1 , h:12, layerKey: "L1", layerObjKey: "p2ColorBar", tilesetKey: "bg_tiles1" },
+        P3: { x:8 , y:5 , w: 12, h:1 , layerKey: "L1", layerObjKey: "p3ColorBar", tilesetKey: "bg_tiles1" },
+        P4: { x:22, y:8 , w: 1 , h:12, layerKey: "L1", layerObjKey: "p4ColorBar", tilesetKey: "bg_tiles1" },
+    };
+
     constructor(config){
         this.parent       = config.parent;
         this.deck         = config.deck;
@@ -1286,7 +1357,11 @@ class Gameboard{
         // this.currentPlayer    = ""; //"P1";
 
         this.createGameBoard();
-        // this.initPlayers();
+
+        // Color indicator animation.
+        this.colorIndicator_type = 0;
+        this.colorIndicator_framesCount = 0;
+        this.colorIndicator_framesMax = 45;
     }
 
     // Display in-game message.
@@ -1423,7 +1498,7 @@ class Gameboard{
         else                                     { this.players["P4"].active = false; }
         this.players["P4"].type = this.parent.gameSettings.P4; 
 
-        //
+        // Generate and store a list of active player keys.
         this.activePlayerKeys = Object.keys(this.players).filter(d=>this.players[d].active);;
 
         // Add the text. (For each active player.)
@@ -1444,13 +1519,11 @@ class Gameboard{
         if (this.currentDirection == "F") {
             // Next index too far? Reset to 0.
             if (1 + currentPlayerIndex >= players.length) { nextPlayerIndex = 0; }
-            // Allowable.
             else { nextPlayerIndex = currentPlayerIndex + 1 }
         }
         else if (this.currentDirection == "R") {
             // Next index too low? Reset to max -1.
             if (currentPlayerIndex - 1 < 0) { nextPlayerIndex = players.length - 1; }
-            // Allowable.
             else { nextPlayerIndex = currentPlayerIndex - 1 }
         }
 
@@ -1458,26 +1531,13 @@ class Gameboard{
         this.currentPlayer = players[nextPlayerIndex];
     };
 
-
-    // Set color indicators.
+    // COLOR INDICATORS
     setColorIndicators(playerKey, color){
         // Set the color value. 
         this.currentColor = color;
 
         // Display the active color.
-        let pos = {
-            P1: { x:8 , y:22, w: 12, h:1 , layerKey: "L1", layerObjKey: "p1ColorBar", tilesetKey: "bg_tiles1" },
-            P2: { x:5 , y:8 , w: 1 , h:12, layerKey: "L1", layerObjKey: "p2ColorBar", tilesetKey: "bg_tiles1" },
-            P3: { x:8 , y:5 , w: 12, h:1 , layerKey: "L1", layerObjKey: "p3ColorBar", tilesetKey: "bg_tiles1" },
-            P4: { x:22, y:8 , w: 1 , h:12, layerKey: "L1", layerObjKey: "p4ColorBar", tilesetKey: "bg_tiles1" },
-        };
-
-        let fillTile;
-        if     (this.currentColor == "CARD_BLACK") { fillTile = _GFX.funcs.getTilemap("bg_tiles1", "colorFill1_black")[2];}
-        else if(this.currentColor == "CARD_YELLOW"){ fillTile = _GFX.funcs.getTilemap("bg_tiles1", "colorFill1_yellow")[2];}
-        else if(this.currentColor == "CARD_BLUE")  { fillTile = _GFX.funcs.getTilemap("bg_tiles1", "colorFill1_blue")[2];  }
-        else if(this.currentColor == "CARD_RED")   { fillTile = _GFX.funcs.getTilemap("bg_tiles1", "colorFill1_red")[2];   }
-        else if(this.currentColor == "CARD_GREEN") { fillTile = _GFX.funcs.getTilemap("bg_tiles1", "colorFill1_green")[2]; }
+        let pos = Gameboard.pos_colorIndicators;
 
         // Remove bars.
         _GFX.layerObjs.removeOne( pos["P1"].layerObjKey );
@@ -1486,7 +1546,19 @@ class Gameboard{
         _GFX.layerObjs.removeOne( pos["P4"].layerObjKey );
 
         // Create the bar.
-        let data = pos[playerKey];
+        this.generateColorIndicatorBar(playerKey, 1);
+    };
+    generateColorIndicatorBar(playerKey, type){
+        type = type ?? 1;
+        let fillTile;
+        if     (this.currentColor == "CARD_BLACK") { fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_black`)[2];}
+        else if(this.currentColor == "CARD_YELLOW"){ fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_yellow`)[2];}
+        else if(this.currentColor == "CARD_BLUE")  { fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_blue`)[2];  }
+        else if(this.currentColor == "CARD_RED")   { fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_red`)[2];   }
+        else if(this.currentColor == "CARD_GREEN") { fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_green`)[2]; }
+
+        let data = Gameboard.pos_colorIndicators[playerKey];
+
         _GFX.layerObjs.createOne(LayerObject, {
             layerObjKey: data.layerObjKey, 
             layerKey   : data.layerKey, 
@@ -1502,13 +1574,29 @@ class Gameboard{
             ),
         });
     };
+    nextFrame_colorIndicators(){
+        // Time to change frames?
+        if(this.colorIndicator_framesCount < this.colorIndicator_framesMax){ 
+            this.colorIndicator_framesCount += 1; 
+        }
+        else {
+            // Reset the frames counter.
+            this.colorIndicator_framesCount = 0;
+            
+            // Toggle the indictor type.
+            this.colorIndicator_type = !this.colorIndicator_type;
 
-    // Set direction indicators.
+            // Set the new tilemap.
+            this.generateColorIndicatorBar(this.currentPlayer, this.colorIndicator_type);
+            this._changed = true;
+        }
+    };
+
+    // DIRECTION INDICATORS
     flipDirectionIndicators(){
         if     (this.currentDirection == "F"){ this.setDirectionIndicators("R");}
         else if(this.currentDirection == "R"){ this.setDirectionIndicators("F");}
     };
-
     setDirectionIndicators(dir){
         // _APP.shared.gameBoard.setDirectionIndicators("F");
         // _APP.shared.gameBoard.setDirectionIndicators("N");

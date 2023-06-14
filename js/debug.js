@@ -2411,8 +2411,10 @@ var _DEBUG = {
     // ** DEBUG TASK RUNNER **
     // ***********************
 
-    runDebug_wait: 1000 * 0.25,
-    runDebug_last: 0,
+    // runDebug_waitFrames: 15,  // Number of frames to wait between debug runs.
+    runDebug_waitFrames: 0,  // Number of frames to wait between debug runs.
+    runDebug_wait: 1000    ,  // Overridden in init with (_APP.game.gameLoop.msFrame * this.runDebug_waitFrames);
+    runDebug_last: 0       ,  // The timestamp for the last debug run.
     runDebug_lastDuration: 0,
 
     DOM:{
@@ -2464,13 +2466,14 @@ var _DEBUG = {
         _DEBUG.drawTimings.display(newData, false);
         performance.mark('END_drawTimings.display');
         
-        // DONE WITH DEBUG. 
-        this.runDebug_lastDuration = performance.now() - debug_ts;
-
-        // BARS
+        
+        // BARS (Shows the previous value for the debug bar.)
         performance.mark('START_bars.display');
         _DEBUG.updateTimingBars.display(newData, false);
         performance.mark('END_bars.display');
+
+        // DONE WITH DEBUG. 
+        this.runDebug_lastDuration = performance.now() - debug_ts;
 
         this.runDebug_last = performance.now();
 
@@ -2538,6 +2541,9 @@ var _DEBUG = {
                 res(); 
             } );
         })();
+
+        // Calculate the runDebug_wait.
+        this.runDebug_wait = (_APP.game.gameLoop.msFrame * this.runDebug_waitFrames) | 0;
 
         // Load the grid canvas.
         this.gridCanvas.init();

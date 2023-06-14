@@ -455,7 +455,7 @@ var _GFX = {
             // _GFX.funcs.updateL1BgColorRgba([0,0,255,255]);
             let layer = "L1";
 
-            if(bgColorRgba){
+            if(Array.isArray(bgColorRgba) && bgColorRgba.length){
                 _GFX.currentData[layer].bgColorRgba = bgColorRgba;
             }
             else{

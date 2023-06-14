@@ -198,6 +198,27 @@ var gfxCoreV5 = {
             return { width:width, height:height };
         },
 
+        // Modifies the supplied rgbaArray and applies a fade to it.
+        applyFadeToRgbaArray: function(rgbaArray, fadeLevel){
+            if(fadeLevel === null){ return rgbaArray; }     // OFF
+            else if(fadeLevel == 10){ return [0,0,0,255]; } // BLACK
+            else if(fadeLevel == 11){ return [0,0,0,0]; }   // CLEAR
+
+            // Need the max values.
+            let fadeColorObj = this.fadeMasksRGBA[fadeLevel];
+            let maxRed   = fadeColorObj[0] / 100; 
+            let maxGreen = fadeColorObj[1] / 100; 
+            let maxBlue  = fadeColorObj[2] / 100; 
+
+            // Restrict r, g, b, a values and then round down.
+            rgbaArray[0] =  (rgbaArray[0] * maxRed)   | 0;
+            rgbaArray[1] =  (rgbaArray[1] * maxGreen) | 0;
+            rgbaArray[2] =  (rgbaArray[2] * maxBlue)  | 0;
+            rgbaArray[3] =  (rgbaArray[3])            | 0;
+
+            return rgbaArray;
+        },
+
         // Apply a fade to image data.
         applyFadeToImageDataArray: function(typedData, fadeLevel){
             let len  = typedData.length;

@@ -667,22 +667,34 @@ _APP.loader = {
     },
     inits: async function(){
         // INITS
+
+        // Web Worker.
         await _WEBW_V.init();
-        await _GFX.init();
-        await _INPUT.customized.init(_APP.configObj.inputConfig);
-        if(_APP.debugActive  && _DEBUG.init){ await _DEBUG.init(); }
-        _APP.navBar1.init();
         
-        if(_APP.debugActive && _DEBUG.init){ _APP.navBar1.showOne("view_debug"); }
+        // Graphics (main thread)
+        await _GFX.init();
+        
+        // Manual output sizing.
+        _APP.initOutputScaleControls();
+        
+        // Input init.
+        await _INPUT.customized.init(_APP.configObj.inputConfig);
+        
+        // Gameloop init.
+        await _APP.game.gameLoop.init();
+
+        // Init Debug and show the debug tab?
+        if(_APP.debugActive  && _DEBUG.init){ 
+            await _DEBUG.init(); 
+            _APP.navBar1.init();
+            _APP.navBar1.showOne("view_debug");
+        }
+        // No debug. Show the default tab.
         else{
             _APP.navBar1.showOne("view_controls");
             // _APP.navBar1.showOne("view_input");
             // _APP.navBar1.showOne("view_debug");
         }
-        
-        _APP.initOutputScaleControls();
-
-        await _APP.game.gameLoop.init();
     },
 };
 

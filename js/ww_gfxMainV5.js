@@ -1038,7 +1038,31 @@ var gfxMainV5 = {
         SETBG: {
             // TODO: Unfinished.
             setBackgroundColor            : function(layerKey, layerData, forceLayerRedraw){
+                if(layerKey != "L1"){ return true; }
+                if(!Array.isArray(layerData.bgColorRgba)){ return true; }
+                if(!layerData.bgColorRgba.length == 4){ return true; }
+
+                // Determine the new bg color based on the fade level.
+                let newColor = gfxCoreV5.transforms.applyFadeToRgbaArray(layerData.bgColorRgba, layerData.fade.currFade);
+                messageFuncs.timings["gfx"]["newL1_bgColor"] = newColor;
+
+                // TODO
+                // // If the global fade is 10 or 11 then.
+                // if(layerData.fade.fade && (layerData.fade.currFade == 10 || layerData.fade.currFade == 11)){
+                //     if(forceLayerRedraw){ return true; }
+                //     else                { 
+                //         // Redraw the layer from the cache data to imgDataCache.
+                //         timeIt("E_drawImgDataCache"       , "start");
+                //         this.parent.DRAW.drawImgDataCacheToCanvas(layerKey);
+                //         timeIt("E_drawImgDataCache"       , "stop");
+                //         return false; 
+                //     }
+                // }
+                // else{
+                //     return true;
+                // }
                 return true;
+
             },
         },
     },

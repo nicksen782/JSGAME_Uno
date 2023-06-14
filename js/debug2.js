@@ -249,10 +249,12 @@ var _DEBUG2 = {
                 // BGCOLOR CHANGE
                 this.DOM["bgColorSelect"].addEventListener("change", ()=>{ 
                     let value = this.DOM["bgColorSelect"].value.split(",");
+                    value = value.map(d=>d|0);
                     _GFX.funcs.updateL1BgColorRgba(value);
                 }, false);
                 this.DOM["bgColorButton"].addEventListener("click" , ()=>{ 
                     let value = this.DOM["bgColorSelect"].value.split(",");
+                    value = value.map(d=>d|0);
                     _GFX.funcs.updateL1BgColorRgba(value);
                 }, false);
 
@@ -278,13 +280,15 @@ var _DEBUG2 = {
                     flags1Text: "",
                     flags2Text: "",
                     cardsText: "",
+                    funcQueue: "",
                 },
                 DOM: { 
                     "flags1Text"    : "debug_flags_flags",
                     "flags2Text"    : "debug_flags_flags2",
                     "cardMovements" : "debug_flags_cardMovements",
-                    "timers1Text"    : "debug_flags_timers1",
-                    "timers2Text"    : "debug_flags_timers2",
+                    "funcQueue"     : "debug_flags_funcQueue",
+                    "timers1Text"   : "debug_flags_timers1",
+                    "timers2Text"   : "debug_flags_timers2",
                 },
                 init: function(parent){
                     this.parent = parent;
@@ -335,24 +339,40 @@ var _DEBUG2 = {
                     // Update card movements.
                     if(_APP.game.gamestates.gs_PLAYING.cardMovements.length){
                         newText = ``;
-                        for(let cardMovement of _APP.game.gamestates.gs_PLAYING.cardMovements){
-                            if(!cardMovement.started){ continue; }
-                            let timer = _APP.shared.genTimer.get(cardMovement.timerKey);
-                            newText += `T:${timer.frameCount}/${timer.maxFrames}`;
-                            newText += `, F:${cardMovement.func}`;
-                            newText += `, C:${cardMovement.card.color.replace("CARD_", "")}, V:${cardMovement.card.value.replace("CARD_", "")}`;
-                            newText += `\n`;
-                        }
+                        newText = _APP.game.gamestates.gs_PLAYING.cardMovements.length;
+                        // for(let cardMovement of _APP.game.gamestates.gs_PLAYING.cardMovements){
+                        //     if(!cardMovement.started){ continue; }
+                        //     let timer = _APP.shared.genTimer.get(cardMovement.timerKey);
+                        //     newText += `T:${timer.frameCount}/${timer.maxFrames}`;
+                        //     newText += `, F:${cardMovement.func}`;
+                        //     newText += `, C:${cardMovement.card.color.replace("CARD_", "")}, V:${cardMovement.card.value.replace("CARD_", "")}`;
+                        //     newText += `\n`;
+                        // }
                         if(newText != this.values.cardsText){
-                            this.values.newText = newText; 
+                            this.values.cardsText = newText; 
                             this.DOM.cardMovements.innerText = newText;
                         }
                     }
                     else{
-                        this.values.newText = "NONE"; 
-                        this.DOM.cardMovements.innerText = "NONE";
+                        if(this.values.cardsText != "NONE"){
+                            this.values.cardsText = "NONE"; 
+                            this.DOM.cardMovements.innerText = "NONE";
+                        }
                     }
-
+                    
+                    // Update funcQueue
+                    if(_APP.shared.funcQueue.funcs.gs_PLAYING){
+                        if(_APP.shared.funcQueue.funcs.gs_PLAYING.length){
+                            this.values.funcQueue = _APP.shared.funcQueue.funcs.gs_PLAYING.length;
+                            this.DOM.funcQueue.innerText = _APP.shared.funcQueue.funcs.gs_PLAYING.length;
+                        }
+                        else{
+                            if(this.values.funcQueue != "NONE"){
+                                this.values.funcQueue = "NONE";
+                                this.DOM.funcQueue.innerText = "NONE";
+                            }
+                        }
+                    }
 
                     // Update timer data.
                     let keys = Object.keys(_APP.shared.genTimer.timers[_APP.game.gs1]).filter(d=> !_APP.game.gamestates.gs_PLAYING.timerKeysKeep.includes(d) )

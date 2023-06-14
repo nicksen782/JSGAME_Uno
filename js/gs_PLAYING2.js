@@ -18,6 +18,7 @@
             // Reset flags.
             this.flags2.playerTurn_start = false;
             this.flags2.playerTurn = false
+            this.flags2.endOfRound = false
             this.flags2.playerDraws2 = false;
             this.flags2.playerSkipped = false;
             this.flags2.playerReverse = false;
@@ -273,6 +274,8 @@
                                 else if(discardCard.value == "CARD_WILD")      { this.flags2.playerColorChange = true; }
                                 else if(discardCard.value == "CARD_WILD_DRAW4"){ this.flags2.playerDraws4  = true; this.flags2.playerColorChange = true; }
     
+                                this.lastCardPlayed = discardCard;
+
                                 // Change gamestate 2.
                                 _APP.game.changeGs2("playerTurn");
     
@@ -295,12 +298,16 @@
             }
         },
 
+        playerTurn: function(gpInput){
+            this.gameBoard.nextFrame_colorIndicators();
+        },
+
         // Actions based on cards: WILD, WILD_DRAW4, DRAW2, SKIP, REVERSE
-        action_changeColor: function(gp_input){
+        action_changeColor: function(gpInput){
             this.colorChanger.nextFrame();
-            if(gp_input.P1.release.BTN_LEFT) { this.colorChanger.moveCursor(-1); }
-            if(gp_input.P1.release.BTN_RIGHT){ this.colorChanger.moveCursor(1); }
-            if(gp_input.P1.release.BTN_A)    { 
+            if(gpInput.P1.release.BTN_LEFT) { this.colorChanger.moveCursor(-1); }
+            if(gpInput.P1.release.BTN_RIGHT){ this.colorChanger.moveCursor(1); }
+            if(gpInput.P1.release.BTN_A)    { 
                 // Set flags to continue the player's turn after the colorChange has completed.
                 this.flags2.playerTurn_start = false;
                 this.flags2.playerTurn = true;
