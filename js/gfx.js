@@ -1087,6 +1087,40 @@ class LayerObject {
     /* EXAMPLE USAGE:
     */
 
+    // Checks if arrays are equal. (May use recursion.)
+    static areArraysEqual(array1, array2){
+        // LayerObject.areArraysEqual(tmap1, tmap2);
+
+        // Ensure that the inputs are defined.
+        if (undefined == array1 || undefined == array2) { 
+            console.error("areArraysEqual: Inputs must be arrays.", array1, array2);
+            return false; 
+        }
+
+        // Check if the arrays are the same length. If they are then there is nothing more that needs to be checked.
+        if (array1.length !== array2.length) { return false; }
+    
+        // Check if all items exist and are in the same order
+        for (let i = 0; i < array1.length; i++) {
+            // Handle arrays using recursion.
+            if (
+                Array.isArray(array1[i]) && 
+                Array.isArray(array2[i])
+            ) {
+                if (!this.areArraysEqual(array1[i], array2[i])) {
+                    return false;
+                }
+            } 
+            // Handle normal properties. Are these properties that same value?
+            else if (array1[i] !== array2[i]) {
+                return false;
+            }
+        }
+    
+        // If we have not returned false by this point then the arrays are equal.
+        return true;
+    };
+    
     // // Getters and setters:
     get x()          { return this._x; } 
     get y()          { return this._y; } 
@@ -1100,7 +1134,11 @@ class LayerObject {
     set hidden(value)     { if( this._hidden     !== value){ this._hidden     = value; this._changed = true; } }
     set x(value)          { if( this._x          !== value){ this._x          = value; this._changed = true; } }
     set y(value)          { if( this._y          !== value){ this._y          = value; this._changed = true; } }
-    set tmap(value)       { if( this._tmap       !== value){ this._tmap       = value; this._changed = true; } }
+    set tmap(value)       { 
+        if(!this._tmap || !LayerObject.areArraysEqual(this._tmap, value) ){
+            this._tmap = value; this._changed = true; 
+        } 
+    }
     set layerKey(value)   { if( this._layerKey   !== value){ 
         // Remove the existing layerObject from it's previous layer.
         if(this._layerKey && this.layerObjKey && _GFX.currentData[this._layerKey].tilemaps[this.layerObjKey]){

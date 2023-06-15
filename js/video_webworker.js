@@ -185,7 +185,7 @@ const _GFX = {
             };
         },
 
-        // Checks if arrays are equal. (recursion)
+        // Checks if arrays are equal. (May use recursion.)
         areArraysEqual: function(array1, array2) {
             // Check if the arrays are the same length. If they are then there is nothing more that needs to be checked.
             if (array1.length !== array2.length) { return false; }

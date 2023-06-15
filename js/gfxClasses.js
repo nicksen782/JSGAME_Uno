@@ -715,12 +715,7 @@ class Deck{
         P3: [ [7 ,1 ], [10,1 ], [13,1 ], [16,1 ], [19,1 ] ], // CARDS: p3_pos
         P4: [ [24,7 ], [24,10], [24,13], [24,16], [24,19] ], // CARDS: p4_pos
     };
-    static cardCursorsPos = {
-        P1: [ [7 ,23], [10,23], [13,23], [16,23], [19,23] ], // CARD CURSORS: p1_pos_cursor
-        P2: [ [4 ,7 ], [4 ,10], [4 ,13], [4 ,16], [4 ,19] ], // CARD CURSORS: p2_pos_cursor
-        P3: [ [7 ,4 ], [10,4 ], [13,4 ], [16,4 ], [19,4 ] ], // CARD CURSORS: p3_pos_cursor
-        P4: [ [23,7 ], [23,10], [23,13], [23,16], [23,19] ], // CARD CURSORS: p4_pos_cursor
-    };
+
     // static wildCursorPos  = [ [9 ,15], [12,15], [15,15], [18,15] ]; // CURSORS IN WILD MENU  : wild_pos_cursor
     // static pauseCursorPos = [ [8 ,12], [8 ,13], [8 ,14], [8 ,15] ]; // CURSORS IN PAUSE MENU : pause_pos_cursor
     static drawPos        = [ 9 ,11 ]; // Draw Pile          : draw_pos
@@ -1003,6 +998,11 @@ class Deck{
 
         // Show the cards face-up.
         for(let i=0; i<cards_layerObjs.length; i+=1){
+            // Reset the position of this card back to default.
+            let pos = Deck.cardPos[playerKey];
+            cards_layerObjs[i].x = pos[i][0];
+            cards_layerObjs[i].y = pos[i][1];
+
             // If we have a card here then display it.
             if(cardsToDisplay[i]){
                 cards_layerObjs[i].hidden = false;
@@ -1036,6 +1036,11 @@ class Deck{
 
         // Show the cards face-down.
         for(let i=0; i<cards_layerObjs.length; i+=1){
+            // Reset the position of this card back to default.
+            let pos = Deck.cardPos[playerKey];
+            cards_layerObjs[i].x = pos[i][0];
+            cards_layerObjs[i].y = pos[i][1];
+
             // If we have a card here then display it.
             if(cardsToDisplay[i]){
                 cards_layerObjs[i].hidden = false;
@@ -1293,6 +1298,7 @@ class ColorChanger{
     accept() {
         let newColor = ColorChanger.cursorsPos[this.cursorsPosIndex].color;
         this.parent.gameBoard.setColorIndicators(this.parent.gameBoard.currentPlayer, newColor);
+        // console.log("new color is:", newColor);
         this.hide();
     };
 
@@ -1328,14 +1334,137 @@ class ColorChanger{
         // Update cursor frame.
         this.elems.cursor.nextFrame();
     }
-}
+};
+
+class PauseMenu{
+    static text = [
+        `  PAUSE   MENU  `,
+        ``,
+        ``,
+        `   RESET ROUND`,
+        `   EXIT GAME`,
+        ``, // `   AUTO PLAY`,
+        `   CANCEL`,
+        ``,
+        ``,
+        `B:CANCEL   A:SET`,
+    ];
+
+    static pos = { 
+        box   : { x: 6, y: 9-1 },
+    };
+
+    static cursorsPos = [
+        {x: PauseMenu.pos.box.x + 1, y: PauseMenu.pos.box.y + 3, action: "RESET_ROUND" },
+        {x: PauseMenu.pos.box.x + 1, y: PauseMenu.pos.box.y + 4, action: "EXIT_GAME"   },
+        // {x: PauseMenu.pos.box.x + 1, y: PauseMenu.pos.box.y + 5, action: "AUTO_PLAY"   },
+        {x: PauseMenu.pos.box.x + 1, y: PauseMenu.pos.box.y + 6, action: "CANCEL"      },
+    ];
+
+    constructor(config){
+        this.parent       = config.parent;
+        this.active = false;
+
+        // Create the print text.
+        _GFX.layerObjs.createOne(PrintText, { 
+            hidden: true,
+            text       : PauseMenu.text, 
+            x          : PauseMenu.pos.box.x, 
+            y          : PauseMenu.pos.box.y, 
+            layerObjKey: "pause_menu_text", 
+            layerKey   : "L3", 
+            xyByGrid   : true,
+            // settings   : { bgColorRgba: [32, 32, 32, 168] }
+            settings   : { bgColorRgba: [16, 16, 16, 224] }
+        });
+
+        // Create the cursor.
+        this.cursorsPosIndex = PauseMenu.cursorsPos.length -1; // Start on cancel.
+        this.framesCounter = 0;
+        this.framesBeforeIndexChange = 15;
+        _GFX.layerObjs.createOne(Cursor1, { 
+            hidden: true,
+            x           : PauseMenu.cursorsPos[this.cursorsPosIndex].x, 
+            y           : PauseMenu.cursorsPos[this.cursorsPosIndex].y, 
+            layerObjKey : `pause_menu_cursor`, 
+            layerKey    : "L4", 
+            xyByGrid    : true, 
+            cursorType  : 1,
+            settings    : { 
+                rotation: 90,
+            }
+        } );
+
+        // Store the elems for later use.
+        this.elems = {
+            text   : _GFX.layerObjs.getOne("pause_menu_text"),
+            cursor : _GFX.layerObjs.getOne("pause_menu_cursor"),
+        };
+    };
+
+    // Unhides the LayerObjects used by this class.
+    show(){
+        for(let elemKey in this.elems){ this.elems[elemKey].hidden = false; }
+        this.active = true;
+
+        // Put the cursor at the end.
+        let pause_menu_cursor = _GFX.layerObjs.getOne("pause_menu_cursor");
+        this.cursorsPosIndex = PauseMenu.cursorsPos.length -1; // Start on cancel.
+        pause_menu_cursor.x = PauseMenu.cursorsPos[this.cursorsPosIndex].x;
+        pause_menu_cursor.y = PauseMenu.cursorsPos[this.cursorsPosIndex].y;
+    };
+
+    // Hides the LayerObjects used by this class.
+    hide(){
+        for(let elemKey in this.elems){ this.elems[elemKey].hidden = true; }
+        this.active = false;
+    };
+
+    // Accepts the action choice based on the cursorsPosIndex.action.
+    accept() {
+        let newAction = PauseMenu.cursorsPos[this.cursorsPosIndex].action;
+        this.hide();
+        return newAction;
+    };
+
+    // Vertical movement of the cursor and color changes to the cursor.
+    moveCursor(yDir) {
+        // Change the cursor position.
+        let pause_menu_cursor = _GFX.layerObjs.getOne("pause_menu_cursor");
+        if(yDir == 1){
+            if(1 + this.cursorsPosIndex >= PauseMenu.cursorsPos.length){ this.cursorsPosIndex = 0; }
+            else{ this.cursorsPosIndex += 1;}
+        }
+        else if(yDir == -1){
+            if(this.cursorsPosIndex -1 < 0){ this.cursorsPosIndex = PauseMenu.cursorsPos.length -1; }
+            else{ this.cursorsPosIndex -= 1;}
+        }
+        pause_menu_cursor.x = PauseMenu.cursorsPos[this.cursorsPosIndex].x;
+        pause_menu_cursor.y = PauseMenu.cursorsPos[this.cursorsPosIndex].y;
+    };
+
+    // Runs the next frame for the Cursor1 instance.
+    nextFrame() {
+        // Update cursor frame.
+        this.elems.cursor.nextFrame();
+    }
+};
 
 class Gameboard{
+    // For the color indicator bars.
     static pos_colorIndicators = {
-        P1: { x:8 , y:22, w: 12, h:1 , layerKey: "L1", layerObjKey: "p1ColorBar", tilesetKey: "bg_tiles1" },
-        P2: { x:5 , y:8 , w: 1 , h:12, layerKey: "L1", layerObjKey: "p2ColorBar", tilesetKey: "bg_tiles1" },
-        P3: { x:8 , y:5 , w: 12, h:1 , layerKey: "L1", layerObjKey: "p3ColorBar", tilesetKey: "bg_tiles1" },
-        P4: { x:22, y:8 , w: 1 , h:12, layerKey: "L1", layerObjKey: "p4ColorBar", tilesetKey: "bg_tiles1" },
+        P1: { x:8 , y:22, w: 12, h:1  },
+        P2: { x:5 , y:8 , w: 1 , h:12 },
+        P3: { x:8 , y:5 , w: 12, h:1  },
+        P4: { x:22, y:8 , w: 1 , h:12 },
+    };
+
+    // For the cursor positions when the player is to select a card.
+    static cardCursorsPos = {
+        P1: [ [7 ,23], [10,23], [13,23], [16,23], [19,23] ], // CARD CURSORS: p1_pos_cursor
+        P2: [ [4 ,7 ], [4 ,10], [4 ,13], [4 ,16], [4 ,19] ], // CARD CURSORS: p2_pos_cursor
+        P3: [ [7 ,4 ], [10,4 ], [13,4 ], [16,4 ], [19,4 ] ], // CARD CURSORS: p3_pos_cursor
+        P4: [ [23,7 ], [23,10], [23,13], [23,16], [23,19] ], // CARD CURSORS: p4_pos_cursor
     };
 
     constructor(config){
@@ -1358,10 +1487,42 @@ class Gameboard{
 
         this.createGameBoard();
 
+        // Color indicator.
+        let pos = Gameboard.pos_colorIndicators;
+        let type = 0;
+        let fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_black`)[2]
+        _GFX.layerObjs.createOne(LayerObject, {
+            layerObjKey: "colorIndicatorBar", 
+            layerKey   : "L1", 
+            tilesetKey : "bg_tiles1", 
+            xyByGrid: true, settings: {},
+            removeHashOnRemoval: true, noResort: false,
+            x: pos["P1"].x, y: pos["P1"].y,
+            tmap: new Uint8Array(
+                // Dimensions.
+                [ pos["P1"].w, pos["P1"].h ]
+                // Tiles
+                .concat(Array.from({ length: ((pos["P1"].w) * (pos["P1"].h)) }, () => fillTile))
+            ),
+        });
+
         // Color indicator animation.
         this.colorIndicator_type = 0;
         this.colorIndicator_framesCount = 0;
         this.colorIndicator_framesMax = 45;
+
+        // Create the card select cursor.
+        this.cursorsPosIndex = 0;
+        _GFX.layerObjs.createOne(Cursor1, { 
+            hidden: true,
+            x           : Gameboard.cardCursorsPos[this.currentPlayer][this.cursorsPosIndex][0], 
+            y           : Gameboard.cardCursorsPos[this.currentPlayer][this.cursorsPosIndex][1], 
+            layerObjKey : `card_select_cursor`, 
+            layerKey    : "L3", 
+            xyByGrid    : true, 
+            cursorType  : 1,
+            settings    : { rotation: 0 }
+        } );
     }
 
     // Display in-game message.
@@ -1506,7 +1667,7 @@ class Gameboard{
     };
 
     // Sets the new currentPlayer based on currentPlayer and currentDirection.
-    setNextPlayer(){
+    setNextPlayer(prev = false){
         // Get the active players.
         let players = Object.keys(this.players).filter(d => this.players[d].active);
         let currentPlayerIndex;
@@ -1516,15 +1677,19 @@ class Gameboard{
 
         // Get the next player based on direction.
         let nextPlayerIndex;
-        if (this.currentDirection == "F") {
-            // Next index too far? Reset to 0.
-            if (1 + currentPlayerIndex >= players.length) { nextPlayerIndex = 0; }
-            else { nextPlayerIndex = currentPlayerIndex + 1 }
+        
+        let isForwardDirection = this.currentDirection == "F";
+        if (prev) {
+            isForwardDirection = !isForwardDirection;
         }
-        else if (this.currentDirection == "R") {
+        
+        if (isForwardDirection) {
+            // Next index too far? Reset to 0.
+            nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+        }
+        else {
             // Next index too low? Reset to max -1.
-            if (currentPlayerIndex - 1 < 0) { nextPlayerIndex = players.length - 1; }
-            else { nextPlayerIndex = currentPlayerIndex - 1 }
+            nextPlayerIndex = (currentPlayerIndex - 1 + players.length) % players.length;
         }
 
         // Set the new player.
@@ -1537,42 +1702,42 @@ class Gameboard{
         this.currentColor = color;
 
         // Display the active color.
-        let pos = Gameboard.pos_colorIndicators;
-
-        // Remove bars.
-        _GFX.layerObjs.removeOne( pos["P1"].layerObjKey );
-        _GFX.layerObjs.removeOne( pos["P2"].layerObjKey );
-        _GFX.layerObjs.removeOne( pos["P3"].layerObjKey );
-        _GFX.layerObjs.removeOne( pos["P4"].layerObjKey );
-
-        // Create the bar.
-        this.generateColorIndicatorBar(playerKey, 1);
-    };
-    generateColorIndicatorBar(playerKey, type){
-        type = type ?? 1;
-        let fillTile;
-        if     (this.currentColor == "CARD_BLACK") { fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_black`)[2];}
-        else if(this.currentColor == "CARD_YELLOW"){ fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_yellow`)[2];}
-        else if(this.currentColor == "CARD_BLUE")  { fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_blue`)[2];  }
-        else if(this.currentColor == "CARD_RED")   { fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_red`)[2];   }
-        else if(this.currentColor == "CARD_GREEN") { fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_green`)[2]; }
-
         let data = Gameboard.pos_colorIndicators[playerKey];
 
-        _GFX.layerObjs.createOne(LayerObject, {
-            layerObjKey: data.layerObjKey, 
-            layerKey   : data.layerKey, 
-            tilesetKey : data.tilesetKey, 
-            xyByGrid: true, settings: {},
-            removeHashOnRemoval: true, noResort: false,
-            x:data.x, y:data.y,
-            tmap: new Uint8Array(
-                // Dimensions.
-                [ data.w, data.h ]
-                // Tiles
-                .concat(Array.from({ length: ((data.w) * (data.h)) }, () => fillTile))
-            ),
-        });
+        // Get the colorIndicatorBar LayerObject.
+        let colorIndicatorBar = _GFX.layerObjs.getOne( "colorIndicatorBar" );
+        
+        // Create the bar tilemap and set.
+        colorIndicatorBar.tmap = this.generateColorIndicatorBar(playerKey, this.colorIndicator_type);
+
+        // Set the position values. 
+        colorIndicatorBar.x = data.x;
+        colorIndicatorBar.y = data.y;
+        colorIndicatorBar.w = data.w;
+        colorIndicatorBar.h = data.h;
+    };
+    generateColorIndicatorBar(playerKey, type){
+        // Set/determine the type.
+        type = type ?? this.colorIndicator_type ?? 0;
+
+        // Determine the color part of the fillTile name. 
+        let color = this.currentColor.replace("CARD_", "").toLocaleLowerCase();
+        
+        // Get the fillTile.
+        let fillTile;
+        fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_${color}`)[2];
+
+        // Create a tilemap of the fillTile that match the dimensions for the player.
+        let data = Gameboard.pos_colorIndicators[playerKey];
+        let tmap = new Uint8Array(
+            // Dimensions.
+            [ data.w, data.h ]
+            // Tiles
+            .concat(Array.from({ length: ((data.w) * (data.h)) }, () => fillTile))
+        );
+
+        // Return the completed tilemap.
+        return tmap;
     };
     nextFrame_colorIndicators(){
         // Time to change frames?
@@ -1586,11 +1751,74 @@ class Gameboard{
             // Toggle the indictor type.
             this.colorIndicator_type = !this.colorIndicator_type;
 
+            // Get the colorIndicatorBar LayerObject.
+            let colorIndicatorBar = _GFX.layerObjs.getOne( "colorIndicatorBar" );
+
             // Set the new tilemap.
-            this.generateColorIndicatorBar(this.currentPlayer, this.colorIndicator_type);
-            this._changed = true;
+            colorIndicatorBar.tmap = this.generateColorIndicatorBar(this.currentPlayer, this.colorIndicator_type);
         }
     };
+
+    // CARD SELECT CURSOR
+    // Horizontal movement of the cursor and color changes to the cursor.
+    moveCursor(xDir, playerKey) {
+        // Change the cursor position.
+        let card_select_cursor = _GFX.layerObjs.getOne("card_select_cursor");
+        if(xDir == 1){
+            if(1 + this.cursorsPosIndex >= Gameboard.cardCursorsPos[playerKey].length){ this.cursorsPosIndex = 0; }
+            else{ this.cursorsPosIndex += 1;}
+        }
+        else if(xDir == -1){
+            if(this.cursorsPosIndex -1 < 0){ this.cursorsPosIndex = Gameboard.cardCursorsPos[playerKey].length -1; }
+            else{ this.cursorsPosIndex -= 1;}
+        }
+        card_select_cursor.x = Gameboard.cardCursorsPos[playerKey][this.cursorsPosIndex][0];
+        card_select_cursor.y = Gameboard.cardCursorsPos[playerKey][this.cursorsPosIndex][1];
+
+        // // Change the cursor color.
+        // this.changeCursorColor();
+    };
+    // Accepts the color choice based on the cursorsPosIndex.color.
+    acceptCursor(playerKey) {
+        // this.cursorsPosIndex
+        let layerObjKey = `${playerKey}_card_${this.cursorsPosIndex}`;
+        let card = _GFX.layerObjs.getOne(layerObjKey);
+        if(!card.hidden){ return {...card}; }
+        // console.log("card was hidden");
+        return false;
+    };
+    // Unhides the LayerObjects used by this class.
+    showCursor(playerKey){
+        let rotation;
+        if     (this.currentPlayer == "P1"){ rotation = 180; }
+        else if(this.currentPlayer == "P2"){ rotation = -90; }
+        else if(this.currentPlayer == "P3"){ rotation =   0; }
+        else if(this.currentPlayer == "P4"){ rotation =  90; }
+        let pos = Gameboard.cardCursorsPos[playerKey];
+
+        let card_select_cursor = _GFX.layerObjs.getOne("card_select_cursor");
+        card_select_cursor.setSetting("rotation", rotation);
+        card_select_cursor.x = pos[this.cursorsPosIndex][0];
+        card_select_cursor.y = pos[this.cursorsPosIndex][1];
+        card_select_cursor.hidden = false;
+        // for(let elemKey in this.elems){ this.elems[elemKey].hidden = false; }
+        // this.active = true;
+    };
+    nextCursorFrame(){
+        let card_select_cursor = _GFX.layerObjs.getOne("card_select_cursor");
+        card_select_cursor.nextFrame();
+    }
+
+    // Hides the LayerObjects used by this class.
+    hideCursor(){
+        let card_select_cursor = _GFX.layerObjs.getOne("card_select_cursor");
+        card_select_cursor.hidden = true;
+
+        // for(let elemKey in this.elems){ this.elems[elemKey].hidden = true; }
+        // this.active = false;
+    };
+
+    // card_select_cursor
 
     // DIRECTION INDICATORS
     flipDirectionIndicators(){
@@ -1777,7 +2005,7 @@ class Gameboard{
             fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "wood2")[2], borderType: borderType_discard 
         });
     };
-}
+};
 
 
 

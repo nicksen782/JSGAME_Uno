@@ -15,15 +15,10 @@
         },
 
         resetFlags: function(){
-            // Reset flags.
-            this.flags2.playerTurn_start = false;
-            this.flags2.playerTurn = false
-            this.flags2.endOfRound = false
-            this.flags2.playerDraws2 = false;
-            this.flags2.playerSkipped = false;
-            this.flags2.playerReverse = false;
-            this.flags2.playerDraws4 = false;
-            this.flags2.playerColorChange = false;
+            // Reset flags2.
+            for(let key in this.flags2){
+                this.flags2[key] = false;
+            }
         },
 
         gamestart: function() {
@@ -193,21 +188,22 @@
                 // Get the next card in the deck and assign to the player.
                 let card = this.deck.getNextCardFromDrawpile();
                 card.location = Deck.playerCardLocations[this.gameBoard.currentPlayer];
-                let layerObjKey = `${this.gameBoard.currentPlayer}_card_${this.flags.dealing_firstTurnCardPos}`;
+                let layerObjKey = `${this.gameBoard.currentPlayer}_card_${this.flags.dealing_firstTurnCardPos%5}`;
                 _GFX.layerObjs.getOne(layerObjKey).change_wholeCard("sm", "CARD_BLACK", "CARD_BACK"); ;
                 // console.log("Dealing for the first turn!", "layerObjKey:", layerObjKey);
 
                 // Start deal animation.
+                let _this = this;
                 _APP.game.gamestates.gs_PLAYING.addCardMovement(
                     "draw"  , { 
                         timerKey   : "moveDrawToCard_"+layerObjKey   , 
-                        timerFrames: 0,
+                        timerFrames: 1,
                         movementSpeed: this.movementSpeeds.dealingMany,
                         playerKey  : this.gameBoard.currentPlayer  , 
-                        layerObjKey: `${this.gameBoard.currentPlayer}_card_${this.flags.dealing_firstTurnCardPos}`,
-                        cardSlot   : this.flags.dealing_firstTurnCardPos,
+                        layerObjKey: `${this.gameBoard.currentPlayer}_card_${this.flags.dealing_firstTurnCardPos%5}`,
+                        // layerObjKey: `temp_card`,
+                        cardSlot   : (this.flags.dealing_firstTurnCardPos % 5),
                         finish: function(){ 
-                            // this.card.change_wholeCard("sm", "CARD_BLACK", "CARD_BACK"); 
                             // console.log("DONE:", this.card.layerObjKey);
                             _APP.shared.genTimer.removeOne(this.timerKey, null);
                         }
@@ -221,7 +217,7 @@
                     // console.log("done?", this.gameBoard.currentPlayer, this.gameBoard.activePlayerKeys[0], this.flags.dealing_firstTurnCardPos);
                     
                     // Last card?
-                    if(1+this.flags.dealing_firstTurnCardPos >= 5){
+                    if(1+this.flags.dealing_firstTurnCardPos >= 7){
                         this.flags.dealing_firstTurn = false;
 
                         // console.log("cards deal timer started");
@@ -229,16 +225,16 @@
                             // Get the next card in the deck and assign to the discard pile.
                             // The first card cannot be wild draw 4. 
                             let location_DRAW    = this.deck.deck.filter(d => d.location == "CARD_LOCATION_DRAW" && d.value != "CARD_WILD_DRAW4");
-                            // let discardCard = location_DRAW[0];
-                            let discardCard = this.deck.deck.find(d => 
-                                d.location == "CARD_LOCATION_DRAW" && 
-                                // d.value == "CARD_WILD_DRAW4"
-                                d.value == "CARD_DRAW2"
-                                // d.value == "CARD_SKIP"
-                                // d.value == "CARD_REV"
-                                // d.value == "CARD_WILD"
-                            );
-                            discardCard.location = "CARD_LOCATION_DISCARD";
+                            let discardCard = location_DRAW[0];
+                            // let discardCard = this.deck.deck.find(d => 
+                            //     d.location == "CARD_LOCATION_DRAW" && 
+                            //     // d.value == "CARD_WILD_DRAW4"
+                            //     d.value == "CARD_DRAW2"
+                            //     // d.value == "CARD_SKIP"
+                            //     // d.value == "CARD_REV"
+                            //     // d.value == "CARD_WILD"
+                            // );
+                            // discardCard.location = "CARD_LOCATION_DISCARD";
                             
                             // Display the discard card.
                             this.deck.updateDiscardCard(discardCard);
@@ -298,22 +294,316 @@
             }
         },
 
+        playerTurn_start: function(gpInput){
+        },
         playerTurn: function(gpInput){
+            // Flags set/cleared/used here:
+            //   this.flags2.playerTurn    :: Required for this function.
+            //   this.flags2.playerTurn_p1 :: Card and row select, round pass.
+            //   this.flags2.playerTurn_p2 :: Confirm/cancel on selected card.
+            //   this.flags2.playerTurn_p3 :: Confirm/cancel on round pass.
+            //   this.flags2.endOfRound    :: Required when switching to endOfRound.
+            //   this.flags2.endOfRound_p1 :: Check for wild card.
+
             this.gameBoard.nextFrame_colorIndicators();
+            
+            // Card select and row select.
+            if(this.flags2.playerTurn_p1){
+                this.gameBoard.nextCursorFrame();
+
+                // // Pause menu?
+                // if(gpInput.P1.press.BTN_START)  { 
+                //     console.log("pauseMenu should only be called once here.");
+                //     this.pauseMenu.show();
+                //     return;
+                // }
+
+                // P1, P3: Row or cursor position change?
+                if(this.gameBoard.currentPlayer == "P1" || this.gameBoard.currentPlayer == "P3"){
+                    // Card cursor change.
+                    if     (gpInput.P1.press.BTN_LEFT) { this.gameBoard.moveCursor(-1, this.gameBoard.currentPlayer); }
+                    else if(gpInput.P1.press.BTN_RIGHT){ this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  }
+                    
+                    // Row change.
+                    // else if(gpInput.P1.press.BTN_UP)  { this.gameBoard.moveCursor(-1, this.gameBoard.currentPlayer); }
+                    // else if(gpInput.P1.press.BTN_DOWN){ this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  }
+                }
+
+                // P2, P4: Row or cursor position change?
+                if(this.gameBoard.currentPlayer == "P2" || this.gameBoard.currentPlayer == "P4"){
+                    // Card cursor change.
+                    if     (gpInput.P1.press.BTN_UP)  { this.gameBoard.moveCursor(-1, this.gameBoard.currentPlayer); }
+                    else if(gpInput.P1.press.BTN_DOWN){ this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  }
+
+                    // Row change.
+                    // if     (gpInput.P1.press.BTN_LEFT) { this.gameBoard.moveCursor(-1, this.gameBoard.currentPlayer); }
+                    // else if(gpInput.P1.press.BTN_RIGHT){ this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  }
+                }
+
+                // Selection made?
+                if(gpInput.P1.press.BTN_A)    {
+                    // Make the selection
+                    let selectedCard;
+                    selectedCard = this.gameBoard.acceptCursor(this.gameBoard.currentPlayer);
+                    
+                    // Was there a card there?
+                    if(!selectedCard){
+                        // No card. Accept cannot be allowed.
+                        // console.log("invalid card");
+                        return;
+                    }
+
+                    // Save the lastSelectedCard.
+                    this.lastSelectedCard = selectedCard;
+
+                    // Hide the cursor and stop animations.
+                    this.gameBoard.hideCursor();
+                    
+                    // Move card up from home. 
+                    let layerObjKey = `${this.gameBoard.currentPlayer}_card_${this.gameBoard.cursorsPosIndex}`;
+
+                    _APP.game.gamestates.gs_PLAYING.addCardMovement(
+                        "selected"  , { 
+                            timerKey   : "moveCardToSelected", 
+                            timerFrames: 20,
+                            playerKey  : this.gameBoard.currentPlayer  , 
+                            layerObjKey: layerObjKey ,
+                            movementSpeed: _APP.game.gamestates.gs_PLAYING.movementSpeeds.selectCard,
+                    });
+                    
+                    // Clear flag: this.flags2.playerTurn_p1
+                    this.flags2.playerTurn_p1 = false;
+                    
+                    // Set flag  : this.flags2.playerTurn_p2
+                    this.flags2.playerTurn_p2 = true;
+                    
+                    // INIT FOR THE NEXT PART.
+                    // Display play/pass message.
+                    this.gameBoard.displayMessage("playCancel"  , this.gameBoard.currentPlayer, false);
+                }
+
+                // Pass this round?
+                if(gpInput.P1.press.BTN_B)    {
+                    // Display pass/cancel message.
+                    this.gameBoard.displayMessage("passCancel"  , this.gameBoard.currentPlayer, false);
+
+                    // Change flags:
+                    this.flags2.playerTurn_p1 = false;
+                    this.flags2.playerTurn_p2 = false;
+                    this.flags2.playerTurn_p3 = true;
+                    
+                    // Hide the cursor.
+                    this.gameBoard.hideCursor(this.gameBoard.currentPlayer);
+                }
+            }
+            
+            // Card selected. (needs confirm/pass)
+            else if(this.flags2.playerTurn_p2){
+                // PLAY
+                if     (gpInput.P1.press.BTN_A) { 
+                    // Already selected for play.
+
+                    // Clear play/pass message.
+                    this.gameBoard.displayMessage("none"  , this.gameBoard.currentPlayer, false);
+
+                    // Move card to discard pile.
+                    let layerObjKey = `${this.gameBoard.currentPlayer}_card_${this.gameBoard.cursorsPosIndex}`;
+                    // let card = _GFX.layerObjs.getOne(layerObjKey);
+                    let _this = this;
+                    _APP.game.gamestates.gs_PLAYING.addCardMovement(
+                        "discard"  , { 
+                            timerKey   : "moveCardToDiscard", 
+                            timerFrames: 0,
+                            playerKey  : this.gameBoard.currentPlayer  , 
+                            layerObjKey: layerObjKey ,
+                            cardSlot: this.gameBoard.cursorsPosIndex,
+                            movementSpeed: _APP.game.gamestates.gs_PLAYING.movementSpeeds.returnOneCard,
+                            finish: function(){
+                                // Get the player location.
+                                let location = Deck.playerCardLocations[_this.gameBoard.currentPlayer];
+
+                                // Find this card in the deck.
+                                let deckCard    = _this.deck.deck.find(d => 
+                                    d.location == location && 
+                                    d.color    == this.card.color && 
+                                    d.value    == this.card.value
+                                );
+                                
+                                // Change the card's location.
+                                deckCard.location = "CARD_LOCATION_DISCARD";
+                                
+                                // Display the discard card.
+                                _this.deck.updateDiscardCard(deckCard);
+
+                                // Save the last card played.
+                                _this.lastCardPlayed = deckCard;
+                                _this.lastSelectedCard = {..._this.lastCardPlayed};
+
+                                // All player cards face down.
+                                for(let playerKey of _this.gameBoard.activePlayerKeys){
+                                    _this.deck.flipPlayerCardsDown(playerKey);
+                                }
+
+                                // Clear flag: this.flags2.playerTurn
+                                _this.flags2.playerTurn = false;
+
+                                // Clear flag: this.flags2.playerTurn_p1
+                                _this.flags2.playerTurn_p1 = false;
+
+                                // Clear flag: this.flags2.playerTurn_p2
+                                _this.flags2.playerTurn_p2 = false;
+
+                                // Clear flag: this.flags2.playerTurn_p3
+                                _this.flags2.playerTurn_p3 = false;
+                                
+                                // Set flag: this.flags2.endOfRound
+                                _this.flags2.endOfRound = true;
+
+                                // Set flag: this.flags2.endOfRound_p1
+                                _this.flags2.endOfRound_p1 = true;
+                            },
+                    });
+                    
+                }
+                
+                // CANCEL
+                else if(gpInput.P1.press.BTN_B){ 
+                    // this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  
+
+                    // Cancelled select for play.
+                    // Clear play/pass message.
+                    // Move card down to home. 
+                    // Clear flag: this.flags2.playerTurn_p2
+                    // Set flag  : this.flags2.playerTurn_p1
+                }
+                
+            }
+
+            // No card selected. (needs pass/cancel)
+            else if(this.flags2.playerTurn_p3){
+                // Awaiting player choice.
+
+                // Accept the pass. Hide cards, draw one card, end turn.
+                if(gpInput.P1.press.BTN_A)    {}
+                // Go back to Card and row select, round pass.
+                if(gpInput.P1.press.BTN_B)    {
+                    // Clear the displayed message.
+                    this.gameBoard.displayMessage("none"  , this.gameBoard.currentPlayer, false);
+
+                    // Change flags:
+                    this.flags2.playerTurn_p1 = true;
+                    this.flags2.playerTurn_p2 = false;
+                    this.flags2.playerTurn_p3 = false;
+
+                    // Show the cursor.
+                    this.gameBoard.showCursor(this.gameBoard.currentPlayer);
+                }
+            }
+            else{ console.log("playerTurn: INVALID FLAGS"); }
+        },
+
+        endOfRound: function(gpInput){
+            // Flags set/cleared/used here:
+            //   this.flags2.endOfRound    :: Required when switching to endOfRound.
+            //   this.flags2.endOfRound_p1 :: Check for wild card.
+            //   this.flags2.endOfRound_p2 :: Assign flags for next round.
+            //   this.flags2.playerTurn    :: Required for this function.
+            //   this.flags2.playerTurn_p1 :: Card and row select, round pass.
+
+            // console.log(
+            //     "endOfRound: ", this.flags2.endOfRound, 
+            //     "p1:", this.flags2.endOfRound_p1, 
+            //     "p2:", this.flags2.endOfRound_p2
+            // );
+            // Determine if the color changer needs to be activated.
+            if     (this.flags2.endOfRound_p1){
+                // Display the color changer?
+                if(this.lastCardPlayed.color == "CARD_BLACK"){
+                    // console.log("colorChanger should only be called once here.");
+                    this.colorChanger.show();
+                }
+
+                // Clear all flags.
+                this.resetFlags();
+
+                // Set these flags:
+                this.flags2.endOfRound = true;
+                this.flags2.endOfRound_p2 = true;
+            }
+            // Set end of round flags.
+            else if(this.flags2.endOfRound_p2){
+                // Clear all flags.
+                this.resetFlags();
+
+                // Determine what flags to set based on the last card played.
+                if     (this.lastCardPlayed.value == "CARD_DRAW2")     { this.flags2.playerDraws2  = true; }
+                else if(this.lastCardPlayed.value == "CARD_WILD_DRAW4"){ this.flags2.playerDraws4  = true; }
+                else if(this.lastCardPlayed.value == "CARD_SKIP")      { this.flags2.playerSkipped = true; }
+                else if(this.lastCardPlayed.value == "CARD_REV")       { this.flags2.playerReverse = true; }
+
+                // Set these flags.
+                this.flags2.playerTurn_start = true;
+
+                this.gameBoard.setNextPlayer(this.flags2.playerReverse);
+            }
+            else{ console.log("endOfRound: INVALID FLAGS"); }
         },
 
         // Actions based on cards: WILD, WILD_DRAW4, DRAW2, SKIP, REVERSE
         action_changeColor: function(gpInput){
             this.colorChanger.nextFrame();
-            if(gpInput.P1.release.BTN_LEFT) { this.colorChanger.moveCursor(-1); }
-            if(gpInput.P1.release.BTN_RIGHT){ this.colorChanger.moveCursor(1); }
-            if(gpInput.P1.release.BTN_A)    { 
-                // Set flags to continue the player's turn after the colorChange has completed.
-                this.flags2.playerTurn_start = false;
-                this.flags2.playerTurn = true;
-
-                // Accept the color change.
+            if(gpInput.P1.press.BTN_LEFT) { this.colorChanger.moveCursor(-1); }
+            if(gpInput.P1.press.BTN_RIGHT){ this.colorChanger.moveCursor(1); }
+            if(gpInput.P1.press.BTN_A)    { 
+                // Accept the color change. (and hides the colorChanger.)
                 this.colorChanger.accept(); 
+                // console.log(`Color changed by: ${this.gameBoard.currentPlayer} to: ${this.gameBoard.currentColor}`);
+            }
+        },
+        action_pauseMenu: function(gpInput){
+            // Animate the cursor.
+            this.pauseMenu.nextFrame();
+
+            // Move the cursor?
+            if(gpInput.P1.press.BTN_UP) { this.pauseMenu.moveCursor(-1); }
+            else if(gpInput.P1.press.BTN_DOWN){ this.pauseMenu.moveCursor(1); }
+
+            // Exit the pause menu?
+            else if(gpInput.P1.press.BTN_B)    { 
+                this.pauseMenu.hide();
+            }
+
+            // Make a selection.
+            else if(gpInput.P1.press.BTN_A)    { 
+                // Accept the action. (and hides the pauseMenu.)
+                let newAction = this.pauseMenu.accept(); 
+                // console.log(`Action set by: ${this.gameBoard.currentPlayer} to: ${PauseMenu.cursorsPos[this.pauseMenu.cursorsPosIndex].action}`);
+
+                if     (newAction == "RESET_ROUND"){
+                    // Reset flags to prevent anything else in the current loop from running. 
+                    this.resetFlags();
+                    
+                    // Restart the gamestate.
+                    _APP.game.gameLoop.loop_stop(); 
+                    _APP.game.gamestates[_APP.game.gs1].inited = false;
+                    _APP.game.gameLoop.loop_start(); 
+                }
+                else if(newAction == "EXIT_GAME")  {
+                    // Reset flags to prevent anything else in the current loop from running. 
+                    this.resetFlags();
+
+                    // Return the to the title screen. 
+                    _APP.game.changeGs1("gs_TITLE");
+                    _APP.game.changeGs2("title");
+                }
+                // TODO
+                else if(newAction == "AUTO_PLAY")  {
+                    // TODO
+                }
+                else if(newAction == "CANCEL")     {
+                    // The accept method should have already hidden the pauseMenu.
+                    // this.pauseMenu.hide();
+                }
             }
         },
         action_draw: function(config){
@@ -328,8 +618,8 @@
             */
 
             // Ensure that the number of cards specified is valid.
-            if( !(config.numCards >= 1 && config.numCards < 4) ){
-                console.error("ERROR");
+            if( !(config.numCards >= 1 && config.numCards <= 4) ){
+                console.error("action_draw", config);
                 return;
             }
             
@@ -384,11 +674,6 @@
                 args: [],
                 bind: this,
                 func: function(){
-                    // Set flags and change to the next player.
-                    this.flags2.playerTurn_start = true;
-                    this.flags2.playerTurn = false;
-                    this.gameBoard.setNextPlayer();
-                    
                     // Add a delay before continuing?
                     if(config.endDelay){
                         // Wait to clear the message.
@@ -415,11 +700,6 @@
                 args: [],
                 bind: this,
                 func: function(){
-                    // Set flags and change to the next player.
-                    this.flags2.playerTurn_start = true;
-                    this.flags2.playerTurn = false;
-                    this.gameBoard.setNextPlayer();
-                    
                     // Add a delay before continuing?
                     if(config.endDelay){
                         // Wait to clear the message.
@@ -449,11 +729,6 @@
                     // Flip the direction.
                     this.gameBoard.flipDirectionIndicators();
 
-                    // Set flags and change to the next player.
-                    this.flags2.playerTurn_start = true;
-                    this.flags2.playerTurn = false;
-                    this.gameBoard.setNextPlayer();
-                    
                     // Add a delay before continuing?
                     if(config.endDelay){
                         // Wait to clear the message.

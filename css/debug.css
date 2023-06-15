@@ -307,7 +307,7 @@ div#layerObjectList1 {
 
 /* DEBUG CARD DISPLAY */
 .debug_cardDisplay {
-  height: 50px;
+  height: 35px;
   overflow-y: scroll;
   font-family: monospace;
 }

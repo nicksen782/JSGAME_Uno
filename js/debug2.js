@@ -552,15 +552,19 @@ var _DEBUG2 = {
                     hash_location_PLAYER2: null,
                     hash_location_PLAYER3: null,
                     hash_location_PLAYER4: null,
+                    hash_lastCardPlayed  : null, 
+                    hash_lastSelectedCard: null, 
                 },
                 DOM: { 
-                    "contextMenu"   : "debug_cardAssignment_contextMenu",
-                    "drawCards"   : "debug_drawCards",
-                    "discardCards": "debug_discardCards",
-                    "P1Cards"     : "debug_P1Cards",
-                    "P2Cards"     : "debug_P2Cards",
-                    "P3Cards"     : "debug_P3Cards",
-                    "P4Cards"     : "debug_P4Cards",
+                    "contextMenu"     : "debug_cardAssignment_contextMenu",
+                    "drawCards"       : "debug_drawCards",
+                    "discardCards"    : "debug_discardCards",
+                    "P1Cards"         : "debug_P1Cards",
+                    "P2Cards"         : "debug_P2Cards",
+                    "P3Cards"         : "debug_P3Cards",
+                    "P4Cards"         : "debug_P4Cards",
+                    "lastCardPlayed"  : "debug_lastCardPlayed",
+                    "lastSelectedCard": "debug_lastSelectedCard",
                 },
                 init: function(parent){
                     this.parent = parent;
@@ -621,6 +625,29 @@ var _DEBUG2 = {
                             change.target[change.method](change.frag); 
                         }
                     }
+
+                    // lastCardPlayed
+                    let elem;
+                    if(_APP.game.gamestates.gs_PLAYING.lastCardPlayed){
+                        let newHash = _GFX.utilities.djb2Hash( JSON.stringify( _APP.game.gamestates.gs_PLAYING.lastCardPlayed ) );
+                        let oldHash = this.values.hash_lastCardPlayed;
+                        if(oldHash != newHash){
+                            elem = this.createCardElem2(0, _APP.game.gamestates.gs_PLAYING.lastCardPlayed);
+                            this.DOM.lastCardPlayed.replaceChildren(elem);
+                            this.values.hash_lastCardPlayed = newHash;
+                        }
+                    }
+                    
+                    // lastSelectedCard
+                    if(_APP.game.gamestates.gs_PLAYING.lastSelectedCard){
+                        let newHash = _GFX.utilities.djb2Hash( JSON.stringify( _APP.game.gamestates.gs_PLAYING.lastSelectedCard ) );
+                        let oldHash = this.values.hash_lastSelectedCard;
+                        if(oldHash != newHash){
+                            elem = this.createCardElem2(0, _APP.game.gamestates.gs_PLAYING.lastSelectedCard);
+                            this.DOM.lastSelectedCard.replaceChildren(elem);
+                            this.values.hash_lastSelectedCard = newHash;
+                        }
+                    }
                 },
                 contextMenu1_open: function(e, elem){
                     e.preventDefault();
@@ -634,6 +661,8 @@ var _DEBUG2 = {
     
                     // Create the contents of the menu.
                     contextMenu.innerHTML = `` +
+                    `<button onclick="_DEBUG2.debugGamestate.gs_PLAYING.deckControl.contextMenu1_close();">CANCEL</button>`+
+                    `<br><br>`+
                     `<u>CARD:</u><br>` +
                     `  INDEX : ${cardIndex.replace(/CARD_/g, "")} (card index in deck)<br>` +
                     `  TYPE  : ${cardvalue.replace(/CARD_/g, "")} (${cardColor.replace(/CARD_/g, "")})<br>` +
@@ -648,8 +677,6 @@ var _DEBUG2 = {
                     `<br>`+
                     ` <div class="option ${cardlocation=="CARD_LOCATION_PLAYER3"?"notVisible":""}" onclick="_DEBUG2.debugGamestate.gs_PLAYING.deckControl.contextMenu1_select(${+cardIndex}, 'CARD_LOCATION_PLAYER3');">P3 HAND</div>`+
                     ` <div class="option ${cardlocation=="CARD_LOCATION_PLAYER4"?"notVisible":""}" onclick="_DEBUG2.debugGamestate.gs_PLAYING.deckControl.contextMenu1_select(${+cardIndex}, 'CARD_LOCATION_PLAYER4');">P4 HAND</div>`+
-                    `<br><br>`+
-                    `<button onclick="_DEBUG2.debugGamestate.gs_PLAYING.deckControl.contextMenu1_close();">CANCEL</button>`+
                     ``;
     
                     // Set the position of the context menu and display it

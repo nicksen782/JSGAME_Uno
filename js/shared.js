@@ -219,4 +219,36 @@ _APP.shared = {
             return false;
         }
     },
+
+    getAllGamepadStates: function(){
+        // Get the gamepad states for p1 and p2.
+        let gpInput = {
+            "P1": _INPUT.util.stateByteToObj2("p1"),
+            "P2": _INPUT.util.stateByteToObj2("p2"),
+        };
+
+        // Create a new key "ANY" that can be checked for any buttons pressed by either player.
+        gpInput["ANY"] = {
+            "held": {},
+            "press": {},
+            "release": {}
+        };
+        const states = ["held", "press", "release"];
+        const buttons = _INPUT.consts.buttons;
+
+        // Iterate through each state ("held", "press", "release").
+        for (let i = 0; i < states.length; i++) {
+            const state = states[i];
+
+            // Iterate through each button.
+            for (let j = 0; j < buttons.length; j++) {
+                const button = buttons[j];
+
+                // Set the value in "ANY" to true if either "P1" or "P2" has that property set to true.
+                gpInput["ANY"][state][button] = gpInput["P1"][state][button] || gpInput["P2"][state][button];
+            }
+        }
+
+        return gpInput;
+    },
 };
