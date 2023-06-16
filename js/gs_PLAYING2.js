@@ -1,20 +1,5 @@
 (() => {
     const funcs = {
-        array: [],
-        movementSpeeds:{
-            // GetFirstPlayer.
-            dealOneCard  : 20, // Dealing (this.flags.getFirstPlayer.highCardDeal)
-            returnOneCard: 30, // Returning (this.flags.getFirstPlayer.checkHighCard)
-            dealingMany  : 10, // Deal hands (this.flags.getFirstPlayer.initDeal)
-
-            // playerTurn
-            unselectCard: 30,
-            selectCard  : 10,
-            playCard    : 20,
-            draw2       : 20,
-            draw4       : 15,
-        },
-
         resetFlags: function(){
             // Reset flags2.
             for(let key in this.flags2){ 
@@ -72,7 +57,7 @@
                 this.gameBoard.updatePlayerText(true);
 
                 // Change to next player.
-                this.gameBoard.setNextPlayer();
+                this.gameBoard.setNextPlayer(false, true);
 
                 // Repeat until a card has been assigned to each active player. (Back to the first active player again.)
                 if(this.gameBoard.currentPlayer == this.gameBoard.activePlayerKeys[0]){
@@ -98,7 +83,9 @@
                 }
 
                 // DEBUG: Force the winner.
-                // winner.playerKeys = ["P1"];
+                if(this.debugFlags.forcedWinnerOnTie && winner.playerKeys.length != 1){
+                    winner.playerKeys = [this.gameBoard.activePlayerKeys[0]];
+                }
 
                 // One winner?
                 if(winner.playerKeys.length == 1){
@@ -194,14 +181,11 @@
                 }
             }
             else if(this.flags.getFirstPlayer.initDeal){
-                // console.log("this.flags.getFirstPlayer.initDealPos:", this.flags.getFirstPlayer.initDealPos);
-
                 // Get the next card in the deck and assign to the player.
                 let card = this.deck.getNextCardFromDrawpile();
                 card.location = Deck.playerCardLocations[this.gameBoard.currentPlayer];
                 let layerObjKey = `${this.gameBoard.currentPlayer}_card_${this.flags.getFirstPlayer.initDealPos%5}`;
                 _GFX.layerObjs.getOne(layerObjKey).change_wholeCard("sm", "CARD_BLACK", "CARD_BACK"); ;
-                // console.log("Dealing for the first turn!", "layerObjKey:", layerObjKey);
 
                 // Start deal animation.
                 let _this = this;
@@ -215,46 +199,49 @@
                         // layerObjKey: `temp_card`,
                         cardSlot   : (this.flags.getFirstPlayer.initDealPos % 5),
                         finish: function(){ 
-                            // console.log("DONE:", this.card.layerObjKey);
                             _APP.shared.genTimer.removeOne(this.timerKey, null);
                         }
                 });
 
                 // Change to next player.
-                this.gameBoard.setNextPlayer();
+                this.gameBoard.setNextPlayer(false, false); // Don't reset the current row.
 
                 // Repeat until a card has been assigned to each active player. (Back to the first active player again.)
                 if(this.gameBoard.currentPlayer == this.gameBoard.activePlayerKeys[0]){
-                    // console.log("done?", this.gameBoard.currentPlayer, this.gameBoard.activePlayerKeys[0], this.flags.getFirstPlayer.initDealPos);
-                    
-                    // Change the row?
-                    if( this.flags.getFirstPlayer.initDealPos == 5 ){
-                        console.log("this.flags.getFirstPlayer.initDealPos:", this.flags.getFirstPlayer.initDealPos);
-                        this.currentRow +=1 ;
-                        this.deck.flipPlayerCardsDown(this.gameBoard.currentPlayer, this.currentRow);
-                    }
-
-                    // Last card?
+                    // Was the last card dealt the last card to be dealt for the initial deal?
                     if(1+this.flags.getFirstPlayer.initDealPos >= 7){
+                        // Clear the initDeal flag.
                         this.flags.getFirstPlayer.initDeal = false;
 
-                        // console.log("cards deal timer started");
-                        _APP.shared.genTimer.create("genWaitTimer1", 60, _APP.game.gs1, ()=>{
-                            // Get the next card in the deck and assign to the discard pile.
-                            // The first card cannot be wild draw 4. 
-                            let location_DRAW    = this.deck.deck.filter(d => d.location == "CARD_LOCATION_DRAW" && d.value != "CARD_WILD_DRAW4");
-                            let discardCard = location_DRAW[0];
-                            // let discardCard = this.deck.deck.find(d => 
-                            //     d.location == "CARD_LOCATION_DRAW" && 
-                            //     // d.value == "CARD_WILD_DRAW4"
-                            //     d.value == "CARD_DRAW2"
-                            //     // d.value == "CARD_SKIP"
-                            //     // d.value == "CARD_REV"
-                            //     // d.value == "CARD_WILD"
-                            // );
-                            // discardCard.location = "CARD_LOCATION_DISCARD";
+                        // Flip all cards down, display row 0 for each player.
+                        _APP.shared.genTimer.create("genWaitTimer1", 20, _APP.game.gs1, ()=>{
+                            for(let playerKey of this.gameBoard.activePlayerKeys){
+                                let row = 0;
+                                this.deck.flipPlayerCardsDown(playerKey, row);
+                            }
+                        });
+
+                        // After a delay set the first discard card.
+                        _APP.shared.genTimer.create("genWaitTimer2", 60, _APP.game.gs1, ()=>{
+                            let discardCard;
+
+                            // Forced initial discard?
+                            if(!this.debugFlags.forcedFirstDiscard){
+                                // Get the next card in the deck and assign to the discard pile.
+                                // The first card cannot be wild draw 4. 
+                                let location_DRAW    = this.deck.deck.filter(d => d.location == "CARD_LOCATION_DRAW" && d.value != "CARD_WILD_DRAW4");
+                                discardCard = location_DRAW[0];
+                            }
+                            // Normal discard.
+                            else{
+                                discardCard = this.deck.deck.find(d => 
+                                    d.location == "CARD_LOCATION_DRAW" && 
+                                    d.value == this.debugFlags.forcedFirstDiscard
+                                );
+                            }
                             
-                            // Display the discard card.
+                            // Display the discard card and assign it to the discard pile.
+                            discardCard.location = "CARD_LOCATION_DISCARD";
                             this.deck.updateDiscardCard(discardCard);
 
                             // Change the position of the discard card to the draw pile and hide it.
@@ -273,10 +260,27 @@
                                     finish       : function(){ _APP.shared.genTimer.removeOne(this.timerKey, null); }
                             });
 
-                            _APP.shared.genTimer.create("genWaitTimer1", 60, _APP.game.gs1, ()=>{
+                            // Ready the game flags for the first turn.
+                            _APP.shared.genTimer.create("genWaitTimer2", 60, _APP.game.gs1, ()=>{
+                                // Record the last card played.
+                                this.lastCardPlayed = discardCard;
+
+                                // Set the first player.
                                 this.gameBoard.currentPlayer = this.flags.getFirstPlayer.goesFirst;
+
+                                // Set the color indicator.
                                 this.gameBoard.setColorIndicators(this.gameBoard.currentPlayer, discardCard.color);
+
+                                // Reset flags.
+                                this.resetFlags();
                                 
+                                // Change gamestate 2.
+                                _APP.game.changeGs2("playerTurn");
+    
+                                // Set playerTurn_start (init) for playerTurn.
+                                this.flags.playerTurn.play_init = true;
+
+                                // Set game flags.
                                 this.flags.nextRoundFlags.draw2  = false;
                                 this.flags.nextRoundFlags.skip = false;
                                 this.flags.nextRoundFlags.reverse = false;
@@ -287,27 +291,41 @@
                                 else if(discardCard.value == "CARD_REV")       { this.flags.nextRoundFlags.reverse = true; }
                                 else if(discardCard.value == "CARD_WILD")      { this.flags.nextRoundFlags.colorChange = true; }
                                 else if(discardCard.value == "CARD_WILD_DRAW4"){ this.flags.nextRoundFlags.draw4  = true; this.flags.nextRoundFlags.colorChange = true; }
-    
-                                this.lastCardPlayed = discardCard;
-
-                                // Change gamestate 2.
-                                _APP.game.changeGs2("playerTurn");
-    
-                                // Set playerTurn_start (init) for playerTurn.
-                                this.flags.playerTurn.play_init = true;
 
                                 // Clear the no longer needed timer keys.
                                 _APP.shared.genTimer.removeFinished(null, this.timerKeysKeep);
                             });
                         });
                     }
+                    // There are still more cards to deal.
                     else{
-                        // console.log("nope! continue", JSON.stringify(this.flags));
-                        this.flags.getFirstPlayer.initDealPos += 1;
+                        // Wait for the last card to land before continuing.
+                        _APP.shared.genTimer.create("genWaitTimer1", 1, _APP.game.gs1, ()=>{
+                            // Increment the initDealPos value.
+                            this.flags.getFirstPlayer.initDealPos += 1;
+
+                            // Do we need to change the displayed row?
+                            if( this.flags.getFirstPlayer.initDealPos == 5 ){
+                                // For each active player...
+                                for(let playerKey of this.gameBoard.activePlayerKeys){
+                                    // Increment the row for the player.
+                                    this.gameBoard.players[playerKey].currentRow += 1;
+                                    
+                                    // Get the current row for the player.
+                                    row = this.gameBoard.players[playerKey].currentRow;
+                                    
+                                    // Flip the currently displayed cards down. (No cards will be displayed which is normal.)
+                                    this.deck.flipPlayerCardsDown(playerKey, row);
+                                }
+                            }
+                        });
                     }
                 }
 
+                // Update the player text (card count.)
                 this.gameBoard.updatePlayerText();
+
+                // Update the pile height indicators. (draw/discard.)
                 this.deck.updateUnderPiles();
             }
         },
@@ -319,7 +337,8 @@
 
             // All player cards face down.
             for(let playerKey of this.gameBoard.activePlayerKeys){
-                this.deck.flipPlayerCardsDown(playerKey, 0);
+                this.gameBoard.players[playerKey].currentRow = 0;
+                this.deck.flipPlayerCardsDown(playerKey, this.gameBoard.players[playerKey].currentRow);
             }
 
             // Show the current color.
@@ -367,7 +386,7 @@
                 // Set flags and change to the next player.
                 this.flags.playerTurn.play_init = true;
                 this.flags.playerTurn.playing = false;
-                this.gameBoard.setNextPlayer();
+                this.gameBoard.setNextPlayer(false, true);
             }
 
             // SKIP/REVERSE
@@ -379,7 +398,7 @@
                 else if(this.flags.nextRoundFlags.skip){
                     console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: SKIP");
                     this.action_skip({playerKey: this.gameBoard.currentPlayer, msgName: "skipLoseTurn", endDelay: 90});
-                    this.gameBoard.setNextPlayer();
+                    this.gameBoard.setNextPlayer(false, true);
                 }
                 this.resetFlags();
 
@@ -405,8 +424,17 @@
                 this.flags.playerTurn.playing = true;
                 this.flags.playerTurn.card_select = true;
 
-                // Cards face-up for the first row.
-                this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, 0);
+                
+                // ALL Cards face-up on the first row?
+                if(this.debugFlags.showAllPlayerCardsFaceUp){
+                    for(let playerKey of this.gameBoard.activePlayerKeys){
+                        this.deck.flipPlayerCardsUp(playerKey, 0);
+                    }
+                }
+                else{
+                    // Player cards face-up for the first row.
+                    this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, 0);
+                }
 
                 // Activate/position cursor.
                 this.gameBoard.showCursor(this.gameBoard.currentPlayer);
@@ -435,10 +463,12 @@
                     
                     // Row change.
                     else if(gpInput.P1.press.BTN_UP)  {
-                        this.currentRow += 1;
+                        // this.currentRow += 1;
+                        // this.gameBoard.players[playerKey].currentRow
                     }
                     else if(gpInput.P1.press.BTN_DOWN){ 
-                        if(this.currentRow != 0){ this.currentRow -= 1; }
+                        // if(this.currentRow != 0){ this.currentRow -= 1; }
+                        // this.gameBoard.players[playerKey].currentRow
                     }
                 }
 
@@ -464,6 +494,62 @@
                         // No card. Accept cannot be allowed.
                         // console.log("invalid card");
                         return;
+                    }
+
+                    // Make sure the selected card is valid.
+                    if(!this.debugFlags.skipCardValidityCheck){
+                        // Is the card valid? It must be a normal WILD, same color, or same value.
+                        // It can only be a wild draw 4 if they have no other cards that match the current color.
+                        
+                        let sameColor    = false;
+                        let sameValue    = false;
+                        let isNormalWild = false;
+                        let isWildDraw4  = false;
+                        if     (this.gameBoard.currentColor == selectedCard.color){ sameColor   = true; }
+                        else if(this.lastCardPlayed.value   == selectedCard.value){ sameValue   = true; }
+                        else if(selectedCard.value == "CARD_WILD")                { isNormalWild = true; }
+                        else if(selectedCard.value == "CARD_WILD_DRAW4")          { isWildDraw4  = true; }
+
+                        // Allow these.
+                        if(sameColor || sameValue || isNormalWild){}
+                        
+                        // Perform additional checks for the wild draw 4.
+                        else if(isWildDraw4){
+                            // Check for cards in the player's hand that match the current color.
+                            let count = this.deck.countColorMatches(this.gameBoard.currentPlayer, this.gameBoard.currentColor);
+
+                            // Found matching color cards? Deny the card from being played.
+                            if(count){
+                                // Cannot play this card right now.
+                                // console.log(`card_select: Cannot play WILD_DRAW_4 now because the player has '${count}' playable cards of the same color.`);
+
+                                this.gameBoard.displayMessage("invalidCard"  , this.gameBoard.currentPlayer, false);
+                            
+                                // Wait to clear the message.
+                                _APP.shared.genTimer.create("genWaitTimer2", this.timerDelays.cannotPlayCard, _APP.game.gs1, ()=>{
+                                    this.gameBoard.displayMessage("none", this.gameBoard.currentPlayer, false);
+                                });
+
+                                return;
+                            }
+                            else{
+                                // None found? Allow the card to be played.
+                                // console.log(`card_select: Can play WILD_DRAW_4.`);
+                            }
+                        }
+
+                        // This card cannot be played.
+                        else{
+                            // Cannot play this card.
+                            // console.log(`card_select: This card cannot be played. Select another card.`);
+                            this.gameBoard.displayMessage("invalidCard"  , this.gameBoard.currentPlayer, false);
+                            
+                            // Wait to clear the message.
+                            _APP.shared.genTimer.create("genWaitTimer2", this.timerDelays.cannotPlayCard, _APP.game.gs1, ()=>{
+                                this.gameBoard.displayMessage("none", this.gameBoard.currentPlayer, false);
+                            });
+                            return;
+                        }
                     }
 
                     // Save the lastSelectedCard.
@@ -552,11 +638,6 @@
                                 _this.lastCardPlayed = deckCard;
                                 _this.lastSelectedCard = {..._this.lastCardPlayed};
 
-                                // All player cards face down.
-                                for(let playerKey of _this.gameBoard.activePlayerKeys){
-                                    _this.deck.flipPlayerCardsDown(playerKey);
-                                }
-
                                 // Clear flag: this.flags.playerTurn.playing
                                 _this.flags.playerTurn.playing = false;
 
@@ -572,8 +653,16 @@
                                 // Set flag: this.flags.endOfRound.active
                                 _this.flags.endOfRound.active = true;
 
-                                // Set flag: this.flags.endOfRound.colorChange
+                                // Set flag: this.flags.endOfRound.colorChange (The first part of endOfRound. Is a check.)
                                 _this.flags.endOfRound.colorChange = true;
+
+                                // Force a short wait.
+                                _APP.shared.genTimer.create("genWaitTimer2", _this.timerDelays.endOfTurn, _APP.game.gs1, ()=>{
+                                    // All player cards face down.
+                                    for(let playerKey of _this.gameBoard.activePlayerKeys){
+                                        _this.deck.flipPlayerCardsDown(playerKey, 0);
+                                    }
+                                });
                             },
                     });
                     
@@ -658,7 +747,7 @@
                 // Set these flags.
                 this.flags.playerTurn.play_init = true;
 
-                this.gameBoard.setNextPlayer(this.flags.nextRoundFlags.reverse);
+                this.gameBoard.setNextPlayer(this.flags.nextRoundFlags.reverse, true);
             }
             else{ console.log("endOfRound: INVALID FLAGS"); }
         },
@@ -672,6 +761,8 @@
                 // Accept the color change. (and hides the colorChanger.)
                 this.colorChanger.accept(); 
                 // console.log(`Color changed by: ${this.gameBoard.currentPlayer} to: ${this.gameBoard.currentColor}`);
+
+                _APP.shared.genTimer.create("genWaitTimer2", this.timerDelays.endOfTurn, _APP.game.gs1, ()=>{});
             }
         },
         action_pauseMenu: function(gpInput){

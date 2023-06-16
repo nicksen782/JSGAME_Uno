@@ -275,29 +275,29 @@ class Card extends LayerObject{
         }
 
         // Set the card tilemap.
-        if     (value == "CARD_0"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_0`);         }
-        else if(value == "CARD_1"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_1`);         }
-        else if(value == "CARD_2"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_2`);         }
-        else if(value == "CARD_3"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_3`);         }
-        else if(value == "CARD_4"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_4`);         }
-        else if(value == "CARD_5"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_5`);         }
-        else if(value == "CARD_6"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_6`);         }
-        else if(value == "CARD_7"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_7`);         }
-        else if(value == "CARD_8"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_8`);         }
-        else if(value == "CARD_9"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_9`);         }
-        else if(value == "CARD_DRAW2"     ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_draw2`);     }
-        else if(value == "CARD_SKIP"      ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_skip`);      }
-        else if(value == "CARD_REV"       ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_reverse`);   }
-        else if(value == "CARD_WILD"      ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_wild`);      }
-        else if(value == "CARD_WILD_DRAW4"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_wildDraw4`); }
-        else if(value == "CARD_BACK"      ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this.size}_back`);      }
+        if     (value == "CARD_0"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_0`);         }
+        else if(value == "CARD_1"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_1`);         }
+        else if(value == "CARD_2"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_2`);         }
+        else if(value == "CARD_3"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_3`);         }
+        else if(value == "CARD_4"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_4`);         }
+        else if(value == "CARD_5"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_5`);         }
+        else if(value == "CARD_6"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_6`);         }
+        else if(value == "CARD_7"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_7`);         }
+        else if(value == "CARD_8"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_8`);         }
+        else if(value == "CARD_9"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_9`);         }
+        else if(value == "CARD_DRAW2"     ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_draw2`);     }
+        else if(value == "CARD_SKIP"      ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_skip`);      }
+        else if(value == "CARD_REV"       ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_reverse`);   }
+        else if(value == "CARD_WILD"      ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_wild`);      }
+        else if(value == "CARD_WILD_DRAW4"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_wildDraw4`); }
+        else if(value == "CARD_BACK"      ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_back`);      }
         else{ 
             console.error(`Invalid card value: ${value}`, this); 
             throw `Invalid card value: ${value}`; 
         }
 
         // These cards must always have their color set to "CARD_BLACK".
-        if( (value == "CARD_WILD" || value == "CARD_WILD_DRAW4" || value == "CARD_BACK") ){ this.color = "CARD_BLACK"; }
+        if( (value == "CARD_WILD" || value == "CARD_WILD_DRAW4" || value == "CARD_BACK") ){ this._color = "CARD_BLACK"; }
         
         // The other cards must never have their color set to "CARD_BLACK".
         else if(this._color == "CARD_BLACK"){ this.color = "CARD_RED"; }
@@ -955,6 +955,29 @@ class Deck{
         } );
     };
 
+    // Count matches in the player's hand to the specified color.
+    // Used when playing a WILD_DRAW_4.
+    countColorMatches(playerKey, color){
+        // Get the player's cards.
+        let location = Deck.playerCardLocations[playerKey];
+        let playerCards = this.deck.filter(d => d.location == location);
+
+        // Filter matching cards.
+        let count = playerCards.filter(d => d.color == color);
+
+        // Return only the count. 
+        return count.length;
+    };
+    // Reset the position of each player card back to default.
+    _resetCardPositions(playerKey, cards_layerObjs){
+        for(let i=0; i<cards_layerObjs.length; i+=1){
+            // Reset the position of this card back to default.
+            let pos = Deck.cardPos[playerKey];
+            cards_layerObjs[i].x = pos[i][0];
+            cards_layerObjs[i].y = pos[i][1];
+        }
+    };
+
     // Flip player cards up.
     flipPlayerCardsUp(playerKey, row=0){
         // Get the current color.
@@ -996,15 +1019,13 @@ class Deck{
         // Each row has up to 5 cards in it. So, each row starts on a multiple of 5 (including 0.)
         let cardsToDisplay = playerCards_sorted.slice( (row*5), 5);
 
+        this._resetCardPositions(playerKey, cards_layerObjs);
+
         // Show the cards face-up.
         for(let i=0; i<cards_layerObjs.length; i+=1){
-            // Reset the position of this card back to default.
-            let pos = Deck.cardPos[playerKey];
-            cards_layerObjs[i].x = pos[i][0];
-            cards_layerObjs[i].y = pos[i][1];
-
             // If we have a card here then display it.
             if(cardsToDisplay[i]){
+                // console.log(cardsToDisplay[i]);
                 cards_layerObjs[i].hidden = false;
                 cards_layerObjs[i].change_wholeCard("sm", cardsToDisplay[i].color, cardsToDisplay[i].value);
             }
@@ -1016,7 +1037,7 @@ class Deck{
     };
     
     // Flip player cards down.
-    flipPlayerCardsDown(playerKey){
+    flipPlayerCardsDown(playerKey, row=0){
         let location = Deck.playerCardLocations[playerKey];
         let playerCards = this.deck.filter(d => d.location == location);
         
@@ -1031,16 +1052,12 @@ class Deck{
         ];
         
         // Each row has up to 5 cards in it. So, each row starts on a multiple of 5 (including 0.)
-        let row = 0;
         let cardsToDisplay = playerCards.slice( (row*5), 5);
+
+        this._resetCardPositions(playerKey, cards_layerObjs);
 
         // Show the cards face-down.
         for(let i=0; i<cards_layerObjs.length; i+=1){
-            // Reset the position of this card back to default.
-            let pos = Deck.cardPos[playerKey];
-            cards_layerObjs[i].x = pos[i][0];
-            cards_layerObjs[i].y = pos[i][1];
-
             // If we have a card here then display it.
             if(cardsToDisplay[i]){
                 cards_layerObjs[i].hidden = false;
@@ -1139,7 +1156,7 @@ class Deck{
         }
     };
 
-    //
+    // Updates the displayed discard card. Does NOT assign the card to the discard pile.
     updateDiscardCard(card){
         // Get the displayed discard card.
         let cardObj = _GFX.layerObjs.getOne("discard_card");
@@ -1284,12 +1301,44 @@ class ColorChanger{
 
     // Unhides the LayerObjects used by this class.
     show(){
+        // Filter those cards by color.
+        let colorsCounts = {
+            "CARD_YELLOW": this.parent.deck.countColorMatches(this.parent.gameBoard.currentPlayer, "CARD_YELLOW"),
+            "CARD_BLUE"  : this.parent.deck.countColorMatches(this.parent.gameBoard.currentPlayer, "CARD_BLUE"),
+            "CARD_GREEN" : this.parent.deck.countColorMatches(this.parent.gameBoard.currentPlayer, "CARD_GREEN"),
+            "CARD_RED"   : this.parent.deck.countColorMatches(this.parent.gameBoard.currentPlayer, "CARD_RED"),
+            // "CARD_BLACK" : this.parent.deck.countColorMatches(this.parent.gameBoard.currentPlayer, "CARD_BLACK"),
+        };
+
+        // Determine the first most dominant color in the player's hand.
+        let dominantColor = Object.keys(colorsCounts).reduce((maxColor, currentColor) => {
+            return colorsCounts[currentColor] > colorsCounts[maxColor] ? currentColor : maxColor;
+        });
+        
+        // Move the cursor to the color that matches the player's most dominant color.
+        switch (dominantColor) {
+            case "CARD_YELLOW": { this.cursorsPosIndex = 0; break; }
+            case "CARD_BLUE"  : { this.cursorsPosIndex = 1; break; }
+            case "CARD_GREEN" : { this.cursorsPosIndex = 2; break; }
+            case "CARD_RED"   : { this.cursorsPosIndex = 3; break; }
+            
+            // Default to CARD_YELLOW.
+            default           : { this.cursorsPosIndex = 0; break; }
+        }
+
+        // Movement with no direction just positions and recolors the cursor.
+        this.moveCursor(0); 
+
+        // console.log("dominantColor:", dominantColor, colorsCounts);
+
+        // Show all the pieces of the colorChanger.
         for(let elemKey in this.elems){ this.elems[elemKey].hidden = false; }
         this.active = true;
     };
 
     // Hides the LayerObjects used by this class.
     hide(){
+        // Hide all the pieces of the colorChanger.
         for(let elemKey in this.elems){ this.elems[elemKey].hidden = true; }
         this.active = false;
     };
@@ -1473,10 +1522,10 @@ class Gameboard{
         this.gameSettings = config.gameSettings;
 
         this.players = {
-            P1: { type: "NONE", active:false },
-            P2: { type: "NONE", active:false },
-            P3: { type: "NONE", active:false },
-            P4: { type: "NONE", active:false },
+            P1: { type: "NONE", active:false, currentRow: 0 },
+            P2: { type: "NONE", active:false, currentRow: 0 },
+            P3: { type: "NONE", active:false, currentRow: 0 },
+            P4: { type: "NONE", active:false, currentRow: 0 },
         };
 
         this.activePlayerKeys = [];
@@ -1592,8 +1641,8 @@ class Gameboard{
                 `              ` ,
                 `  B:  CANCEL  `
             ],
-            wrongCard   : [
-                `  WRONG CARD  ` ,
+            invalidCard   : [
+                ` INVALID CARD ` ,
                 `              ` ,
                 ` PICK ANOTHER `
             ],
@@ -1667,7 +1716,10 @@ class Gameboard{
     };
 
     // Sets the new currentPlayer based on currentPlayer and currentDirection.
-    setNextPlayer(prev = false){
+    setNextPlayer(prev=false, resetRow=true){
+        // prev is normally false but is true for reverse cards.
+        // resetRow is normally true but is false when doing the initial card dealing.
+
         // Get the active players.
         let players = Object.keys(this.players).filter(d => this.players[d].active);
         let currentPlayerIndex;
@@ -1692,14 +1744,18 @@ class Gameboard{
             nextPlayerIndex = (currentPlayerIndex - 1 + players.length) % players.length;
         }
 
-        // Set the new player.
-        this.currentPlayer = players[nextPlayerIndex];
-
         // Reset the cursorPosIndex.
         this.cursorsPosIndex = 0;
 
         // Reset the current row to 0 for the next player.
-        this.parent.currentRow = 0;
+        if(resetRow){
+            // this.parent.currentRow = 0;
+            let playerKey = players[currentPlayerIndex];
+            this.players[playerKey].currentRow = 0;
+        }
+
+        // Set the new player.
+        this.currentPlayer = players[nextPlayerIndex];
     };
 
     // COLOR INDICATORS
@@ -1789,7 +1845,7 @@ class Gameboard{
         // this.cursorsPosIndex
         let layerObjKey = `${playerKey}_card_${this.cursorsPosIndex}`;
         let card = _GFX.layerObjs.getOne(layerObjKey);
-        if(!card.hidden){ return {...card}; }
+        if(!card.hidden){ return card; }
         // console.log("card was hidden");
         return false;
     };

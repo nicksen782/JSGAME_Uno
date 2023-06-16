@@ -293,6 +293,7 @@ var _DEBUG2 = {
 
                     cardsText: "",
                     funcQueue: "",
+                    playerHandData: "",
                 },
                 DOM: { 
                     // "flags1Text"    : "debug_flags_flags",
@@ -305,6 +306,7 @@ var _DEBUG2 = {
 
                     "cardMovements" : "debug_flags_cardMovements",
                     "funcQueue"     : "debug_flags_funcQueue",
+                    "playerHandData": "debug_flags_playerHandData",
                     "timers1Text"   : "debug_flags_timers1",
                     "timers2Text"   : "debug_flags_timers2",
                 },
@@ -402,8 +404,31 @@ var _DEBUG2 = {
                         }
                     }
 
+                    // playerHandData
+                    newText = ``;
+                    newTextArr = [];
+                    for(let playerKey of _APP.game.gamestates.gs_PLAYING.gameBoard.activePlayerKeys){
+                        let player = _APP.game.gamestates.gs_PLAYING.gameBoard.players[playerKey];
+                        let currentRow = player.currentRow;
+                        newTextArr.push(`${playerKey}:${currentRow}`);
+                    }
+                    newText = newTextArr.join(", ");
+                    if(newText != this.values.playerHandData){
+                        this.values.playerHandData = newText; 
+                        this.DOM.playerHandData.innerText = newText;
+                    }
+
+                    // Update timer data. (The permanent ones.)
+                    let keys = _APP.game.gamestates.gs_PLAYING.timerKeysKeep;
+                    newText = ``;
+                    for(let name of keys){
+                        let timer = _APP.shared.genTimer.get(name);
+                        newText += `T: ${ (timer.frameCount +"/"+ timer.maxFrames).padEnd(6, " ")} :: ${name}\n`;
+                    }
+                    this.DOM.timers1Text.innerHTML = newText;
+
                     // Update timer data. (NOT the permanent ones.)
-                    let keys = Object.keys(_APP.shared.genTimer.timers[_APP.game.gs1]).filter(d=> !_APP.game.gamestates.gs_PLAYING.timerKeysKeep.includes(d) )
+                    keys = Object.keys(_APP.shared.genTimer.timers[_APP.game.gs1]).filter(d=> !_APP.game.gamestates.gs_PLAYING.timerKeysKeep.includes(d) )
                     newText = ``;
                     for(let name of keys){
                         let timer = _APP.shared.genTimer.get(name);
@@ -411,15 +436,6 @@ var _DEBUG2 = {
                         newText += `T: ${ (timer.frameCount +"/"+ timer.maxFrames).padEnd(6, " ")} :: ${name}\n`;
                     }
                     this.DOM.timers2Text.innerHTML = newText;
-
-                    // Update timer data. (The permanent ones.)
-                    keys = _APP.game.gamestates.gs_PLAYING.timerKeysKeep;
-                    newText = ``;
-                    for(let name of keys){
-                        let timer = _APP.shared.genTimer.get(name);
-                        newText += `T: ${ (timer.frameCount +"/"+ timer.maxFrames).padEnd(6, " ")} :: ${name}\n`;
-                    }
-                    this.DOM.timers1Text.innerHTML = newText;
                 },
             },
             settings: {
