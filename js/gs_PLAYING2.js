@@ -1,5 +1,6 @@
 (() => {
     const funcs = {
+        array: [],
         movementSpeeds:{
             // GetFirstPlayer.
             dealOneCard  : 20, // Dealing (this.flags.dealing)
@@ -16,8 +17,18 @@
 
         resetFlags: function(){
             // Reset flags2.
-            for(let key in this.flags2){
+            for(let key in this.flags2){ 
                 this.flags2[key] = false;
+            }
+
+            // Reset new_flags.
+            for(let key1 in this.new_flags){ 
+                for(let key2 in this.new_flags[key1]){ 
+                    let type = typeof this.new_flags[key1][key2];
+                    if     (type === "boolean"){ this.new_flags[key1][key2] = 0;  }
+                    else if(type === "string") { this.new_flags[key1][key2] = ""; }
+                    else                       { this.new_flags[key1][key2] = false; }
+                }
             }
         },
 
@@ -216,6 +227,13 @@
                 if(this.gameBoard.currentPlayer == this.gameBoard.activePlayerKeys[0]){
                     // console.log("done?", this.gameBoard.currentPlayer, this.gameBoard.activePlayerKeys[0], this.flags.dealing_firstTurnCardPos);
                     
+                    // Change the row?
+                    if( this.flags.dealing_firstTurnCardPos == 5 ){
+                        console.log("this.flags.dealing_firstTurnCardPos:", this.flags.dealing_firstTurnCardPos);
+                        this.currentRow +=1 ;
+                        this.deck.flipPlayerCardsDown(this.gameBoard.currentPlayer, this.currentRow);
+                    }
+
                     // Last card?
                     if(1+this.flags.dealing_firstTurnCardPos >= 7){
                         this.flags.dealing_firstTurn = false;
@@ -295,6 +313,104 @@
         },
 
         playerTurn_start: function(gpInput){
+            // console.log("run once.", "playerTurn!", this.gameBoard.currentPlayer);
+            this.gameBoard.updatePlayerText();
+            this.deck.updateUnderPiles();
+
+            // All player cards face down.
+            for(let playerKey of this.gameBoard.activePlayerKeys){
+                this.deck.flipPlayerCardsDown(playerKey, 0);
+            }
+
+            // Show the current color.
+            this.gameBoard.setColorIndicators(this.gameBoard.currentPlayer, this.gameBoard.currentColor);
+
+            // Check flags.
+            let canContinueRound = true;
+            let colorChange = false;
+            let skipTurn = false;
+            let mustDraw = false;
+            if(this.flags2.playerDraws2)     { mustDraw = true; }
+            if(this.flags2.playerSkipped)    { skipTurn = true; }
+            if(this.flags2.playerReverse)    { skipTurn = true; }
+            if(this.flags2.playerDraws4)     { mustDraw = true; }
+            if(this.flags2.playerColorChange){ console.log("COLOR CHANGE! FIRST TURN?"); colorChange = true; }
+
+            // COLOR CHANGE: NOTE: This would only happen on the first turn. 
+            if(colorChange){
+                console.log(this.gameBoard.currentPlayer, "can continue the round.");
+                console.log("YOU SHOULD ONLY SEE ME ON THE FIRST TURN.");
+                // Show the color changer message.
+                this.colorChanger.show();
+                this.resetFlags();
+
+                // Set flags to playerTurn.
+                this.flags2.playerTurn = true;
+                this.flags2.playerTurn_p1 = true;
+            }
+
+            // DRAW
+            if(mustDraw){
+                if     (this.flags2.playerDraws2){
+                    console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: DRAW2");
+                    this.action_draw({playerKey: this.gameBoard.currentPlayer, numCards: 2, msgName: "d2LoseTurn", endDelay: 30});
+                }
+                else if(this.flags2.playerDraws4){
+                    console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: DRAW4");
+                    this.action_draw({playerKey: this.gameBoard.currentPlayer, numCards: 4, msgName: "d4LoseTurn", endDelay: 30});
+                }
+                this.resetFlags();
+                
+                // Unset canContinueRound.
+                canContinueRound = false;
+
+                // Set flags and change to the next player.
+                this.flags2.playerTurn_start = true;
+                this.flags2.playerTurn = false;
+                this.gameBoard.setNextPlayer();
+            }
+
+            // SKIP/REVERSE
+            if(skipTurn){
+                if(this.flags2.playerReverse){
+                    console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: REVERSE");
+                    this.action_reverse({playerKey: this.gameBoard.currentPlayer, msgName: "reversed", endDelay: 90});
+                }
+                else if(this.flags2.playerSkipped){
+                    console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: SKIP");
+                    this.action_skip({playerKey: this.gameBoard.currentPlayer, msgName: "skipLoseTurn", endDelay: 90});
+                    this.gameBoard.setNextPlayer();
+                }
+                this.resetFlags();
+
+                // Unset canContinueRound.
+                canContinueRound = false;
+
+                // Set flags and change to the next player.
+                this.flags2.playerTurn_start = true;
+                this.flags2.playerTurn = false;
+            }
+
+            // THE PLAYER CAN CONTINUE THE ROUND.
+            if(canContinueRound){
+                // console.log(this.gameBoard.currentPlayer, "can continue the round.");
+                // Clear the no longer needed timer keys.
+                _APP.shared.genTimer.removeFinished(null, this.timerKeysKeep);
+
+                // Reset flags. 
+                this.resetFlags();
+
+                // Set flags to playerTurn.
+                this.flags2.playerTurn_start = false;
+                this.flags2.playerTurn = true;
+                this.flags2.playerTurn_p1 = true;
+
+                // Cards face-up for the first row.
+                this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, 0);
+
+                // Activate/position cursor.
+                this.gameBoard.showCursor(this.gameBoard.currentPlayer);
+            }
         },
         playerTurn: function(gpInput){
             // Flags set/cleared/used here:
@@ -311,13 +427,6 @@
             if(this.flags2.playerTurn_p1){
                 this.gameBoard.nextCursorFrame();
 
-                // // Pause menu?
-                // if(gpInput.P1.press.BTN_START)  { 
-                //     console.log("pauseMenu should only be called once here.");
-                //     this.pauseMenu.show();
-                //     return;
-                // }
-
                 // P1, P3: Row or cursor position change?
                 if(this.gameBoard.currentPlayer == "P1" || this.gameBoard.currentPlayer == "P3"){
                     // Card cursor change.
@@ -325,8 +434,12 @@
                     else if(gpInput.P1.press.BTN_RIGHT){ this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  }
                     
                     // Row change.
-                    // else if(gpInput.P1.press.BTN_UP)  { this.gameBoard.moveCursor(-1, this.gameBoard.currentPlayer); }
-                    // else if(gpInput.P1.press.BTN_DOWN){ this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  }
+                    else if(gpInput.P1.press.BTN_UP)  {
+                        this.currentRow += 1;
+                    }
+                    else if(gpInput.P1.press.BTN_DOWN){ 
+                        if(this.currentRow != 0){ this.currentRow -= 1; }
+                    }
                 }
 
                 // P2, P4: Row or cursor position change?
@@ -515,6 +628,7 @@
             //     "p1:", this.flags2.endOfRound_p1, 
             //     "p2:", this.flags2.endOfRound_p2
             // );
+
             // Determine if the color changer needs to be activated.
             if     (this.flags2.endOfRound_p1){
                 // Display the color changer?
@@ -764,6 +878,7 @@
             if(typeof funcs[keys[i]] === "function"){
                 newParent[keys[i]] = funcs[keys[i]].bind(newParent);
             }
+
             // Otherwise just copy.
             else{
                 newParent[keys[i]] = funcs[keys[i]];

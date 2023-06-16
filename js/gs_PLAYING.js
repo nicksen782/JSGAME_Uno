@@ -221,6 +221,37 @@ _APP.game.gamestates["gs_PLAYING"] = {
         }
     },
     
+    new_flags: {
+        getFirstPlayer: {
+            highCardDeal : false, // Flag
+            checkHighCard: false, // Flag
+            goesFirst    : ""   , // Var
+            tied         : false, // Flag
+            highCard_end : false, // Flag
+            initDeal     : false, // Flag
+            initDealPos  : false, // Var
+        },
+        playerTurn     : {
+            play_init    : false, // Flag
+            playing      : false, // Flag
+            card_select  : false, // Flag
+            card_selected: false, // Flag
+            play_pass    : false, // Flag
+        },
+        endOfRound    : {
+            endOfRound  : false, // Flag
+            colorChange : false, // Flag
+            setNextFlags: false, // Flag
+        },
+        nextRoundFlags: {
+            draw2      : false, // Flag
+            skip       : false, // Flag
+            reverse    : false, // Flag
+            draw4      : false, // Flag
+            colorChange: false, // Flag
+        },
+    },
+
     flags: {
         // SHARED
 
@@ -245,7 +276,6 @@ _APP.game.gamestates["gs_PLAYING"] = {
         endOfRound       : false, // Flag
         endOfRound_p1    : false, // Flag
         endOfRound_p2    : false, // Flag
-        endOfRound_p3    : false, // Flag
         
         // Normally set by endOfRound::
         playerDraws2     : false, // Flag
@@ -304,114 +334,9 @@ _APP.game.gamestates["gs_PLAYING"] = {
             
             // This runs every round. 
             else if(_APP.game.gs2 == "playerTurn"){
-                if(this.flags2.playerTurn_start){
-                    // this.playerTurn_start();
-                    
-                    // console.log("run once.", "playerTurn!", this.gameBoard.currentPlayer);
-                    this.gameBoard.updatePlayerText();
-                    this.deck.updateUnderPiles();
-
-                    // All player cards face down.
-                    for(let playerKey of this.gameBoard.activePlayerKeys){
-                        this.deck.flipPlayerCardsDown(playerKey, 0);
-                    }
-
-                    // Show the current color.
-                    this.gameBoard.setColorIndicators(this.gameBoard.currentPlayer, this.gameBoard.currentColor);
-
-                    // Check flags.
-                    let canContinueRound = true;
-                    let colorChange = false;
-                    let skipTurn = false;
-                    let mustDraw = false;
-                    if(this.flags2.playerDraws2)     { mustDraw = true; }
-                    if(this.flags2.playerSkipped)    { skipTurn = true; }
-                    if(this.flags2.playerReverse)    { skipTurn = true; }
-                    if(this.flags2.playerDraws4)     { mustDraw = true; }
-                    if(this.flags2.playerColorChange){ console.log("COLOR CHANGE! FIRST TURN?"); colorChange = true; }
-
-                    // COLOR CHANGE: NOTE: This would only happen on the first turn. 
-                    if(colorChange){
-                        console.log(this.gameBoard.currentPlayer, "can continue the round.");
-                        console.log("YOU SHOULD ONLY SEE ME ON THE FIRST TURN.");
-                        // Show the color changer message.
-                        this.colorChanger.show();
-                        this.resetFlags();
-
-                        // Set flags to playerTurn.
-                        this.flags2.playerTurn = true;
-                        this.flags2.playerTurn_p1 = true;
-                    }
-
-                    // DRAW
-                    if(mustDraw){
-                        if     (this.flags2.playerDraws2){
-                            console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: DRAW2");
-                            this.action_draw({playerKey: this.gameBoard.currentPlayer, numCards: 2, msgName: "d2LoseTurn", endDelay: 30});
-                        }
-                        else if(this.flags2.playerDraws4){
-                            console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: DRAW4");
-                            this.action_draw({playerKey: this.gameBoard.currentPlayer, numCards: 4, msgName: "d4LoseTurn", endDelay: 30});
-                        }
-                        this.resetFlags();
-                        
-                        // Unset canContinueRound.
-                        canContinueRound = false;
-
-                        // Set flags and change to the next player.
-                        this.flags2.playerTurn_start = true;
-                        this.flags2.playerTurn = false;
-                        this.gameBoard.setNextPlayer();
-                    }
-
-                    // SKIP/REVERSE
-                    if(skipTurn){
-                        if(this.flags2.playerReverse){
-                            console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: REVERSE");
-                            this.action_reverse({playerKey: this.gameBoard.currentPlayer, msgName: "reversed", endDelay: 90});
-                        }
-                        else if(this.flags2.playerSkipped){
-                            console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: SKIP");
-                            this.action_skip({playerKey: this.gameBoard.currentPlayer, msgName: "skipLoseTurn", endDelay: 90});
-                            this.gameBoard.setNextPlayer();
-                        }
-                        this.resetFlags();
-
-                        // Unset canContinueRound.
-                        canContinueRound = false;
-
-                        // Set flags and change to the next player.
-                        this.flags2.playerTurn_start = true;
-                        this.flags2.playerTurn = false;
-                    }
-
-                    // THE PLAYER CAN CONTINUE THE ROUND.
-                    if(canContinueRound){
-                        // console.log(this.gameBoard.currentPlayer, "can continue the round.");
-                        // Clear the no longer needed timer keys.
-                        _APP.shared.genTimer.removeFinished(null, this.timerKeysKeep);
-
-                        // Reset flags. 
-                        this.resetFlags();
-
-                        // Set flags to playerTurn.
-                        this.flags2.playerTurn_start = false;
-                        this.flags2.playerTurn = true;
-                        this.flags2.playerTurn_p1 = true;
-
-                        // Cards face-up for the first row.
-                        this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, 0);
-
-                        // Activate/position cursor.
-                        this.gameBoard.showCursor(this.gameBoard.currentPlayer);
-                    }
-                }
-                else if(this.flags2.playerTurn){
-                    this.playerTurn(gpInput);
-                }
-                else if(this.flags2.endOfRound){
-                    this.endOfRound(gpInput);
-                }
+                if(this.flags2.playerTurn_start){ this.playerTurn_start(); }
+                else if(this.flags2.playerTurn) { this.playerTurn(gpInput); }
+                else if(this.flags2.endOfRound) { this.endOfRound(gpInput); }
             }
 
             // This runs after the end of a round when there is a winner.

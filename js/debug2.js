@@ -277,14 +277,32 @@ var _DEBUG2 = {
             flags: {
                 parent:null,
                 values : {
-                    flags1Text: "",
-                    flags2Text: "",
+                    // flags1Text: "",
+                    // flags2Text: "",
+
+                    hashes: {
+                        hash_getFirstPlayer : 0,
+                        hash_playerTurn     : 0,
+                        hash_endOfRound     : 0,
+                        hash_nextRoundFlags : 0,
+                    },
+
+                    flags_getFirstPlayerText: "",
+                    flags_playerTurnText: "",
+                    flags_endOfRoundText: "",
+
                     cardsText: "",
                     funcQueue: "",
                 },
                 DOM: { 
-                    "flags1Text"    : "debug_flags_flags",
-                    "flags2Text"    : "debug_flags_flags2",
+                    // "flags1Text"    : "debug_flags_flags",
+                    // "flags2Text"    : "debug_flags_flags2",
+
+                    "getFirstPlayerText": "debug_flags_getFirstPlayer",
+                    "playerTurnText"    : "debug_flags_playerTurn",
+                    "endOfRoundText"    : "debug_flags_endOfRound",
+                    "nextRoundFlagsText": "debug_flags_nextRoundFlags",
+
                     "cardMovements" : "debug_flags_cardMovements",
                     "funcQueue"     : "debug_flags_funcQueue",
                     "timers1Text"   : "debug_flags_timers1",
@@ -296,45 +314,55 @@ var _DEBUG2 = {
                         this.DOM[elemKey] = document.getElementById(this.DOM[elemKey]);
                     }
                 },
+                updateGameFlags_data: {
+                    getFirstPlayer: { domStr: "getFirstPlayerText", valueKey: "getFirstPlayer", flagsObjKey: "getFirstPlayer", newHash:0, prevHash: 0 },
+                    playerTurn    : { domStr: "playerTurnText"    , valueKey: "playerTurn"    , flagsObjKey: "playerTurn"    , newHash:0, prevHash: 0 },
+                    endOfRound    : { domStr: "endOfRoundText"    , valueKey: "endOfRound"    , flagsObjKey: "endOfRound"    , newHash:0, prevHash: 0 },
+                    nextRoundFlags: { domStr: "nextRoundFlagsText", valueKey: "nextRoundFlags", flagsObjKey: "nextRoundFlags", newHash:0, prevHash: 0 },
+                },
+                updateGameFlags: function(){
+                    let flagsObj = _APP.game.gamestates.gs_PLAYING.new_flags;
+                    let data = this.updateGameFlags_data;
+                    data.getFirstPlayer.newHash = _GFX.utilities.djb2Hash( JSON.stringify( flagsObj.getFirstPlayer ) );
+                    data.playerTurn.newHash     = _GFX.utilities.djb2Hash( JSON.stringify( flagsObj.playerTurn ) );
+                    data.endOfRound.newHash     = _GFX.utilities.djb2Hash( JSON.stringify( flagsObj.endOfRound ) );
+                    data.nextRoundFlags.newHash = _GFX.utilities.djb2Hash( JSON.stringify( flagsObj.nextRoundFlags ) );
+
+                    let newText;
+                    let maxLen;
+                    for(let key in data){
+                        let rec = data[key];
+
+                        // Are the hashes different?
+                        if(rec.newHash != this.values[rec.valueKey]){
+                            // Store the new hash.
+                            this.values[rec.valueKey] = rec.newHash;
+
+                            // Regenerate the text.
+                            newText = ``;
+                            maxLen = 0;
+                            for(let key in flagsObj[rec.flagsObjKey]){ if(key.length > maxLen){ maxLen = key.length; } }
+                            for(let key in flagsObj[rec.flagsObjKey]){ 
+                                // Get the value. 
+                                value = flagsObj[rec.flagsObjKey][key];
+                                
+                                // Convert true/false to 1/0.
+                                type = typeof value;
+                                if(type === "boolean"){ value = value ? 1: 0; }
+                                // if(type === "string") { value = value ? 1: 0; }
+
+                                // Add this as a line to newText.
+                                newText += `${key.padEnd(maxLen, " ")}: ${value}\n`; 
+                            }
+
+                            // Update the displayed text.
+                            this.DOM[rec.domStr].innerText = newText;
+                        }
+                    };
+                },
                 checkForChanges: function(){
-                    // Get a list of flags.
-                    let flags = Object.keys(_APP.game.gamestates.gs_PLAYING.flags);
-
-                    // Get max length of the flag keys.
-                    let labelLen = 0;
-                    for(let flag of flags){
-                        if(flag.length > labelLen){ labelLen = flag.length; }
-                    }
-
-                    // Update flags.
-                    let newText = ``;
-                    for(let flag of flags){
-                        newText += `${flag.padEnd(labelLen, " ")}: ${_APP.game.gamestates.gs_PLAYING.flags[flag]}\n`;
-                    }
-                    if(newText != this.values.flags1Text){
-                        this.values.flags1Text = newText; 
-                        this.DOM.flags1Text.innerText = newText;
-                    }
-
-
-                    // Get a list of flags.
-                    let flags2 = Object.keys(_APP.game.gamestates.gs_PLAYING.flags2);
-
-                    // Get max length of the flag keys.
-                    labelLen = 0;
-                    for(let flag of flags2){
-                        if(flag.length > labelLen){ labelLen = flag.length; }
-                    }
-
-                    // Update flags.
-                    newText = ``;
-                    for(let flag of flags2){
-                        newText += `${flag.padEnd(labelLen, " ")}: ${_APP.game.gamestates.gs_PLAYING.flags2[flag]}\n`;
-                    }
-                    if(newText != this.values.flags2Text){
-                        this.values.flags2Text = newText; 
-                        this.DOM.flags2Text.innerText = newText;
-                    }
+                    // Update game flags.
+                    this.updateGameFlags();
 
                     // Update card movements.
                     if(_APP.game.gamestates.gs_PLAYING.cardMovements.length){
@@ -374,7 +402,7 @@ var _DEBUG2 = {
                         }
                     }
 
-                    // Update timer data.
+                    // Update timer data. (NOT the permanent ones.)
                     let keys = Object.keys(_APP.shared.genTimer.timers[_APP.game.gs1]).filter(d=> !_APP.game.gamestates.gs_PLAYING.timerKeysKeep.includes(d) )
                     newText = ``;
                     for(let name of keys){
@@ -384,11 +412,11 @@ var _DEBUG2 = {
                     }
                     this.DOM.timers2Text.innerHTML = newText;
 
+                    // Update timer data. (The permanent ones.)
                     keys = _APP.game.gamestates.gs_PLAYING.timerKeysKeep;
                     newText = ``;
                     for(let name of keys){
                         let timer = _APP.shared.genTimer.get(name);
-                        // newText += `N:${name} ::  T:${timer.frameCount}/${timer.maxFrames}\n`;
                         newText += `T: ${ (timer.frameCount +"/"+ timer.maxFrames).padEnd(6, " ")} :: ${name}\n`;
                     }
                     this.DOM.timers1Text.innerHTML = newText;

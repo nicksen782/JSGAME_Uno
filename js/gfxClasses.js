@@ -1694,6 +1694,12 @@ class Gameboard{
 
         // Set the new player.
         this.currentPlayer = players[nextPlayerIndex];
+
+        // Reset the cursorPosIndex.
+        this.cursorsPosIndex = 0;
+
+        // Reset the current row to 0 for the next player.
+        this.parent.currentRow = 0;
     };
 
     // COLOR INDICATORS
