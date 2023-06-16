@@ -321,7 +321,7 @@ var _DEBUG2 = {
                     nextRoundFlags: { domStr: "nextRoundFlagsText", valueKey: "nextRoundFlags", flagsObjKey: "nextRoundFlags", newHash:0, prevHash: 0 },
                 },
                 updateGameFlags: function(){
-                    let flagsObj = _APP.game.gamestates.gs_PLAYING.new_flags;
+                    let flagsObj = _APP.game.gamestates.gs_PLAYING.flags;
                     let data = this.updateGameFlags_data;
                     data.getFirstPlayer.newHash = _GFX.utilities.djb2Hash( JSON.stringify( flagsObj.getFirstPlayer ) );
                     data.playerTurn.newHash     = _GFX.utilities.djb2Hash( JSON.stringify( flagsObj.playerTurn ) );

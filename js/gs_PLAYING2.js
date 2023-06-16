@@ -3,9 +3,9 @@
         array: [],
         movementSpeeds:{
             // GetFirstPlayer.
-            dealOneCard  : 20, // Dealing (this.flags.dealing)
-            returnOneCard: 30, // Returning (this.flags.determineHighestCard)
-            dealingMany  : 10, // Deal hands (this.flags.dealing_firstTurn)
+            dealOneCard  : 20, // Dealing (this.flags.getFirstPlayer.highCardDeal)
+            returnOneCard: 30, // Returning (this.flags.getFirstPlayer.checkHighCard)
+            dealingMany  : 10, // Deal hands (this.flags.getFirstPlayer.initDeal)
 
             // playerTurn
             unselectCard: 30,
@@ -21,13 +21,13 @@
                 this.flags2[key] = false;
             }
 
-            // Reset new_flags.
-            for(let key1 in this.new_flags){ 
-                for(let key2 in this.new_flags[key1]){ 
-                    let type = typeof this.new_flags[key1][key2];
-                    if     (type === "boolean"){ this.new_flags[key1][key2] = 0;  }
-                    else if(type === "string") { this.new_flags[key1][key2] = ""; }
-                    else                       { this.new_flags[key1][key2] = false; }
+            // Reset flags.
+            for(let key1 in this.flags){ 
+                for(let key2 in this.flags[key1]){ 
+                    let type = typeof this.flags[key1][key2];
+                    if     (type === "boolean"){ this.flags[key1][key2] = 0;  }
+                    else if(type === "string") { this.flags[key1][key2] = ""; }
+                    else                       { this.flags[key1][key2] = false; }
                 }
             }
         },
@@ -40,11 +40,11 @@
             _APP.game.gs2 = "getFirstPlayer";
 
             // Set dealing flag.
-            this.flags.dealing = true;
+            this.flags.getFirstPlayer.highCardDeal = true;
         },
         getFirstPlayer: function() {
             // Handle dealing of a card to each active player.
-            if(this.flags.dealing){
+            if(this.flags.getFirstPlayer.highCardDeal){
                 // Get the next card in the deck and assign to the player.
                 let card = this.deck.getNextCardFromDrawpile();
                 card.location = Deck.playerCardLocations[this.gameBoard.currentPlayer];
@@ -76,12 +76,12 @@
 
                 // Repeat until a card has been assigned to each active player. (Back to the first active player again.)
                 if(this.gameBoard.currentPlayer == this.gameBoard.activePlayerKeys[0]){
-                    this.flags.dealing = false;
-                    this.flags.determineHighestCard = true;
+                    this.flags.getFirstPlayer.highCardDeal = false;
+                    this.flags.getFirstPlayer.checkHighCard = true;
                     _APP.shared.genTimer.create("genWaitTimer1", 60, _APP.game.gs1, null);
                 }
             }
-            else if(this.flags.determineHighestCard){
+            else if(this.flags.getFirstPlayer.checkHighCard){
                 // Determine which card has the highest points value. If there is a tie for the winner then repeat flags.dealing again.
                 let winner = { points: 0, playerKeys: [], }
                 for(let playerKey of this.gameBoard.activePlayerKeys){
@@ -103,20 +103,20 @@
                 // One winner?
                 if(winner.playerKeys.length == 1){
                     // console.log("winner:", winner.playerKeys.length, winner.playerKeys);
-                    this.flags.firstPlayer = winner.playerKeys[0];
-                    this.flags.determineHighestCard = false;
-                    this.flags.ready_determineHighestCard = true;
+                    this.flags.getFirstPlayer.goesFirst = winner.playerKeys[0];
+                    this.flags.getFirstPlayer.checkHighCard = false;
+                    this.flags.getFirstPlayer.tied = true;
                     _APP.shared.genTimer.create("ready_determineHighestCard", 60);
 
                     // Display the player goes first message.
-                    this.gameBoard.displayMessage("playsFirst", this.flags.firstPlayer, false);
-                    this.gameBoard.setColorIndicators(this.flags.firstPlayer, "CARD_BLACK");
+                    this.gameBoard.displayMessage("playsFirst", this.flags.getFirstPlayer.goesFirst, false);
+                    this.gameBoard.setColorIndicators(this.flags.getFirstPlayer.goesFirst, "CARD_BLACK");
                 }
                 // Multiple tied winners.
                 else{
                     // console.log("tied winners:", winner.playerKeys.length, winner.playerKeys);
-                    this.flags.determineHighestCard = false;
-                    this.flags.tied_determineHighestCard = true;
+                    this.flags.getFirstPlayer.checkHighCard = false;
+                    this.flags.getFirstPlayer.highCard_end = true;
                     _APP.shared.genTimer.create("tied_determineHighestCard", 60);
 
                     // Display the tied message.
@@ -169,37 +169,37 @@
                     });
                 }
             }
-            else if(this.flags.ready_determineHighestCard){
+            else if(this.flags.getFirstPlayer.tied){
                 // Wait for the timer to finish before going back to dealing for first player.
                 if(_APP.shared.genTimer.check("ready_determineHighestCard")){
                     this.gameBoard.displayMessage("none", "", false);
                     this.deck.resetDeck();
                     this.deck.shuffleDeck();
-                    this.flags.ready_determineHighestCard = false;
-                    this.flags.dealing_firstTurn = true;
-                    this.flags.dealing_firstTurnCardPos    = 0;
+                    this.flags.getFirstPlayer.tied = false;
+                    this.flags.getFirstPlayer.initDeal = true;
+                    this.flags.getFirstPlayer.initDealPos    = 0;
 
                     // Hide the discard card.
                     _GFX.layerObjs.getOne("discard_card").hidden = true;
                 }
             }
-            else if(this.flags.tied_determineHighestCard){
+            else if(this.flags.getFirstPlayer.highCard_end){
                 // Wait for the timer to finish before going back to dealing for first player.
                 if(_APP.shared.genTimer.check("tied_determineHighestCard")){
                     this.gameBoard.displayMessage("none", "", false);
-                    this.flags.dealing = true;
+                    this.flags.getFirstPlayer.highCardDeal = true;
                     // this.deck.resetDeck();
                     // this.deck.shuffleDeck();
-                    this.flags.tied_determineHighestCard = false;
+                    this.flags.getFirstPlayer.highCard_end = false;
                 }
             }
-            else if(this.flags.dealing_firstTurn){
-                // console.log("this.flags.dealing_firstTurnCardPos:", this.flags.dealing_firstTurnCardPos);
+            else if(this.flags.getFirstPlayer.initDeal){
+                // console.log("this.flags.getFirstPlayer.initDealPos:", this.flags.getFirstPlayer.initDealPos);
 
                 // Get the next card in the deck and assign to the player.
                 let card = this.deck.getNextCardFromDrawpile();
                 card.location = Deck.playerCardLocations[this.gameBoard.currentPlayer];
-                let layerObjKey = `${this.gameBoard.currentPlayer}_card_${this.flags.dealing_firstTurnCardPos%5}`;
+                let layerObjKey = `${this.gameBoard.currentPlayer}_card_${this.flags.getFirstPlayer.initDealPos%5}`;
                 _GFX.layerObjs.getOne(layerObjKey).change_wholeCard("sm", "CARD_BLACK", "CARD_BACK"); ;
                 // console.log("Dealing for the first turn!", "layerObjKey:", layerObjKey);
 
@@ -211,9 +211,9 @@
                         timerFrames: 1,
                         movementSpeed: this.movementSpeeds.dealingMany,
                         playerKey  : this.gameBoard.currentPlayer  , 
-                        layerObjKey: `${this.gameBoard.currentPlayer}_card_${this.flags.dealing_firstTurnCardPos%5}`,
+                        layerObjKey: `${this.gameBoard.currentPlayer}_card_${this.flags.getFirstPlayer.initDealPos%5}`,
                         // layerObjKey: `temp_card`,
-                        cardSlot   : (this.flags.dealing_firstTurnCardPos % 5),
+                        cardSlot   : (this.flags.getFirstPlayer.initDealPos % 5),
                         finish: function(){ 
                             // console.log("DONE:", this.card.layerObjKey);
                             _APP.shared.genTimer.removeOne(this.timerKey, null);
@@ -225,18 +225,18 @@
 
                 // Repeat until a card has been assigned to each active player. (Back to the first active player again.)
                 if(this.gameBoard.currentPlayer == this.gameBoard.activePlayerKeys[0]){
-                    // console.log("done?", this.gameBoard.currentPlayer, this.gameBoard.activePlayerKeys[0], this.flags.dealing_firstTurnCardPos);
+                    // console.log("done?", this.gameBoard.currentPlayer, this.gameBoard.activePlayerKeys[0], this.flags.getFirstPlayer.initDealPos);
                     
                     // Change the row?
-                    if( this.flags.dealing_firstTurnCardPos == 5 ){
-                        console.log("this.flags.dealing_firstTurnCardPos:", this.flags.dealing_firstTurnCardPos);
+                    if( this.flags.getFirstPlayer.initDealPos == 5 ){
+                        console.log("this.flags.getFirstPlayer.initDealPos:", this.flags.getFirstPlayer.initDealPos);
                         this.currentRow +=1 ;
                         this.deck.flipPlayerCardsDown(this.gameBoard.currentPlayer, this.currentRow);
                     }
 
                     // Last card?
-                    if(1+this.flags.dealing_firstTurnCardPos >= 7){
-                        this.flags.dealing_firstTurn = false;
+                    if(1+this.flags.getFirstPlayer.initDealPos >= 7){
+                        this.flags.getFirstPlayer.initDeal = false;
 
                         // console.log("cards deal timer started");
                         _APP.shared.genTimer.create("genWaitTimer1", 60, _APP.game.gs1, ()=>{
@@ -274,19 +274,19 @@
                             });
 
                             _APP.shared.genTimer.create("genWaitTimer1", 60, _APP.game.gs1, ()=>{
-                                this.gameBoard.currentPlayer = this.flags.firstPlayer;
+                                this.gameBoard.currentPlayer = this.flags.getFirstPlayer.goesFirst;
                                 this.gameBoard.setColorIndicators(this.gameBoard.currentPlayer, discardCard.color);
                                 
-                                this.flags2.playerDraws2  = false;
-                                this.flags2.playerSkipped = false;
-                                this.flags2.playerReverse = false;
-                                this.flags2.playerDraws4  = false;
-                                this.flags2.playerColorChange = false;
-                                if     (discardCard.value == "CARD_DRAW2")     { this.flags2.playerDraws2  = true; }
-                                else if(discardCard.value == "CARD_SKIP")      { this.flags2.playerSkipped = true; }
-                                else if(discardCard.value == "CARD_REV")       { this.flags2.playerReverse = true; }
-                                else if(discardCard.value == "CARD_WILD")      { this.flags2.playerColorChange = true; }
-                                else if(discardCard.value == "CARD_WILD_DRAW4"){ this.flags2.playerDraws4  = true; this.flags2.playerColorChange = true; }
+                                this.flags.nextRoundFlags.draw2  = false;
+                                this.flags.nextRoundFlags.skip = false;
+                                this.flags.nextRoundFlags.reverse = false;
+                                this.flags.nextRoundFlags.draw4  = false;
+                                this.flags.nextRoundFlags.colorChange = false;
+                                if     (discardCard.value == "CARD_DRAW2")     { this.flags.nextRoundFlags.draw2  = true; }
+                                else if(discardCard.value == "CARD_SKIP")      { this.flags.nextRoundFlags.skip = true; }
+                                else if(discardCard.value == "CARD_REV")       { this.flags.nextRoundFlags.reverse = true; }
+                                else if(discardCard.value == "CARD_WILD")      { this.flags.nextRoundFlags.colorChange = true; }
+                                else if(discardCard.value == "CARD_WILD_DRAW4"){ this.flags.nextRoundFlags.draw4  = true; this.flags.nextRoundFlags.colorChange = true; }
     
                                 this.lastCardPlayed = discardCard;
 
@@ -294,7 +294,7 @@
                                 _APP.game.changeGs2("playerTurn");
     
                                 // Set playerTurn_start (init) for playerTurn.
-                                this.flags2.playerTurn_start = true;
+                                this.flags.playerTurn.play_init = true;
 
                                 // Clear the no longer needed timer keys.
                                 _APP.shared.genTimer.removeFinished(null, this.timerKeysKeep);
@@ -303,7 +303,7 @@
                     }
                     else{
                         // console.log("nope! continue", JSON.stringify(this.flags));
-                        this.flags.dealing_firstTurnCardPos += 1;
+                        this.flags.getFirstPlayer.initDealPos += 1;
                     }
                 }
 
@@ -330,11 +330,11 @@
             let colorChange = false;
             let skipTurn = false;
             let mustDraw = false;
-            if(this.flags2.playerDraws2)     { mustDraw = true; }
-            if(this.flags2.playerSkipped)    { skipTurn = true; }
-            if(this.flags2.playerReverse)    { skipTurn = true; }
-            if(this.flags2.playerDraws4)     { mustDraw = true; }
-            if(this.flags2.playerColorChange){ console.log("COLOR CHANGE! FIRST TURN?"); colorChange = true; }
+            if(this.flags.nextRoundFlags.draw2)     { mustDraw = true; }
+            if(this.flags.nextRoundFlags.skip)    { skipTurn = true; }
+            if(this.flags.nextRoundFlags.reverse)    { skipTurn = true; }
+            if(this.flags.nextRoundFlags.draw4)     { mustDraw = true; }
+            if(this.flags.nextRoundFlags.colorChange){ console.log("COLOR CHANGE! FIRST TURN?"); colorChange = true; }
 
             // COLOR CHANGE: NOTE: This would only happen on the first turn. 
             if(colorChange){
@@ -345,17 +345,17 @@
                 this.resetFlags();
 
                 // Set flags to playerTurn.
-                this.flags2.playerTurn = true;
-                this.flags2.playerTurn_p1 = true;
+                this.flags.playerTurn.playing = true;
+                this.flags.playerTurn.card_select = true;
             }
 
             // DRAW
             if(mustDraw){
-                if     (this.flags2.playerDraws2){
+                if     (this.flags.nextRoundFlags.draw2){
                     console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: DRAW2");
                     this.action_draw({playerKey: this.gameBoard.currentPlayer, numCards: 2, msgName: "d2LoseTurn", endDelay: 30});
                 }
-                else if(this.flags2.playerDraws4){
+                else if(this.flags.nextRoundFlags.draw4){
                     console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: DRAW4");
                     this.action_draw({playerKey: this.gameBoard.currentPlayer, numCards: 4, msgName: "d4LoseTurn", endDelay: 30});
                 }
@@ -365,18 +365,18 @@
                 canContinueRound = false;
 
                 // Set flags and change to the next player.
-                this.flags2.playerTurn_start = true;
-                this.flags2.playerTurn = false;
+                this.flags.playerTurn.play_init = true;
+                this.flags.playerTurn.playing = false;
                 this.gameBoard.setNextPlayer();
             }
 
             // SKIP/REVERSE
             if(skipTurn){
-                if(this.flags2.playerReverse){
+                if(this.flags.nextRoundFlags.reverse){
                     console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: REVERSE");
                     this.action_reverse({playerKey: this.gameBoard.currentPlayer, msgName: "reversed", endDelay: 90});
                 }
-                else if(this.flags2.playerSkipped){
+                else if(this.flags.nextRoundFlags.skip){
                     console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: SKIP");
                     this.action_skip({playerKey: this.gameBoard.currentPlayer, msgName: "skipLoseTurn", endDelay: 90});
                     this.gameBoard.setNextPlayer();
@@ -387,8 +387,8 @@
                 canContinueRound = false;
 
                 // Set flags and change to the next player.
-                this.flags2.playerTurn_start = true;
-                this.flags2.playerTurn = false;
+                this.flags.playerTurn.play_init = true;
+                this.flags.playerTurn.playing = false;
             }
 
             // THE PLAYER CAN CONTINUE THE ROUND.
@@ -401,9 +401,9 @@
                 this.resetFlags();
 
                 // Set flags to playerTurn.
-                this.flags2.playerTurn_start = false;
-                this.flags2.playerTurn = true;
-                this.flags2.playerTurn_p1 = true;
+                this.flags.playerTurn.play_init = false;
+                this.flags.playerTurn.playing = true;
+                this.flags.playerTurn.card_select = true;
 
                 // Cards face-up for the first row.
                 this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, 0);
@@ -414,17 +414,17 @@
         },
         playerTurn: function(gpInput){
             // Flags set/cleared/used here:
-            //   this.flags2.playerTurn    :: Required for this function.
-            //   this.flags2.playerTurn_p1 :: Card and row select, round pass.
-            //   this.flags2.playerTurn_p2 :: Confirm/cancel on selected card.
-            //   this.flags2.playerTurn_p3 :: Confirm/cancel on round pass.
-            //   this.flags2.endOfRound    :: Required when switching to endOfRound.
-            //   this.flags2.endOfRound_p1 :: Check for wild card.
+            //   this.flags.playerTurn.playing       :: Required for this function.
+            //   this.flags.playerTurn.card_select   :: Card and row select, round pass.
+            //   this.flags.playerTurn.card_selected :: Confirm/cancel on selected card.
+            //   this.flags.playerTurn.play_pass     :: Confirm/cancel on round pass.
+            //   this.flags.endOfRound.active        :: Required when switching to endOfRound.
+            //   this.flags.endOfRound.colorChange   :: Check for wild card.
 
             this.gameBoard.nextFrame_colorIndicators();
             
             // Card select and row select.
-            if(this.flags2.playerTurn_p1){
+            if(this.flags.playerTurn.card_select){
                 this.gameBoard.nextCursorFrame();
 
                 // P1, P3: Row or cursor position change?
@@ -484,11 +484,11 @@
                             movementSpeed: _APP.game.gamestates.gs_PLAYING.movementSpeeds.selectCard,
                     });
                     
-                    // Clear flag: this.flags2.playerTurn_p1
-                    this.flags2.playerTurn_p1 = false;
+                    // Clear flag: this.flags.playerTurn.card_select
+                    this.flags.playerTurn.card_select = false;
                     
-                    // Set flag  : this.flags2.playerTurn_p2
-                    this.flags2.playerTurn_p2 = true;
+                    // Set flag  : this.flags.playerTurn.card_selected
+                    this.flags.playerTurn.card_selected = true;
                     
                     // INIT FOR THE NEXT PART.
                     // Display play/pass message.
@@ -501,9 +501,9 @@
                     this.gameBoard.displayMessage("passCancel"  , this.gameBoard.currentPlayer, false);
 
                     // Change flags:
-                    this.flags2.playerTurn_p1 = false;
-                    this.flags2.playerTurn_p2 = false;
-                    this.flags2.playerTurn_p3 = true;
+                    this.flags.playerTurn.card_select = false;
+                    this.flags.playerTurn.card_selected = false;
+                    this.flags.playerTurn.play_pass = true;
                     
                     // Hide the cursor.
                     this.gameBoard.hideCursor(this.gameBoard.currentPlayer);
@@ -511,7 +511,7 @@
             }
             
             // Card selected. (needs confirm/pass)
-            else if(this.flags2.playerTurn_p2){
+            else if(this.flags.playerTurn.card_selected){
                 // PLAY
                 if     (gpInput.P1.press.BTN_A) { 
                     // Already selected for play.
@@ -557,23 +557,23 @@
                                     _this.deck.flipPlayerCardsDown(playerKey);
                                 }
 
-                                // Clear flag: this.flags2.playerTurn
-                                _this.flags2.playerTurn = false;
+                                // Clear flag: this.flags.playerTurn.playing
+                                _this.flags.playerTurn.playing = false;
 
-                                // Clear flag: this.flags2.playerTurn_p1
-                                _this.flags2.playerTurn_p1 = false;
+                                // Clear flag: this.flags.playerTurn.card_select
+                                _this.flags.playerTurn.card_select = false;
 
-                                // Clear flag: this.flags2.playerTurn_p2
-                                _this.flags2.playerTurn_p2 = false;
+                                // Clear flag: this.flags.playerTurn.card_selected
+                                _this.flags.playerTurn.card_selected = false;
 
-                                // Clear flag: this.flags2.playerTurn_p3
-                                _this.flags2.playerTurn_p3 = false;
+                                // Clear flag: this.flags.playerTurn.play_pass
+                                _this.flags.playerTurn.play_pass = false;
                                 
-                                // Set flag: this.flags2.endOfRound
-                                _this.flags2.endOfRound = true;
+                                // Set flag: this.flags.endOfRound.active
+                                _this.flags.endOfRound.active = true;
 
-                                // Set flag: this.flags2.endOfRound_p1
-                                _this.flags2.endOfRound_p1 = true;
+                                // Set flag: this.flags.endOfRound.colorChange
+                                _this.flags.endOfRound.colorChange = true;
                             },
                     });
                     
@@ -586,14 +586,14 @@
                     // Cancelled select for play.
                     // Clear play/pass message.
                     // Move card down to home. 
-                    // Clear flag: this.flags2.playerTurn_p2
-                    // Set flag  : this.flags2.playerTurn_p1
+                    // Clear flag: this.flags.playerTurn.card_selected
+                    // Set flag  : this.flags.playerTurn.card_select
                 }
                 
             }
 
             // No card selected. (needs pass/cancel)
-            else if(this.flags2.playerTurn_p3){
+            else if(this.flags.playerTurn.play_pass){
                 // Awaiting player choice.
 
                 // Accept the pass. Hide cards, draw one card, end turn.
@@ -604,9 +604,9 @@
                     this.gameBoard.displayMessage("none"  , this.gameBoard.currentPlayer, false);
 
                     // Change flags:
-                    this.flags2.playerTurn_p1 = true;
-                    this.flags2.playerTurn_p2 = false;
-                    this.flags2.playerTurn_p3 = false;
+                    this.flags.playerTurn.card_select = true;
+                    this.flags.playerTurn.card_selected = false;
+                    this.flags.playerTurn.play_pass = false;
 
                     // Show the cursor.
                     this.gameBoard.showCursor(this.gameBoard.currentPlayer);
@@ -617,20 +617,20 @@
 
         endOfRound: function(gpInput){
             // Flags set/cleared/used here:
-            //   this.flags2.endOfRound    :: Required when switching to endOfRound.
-            //   this.flags2.endOfRound_p1 :: Check for wild card.
-            //   this.flags2.endOfRound_p2 :: Assign flags for next round.
-            //   this.flags2.playerTurn    :: Required for this function.
-            //   this.flags2.playerTurn_p1 :: Card and row select, round pass.
+            //   this.flags.endOfRound.active    :: Required when switching to endOfRound.
+            //   this.flags.endOfRound.colorChange :: Check for wild card.
+            //   this.flags.endOfRound.setNextFlags :: Assign flags for next round.
+            //   this.flags.playerTurn.playing    :: Required for this function.
+            //   this.flags.playerTurn.card_select :: Card and row select, round pass.
 
             // console.log(
-            //     "endOfRound: ", this.flags2.endOfRound, 
-            //     "p1:", this.flags2.endOfRound_p1, 
-            //     "p2:", this.flags2.endOfRound_p2
+            //     "endOfRound: ", this.flags.endOfRound.active, 
+            //     "p1:", this.flags.endOfRound.colorChange, 
+            //     "p2:", this.flags.endOfRound.setNextFlags
             // );
 
             // Determine if the color changer needs to be activated.
-            if     (this.flags2.endOfRound_p1){
+            if     (this.flags.endOfRound.colorChange){
                 // Display the color changer?
                 if(this.lastCardPlayed.color == "CARD_BLACK"){
                     // console.log("colorChanger should only be called once here.");
@@ -641,24 +641,24 @@
                 this.resetFlags();
 
                 // Set these flags:
-                this.flags2.endOfRound = true;
-                this.flags2.endOfRound_p2 = true;
+                this.flags.endOfRound.active = true;
+                this.flags.endOfRound.setNextFlags = true;
             }
             // Set end of round flags.
-            else if(this.flags2.endOfRound_p2){
+            else if(this.flags.endOfRound.setNextFlags){
                 // Clear all flags.
                 this.resetFlags();
 
                 // Determine what flags to set based on the last card played.
-                if     (this.lastCardPlayed.value == "CARD_DRAW2")     { this.flags2.playerDraws2  = true; }
-                else if(this.lastCardPlayed.value == "CARD_WILD_DRAW4"){ this.flags2.playerDraws4  = true; }
-                else if(this.lastCardPlayed.value == "CARD_SKIP")      { this.flags2.playerSkipped = true; }
-                else if(this.lastCardPlayed.value == "CARD_REV")       { this.flags2.playerReverse = true; }
+                if     (this.lastCardPlayed.value == "CARD_DRAW2")     { this.flags.nextRoundFlags.draw2  = true; }
+                else if(this.lastCardPlayed.value == "CARD_WILD_DRAW4"){ this.flags.nextRoundFlags.draw4  = true; }
+                else if(this.lastCardPlayed.value == "CARD_SKIP")      { this.flags.nextRoundFlags.skip = true; }
+                else if(this.lastCardPlayed.value == "CARD_REV")       { this.flags.nextRoundFlags.reverse = true; }
 
                 // Set these flags.
-                this.flags2.playerTurn_start = true;
+                this.flags.playerTurn.play_init = true;
 
-                this.gameBoard.setNextPlayer(this.flags2.playerReverse);
+                this.gameBoard.setNextPlayer(this.flags.nextRoundFlags.reverse);
             }
             else{ console.log("endOfRound: INVALID FLAGS"); }
         },

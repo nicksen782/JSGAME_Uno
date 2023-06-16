@@ -221,7 +221,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         }
     },
     
-    new_flags: {
+    flags: {
         getFirstPlayer: {
             highCardDeal : false, // Flag
             checkHighCard: false, // Flag
@@ -252,38 +252,6 @@ _APP.game.gamestates["gs_PLAYING"] = {
         },
     },
 
-    flags: {
-        // SHARED
-
-        // getFirstPlayer::
-        dealing                    : false, // Flag
-        determineHighestCard       : false, // Flag
-        firstPlayer                : "",    // Var
-        ready_determineHighestCard : false, // Flag
-        tied_determineHighestCard  : false, // Flag
-        dealing_firstTurn          : false, // Flag
-        dealing_firstTurnCardPos   : 0,     // Var
-    },
-    flags2: {
-        // playerTurn::
-        playerTurn_start : false, // Flag
-        playerTurn       : false, // Flag
-        playerTurn_p1    : false, // Flag
-        playerTurn_p2    : false, // Flag
-        playerTurn_p3    : false, // Flag
-
-        // endOfRound::
-        endOfRound       : false, // Flag
-        endOfRound_p1    : false, // Flag
-        endOfRound_p2    : false, // Flag
-        
-        // Normally set by endOfRound::
-        playerDraws2     : false, // Flag
-        playerSkipped    : false, // Flag
-        playerReverse    : false, // Flag
-        playerDraws4     : false, // Flag
-        playerColorChange: false, // Flag
-    },
     lastCardPlayed : null, 
     currentRow : null, 
 
@@ -334,9 +302,9 @@ _APP.game.gamestates["gs_PLAYING"] = {
             
             // This runs every round. 
             else if(_APP.game.gs2 == "playerTurn"){
-                if(this.flags2.playerTurn_start){ this.playerTurn_start(); }
-                else if(this.flags2.playerTurn) { this.playerTurn(gpInput); }
-                else if(this.flags2.endOfRound) { this.endOfRound(gpInput); }
+                if     (this.flags.playerTurn.play_init){ this.playerTurn_start(); }
+                else if(this.flags.playerTurn.playing)  { this.playerTurn(gpInput); }
+                else if(this.flags.endOfRound.active)   { this.endOfRound(gpInput); }
             }
 
             // This runs after the end of a round when there is a winner.
