@@ -64,6 +64,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
     timerDelays: {
         cannotPlayCard: 50,
         endOfTurn     : 20,
+        unselectCard  : 10,
     },
 
     cardMovements: [],

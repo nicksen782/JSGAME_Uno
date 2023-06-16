@@ -670,13 +670,38 @@
                 
                 // CANCEL
                 else if(gpInput.P1.press.BTN_B){ 
-                    // this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  
-
-                    // Cancelled select for play.
                     // Clear play/pass message.
+                    this.gameBoard.displayMessage("none"  , this.gameBoard.currentPlayer, false);
+
+                    // Get the selected card.
+                    let layerObjKey = `${this.gameBoard.currentPlayer}_card_${this.gameBoard.cursorsPosIndex}`;
+                    let _this = this;
+                    
                     // Move card down to home. 
-                    // Clear flag: this.flags.playerTurn.card_selected
-                    // Set flag  : this.flags.playerTurn.card_select
+                    _APP.game.gamestates.gs_PLAYING.addCardMovement(
+                        "home"  , { 
+                            timerKey   : "moveCardToHome", 
+                            timerFrames: 0,
+                            playerKey  : this.gameBoard.currentPlayer  , 
+                            layerObjKey: layerObjKey ,
+                            cardSlot: this.gameBoard.cursorsPosIndex,
+                            movementSpeed: _APP.game.gamestates.gs_PLAYING.movementSpeeds.returnOneCard,
+                            finish: function(){
+                                // Force a short wait.
+                                _APP.shared.genTimer.create("genWaitTimer2", _this.timerDelays.unselectCard, _APP.game.gs1, ()=>{
+                                    // Clear/set flags.
+                                    _this.flags.playerTurn.card_selected = false;
+                                    _this.flags.playerTurn.card_select = true;
+
+                                    // Activate/position cursor.
+                                    _this.gameBoard.showCursor(_this.gameBoard.currentPlayer);
+                                });
+                            },
+                    });
+
+                    // Clear flags. (The correct flags will be set after "finish.")
+                    this.flags.playerTurn.card_selected = false;
+                    this.flags.playerTurn.card_select = false;
                 }
                 
             }
