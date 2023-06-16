@@ -291,9 +291,14 @@ var _DEBUG2 = {
                     flags_playerTurnText: "",
                     flags_endOfRoundText: "",
 
-                    cardsText: "",
-                    funcQueue: "",
+                    timers1Text: "",
+                    timers2Text: "",
+
+
+                    cardsText     : "",
+                    funcQueue     : "",
                     playerHandData: "",
+                    lastCardsText : "",
                 },
                 DOM: { 
                     // "flags1Text"    : "debug_flags_flags",
@@ -309,6 +314,8 @@ var _DEBUG2 = {
                     "playerHandData": "debug_flags_playerHandData",
                     "timers1Text"   : "debug_flags_timers1",
                     "timers2Text"   : "debug_flags_timers2",
+                    
+                    "lastCardsText"   : "debug_flags_lastCardsText",
                 },
                 init: function(parent){
                     this.parent = parent;
@@ -404,7 +411,7 @@ var _DEBUG2 = {
                         }
                     }
 
-                    // playerHandData
+                    // Player/Row
                     newText = ``;
                     newTextArr = [];
                     for(let playerKey of _APP.game.gamestates.gs_PLAYING.gameBoard.activePlayerKeys){
@@ -418,6 +425,39 @@ var _DEBUG2 = {
                         this.DOM.playerHandData.innerText = newText;
                     }
 
+                    // Last cards: lastDrawnCard
+                    newText = ``;
+                    if(_APP.game.gamestates.gs_PLAYING.lastDrawnCard){
+                        let lastDrawnCard = _APP.game.gamestates.gs_PLAYING.lastDrawnCard;
+                        let value = lastDrawnCard.value.replace("CARD_", "");
+                        if     (value =="DRAW2"     ){ value = "D2"; }
+                        else if(value =="SKIP"      ){ value = "SK"; }
+                        else if(value =="REV"       ){ value = "RE"; }
+                        else if(value =="WILD"      ){ value = "WI"; }
+                        else if(value =="WILD_DRAW4"){ value = "WD4"; }
+                        newText  = `Drawn:${lastDrawnCard.color.replace("CARD_", "").slice(0,3)}:${value}`;
+                    }
+                    else{ newText = `Drawn:NONE`; }
+
+                    // Last cards: lastCardPlayed
+                    if(_APP.game.gamestates.gs_PLAYING.lastCardPlayed){
+                        let lastCardPlayed = _APP.game.gamestates.gs_PLAYING.lastCardPlayed;
+                        if(lastCardPlayed){
+                            let value = lastCardPlayed.value.replace("CARD_", "");
+                            if     (value =="DRAW2"     ){ value = "D2"; }
+                            else if(value =="SKIP"      ){ value = "SK"; }
+                            else if(value =="REV"       ){ value = "RE"; }
+                            else if(value =="WILD"      ){ value = "WI"; }
+                            else if(value =="WILD_DRAW4"){ value = "WD4"; }
+                            newText += `, Played:${lastCardPlayed.color.replace("CARD_", "").slice(0,3)}:${value}`;
+                        }
+                    }
+                    else{ newText += `, Played:NONE`; }
+                    if(newText != this.values.lastCardsText){
+                        this.values.lastCardsText = newText; 
+                        this.DOM.lastCardsText.innerText = newText;
+                    }
+
                     // Update timer data. (The permanent ones.)
                     let keys = _APP.game.gamestates.gs_PLAYING.timerKeysKeep;
                     newText = ``;
@@ -425,7 +465,10 @@ var _DEBUG2 = {
                         let timer = _APP.shared.genTimer.get(name);
                         newText += `T: ${ (timer.frameCount +"/"+ timer.maxFrames).padEnd(6, " ")} :: ${name}\n`;
                     }
-                    this.DOM.timers1Text.innerHTML = newText;
+                    if(newText != this.values.timers1Text){
+                        this.values.timers1Text = newText;
+                        this.DOM.timers1Text.innerHTML = newText;
+                    }
 
                     // Update timer data. (NOT the permanent ones.)
                     keys = Object.keys(_APP.shared.genTimer.timers[_APP.game.gs1]).filter(d=> !_APP.game.gamestates.gs_PLAYING.timerKeysKeep.includes(d) )
@@ -435,7 +478,10 @@ var _DEBUG2 = {
                         // newText += `N:${name} ::  T:${timer.frameCount}/${timer.maxFrames}\n`;
                         newText += `T: ${ (timer.frameCount +"/"+ timer.maxFrames).padEnd(6, " ")} :: ${name}\n`;
                     }
-                    this.DOM.timers2Text.innerHTML = newText;
+                    if(newText != this.values.timers2Text){
+                        this.values.timers2Text = newText;
+                        this.DOM.timers2Text.innerHTML = newText;
+                    }
                 },
             },
             settings: {

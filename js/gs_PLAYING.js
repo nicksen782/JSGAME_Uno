@@ -86,7 +86,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
             play_pass    : false, // Flag
         },
         endOfRound    : {
-            endOfRound  : false, // Flag
+            active      : false, // Flag
             colorChange : false, // Flag
             setNextFlags: false, // Flag
         },
@@ -100,7 +100,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
     },
     debugFlags: {
         skipCardValidityCheck   : false, // Allows any card to be played (No validation check.)
-        showAllPlayerCardsFaceUp: true, // Shows all player cards face up at the start of each turn.
+        showAllPlayerCardsFaceUp: false, // Shows all player cards face up at the start of each turn.
         forcedWinnerOnTie       : true,  // On tie the first active player will be set as the winner.
         
         // forcedFirstDiscard: false,
@@ -113,6 +113,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         
     },
     lastCardPlayed : null, 
+    lastDrawnCard : null, 
     // currentRow : 0, 
 
     // Run once upon changing to this game state.

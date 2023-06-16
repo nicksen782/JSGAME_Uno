@@ -300,7 +300,9 @@ class Card extends LayerObject{
         if( (value == "CARD_WILD" || value == "CARD_WILD_DRAW4" || value == "CARD_BACK") ){ this._color = "CARD_BLACK"; }
         
         // The other cards must never have their color set to "CARD_BLACK".
-        else if(this._color == "CARD_BLACK"){ this.color = "CARD_RED"; }
+        else if(this._color == "CARD_BLACK"){ this._color = "CARD_RED"; }
+
+        this._changed = true; 
     };
 
     // Changes the displayed color of the card.
@@ -311,15 +313,17 @@ class Card extends LayerObject{
         // The other cards must never have their color set to "CARD_BLACK".
         else if(color == "CARD_BLACK"){ color = "CARD_RED";  this._color = color; }
         
-        if     (color == "CARD_YELLOW"){ this.settings.colorData = Card.colorReplacements.YELLOW; }
-        else if(color == "CARD_BLUE"  ){ this.settings.colorData = Card.colorReplacements.BLUE;   }
-        else if(color == "CARD_GREEN" ){ this.settings.colorData = Card.colorReplacements.GREEN;  }
-        else if(color == "CARD_RED"   ){ this.settings.colorData = Card.colorReplacements.RED;    } // No color change (use the base color.)
-        else if(color == "CARD_BLACK" ){ this.settings.colorData = Card.colorReplacements.BLACK;  } // No color change (use the base color.)
+        if     (color == "CARD_YELLOW"){ this.settings._colorData = Card.colorReplacements.YELLOW; }
+        else if(color == "CARD_BLUE"  ){ this.settings._colorData = Card.colorReplacements.BLUE;   }
+        else if(color == "CARD_GREEN" ){ this.settings._colorData = Card.colorReplacements.GREEN;  }
+        else if(color == "CARD_RED"   ){ this.settings._colorData = Card.colorReplacements.RED;    } // No color change (use the base color.)
+        else if(color == "CARD_BLACK" ){ this.settings._colorData = Card.colorReplacements.BLACK;  } // No color change (use the base color.)
         else{ 
             console.error(`Invalid card color: ${color}`, this); 
             throw `Invalid card color: ${color}`; 
         }
+
+        this._changed = true; 
     };
 
     // Changes the displayed size of the card and regenerates the value.
@@ -333,6 +337,8 @@ class Card extends LayerObject{
 
         // Set the card tilemap.
         this._change_value(this._value);
+
+        this._changed = true; 
     };
 
     constructor(config){
@@ -370,6 +376,8 @@ class Card extends LayerObject{
 
         // Update the displayed color.
         this._change_color(this._color);
+
+        this._changed = true; 
     };
 
     // Card movements.
@@ -968,6 +976,16 @@ class Deck{
         // Return only the count. 
         return count.length;
     };
+    // Returns a count of the player's cards (just a count of all cards.)
+    countPlayerCards(playerKey){
+        // Get the player's cards.
+        let location = Deck.playerCardLocations[playerKey];
+        let playerCards = this.deck.filter(d => d.location == location);
+
+        // Return only the count. 
+        return playerCards.length;
+    };
+
     // Reset the position of each player card back to default.
     _resetCardPositions(playerKey, cards_layerObjs){
         for(let i=0; i<cards_layerObjs.length; i+=1){
@@ -1017,7 +1035,7 @@ class Deck{
         ];
         
         // Each row has up to 5 cards in it. So, each row starts on a multiple of 5 (including 0.)
-        let cardsToDisplay = playerCards_sorted.slice( (row*5), 5);
+        let cardsToDisplay = playerCards_sorted.slice((row * 5), (row + 1) * 5);
 
         this._resetCardPositions(playerKey, cards_layerObjs);
 
@@ -1052,7 +1070,7 @@ class Deck{
         ];
         
         // Each row has up to 5 cards in it. So, each row starts on a multiple of 5 (including 0.)
-        let cardsToDisplay = playerCards.slice( (row*5), 5);
+        let cardsToDisplay = playerCards.slice((row * 5), (row + 1) * 5);
 
         this._resetCardPositions(playerKey, cards_layerObjs);
 
@@ -1645,6 +1663,11 @@ class Gameboard{
                 ` INVALID CARD ` ,
                 `              ` ,
                 ` PICK ANOTHER `
+            ],
+            turnPassed   : [
+                `   PLAYER ${playerNum}   ` ,
+                `     PASS     `,
+                `  DRAW ONE !  ` ,
             ],
         };
 
