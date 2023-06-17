@@ -313,11 +313,11 @@ class Card extends LayerObject{
         // The other cards must never have their color set to "CARD_BLACK".
         else if(color == "CARD_BLACK"){ color = "CARD_RED";  this._color = color; }
         
-        if     (color == "CARD_YELLOW"){ this.settings._colorData = Card.colorReplacements.YELLOW; }
-        else if(color == "CARD_BLUE"  ){ this.settings._colorData = Card.colorReplacements.BLUE;   }
-        else if(color == "CARD_GREEN" ){ this.settings._colorData = Card.colorReplacements.GREEN;  }
-        else if(color == "CARD_RED"   ){ this.settings._colorData = Card.colorReplacements.RED;    } // No color change (use the base color.)
-        else if(color == "CARD_BLACK" ){ this.settings._colorData = Card.colorReplacements.BLACK;  } // No color change (use the base color.)
+        if     (color == "CARD_YELLOW"){ this._settings.colorData = Card.colorReplacements.YELLOW; }
+        else if(color == "CARD_BLUE"  ){ this._settings.colorData = Card.colorReplacements.BLUE;   }
+        else if(color == "CARD_GREEN" ){ this._settings.colorData = Card.colorReplacements.GREEN;  }
+        else if(color == "CARD_RED"   ){ this._settings.colorData = Card.colorReplacements.RED;    } // No color change (use the base color.)
+        else if(color == "CARD_BLACK" ){ this._settings.colorData = Card.colorReplacements.BLACK;  } // No color change (use the base color.)
         else{ 
             console.error(`Invalid card color: ${color}`, this); 
             throw `Invalid card color: ${color}`; 
