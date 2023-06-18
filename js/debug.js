@@ -5,6 +5,106 @@ var _DEBUG = {
     gridCanvas: {
         canvas:null,
         ctx:null,
+        canvas2:null,
+        ctx2:null,
+        hover1_last_regionX: 0,
+        hover1_last_regionY: 0,
+        hover1: function(event){
+            const regionWidth  = 8;
+            const regionHeight = 8;
+
+            const rect = this.canvas2.getBoundingClientRect();
+            const scaleX = this.canvas2.width / rect.width;
+            const scaleY = this.canvas2.height / rect.height;
+    
+            // Calculate the scaled mouse position.
+            const mouseX = ((event.clientX - rect.left) * scaleX);
+            const mouseY = ((event.clientY - rect.top)  * scaleY);
+    
+            // Calculate the 8x8px region under the mouse cursor
+            const regionX = (Math.floor(mouseX / regionWidth)  * regionWidth);
+            const regionY = (Math.floor(mouseY / regionHeight) * regionHeight);
+            
+            // Determine if we should continue.
+            if( this.hover1_last_regionX == regionX && this.hover1_last_regionY == regionY ) { return; }
+            this.hover1_last_regionX = regionX; 
+            this.hover1_last_regionY = regionY;
+    
+            // console.log(`regionX: ${regionX}, regionY: ${regionY}`); return; 
+
+            // Clear the highlight canvas.
+            this.ctx2.clearRect(0, 0, this.canvas2.width|0, this.canvas2.height|0);
+            
+            // Draw the coordinate data.
+            this.ctx2.lineWidth = 1;
+
+            // Create x, y, w, h.
+            let x=regionX;
+            let y=regionY;
+            let w=regionWidth;
+            let h=regionHeight;
+            let boxX = Math.round( (this.canvas2.width  / 2) );
+            let boxY = Math.round( (this.canvas2.height / 2) );
+            let boxW = Math.round( 16 );
+            let boxH = Math.round( 16 );
+            let text = `X: ${x.toString().padStart(3, " ")}, Y: ${y.toString().padStart(3, " ")}`;
+            let fontSize = 14;
+            this.ctx2.font=`${fontSize}px Courier New`;
+            let textWidth = Math.round(this.ctx2.measureText(text).width);
+            let textHeight = fontSize;
+            // Define rectangle properties based on text dimensions
+            let padding = 3;
+            let rectWidth  = Math.round(textWidth  + (2 * padding));
+            let rectHeight = Math.round(textHeight + (2 * padding));
+            let rectX = Math.round( (this.canvas2.width  / 2) - (rectWidth / 2) );
+            let rectY = Math.round( (this.canvas2.height / 2) - (rectHeight / 2) );
+            
+            // Draw a semi-transparent rectangle
+            this.ctx2.fillStyle = "rgba(0, 128, 255, 0.75)";
+            this.ctx2.fillRect(rectX, rectY, rectWidth, rectHeight);
+            
+            // Draw text on top of the rectangle
+            this.ctx2.fillStyle = "black"; // Setting text color
+            this.ctx2.fillStyle = "rgba(0, 0, 0, 0.75)";
+            this.ctx2.textAlign = "center"; // Center the text horizontally
+            this.ctx2.textBaseline = "middle"; // Center the text vertically
+            this.ctx2.fillText(
+                text, 
+                Math.round( this.canvas2.width  / 2), 
+                Math.round( this.canvas2.height / 2)
+            );
+
+            // Draw a semi-transparent rectangle covering the region occupied by this layer object.
+            this.ctx2.lineWidth=0.5;
+            // this.ctx2.lineWidth=1.0;
+            
+            // Square (fits in the grid square.)
+            this.ctx2.fillStyle="rgba(255, 0, 0, 0.65)";
+            this.ctx2.fillRect( x+1, y+1, w-1, h-1 );
+            
+            // Square (fits in the above square.)
+            this.ctx2.fillStyle="rgba(255, 255, 255, 0.65)";
+            this.ctx2.fillRect( x+3, y+3, w-5, h-5 );
+        },
+        canvasAntiBlur: function(canvas, ctx) {
+            // Get device pixel ratio
+            // let dpr = window.devicePixelRatio || 1;
+
+            // Get the size of the canvas that was set when creating it
+            // let width = canvas.width;
+            // let height = canvas.height;
+
+            // Set the size of the canvas in pixels, taking into account the device pixel ratio
+            // canvas.width  = width  * dpr;
+            // canvas.height = height * dpr;
+        
+            // Scale all drawing operations by the dpr
+            // ctx.scale(dpr, dpr);
+        
+            // The translate(0.5, 0.5) part is often used to make pixel-perfect lines, 
+            // it might not be needed depending on what you are drawing
+            // ctx.translate(0.5, 0.5);
+        },
         init: function(){
             // Copy the dimensions of the first canvas. 
             const canvas_src = document.querySelector(".canvasLayer");
@@ -14,44 +114,80 @@ var _DEBUG = {
             this.canvas.width  = canvas_src.width;
             this.canvas.height = canvas_src.height;
             this.canvas.id = "debug_grid_canvas";
-            this.canvas.style["z-index"] = "300";
+            this.canvas.style["z-index"] = "310";
             this.ctx = this.canvas.getContext('2d');
+
+            // Create a canvas for the highlight layer.
+            this.canvas2 = document.createElement("canvas");
+            this.canvas2.width  = canvas_src.width;
+            this.canvas2.height = canvas_src.height;
+            this.canvas2.id = "debug_grid_canvas2";
+            this.canvas2.style["z-index"] = "320";
+            this.ctx2 = this.canvas2.getContext('2d');
+            this.ctx2.imageSmoothingEnabled = false;
+            // this.ctx2.filter = "url(./svgFilter.svg)";
+            // this.ctx2.filter = "url(svgFilter.svg#adjust-alpha)";
         
             // Add the class.
             this.canvas.classList.add("canvasLayer");
             this.canvas.classList.add("displayNone");
+            this.canvas2.classList.add("canvasLayer");
+            this.canvas2.classList.add("displayNone");
 
-            // Draw a grid pattern.
-            const gridSize = 8;
-            const offset = 0.5;
-            this.ctx.lineWidth = 1;
-            for (let x = 0; x <= this.canvas.width; x += gridSize) {
-                this.ctx.moveTo(x + offset, 0);
-                this.ctx.lineTo(x + offset, this.canvas.height);
-            }
-            for (let y = 0; y <= this.canvas.height; y += gridSize) {
-                this.ctx.moveTo(0, y + offset);
-                this.ctx.lineTo(this.canvas.width, y + offset);
-            }
-            this.ctx.strokeStyle = 'rgba(128,128,128, 1)';
-            this.ctx.stroke();
-        
-            // Add a marker to every 5th square.
-            this.ctx.fillStyle = 'rgba(128,128,128,1)';
-            for (let x = 0; x <= this.canvas.width; x += gridSize * 5) {
-                for (let y = 0; y <= this.canvas.height; y += gridSize * 5) {
-                    this.ctx.fillRect(
-                        x + 3, 
-                        y + 3, 
-                        gridSize-5, 
-                        gridSize-5
-                    );
-                }
-            }
-        
+            // Add the highlight on hover function for this.canvas2.
+            this.canvas2.addEventListener("mousemove", (event) => this.hover1(event), false);
+            this.canvas2.addEventListener("mouseleave", () => { this.ctx2.clearRect(0, 0, this.canvas2.width|0, this.canvas2.height|0); }, false);
+
             // Add the new canvas to the output div.
             let outputDiv = document.getElementById("output");
             outputDiv.append(this.canvas);
+            outputDiv.append(this.canvas2);
+
+            // Apply anti-blur but delay until the next frame.
+            requestAnimationFrame(() => {
+                // this.canvasAntiBlur(this.canvas,  this.ctx);
+                // this.canvasAntiBlur(this.canvas2, this.ctx2);
+                // this.ctx .translate(0.5, 0.5);
+                // this.ctx2.translate(0.5, 0.5);
+
+                // Draw a grid pattern.
+                const gridSize = 8;
+                const offset = 0.5; // Use 0.5 to align lines with pixel grid
+                this.ctx.lineWidth = 1;
+
+                // Begin the path for grid lines
+                this.ctx.beginPath();
+
+                // Draw vertical lines
+                for (let x = 0; x <= this.canvas.width; x += gridSize) {
+                    this.ctx.moveTo(x + offset, 0);
+                    this.ctx.lineTo(x + offset, this.canvas.height);
+                }
+
+                // Draw horizontal lines
+                for (let y = 0; y <= this.canvas.height; y += gridSize) {
+                    this.ctx.moveTo(0, y + offset);
+                    this.ctx.lineTo(this.canvas.width, y + offset);
+                }
+
+                // Stroke the grid lines
+                this.ctx.strokeStyle = 'rgba(128, 128, 128, 0.75)';
+                this.ctx.stroke();
+
+                // Add a marker to every 5th square.
+                this.ctx.fillStyle = 'rgba(200,200,200, 0.75)';
+                for (let x = 0; x <= this.canvas.width; x += gridSize * 5) {
+                    for (let y = 0; y <= this.canvas.height; y += gridSize * 5) {
+                        // Apply correction to rectangle position and size
+                        this.ctx.fillRect(
+                            Math.round(x + 2.5 -1), 
+                            Math.round(y + 2.5 -1), 
+                            Math.round(gridSize - 3), 
+                            Math.round(gridSize - 3)
+                        );
+                    }
+                }
+            });
         },
     },
     // Control of the toggle buttons: loop, logic, await draw, debug, hashcache, grid.
@@ -111,6 +247,7 @@ var _DEBUG = {
             this.DOM.gridCanvasButton.addEventListener("click", ()=>{
                 let home = _DEBUG.gridCanvas;
                 home.canvas.classList.toggle("displayNone");
+                home.canvas2.classList.toggle("displayNone");
                 if(home.canvas.classList.contains("displayNone")){
                     this.DOM.gridCanvasButton.innerText = "OFF";
                     this.DOM.gridCanvasButton.classList.remove("debug_bgColor_on");
@@ -1275,7 +1412,7 @@ var _DEBUG = {
             this.highlightCanvas.width  = canvas_src_L1.width; 
             this.highlightCanvas.height = canvas_src_L1.height;
             this.highlightCanvas.id = "debug_highlight_canvas";
-            this.highlightCanvas.style["z-index"] = "400";
+            this.highlightCanvas.style["z-index"] = "300";
             this.highlightCanvasCtx = this.highlightCanvas.getContext('2d');
 
             // Add the class.
@@ -2545,6 +2682,11 @@ var _DEBUG = {
         // Calculate the runDebug_wait.
         this.runDebug_wait = (_APP.game.gameLoop.msFrame * this.runDebug_waitFrames) | 0;
 
+        // Set the output scaling (only in debug mode.)
+        let scaleSlider = document.getElementById("scaleSlider");
+        scaleSlider.value = "2.5";
+        scaleSlider.dispatchEvent(new Event("input"));
+
         // Load the grid canvas.
         this.gridCanvas.init();
 
@@ -2553,7 +2695,7 @@ var _DEBUG = {
         
         // Load the toggle buttons.
         this.toggleButtons1.init();
-        
+
         // Load the fade.
         this.fade.init();
 
@@ -2592,11 +2734,6 @@ var _DEBUG = {
         _DEBUG.navBar3.showOne("view_all_copy");
         // _DEBUG.navBar3.showOne("view_temp"); 
         // _DEBUG.navBar3.showOne("view_temp_copy");
-
-        // Set the output scaling (only in debug mode.)
-        let scaleSlider = document.getElementById("scaleSlider");
-        scaleSlider.value = "2.5";
-        scaleSlider.dispatchEvent(new Event("input"));
 
         // DEBUG DOM:
         // this.DOM.debug_timings_total         = document.getElementById("debug_timings_total");
