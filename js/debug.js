@@ -43,11 +43,7 @@ var _DEBUG = {
             let y=regionY;
             let w=regionWidth;
             let h=regionHeight;
-            let boxX = Math.round( (this.canvas2.width  / 2) );
-            let boxY = Math.round( (this.canvas2.height / 2) );
-            let boxW = Math.round( 16 );
-            let boxH = Math.round( 16 );
-            let text = `X: ${x.toString().padStart(3, " ")}, Y: ${y.toString().padStart(3, " ")}`;
+            let text = `tX: ${x.toString().padStart(3, " ")}, tY: ${y.toString().padStart(3, " ")}`;
             let fontSize = 14;
             this.ctx2.font=`${fontSize}px Courier New`;
             let textWidth = Math.round(this.ctx2.measureText(text).width);
@@ -60,12 +56,12 @@ var _DEBUG = {
             let rectY = Math.round( (this.canvas2.height / 2) - (rectHeight / 2) );
             
             // Draw a semi-transparent rectangle
-            this.ctx2.fillStyle = "rgba(0, 128, 255, 0.75)";
+            this.ctx2.fillStyle = "rgba(0, 128, 255, 0.80)";
             this.ctx2.fillRect(rectX, rectY, rectWidth, rectHeight);
             
             // Draw text on top of the rectangle
-            this.ctx2.fillStyle = "black"; // Setting text color
-            this.ctx2.fillStyle = "rgba(0, 0, 0, 0.75)";
+            // this.ctx2.fillStyle = "black"; // Setting text color
+            this.ctx2.fillStyle = "rgba(0, 0, 0, 0.90)";
             this.ctx2.textAlign = "center"; // Center the text horizontally
             this.ctx2.textBaseline = "middle"; // Center the text vertically
             this.ctx2.fillText(
@@ -74,17 +70,15 @@ var _DEBUG = {
                 Math.round( this.canvas2.height / 2)
             );
 
-            // Draw a semi-transparent rectangle covering the region occupied by this layer object.
-            this.ctx2.lineWidth=0.5;
-            // this.ctx2.lineWidth=1.0;
             
+            // Draw a highlight marker to clearly identify the tile that is being hovered over.
             // Square (fits in the grid square.)
-            this.ctx2.fillStyle="rgba(255, 0, 0, 0.65)";
+            this.ctx2.fillStyle="rgba(248, 200, 200, 1)";
             this.ctx2.fillRect( x+1, y+1, w-1, h-1 );
             
             // Square (fits in the above square.)
-            this.ctx2.fillStyle="rgba(255, 255, 255, 0.65)";
-            this.ctx2.fillRect( x+3, y+3, w-5, h-5 );
+            this.ctx2.fillStyle="rgba(244, 67, 54, 0.60)";
+            this.ctx2.fillRect( x+2, y+2, w-3, h-3 );
         },
         canvasAntiBlur: function(canvas, ctx) {
             // Get device pixel ratio
@@ -1489,11 +1483,21 @@ var _DEBUG = {
             }
 
             // Draw a semi-transparent rectangle covering the region occupied by this layer object.
-            this.highlightCanvasCtx.fillStyle="rgba(244, 67, 54, 0.7)";
-            this.highlightCanvasCtx.strokeStyle="white";
-            this.highlightCanvasCtx.lineWidth=0.5;
+            // this.highlightCanvasCtx.fillStyle="rgba(244, 67, 54, 0.7)";
+            // this.highlightCanvasCtx.strokeStyle="white";
+            // this.highlightCanvasCtx.lineWidth=0.5;
+            // this.highlightCanvasCtx.fillRect( x, y, w, h );
+            // this.highlightCanvasCtx.strokeRect( x, y, w, h );
+
+            // Draw a highlight marker to clearly identify the tile that is being hovered over.
+            // Square (fits in the grid square.)
+            this.highlightCanvasCtx.fillStyle="rgba(248, 200, 200, 1)";
             this.highlightCanvasCtx.fillRect( x, y, w, h );
-            this.highlightCanvasCtx.strokeRect( x, y, w, h );
+            
+            // Square (fits in the above square.)
+            this.highlightCanvasCtx.fillStyle="rgba(244, 67, 54, 0.60)";
+            this.highlightCanvasCtx.fillRect( x+1, y+1, w-2, h-2 );
+
         },
         contextMenu1_open  : function(e, gs, key){
             e.preventDefault();

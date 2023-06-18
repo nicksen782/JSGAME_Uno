@@ -89,7 +89,7 @@ var gfxCoreV5 = {
 
         // Clear the graphics cache. 
         let layerKey, mapKeys, mapKey, map;
-        let layerKeys = gfxMainV5.layerKeys;
+        let layerKeys = gfxMainV5.layerKeys ?? Object.keys(_GFX.currentData);
         for(let i=0, len1=layerKeys.length; i<len1; i+=1){
             layerKey = layerKeys[i];
             mapKeys = Object.keys(_GFX.currentData[layerKey].tilemaps);
@@ -1034,6 +1034,7 @@ var gfxCoreV5 = {
     // REVERSE-BLIT: Supports blitting for each pixel row that can use it. (updateRegion_replace is faster when blitting is NOT needed.)
     // Source is Uint8Array.
     // This only writes to transparent pixels at the destination.
+    // Can be used to draw an image "behind" another image on the same layer.
     updateRegion_reverseBlit: function(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
         // Determine the start and end of the destination region in both dimensions.
         // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.

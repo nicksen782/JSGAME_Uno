@@ -249,10 +249,14 @@ var gfxMainV5 = {
         // Go through CHANGES and see if the existing ImageData tilemap can be reused (EX: Only a change to x or y.)
         // x/y changes will be updated in the graphics data cache.
         // Non-reusable keys and data will be replace newMapKeys and newMapData.
-        ({newMapKeys, newMapData} = gfxMainV5.gfx.DRAW.canImageDataTilemapBeReused(layerKey, newMapKeys, newMapData));
+        ({newMapKeys, newMapData} = gfxMainV5.gfx.DRAW.canImageDataTilemapBeReused(layerKey, newMapKeys, newMapData, layerData));
 
         // Create ImageData tilemaps as needed and update the graphics data cache. 
         if(newMapKeys.length){
+            // Re-sort allMapKeys to match the key order in _GFX.currentData[layerKey].tilemaps.
+            // let currentMapKeys = Object.keys(_GFX.currentData[layerKey].tilemaps);
+            // newMapKeys.sort((a, b) => currentMapKeys.indexOf(a) - currentMapKeys.indexOf(b));
+
             gfxMainV5.gfx.DRAW.createImageDataFromTilemapsAndUpdateGraphicsCache(
                 layerKey, newMapKeys, newMapData, true
             );
@@ -370,120 +374,256 @@ var gfxMainV5 = {
                 // Clear the imgDataCache for this layer.
                 _GFX.layers[layerKey].imgDataCache.data.fill(0);
             },
-    
-            // Returns a list of specific regions that were overlapped by removed images on the same layer.
-            getRegionsUsedByMapKeys: function(layerKey, mapKeys){
-                // Go through the supplied mapKeys...
-                let removedRegions = {};
-                let hasRemovedRegions = false;
+
+            /*
+            In summary:
+            1. getRedrawsOverlapping_hiddenTransition starts by finding which mapKeys will be unhidden based on the hiddenTransition flag.
+            2. For each of these mapKeys, it uses the recursive function checkOverlapsRecursive to check for overlaps with other mapKeys.
+                2a. The recursion in checkOverlapsRecursive is important because when it finds an overlap, it needs 
+                to consider the possibility that this overlapping mapKey might also be overlapping with others, and so on.
+            3. The final result is a set of mapKeys that need to be redrawn. This set is returned as an array.
+            */
+
+            // Similar to getRegionsUsedByMapKeys. Determines all maps that overlap maps with hiddenTransition set.
+            // These maps are then added to CHANGES to be redrawn.
+            getRedrawsOverlapping_hiddenTransition: function(layerKey, layerData) {
+                // Obtain tilemaps data associated with the given layerKey.
+                let tilemaps = _GFX.currentData[layerKey].tilemaps;
                 
+                // Get all the mapKeys that have changed.
+                let changedMapKeys = Object.keys(layerData["CHANGES"]);
+                
+                // A set to store mapKeys that have the hiddenTransition flag and will be unhidden.
+                let willUnhide = new Set();
+                
+                // A set to store mapKeys that should be redrawn due to overlaps.
+                let flaggedForRedraw = new Set();
+            
+                // Iterate through the changed mapKeys.
+                for (let mapKey1 of changedMapKeys) {
+                    // Get the data associated with the mapKey.
+                    let map1 = tilemaps[mapKey1];
+
+                    // If map1 doesn't exist or it doesn't have the hiddenTransition flag, skip it.
+                    if (!map1 || !map1.hiddenTransition) { continue; }
+
+                    // Add it to the willUnhide set.
+                    willUnhide.add(mapKey1);
+                }
+            
+                // Iterate through the mapKeys in willUnhide.
+                for (let mapKey1 of willUnhide) {
+                    // Get the data associated with the mapKey.
+                    let map1 = tilemaps[mapKey1];
+                    
+                    // Create a rectangle representing map1's area.
+                    let rect1 = { x: map1.x, y: map1.y, w: map1.w, h: map1.h };
+            
+                    // Recursively check for overlaps with other tilemaps and add them to flaggedForRedraw.
+                    this.checkOverlapsRecursive(mapKey1, rect1, tilemaps, flaggedForRedraw);
+                }
+            
+                // Return the list of mapKeys flagged for redraw.
+                return [...flaggedForRedraw];
+            },
+            
+            checkOverlapsRecursive: function(mapKey1, rect1, tilemaps, flaggedForRedraw) {
+                // Iterate through all the mapKeys in the tilemaps.
+                for (let mapKey2 in tilemaps) {
+                    // If mapKey1 is the same as mapKey2, skip this iteration.
+                    if (mapKey1 === mapKey2) { continue; }
+            
+                    // Get the data associated with mapKey2.
+                    let map2 = tilemaps[mapKey2];
+            
+                    // If map2 doesn't exist or it is hidden, skip this iteration.
+                    if (!map2 || map2.hidden) { continue; }
+            
+                    // Create a rectangle representing map2's area.
+                    let rect2 = { x: map2.x, y: map2.y, w: map2.w, h: map2.h };
+
+                    // Check if rect1 and rect2 overlap.
+                    let overlap = _GFX.utilities.aabb_collisionDetection(rect1, rect2);
+            
+                    // If there is an overlap.
+                    if (overlap.collision) {
+                        // If mapKey2 is not already in flaggedForRedraw.
+                        if (!flaggedForRedraw.has(mapKey2)) {
+                            // Add mapKey2 to flaggedForRedraw.
+                            flaggedForRedraw.add(mapKey2);
+            
+                            // Recursively check for overlaps with other tilemaps including mapKey2.
+                            // This is necessary to find overlaps that involve mapKey2.
+                            this.checkOverlapsRecursive(mapKey2, rect2, tilemaps, flaggedForRedraw);
+                        }
+                    }
+                }
+            },
+
+            // 
+            // Returns a list of specific regions that were overlapped by removed images on the same layer.
+            getRegionsUsedByMapKeys: function(layerKey, mapKeys, layerData) {
+                // Go through the supplied mapKeys...
+                let regionsToClear = {};
+                let overlappedRegions = {}; // These would be cleared when the map they are on top of is cleared.
+                let hasOverlaps = false;
+                let changedMapKeys = new Set(Object.keys(layerData["CHANGES"]));
+                let additionalCHANGES_toRestore = [];
+            
                 for(let mapKey of mapKeys){
                     // Get the map from the graphics cache.
                     let map = _GFX.currentData[layerKey].tilemaps[mapKey]; 
-        
+            
                     // If it was not found then skip.
                     if(!map){ continue; }
-        
+            
                     // Store rectangle dimensions for the region occupied by the old map.
-                    removedRegions[mapKey] = { x:map.x, y:map.y, w:map.w, h:map.h };
-                    hasRemovedRegions = true; 
+                    regionsToClear[mapKey] = { x:map.x, y:map.y, w:map.w, h:map.h };
                 }
-        
+            
+                let tilemaps = _GFX.currentData[layerKey].tilemaps;
+                let regionsToClear_keys = Object.keys(regionsToClear);
+                let overlap;
+                let rect1;
+                let rect2;
+            
+                // Go through each of the regionsToClear...
+                for (let mapKey1 of regionsToClear_keys) {
+                    // Create rectangle dimensions for the map.
+                    rect1 = regionsToClear[mapKey1];
+            
+                    // Changes need to be faded individually (Later in drawImgDataCacheFromDataCache.)
+                    if(layerData["CHANGES"][mapKey1] && layerData.fade.currFade != null){
+                        layerData["CHANGES"][mapKey1].fadeBeforeDraw = true;
+                    }
+            
+                    // Go through each mapKey of currentMapKeys...
+                    for(let mapKey2 of Object.keys(tilemaps)){
+                        // Don't check an entry against itself.
+                        if(mapKey1 == mapKey2) { continue; }
+            
+                        // If this map is already in CHANGES then it would be redrawn anyway. Skip it.
+                        if(changedMapKeys.has(mapKey2)){ continue; }
+            
+                        // Get the map from the current graphics cache.
+                        let map = tilemaps[mapKey2];
+            
+                        // Make sure the map exists.
+                        if(!map){ continue; }
+            
+                        // Do not restore the region if the overlapped tilemap is hidden.
+                        if(map.hidden){ continue; }
+            
+                        // Create rectangle dimensions for the map.
+                        rect2 = { x:map.x, y:map.y, w:map.w, h:map.h };
+            
+                        // Determine if this map overlaps with rect. 
+                        overlap = _GFX.utilities.aabb_collisionDetection(rect1, rect2);
+            
+                        // If overlapped and the overlapped mapKey is not in changes...
+                        if(overlap.collision){ 
+                            // Create the key if it doesn't exist yet. 
+                            if(!overlappedRegions[mapKey2]){ overlappedRegions[mapKey2] = []; }
+            
+                            // Add the data for the overlap. 
+                            overlappedRegions[mapKey2].push( {
+                                src_img: { 
+                                    x: (overlap.x - map.x), w: overlap.w, 
+                                    y: (overlap.y - map.y), h: overlap.h,
+                                    imgData: map.imgData,
+                                    hasTransparency: map.hasTransparency,
+                                    settings: map.settings
+                                },
+                                dest_layer: { 
+                                    x: overlap.x, w: overlap.w, 
+                                    y: overlap.y, h: overlap.h 
+                                },
+                            });
+            
+                            // Set the hasOverlaps flag.
+                            hasOverlaps = true;
+                        }
+                    }
+                }
+            
                 return {
-                    data             : removedRegions,
-                    keys             : Object.keys(removedRegions),
-                    hasRemovedRegions: hasRemovedRegions,
+                    // These need to be cleared.
+                    toClear: Object.keys(regionsToClear).length ? regionsToClear : false,
+                    // These need to be restored after the clear.
+                    overlappedRegions: hasOverlaps ? overlappedRegions : false,
                 };
             },
+            
 
             // Generates the data used to clear regions occupied by removed images.
             // Uses getRegionsUsedByMapKeys.
             // Does perform clearing. That is done by drawToImgDataCache using data returned by this function.
             preClear(layerKey, layerData, messageData){
-                // Determine regions to clear and anything they overlapped that still exists.
-                let overlappedRegions = {};
-                let hasOverlaps = false;
+                // Determine regions to clear and anything overlapped by a clear that still needs to be displayed.
                 let removedMapKeys = layerData["REMOVALS_ONLY"];
-                let changedMapKeys = new Set(Object.keys(layerData["CHANGES"]));
+                let changedMapKeys = Object.keys(layerData["CHANGES"]);
+
+                // Determine if any maps have transitioned from hidden to unhidden.
+                for (let newMapKey of changedMapKeys) {
+                    let newMap    = layerData["CHANGES"][newMapKey];
+                    let curr_map  = _GFX.currentData[layerKey].tilemaps[newMapKey];
+                    if(!curr_map){ 
+                        // console.log(`This map: '${newMapKey}' is not in _GFX.currentData`);
+                        continue; 
+                    }
+                    if(!newMap){ 
+                        console.error(`This map: '${newMapKey}' is not in layerData["CHANGES"]`);
+                        continue; 
+                    }
+                    if (curr_map.hidden && !newMap.hidden) {
+                        // Set the hiddenTransition flag. It will be used by drawImgDataCacheFromDataCache and also cleared by it.
+                        newMap.hiddenTransition   = true;
+                        curr_map.hiddenTransition = true;
+                    }
+                }
+                let additionalMapKeys = this.getRedrawsOverlapping_hiddenTransition(layerKey, layerData);
+
+                let changedAndAdditional;
+
+                // If there were additional keys then sort changedAndAdditional to match _GFX.currentData[layerKey].tilemaps.
+                // Also, add to layerData["CHANGES"].
+                if(additionalMapKeys.length){
+                    // Add to layerData["CHANGES"].
+                    for(let mapKey of additionalMapKeys){
+                        let curr_map = _GFX.currentData[layerKey].tilemaps[mapKey];
+                        if(!curr_map){ continue; }
+                        if(curr_map.hidden){ continue; }
+                        // console.log("ADDING TO CHANGES: mapKey:", mapKey, ", hidden:", _GFX.currentData[layerKey].tilemaps[mapKey].hidden);
+                        layerData.CHANGES[mapKey] = _GFX.currentData[layerKey].tilemaps[mapKey];
+                    }
+
+                    // Recreate changedMapKeys.
+                    changedMapKeys = Object.keys(layerData["CHANGES"]);
+
+                    // Combine the changes keys and additional keys and deduplicate.
+                    changedAndAdditional = [...new Set([...changedMapKeys].concat(additionalMapKeys))];
+                }
+
+                let changedKeysToUse = changedAndAdditional ? changedAndAdditional : changedMapKeys;
+
+                // NOTES: 
+                // changedMapKeys: These keys are to be removed from imgDataCache and redrawn when their entries for the graphics cache are updated.
+                // additionalMapKeys: These are keys that would be overlapped by a map transitioning from hidden to unhidden.
+
                 let toClear = [
                     // These keys are to be removed from imgDataCache and from the graphics cache.
                     ...removedMapKeys, 
                     
-                    // These keys are to be removed from imgDataCache and redrawn when their entries for the graphics cache are updated.
-                    ...changedMapKeys
+                    // A combination of erase and redraw (changes) and any additional keys from overlaps of to non-hidden transitions.
+                    ...changedKeysToUse
                 ];
-                let removedRegions = this.getRegionsUsedByMapKeys(layerKey, toClear);
-                
-                if(removedRegions.hasRemovedRegions){
-                    let tilemaps = _GFX.currentData[layerKey].tilemaps;
-                    let currentMapKeys = Object.keys(tilemaps);
-                    let overlap;
-                    let rect1;
-                    let rect2;
-                    for (let mapKey1 of removedRegions.keys) {
-                        // Create rectangle dimensions for the map.
-                        rect1 = removedRegions.data[ mapKey1 ];
-    
-                        // Changes need to be faded individually (Later in drawImgDataCacheFromDataCache.)
-                        if(layerData["CHANGES"][mapKey1] && layerData.fade.currFade != null){
-                            layerData["CHANGES"][mapKey1].fadeBeforeDraw = true;
-                        }
-    
-                        // Go through each mapKey of the currentMapKeys...
-                        for(let mapKey2 of currentMapKeys){
-                            // Don't check an entry against itself.
-                            if(mapKey1 == mapKey2) { continue; }
-    
-                            // Skip this map if mapKey2 is one of the changed maps.
-                            // If the mapKey is a changed map then it will be redrawn in full anyway.
-                            if(changedMapKeys.has(mapKey2)){ continue; }
-    
-                            // Get the map from the current graphics cache.
-                            let map = tilemaps[mapKey2]; 
-                            
-                            // Do not restore the region if the overlapped tilemap is hidden.
-                            // let regionTilemap = _GFX.currentData[layerKey].tilemaps[mapKey2];
-                            // if(regionTilemap.hidden){ continue; }
-                            if(map.hidden){ continue; }
 
-                            // Create rectangle dimensions for the map.
-                            rect2 = { x:map.x, y:map.y, w:map.w, h:map.h };
-    
-                            // Determine if this map overlaps with rect. 
-                            overlap = _GFX.utilities.aabb_collisionDetection(rect1, rect2);
-    
-                            // If overlapped and the overlapped mapKey is not in changes...
-                            if(overlap.collision){ 
-                                // Create the key if it doesn't exist yet. 
-                                if(!overlappedRegions[mapKey2]){ overlappedRegions[mapKey2] = []; }
-    
-                                // Add the data for the overlap. 
-                                // NOTE: src_img is the coords within the source. dest_layer is the coords for the output layer.
-                                overlappedRegions[mapKey2].push( {
-                                    src_img    : { 
-                                        x: (overlap.x - map.x), w: overlap.w, 
-                                        y: (overlap.y - map.y), h: overlap.h,
-                                        imgData        : map.imgData,
-                                        hasTransparency: map.hasTransparency,
-                                        settings       : map.settings
-                                    },
-                                    dest_layer : { 
-                                        x: overlap.x, w: overlap.w, 
-                                        y: overlap.y, h: overlap.h 
-                                    },
-                                } );
-    
-                                // Set the hasOverlaps flag.
-                                hasOverlaps = true;
-                            }
-                        }
-                    }
-                }
-    
-                return {
-                    overlappedRegions : hasOverlaps ? overlappedRegions : false,
-                    toClear           : removedRegions.hasRemovedRegions ? removedRegions.data : false,
-                }
+                // if(additionalMapKeys.length){
+                //     console.log("toClear:", toClear);
+                // }
+
+                let removedRegions    = this.getRegionsUsedByMapKeys(layerKey, toClear, layerData);
+                return removedRegions;
             },
         },
         // Drawing functions.
@@ -575,12 +715,9 @@ var gfxMainV5 = {
                         continue; 
                     }
                     
-                    if(curr_map.hidden != newMap.hidden){
+                    if(curr_map.hidden && !newMap.hidden){
                         filtered_newMapKeys.push(newMapKey);
                         filtered_newMapData[newMapKey] = newMap;
-
-                        // Set the hiddenTransition flag. It will be used by drawImgDataCacheFromDataCache and also cleared by it.
-                        newMap.hiddenTransition = true;
 
                         // console.log(`${newMapKey}: Changed 'hidden': curr: ${curr_map.hidden}, new: ${newMap.hidden}`)
                         // filtered_reasons[newMapKey] = `${newMapKey}: Changed 'hidden': curr: ${curr_map.hidden}, new: ${newMap.hidden}`;
@@ -620,6 +757,7 @@ var gfxMainV5 = {
                     _GFX.currentData[layerKey].tilemaps[newMapKey].settings = newMap.settings;
                     _GFX.currentData[layerKey].tilemaps[newMapKey].hash     = newMap.hash;
                     _GFX.currentData[layerKey].tilemaps[newMapKey].hashPrev = newMap.hashPrev;
+                    _GFX.currentData[layerKey].tilemaps[newMapKey].hidden   = newMap.hidden;
                     _GFX.currentData[layerKey].tilemaps[newMapKey].hiddenTransition = newMap.hiddenTransition;
                 }
     
@@ -845,6 +983,10 @@ var gfxMainV5 = {
                 // Otherwise use only the CHANGES keys. 
                 else{
                     allMapKeys = [ ...Object.keys(layerData["CHANGES"]) ];
+
+                    // Re-sort allMapKeys to match the key order in _GFX.currentData[layerKey].tilemaps.
+                    let currentMapKeys = Object.keys(_GFX.currentData[layerKey].tilemaps);
+                    allMapKeys.sort((a, b) => currentMapKeys.indexOf(a) - currentMapKeys.indexOf(b));
                 }
                 
                 let part1=[]; // Can be flickered/resorted.
@@ -969,30 +1111,15 @@ var gfxMainV5 = {
                     //.A blit writes only non-transparent pixels of the source to the destination.
                     // A reverse-blit only writes the source to transparent pixel at the destination.
                     let blit = map.hasTransparency;
-                    let reverseBlit = map.hiddenTransition;
 
-                    // If a map WAS hidden but now is NOT then a reverse blit is needed so that restoring the map does not overlap anything else.
-                    // This effectively draws the image behind everything that would overlap it.
-                    // Blit is by row. Rows not having transparent pixels are skipped.
-                    if(reverseBlit){
-                        gfxCoreV5.updateRegion_reverseBlit(
-                            imgData.data,        // source
-                            imgData.width,       // srcWidth
-                            imgDataCache.data,   // destination
-                            imgDataCache.width,  // destWidth
-                            imgDataCache.height, // destHeight
-                            map.x,               // x
-                            map.y,               // y
-                            map.w,               // w
-                            map.h,               // h
-                        );
-
-                        // Clear the hiddenTransition flag.
+                    // Clear the hiddenTransition flag.
+                    if(map.hiddenTransition){
                         map.hiddenTransition = false;
                     }
+
                     // Blits are needed when drawing images that contain transparency. 
                     // Blit is by row. Source rows not having transparent pixesl are replaced instead of blitted.
-                    else if(blit){
+                    if(blit){
                         gfxCoreV5.updateRegion_blit(
                             imgData.data,        // source
                             imgData.width,       // srcWidth
@@ -1005,7 +1132,9 @@ var gfxMainV5 = {
                             map.h,               // h
                         );
                     }
+
                     // If the image does not have transparent pixels then skip the blit and do the simpler replace instead.
+                    // Replace is faster than blit and better to use if there are not transparent pixels.
                     // Replace is by row.
                     else{
                         gfxCoreV5.updateRegion_replace(

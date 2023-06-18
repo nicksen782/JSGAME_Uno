@@ -631,7 +631,7 @@
                 </div>
                 <div id="debug_navBarViews_gs_PLAYING">
                     <div id="debug_navBar_gs_PLAYING_view_settings" class="controls_navBarViews">
-                        <!-- GAME FLAGS -->
+                        <!-- GAME FLAGS (MESSAGE,COLOR,DIRECTION,L1 BGCOLOR)-->
                         <table class="debug_table">
                             <tr> 
                                 <td class="debug_td_header">MESSAGE</td>
@@ -640,6 +640,7 @@
                                 <td class="debug_td_header">L1 BGCOLOR</td>
                             </tr> 
                             <tr> 
+                                <!-- MESSAGE -->
                                 <td class="">
                                     <select id="debug_PLAYING_messageSelect">
                                         <option value = "none"        >none</option>
@@ -657,6 +658,7 @@
                                     </select>
                                     <button id="debug_PLAYING_messageButton">SET</button>
                                 </td> 
+                                <!-- COLOR -->
                                 <td> 
                                     <select id="debug_PLAYING_colorPlayerSelect">
                                         <option value = "P1">P1</option>
@@ -673,11 +675,13 @@
                                     </select>
                                     <button id="debug_PLAYING_colorButton">SET</button>
                                 </td> 
+                                <!-- DIRECTION -->
                                 <td> 
                                     <button id="debug_PLAYING_dirFButton">F</button>
                                     <button id="debug_PLAYING_dirNButton">N</button>
                                     <button id="debug_PLAYING_dirRButton">R</button>
                                 </td> 
+                                <!-- L1 BGCOLOR -->
                                 <td> 
                                     <select id="debug_PLAYING_bgColorSelect">
                                         <option value="0,0,0,0"        >CLEAR</option>
@@ -695,6 +699,7 @@
                         </table>
                         <br>
 
+                        <!-- CARD FLIPPING -->
                         <table class="debug_table">
                             <tr>
                                 <td class="debug_td_header"></td>
@@ -737,7 +742,81 @@
                         </table>
                         <br>
 
+                        <!-- TESTS OF THE HIDDEN FLAG  -->
+                        <br>
+                        <table class="debug_table">
+                            <tr>
+                                <td class="debug_td_header">LayerObjectKey</td>
+                                <td class="debug_td_header">hidden</td>
+                            </tr>
+                            <tr>
+                                <td class="">cBorder_fill</td>
+                                <td class="">
+                                    <button onclick='_GFX.layerObjs.getOne("cBorder_fill").hidden = true;'>true</button>
+                                    <button onclick='_GFX.layerObjs.getOne("cBorder_fill").hidden = false;'>false</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="">drapBorder (ALL)</td>
+                                <td class="">
+                                    <button onclick='
+                                        _GFX.layerObjs.getOne("drapBorder_fill").hidden = true;
+                                        _GFX.layerObjs.getOne("drapBorder_L")   .hidden = true;
+                                        _GFX.layerObjs.getOne("drapBorder_R")   .hidden = true;
+                                        _GFX.layerObjs.getOne("drapBorder_B")   .hidden = true;
+                                        _GFX.layerObjs.getOne("drapBorder_T")   .hidden = true;
+                                        _GFX.layerObjs.getOne("drapBorder_BR")  .hidden = true;
+                                        _GFX.layerObjs.getOne("drapBorder_BL")  .hidden = true;
+                                        _GFX.layerObjs.getOne("drapBorder_TR")  .hidden = true;
+                                        _GFX.layerObjs.getOne("drapBorder_TL")  .hidden = true;
+                                        '
+                                    >true</button>
+                                    <button onclick='
+                                        _GFX.layerObjs.getOne("drapBorder_fill").hidden = false;
+                                        _GFX.layerObjs.getOne("drapBorder_L")   .hidden = false;
+                                        _GFX.layerObjs.getOne("drapBorder_R")   .hidden = false;
+                                        _GFX.layerObjs.getOne("drapBorder_B")   .hidden = false;
+                                        _GFX.layerObjs.getOne("drapBorder_T")   .hidden = false;
+                                        _GFX.layerObjs.getOne("drapBorder_BR")  .hidden = false;
+                                        _GFX.layerObjs.getOne("drapBorder_BL")  .hidden = false;
+                                        _GFX.layerObjs.getOne("drapBorder_TR")  .hidden = false;
+                                        _GFX.layerObjs.getOne("drapBorder_TL")  .hidden = false;
+                                    '
+                                    >false</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="">dispBorder (ALL)</td>
+                                <td class="">
+                                    <button onclick='
+                                        _GFX.layerObjs.getOne("dispBorder_fill").hidden = true;
+                                        _GFX.layerObjs.getOne("dispBorder_L")   .hidden = true;
+                                        _GFX.layerObjs.getOne("dispBorder_R")   .hidden = true;
+                                        _GFX.layerObjs.getOne("dispBorder_B")   .hidden = true;
+                                        _GFX.layerObjs.getOne("dispBorder_T")   .hidden = true;
+                                        _GFX.layerObjs.getOne("dispBorder_BR")  .hidden = true;
+                                        _GFX.layerObjs.getOne("dispBorder_BL")  .hidden = true;
+                                        _GFX.layerObjs.getOne("dispBorder_TR")  .hidden = true;
+                                        _GFX.layerObjs.getOne("dispBorder_TL")  .hidden = true;
+                                        '
+                                    >true</button>
+                                    <button onclick='
+                                        _GFX.layerObjs.getOne("dispBorder_fill").hidden = false;
+                                        _GFX.layerObjs.getOne("dispBorder_L")   .hidden = false;
+                                        _GFX.layerObjs.getOne("dispBorder_R")   .hidden = false;
+                                        _GFX.layerObjs.getOne("dispBorder_B")   .hidden = false;
+                                        _GFX.layerObjs.getOne("dispBorder_T")   .hidden = false;
+                                        _GFX.layerObjs.getOne("dispBorder_BR")  .hidden = false;
+                                        _GFX.layerObjs.getOne("dispBorder_BL")  .hidden = false;
+                                        _GFX.layerObjs.getOne("dispBorder_TR")  .hidden = false;
+                                        _GFX.layerObjs.getOne("dispBorder_TL")  .hidden = false;
+                                    '
+                                    >false</button>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
+
                     <div id="debug_navBar_gs_PLAYING_view_deck"     class="controls_navBarViews">
                         <!-- DECK -->
                         <div id="debug_cardAssignment_contextMenu">
