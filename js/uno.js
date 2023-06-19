@@ -684,6 +684,7 @@ _APP.loader = {
         await _APP.game.gameLoop.init();
 
         // Init Debug and show the debug tab?
+        _APP.navBar1.init();
         if(_APP.debugActive  && _DEBUG.init){ 
             await _DEBUG.init(); 
             _APP.navBar1.init();
@@ -758,8 +759,11 @@ _APP.navBar1 = {
                 }
                 else{ 
                     _INPUT.web.mainView.hideInput_restoreOthers(); 
-                    this.DOM2.aux.classList.remove("wide"); 
-                    this.DOM2.aux.classList.remove("wide2"); 
+
+                    if(this.DOM2.aux && this.DOM2.aux.classList){
+                        this.DOM2.aux.classList.remove("wide"); 
+                        this.DOM2.aux.classList.remove("wide2"); 
+                    }
                 }
             }
         }
