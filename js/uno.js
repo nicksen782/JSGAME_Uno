@@ -684,14 +684,16 @@ _APP.loader = {
         await _APP.game.gameLoop.init();
 
         // Init Debug and show the debug tab?
-        _APP.navBar1.init();
         if(_APP.debugActive  && _DEBUG.init){ 
+            // Debug needs to be inited before the navBar1.
             await _DEBUG.init(); 
             _APP.navBar1.init();
             _APP.navBar1.showOne("view_debug");
         }
+
         // No debug. Show the default tab.
         else{
+            _APP.navBar1.init();
             _APP.navBar1.showOne("view_controls");
             // _APP.navBar1.showOne("view_input");
             // _APP.navBar1.showOne("view_debug");

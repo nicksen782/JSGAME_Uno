@@ -695,6 +695,7 @@ var gfxMainV5 = {
             },
     
             // Determine if a graphics cache object can be reused.
+            // Updates _GFX.currentData.
             canImageDataTilemapBeReused: function(layerKey, newMapKeys, newMapData){
                 // The contents of these will determine what maps get new ImageData.
                 let filtered_newMapKeys = [];
@@ -714,40 +715,47 @@ var gfxMainV5 = {
                         // filtered_reasons[newMapKey] = `${newMapKey}: New tilemap`;
                         continue; 
                     }
-                    
-                    if(curr_map.hidden && !newMap.hidden){
-                        filtered_newMapKeys.push(newMapKey);
-                        filtered_newMapData[newMapKey] = newMap;
 
-                        // console.log(`${newMapKey}: Changed 'hidden': curr: ${curr_map.hidden}, new: ${newMap.hidden}`)
-                        // filtered_reasons[newMapKey] = `${newMapKey}: Changed 'hidden': curr: ${curr_map.hidden}, new: ${newMap.hidden}`;
-                    }
+                    // This is an existing mapKey. Check if it has any changes.
+                    else{
+                        // Was the image previously hidden but is now visible?
+                        if(curr_map.hidden && !newMap.hidden){
+                            filtered_newMapKeys.push(newMapKey);
+                            filtered_newMapData[newMapKey] = newMap;
 
-                    let settings_same = _GFX.utilities.areSettingsObjectsEqual(curr_map.settings, newMap.settings);
-                    if(!settings_same){ 
-                        filtered_newMapKeys.push(newMapKey);
-                        filtered_newMapData[newMapKey] = newMap;
-                        // console.log(`${newMapKey}: Changed settings: curr: ${JSON.stringify(curr_map.settings)}, new: ${JSON.stringify(newMap.settings)}`)
-                        // filtered_reasons[newMapKey] = `${newMapKey}: Changed settings: curr: ${JSON.stringify(curr_map.settings)}, new: ${JSON.stringify(newMap.settings)}`;
-                        continue; 
-                    }
+                            // console.log(`${newMapKey}: Changed 'hidden': curr: ${curr_map.hidden}, new: ${newMap.hidden}`)
+                            // filtered_reasons[newMapKey] = `${newMapKey}: Changed 'hidden': curr: ${curr_map.hidden}, new: ${newMap.hidden}`;
+                        }
 
-                    let tmap_same = _GFX.utilities.areArraysEqual(curr_map.tmap, newMap.tmap);
-                    if(!tmap_same){ 
-                        filtered_newMapKeys.push(newMapKey);
-                        filtered_newMapData[newMapKey] = newMap;
-                        // console.log(`${newMapKey}: Changed tmap: curr: ${curr_map.tmap}, new: ${newMap.tmap}`);
-                        // filtered_reasons[newMapKey] = `${newMapKey}: Changed tmap: curr: ${curr_map.tmap}, new: ${newMap.tmap}`;
-                        continue; 
-                    }
-    
-                    let curr_ts = curr_map.ts;
-                    let new_ts = newMap.ts;
-                    if(curr_ts != new_ts){ 
-                        filtered_newMapKeys.push(newMapKey);
-                        filtered_newMapData[newMapKey] = newMap;
-                        // filtered_reasons[newMapKey] = `${newMapKey}: Changed ts: curr: ${curr_ts}, new: ${new_ts}`;
-                        continue; 
+                        // Have the settings changed?
+                        let settings_same = _GFX.utilities.areSettingsObjectsEqual(curr_map.settings, newMap.settings);
+                        if(!settings_same){ 
+                            filtered_newMapKeys.push(newMapKey);
+                            filtered_newMapData[newMapKey] = newMap;
+                            // console.log(`${newMapKey}: Changed settings: curr: ${JSON.stringify(curr_map.settings)}, new: ${JSON.stringify(newMap.settings)}`)
+                            // filtered_reasons[newMapKey] = `${newMapKey}: Changed settings: curr: ${JSON.stringify(curr_map.settings)}, new: ${JSON.stringify(newMap.settings)}`;
+                            // continue; 
+                        }
+
+                        // Has the tilemap changed?
+                        let tmap_same = _GFX.utilities.areArraysEqual(curr_map.tmap, newMap.tmap);
+                        if(!tmap_same){ 
+                            filtered_newMapKeys.push(newMapKey);
+                            filtered_newMapData[newMapKey] = newMap;
+                            // console.log(`${newMapKey}: Changed tmap: curr: ${curr_map.tmap}, new: ${newMap.tmap}`);
+                            // filtered_reasons[newMapKey] = `${newMapKey}: Changed tmap: curr: ${curr_map.tmap}, new: ${newMap.tmap}`;
+                            // continue; 
+                        }
+        
+                        // Has the tileset changed?
+                        let curr_ts = curr_map.ts;
+                        let new_ts = newMap.ts;
+                        if(curr_ts != new_ts){ 
+                            filtered_newMapKeys.push(newMapKey);
+                            filtered_newMapData[newMapKey] = newMap;
+                            // filtered_reasons[newMapKey] = `${newMapKey}: Changed ts: curr: ${curr_ts}, new: ${new_ts}`;
+                            // continue; 
+                        }
                     }
     
                     // Save the updated data to the data cache.

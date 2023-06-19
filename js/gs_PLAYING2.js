@@ -226,8 +226,9 @@
                 // Repeat until a card has been assigned to each active player. (Back to the first active player again.)
                 if(this.gameBoard.currentPlayer == this.gameBoard.activePlayerKeys[0]){
                     // Was the last card dealt the last card to be dealt for the initial deal?
-                    if(1+this.flags.getFirstPlayer.initDealPos >= 7){
-                    // if(1+this.flags.getFirstPlayer.initDealPos >= 11){
+                    // if(1+this.flags.getFirstPlayer.initDealPos >= 4) { // ONE ROW
+                    // if(1+this.flags.getFirstPlayer.initDealPos >= 11){ // THREE ROWS
+                    if(1+this.flags.getFirstPlayer.initDealPos >= 7) { // TWO ROWS
                         // Clear the initDeal flag.
                         this.flags.getFirstPlayer.initDeal = false;
 
