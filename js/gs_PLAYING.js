@@ -91,30 +91,33 @@ _APP.game.gamestates["gs_PLAYING"] = {
             setNextFlags: false, // Flag
         },
         nextRoundFlags: {
-            draw2      : false, // Flag
-            skip       : false, // Flag
-            reverse    : false, // Flag
-            draw4      : false, // Flag
-            colorChange: false, // Flag
+            skipFlagCheck: false, // Flag
+            draw2        : false, // Flag
+            skip         : false, // Flag
+            reverse      : false, // Flag
+            draw4        : false, // Flag
+            colorChange  : false, // Flag
         },
     },
     debugFlags: {
+        // Value of false means not active. 
+        // Value of true or a non-empty string value means active.
+
         skipCardValidityCheck   : false, // Allows any card to be played (No validation check.)
         showAllPlayerCardsFaceUp: false, // Shows all player cards face up at the start of each turn.
-        forcedWinnerOnTie       : true,  // On tie the first active player will be set as the winner.
+        forcedWinner            : false, // (example: "P1") Forces this player to be the winner of the first turn.
+        forcedWinnerOnTie       : false, // (example: "P1") On tie this or the first active player will be set as the winner as the first turn.
         
-        // forcedFirstDiscard: false,
-        forcedFirstDiscard: 'CARD_9',
-        // forcedFirstDiscard: 'CARD_WILD',
-        // forcedFirstDiscard: 'CARD_DRAW2',
-        // forcedFirstDiscard: 'CARD_SKIP',
-        // forcedFirstDiscard: 'CARD_REV',
-        // forcedFirstDiscard: 'CARD_WILD_DRAW4',
-        
+        forcedFirstDiscard: false,             // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
+        // forcedFirstDiscard: 'CARD_9',          // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
+        // forcedFirstDiscard: 'CARD_WILD',       // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
+        // forcedFirstDiscard: 'CARD_DRAW2',      // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
+        // forcedFirstDiscard: 'CARD_SKIP',       // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
+        // forcedFirstDiscard: 'CARD_REV',        // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
+        // forcedFirstDiscard: 'CARD_WILD_DRAW4', // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
     },
     lastCardPlayed : null, 
     lastDrawnCard : null, 
-    // currentRow : 0, 
 
     // Run once upon changing to this game state.
     init: function(){

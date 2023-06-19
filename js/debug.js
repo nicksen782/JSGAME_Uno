@@ -43,8 +43,14 @@ var _DEBUG = {
             let y=regionY;
             let w=regionWidth;
             let h=regionHeight;
-            let text = `tX: ${x.toString().padStart(3, " ")}, tY: ${y.toString().padStart(3, " ")}`;
-            let fontSize = 14;
+
+            let tX=regionX      / _APP.configObj.dimensions.tileWidth ;
+            let tY=regionY      / _APP.configObj.dimensions.tileHeight;
+            let tW=regionWidth  / _APP.configObj.dimensions.tileWidth ;
+            let tH=regionHeight / _APP.configObj.dimensions.tileHeight;
+
+            let text = `tX:${tX.toString().padStart(2, " ")},tY: ${tY.toString().padStart(2, " ")}, X:${x.toString().padStart(3, " ")},Y: ${y.toString().padStart(3, " ")}`;
+            let fontSize = 12;
             this.ctx2.font=`${fontSize}px Courier New`;
             let textWidth = Math.round(this.ctx2.measureText(text).width);
             let textHeight = fontSize;
@@ -60,7 +66,6 @@ var _DEBUG = {
             this.ctx2.fillRect(rectX, rectY, rectWidth, rectHeight);
             
             // Draw text on top of the rectangle
-            // this.ctx2.fillStyle = "black"; // Setting text color
             this.ctx2.fillStyle = "rgba(0, 0, 0, 0.90)";
             this.ctx2.textAlign = "center"; // Center the text horizontally
             this.ctx2.textBaseline = "middle"; // Center the text vertically
@@ -119,9 +124,7 @@ var _DEBUG = {
             this.canvas2.style["z-index"] = "320";
             this.ctx2 = this.canvas2.getContext('2d');
             this.ctx2.imageSmoothingEnabled = false;
-            // this.ctx2.filter = "url(./svgFilter.svg)";
-            // this.ctx2.filter = "url(svgFilter.svg#adjust-alpha)";
-        
+
             // Add the class.
             this.canvas.classList.add("canvasLayer");
             this.canvas.classList.add("displayNone");
@@ -1753,6 +1756,7 @@ var _DEBUG = {
                 }
             }
             if(!this.values.showHide_hidden && data.hidden){
+                // console.log("hiding");
                 div_container.classList.add("displayNone"); 
             }
 
@@ -1792,7 +1796,7 @@ var _DEBUG = {
             `C: ${className} : K: ${name}` + `${hidden ? hidden : ""}` +
             `\n  D: ${dims}` +
             `\n  S: ${settings}` + 
-            `\n  P: ${data.text ? "(TEXT): '" + data.text.slice(0, 40) + "'" : ""}` +
+            `\n  P: ${data.text ? ("(TEXT): '" + data.text).slice(0, 42) + "'" : ""}` +
             ``;
 
             // Return the completed entry container.

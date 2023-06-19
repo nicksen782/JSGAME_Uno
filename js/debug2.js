@@ -35,6 +35,7 @@ var _DEBUG2 = {
         showOne: _APP.navBar1.showOne,
         init   : _APP.navBar1.init,
     },
+    
     navBar_gs_PLAYING : {
         // Holds the DOM for the nav buttons and nav views.
         // debug_navBarTabs_gs_PLAYING
@@ -484,6 +485,8 @@ var _DEBUG2 = {
                     }
                 },
             },
+
+            // UNUSED
             settings: {
                 parent:null,
                 DOM: { 
@@ -520,24 +523,6 @@ var _DEBUG2 = {
                                 playerKey  : playerKey  , 
                                 layerObjKey: layerObjKey ,
                                 movementSpeed: _APP.game.gamestates.gs_PLAYING.movementSpeeds.selectCard,
-                        });
-                    };
-                    return elem;
-                },
-                createUnselectButton: function(playerKey, layerObjKey){
-                    let elem = document.createElement("button");
-                    elem.title = layerObjKey;
-                    elem.style.width = "56px";
-                    elem.innerText = "BACK";
-                    let timerKey = "moveCardToUnselected";
-                    elem.onclick = function(){
-                        _APP.game.gamestates.gs_PLAYING.addCardMovement(
-                            "unselected"  , { 
-                                timerKey   : timerKey   , 
-                                timerFrames: 20,
-                                playerKey  : playerKey  , 
-                                layerObjKey: layerObjKey ,
-                                movementSpeed: _APP.game.gamestates.gs_PLAYING.movementSpeeds.unselectCard,
                         });
                     };
                     return elem;
@@ -615,12 +600,10 @@ var _DEBUG2 = {
                             td = tr.insertCell();
                             td.append(
                                 this.createSelectButton(playerKey, layerObjKey),
-                                this.createUnselectButton(playerKey, layerObjKey),
+                                this.createHomeButton(playerKey, layerObjKey),
                                 this.createBr(),
                                 this.createDiscButton(playerKey, layerObjKey),
                                 this.createDrawButton(playerKey, layerObjKey),
-                                this.createBr(),
-                                this.createHomeButton(playerKey, layerObjKey),
                             );
                         }
                     }
@@ -848,8 +831,19 @@ var _DEBUG2 = {
                 },
             },
             gs1: function(){
-                this.deckControl.checkForDeckChanges();
-                this.flags.checkForChanges();
+                // Only run a tab's function is that tab is active.
+                
+                // if(_DEBUG2.navBar_gs_PLAYING.DOM.view_settings.tab.classList.contains("active")){}
+                // if(_DEBUG2.navBar_gs_PLAYING.DOM.view_cardMove.tab.classList.contains("active")){}
+                if(_DEBUG2.navBar_gs_PLAYING.DOM.view_deck.tab.classList.contains("active")){
+                    // console.log("Running: deckControl");
+                    this.deckControl.checkForDeckChanges();
+                }
+                if(_DEBUG2.navBar_gs_PLAYING.DOM.view_flags.tab.classList.contains("active")){
+                    // console.log("Running: flags");
+                    this.flags.checkForChanges();
+                }
+
             },
             anim1: function(){
             },
@@ -866,10 +860,10 @@ var _DEBUG2 = {
             _DEBUG2.navBar1.showOne("view_gs_PLAYING");
             
             _DEBUG2.navBar_gs_PLAYING.init();
-            // _DEBUG2.navBar_gs_PLAYING.showOne("view_settings");
+            _DEBUG2.navBar_gs_PLAYING.showOne("view_settings");
             // _DEBUG2.navBar_gs_PLAYING.showOne("view_deck");
             // _DEBUG2.navBar_gs_PLAYING.showOne("view_cardMove");
-            _DEBUG2.navBar_gs_PLAYING.showOne("view_flags");
+            // _DEBUG2.navBar_gs_PLAYING.showOne("view_flags");
 
             // KEYS
             let keys = [

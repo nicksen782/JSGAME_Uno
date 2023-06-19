@@ -986,8 +986,37 @@ class Deck{
         return playerCards.length;
     };
 
+    // UNUSED.
+    // Hide each card in the player's displayed hand.
+    hidePlayerCardHand(playerKey){
+        // this.deck.hidePlayerCardHand(playerKey);
+        let cards_layerObjs = [
+            _GFX.layerObjs.getOne( `${playerKey}_card_0` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_1` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_2` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_3` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_4` ),
+        ];
+
+        for(let i=0; i<cards_layerObjs.length; i+=1){
+            // Reset the position of this card back to default.
+            // let pos = Deck.cardPos[playerKey];
+            // cards_layerObjs[i].x = pos[i][0];
+            // cards_layerObjs[i].y = pos[i][1];
+            cards_layerObjs[i].hidden = true;
+        }
+    };
+
     // Reset the position of each player card back to default.
-    _resetCardPositions(playerKey, cards_layerObjs){
+    resetCardPositions(playerKey){
+        let cards_layerObjs = [
+            _GFX.layerObjs.getOne( `${playerKey}_card_0` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_1` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_2` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_3` ),
+            _GFX.layerObjs.getOne( `${playerKey}_card_4` ),
+        ];
+
         for(let i=0; i<cards_layerObjs.length; i+=1){
             // Reset the position of this card back to default.
             let pos = Deck.cardPos[playerKey];
@@ -1037,7 +1066,10 @@ class Deck{
         // Each row has up to 5 cards in it. So, each row starts on a multiple of 5 (including 0.)
         let cardsToDisplay = playerCards_sorted.slice((row * 5), (row + 1) * 5);
 
-        this._resetCardPositions(playerKey, cards_layerObjs);
+        // Show the row indicators.
+        this.parent.gameBoard.displayRowIndicators(playerKey, row, playerCards, cardsToDisplay);
+
+        this.resetCardPositions(playerKey);
 
         // Show the cards face-up.
         for(let i=0; i<cards_layerObjs.length; i+=1){
@@ -1072,7 +1104,10 @@ class Deck{
         // Each row has up to 5 cards in it. So, each row starts on a multiple of 5 (including 0.)
         let cardsToDisplay = playerCards.slice((row * 5), (row + 1) * 5);
 
-        this._resetCardPositions(playerKey, cards_layerObjs);
+        // Hide the row indicators.
+        this.parent.gameBoard.hideRowIndicators();
+
+        this.resetCardPositions(playerKey);
 
         // Show the cards face-down.
         for(let i=0; i<cards_layerObjs.length; i+=1){
@@ -1414,6 +1449,8 @@ class PauseMenu{
         `   CANCEL`,
         ``,
         ``,
+        ``,
+        ``,
         `B:CANCEL   A:SET`,
     ];
 
@@ -1526,6 +1563,26 @@ class Gameboard{
         P4: { x:22, y:8 , w: 1 , h:12 },
     };
 
+    // For the row indicator icons.
+    static pos_rowIndicators = {
+        P1: { 
+            top   :{ x:6 , y:27, rotation: 0 }, 
+            bottom:{ x:6 , y:23, rotation: 0 }, 
+        },
+        P2: { 
+            top   :{ x:0 , y:6, rotation: 90 }, 
+            bottom:{ x:4 , y:6, rotation: 90 }, 
+        },
+        P3: { 
+            top   :{ x:21, y:4, rotation: 0 }, 
+            bottom:{ x:21, y:0, rotation: 0 }, 
+        },
+        P4: { 
+            top   :{ x:27, y:21, rotation: -90 }, 
+            bottom:{ x:23, y:21, rotation: -90 }, 
+        },
+    };
+
     // For the cursor positions when the player is to select a card.
     static cardCursorsPos = {
         P1: [ [7 ,23], [10,23], [13,23], [16,23], [19,23] ], // CARD CURSORS: p1_pos_cursor
@@ -1590,7 +1647,136 @@ class Gameboard{
             cursorType  : 1,
             settings    : { rotation: 0 }
         } );
+
+        // Create the row indicator LayerObjects.
+        _GFX.layerObjs.createOne(LayerObject, { 
+            tilesetKey: `sprite_tiles1`, 
+            layerObjKey: `cursor_rows_A`, 
+            layerKey   : "L3", 
+            tmap       : _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none"), 
+            xyByGrid   : true,
+            x          : 0, 
+            y          : 0, 
+            // settings: { rotation: 0 }, 
+            hidden: true,
+        } );
+        _GFX.layerObjs.createOne(LayerObject, { 
+            tilesetKey: `sprite_tiles1`, 
+            layerObjKey: `cursor_rows_B`, 
+            layerKey   : "L3", 
+            tmap       : _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none"), 
+            xyByGrid   : true,
+            x          : 0, 
+            y          : 0, 
+            // settings: { rotation: 0 }, 
+            hidden: true,
+        } );
+        // "cursor_rows_down"
+        // "cursor_rows_up"
+        // "cursor_rows_none"
     }
+
+    // (Called from: Deck flipPlayerCardsUp.)
+    displayRowIndicators(playerKey, currentRow, playerCards, cardsToDisplay){
+        let cursor_rows_A = _GFX.layerObjs.getOne(`cursor_rows_A`);
+        let cursor_rows_B = _GFX.layerObjs.getOne(`cursor_rows_B`);
+
+        // Hide all initially.
+        // cursor_rows_A.hidden = true;
+        // cursor_rows_B.hidden = true;
+
+        // Unhide.
+        cursor_rows_A.hidden = false;
+        cursor_rows_B.hidden = false;
+
+        // Get the positions for this player.
+        let pos = Gameboard.pos_rowIndicators[playerKey];
+
+        // If the playerCards length is 5 or less then display cursor none in both positions.
+        if(playerCards.length <= 5 && cardsToDisplay.length <= 5){
+            // console.log(`A: Player cards: ${playerCards.length}, cardsToDisplay: ${cardsToDisplay.length}, row: ${currentRow}`);
+            
+            // Top indicator.
+            cursor_rows_A.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none");
+            cursor_rows_A.x = pos.top.x;
+            cursor_rows_A.y = pos.top.y;
+            cursor_rows_A.setSetting("rotation", pos.top.rotation);
+            
+            // Bottom indicator.
+            cursor_rows_B.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none");
+            cursor_rows_B.x = pos.bottom.x;
+            cursor_rows_B.y = pos.bottom.y;
+            cursor_rows_B.setSetting("rotation", pos.bottom.rotation);
+        }
+        // The player has enough cards where there could be additional rows.
+        else{
+            // First row?
+            if(currentRow == 0){
+                // console.log(`B: Player cards: ${playerCards.length}, cardsToDisplay: ${cardsToDisplay.length}, row: ${currentRow}`);
+
+                // Top indicator.
+                cursor_rows_A.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_down");
+                cursor_rows_A.x = pos.top.x;
+                cursor_rows_A.y = pos.top.y;
+                cursor_rows_A.setSetting("rotation", pos.top.rotation);
+                
+                // Bottom indicator.
+                cursor_rows_B.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none");
+                cursor_rows_B.x = pos.bottom.x;
+                cursor_rows_B.y = pos.bottom.y;
+                cursor_rows_B.setSetting("rotation", pos.bottom.rotation);
+            }
+            // Other rows?
+            else{
+                // If there are more than 0 rows
+                // Need to determine if there are MORE rows.
+                let maxRowValue = (Math.ceil(playerCards.length / 5)) -1;
+
+                // If currentRow matches maxRowValue then this is the last row.
+                if(currentRow == maxRowValue){
+                    // console.log(`C: Player cards: ${playerCards.length}, cardsToDisplay: ${cardsToDisplay.length}, row: ${currentRow}, maxRowValue: ${maxRowValue} (LAST ROW)`);
+
+                    // Top indicator.
+                    cursor_rows_A.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none");
+                    cursor_rows_A.x = pos.top.x;
+                    cursor_rows_A.y = pos.top.y;
+                    cursor_rows_A.setSetting("rotation", pos.top.rotation);
+
+                    // Bottom indicator.
+                    cursor_rows_B.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_up");
+                    cursor_rows_B.x = pos.bottom.x;
+                    cursor_rows_B.y = pos.bottom.y;
+                    cursor_rows_B.setSetting("rotation", pos.bottom.rotation);
+                }
+
+                // Otherwise there are more rows.
+                else{
+                    // console.log(`D: Player cards: ${playerCards.length}, cardsToDisplay: ${cardsToDisplay.length}, row: ${currentRow}, maxRowValue: ${maxRowValue} (MORE ROWS REMAIN)`);
+
+                    // Top indicator.
+                    cursor_rows_A.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_down");
+                    cursor_rows_A.x = pos.top.x;
+                    cursor_rows_A.y = pos.top.y;
+                    cursor_rows_A.setSetting("rotation", pos.top.rotation);
+    
+                    // Bottom indicator.
+                    cursor_rows_B.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_up");
+                    cursor_rows_B.x = pos.bottom.x;
+                    cursor_rows_B.y = pos.bottom.y;
+                    cursor_rows_B.setSetting("rotation", pos.bottom.rotation);
+                }
+            }
+        }
+    };
+
+    // (Called from: Deck flipPlayerCardsDown.)
+    hideRowIndicators(playerKey, currentRow){
+        let cursor_rows_A = _GFX.layerObjs.getOne(`cursor_rows_A`);
+        let cursor_rows_B = _GFX.layerObjs.getOne(`cursor_rows_B`);
+
+        cursor_rows_A.hidden = true;
+        cursor_rows_B.hidden = true;
+    };
 
     // Display in-game message.
     displayMessage(msgKey, playerKey, hide=false){

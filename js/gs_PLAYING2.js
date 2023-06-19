@@ -82,9 +82,21 @@
                     }
                 }
 
-                // DEBUG: Force the winner.
-                if(this.debugFlags.forcedWinnerOnTie && winner.playerKeys.length != 1){
-                    winner.playerKeys = [this.gameBoard.activePlayerKeys[0]];
+                // DEBUG: Force the winner?
+                if(this.debugFlags.forcedWinner){
+                    console.log(`DEBUG: Forced win. Setting '${this.debugFlags.forcedWinner} as the winner of the first turn.'`);
+                    winner.playerKeys = [this.debugFlags.forcedWinner];
+                }
+                // DEBUG: Force the winner on ties?
+                else if(this.debugFlags.forcedWinnerOnTie && winner.playerKeys.length != 1){
+                    if(this.gameBoard.activePlayerKeys.indexOf(this.debugFlags.forcedWinnerOnTie) == -1){
+                        console.log(`DEBUG: TIED: (missing override value). Setting '${this.gameBoard.activePlayerKeys[0]} as the winner of the first turn.'`);
+                        winner.playerKeys = [this.gameBoard.activePlayerKeys[0]];
+                    }
+                    else{
+                        console.log(`DEBUG: TIED: (using override value). Setting '${this.debugFlags.forcedWinnerOnTie} as the winner of the first turn.'`);
+                        winner.playerKeys = [this.debugFlags.forcedWinnerOnTie]; 
+                    }
                 }
 
                 // One winner?
@@ -166,6 +178,11 @@
                     this.flags.getFirstPlayer.initDeal = true;
                     this.flags.getFirstPlayer.initDealPos    = 0;
 
+                    // Reset all cards in each player's hand.
+                    for(let playerKey of this.gameBoard.activePlayerKeys){
+                        this.deck.resetCardPositions(playerKey);
+                    }
+
                     // Hide the discard card.
                     _GFX.layerObjs.getOne("discard_card").hidden = true;
                 }
@@ -210,6 +227,7 @@
                 if(this.gameBoard.currentPlayer == this.gameBoard.activePlayerKeys[0]){
                     // Was the last card dealt the last card to be dealt for the initial deal?
                     if(1+this.flags.getFirstPlayer.initDealPos >= 7){
+                    // if(1+this.flags.getFirstPlayer.initDealPos >= 11){
                         // Clear the initDeal flag.
                         this.flags.getFirstPlayer.initDeal = false;
 
@@ -309,7 +327,7 @@
                             this.flags.getFirstPlayer.initDealPos += 1;
 
                             // Do we need to change the displayed row?
-                            if( this.flags.getFirstPlayer.initDealPos == 5 ){
+                            if( this.flags.getFirstPlayer.initDealPos != 0 && this.flags.getFirstPlayer.initDealPos % 5 == 0){
                                 // For each active player...
                                 for(let playerKey of this.gameBoard.activePlayerKeys){
                                     // Increment the row for the player.
@@ -375,11 +393,11 @@
             // DRAW
             if(mustDraw){
                 if     (this.flags.nextRoundFlags.draw2){
-                    console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: DRAW2");
+                    // console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: DRAW2");
                     this.action_draw({playerKey: this.gameBoard.currentPlayer, numCards: 2, msgName: "d2LoseTurn", endDelay: 30});
                 }
                 else if(this.flags.nextRoundFlags.draw4){
-                    console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: DRAW4");
+                    // console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: DRAW4");
                     this.action_draw({playerKey: this.gameBoard.currentPlayer, numCards: 4, msgName: "d4LoseTurn", endDelay: 30});
                 }
                 this.resetFlags();
@@ -396,11 +414,11 @@
             // SKIP/REVERSE
             if(skipTurn){
                 if(this.flags.nextRoundFlags.reverse){
-                    console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: REVERSE");
+                    // console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: REVERSE");
                     this.action_reverse({playerKey: this.gameBoard.currentPlayer, msgName: "reversed", endDelay: 90});
                 }
                 else if(this.flags.nextRoundFlags.skip){
-                    console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: SKIP");
+                    // console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: SKIP");
                     this.action_skip({playerKey: this.gameBoard.currentPlayer, msgName: "skipLoseTurn", endDelay: 90});
                     this.gameBoard.setNextPlayer(false, true);
                 }
@@ -452,6 +470,7 @@
             //   this.flags.playerTurn.play_pass     :: Confirm/cancel on round pass.
             //   this.flags.endOfRound.active        :: Required when switching to endOfRound.
             //   this.flags.endOfRound.colorChange   :: Check for wild card.
+            //   this.flags.endOfRound.skipFlagCheck :: Skips the flag assignments for the last discarded card after a pass.
 
             this.gameBoard.nextFrame_colorIndicators();
             
@@ -459,14 +478,55 @@
             if(this.flags.playerTurn.card_select){
                 this.gameBoard.nextCursorFrame();
 
-                // P1, P3: Row or cursor position change?
+                // Row changes. (P1 and P3 use the same buttons. P2 and P4 each use different buttons.)
                 if(this.gameBoard.currentPlayer == "P1" || this.gameBoard.currentPlayer == "P3"){
-                    // Card cursor change.
-                    if     (gpInput.P1.press.BTN_LEFT) { this.gameBoard.moveCursor(-1, this.gameBoard.currentPlayer); }
-                    else if(gpInput.P1.press.BTN_RIGHT){ this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  }
-                    
                     // Row change.
-                    else if(gpInput.P1.press.BTN_UP)  {
+                    if(gpInput.P1.press.BTN_DOWN)  {
+                        // Get the card count and the maxRow.
+                        let cardCount = this.deck.countPlayerCards(this.gameBoard.currentPlayer);
+                        let maxRow = Math.ceil(cardCount / 5);
+
+                        // Would adding 1 to currentRow be less than or equal to maxRow -1?
+                        if( !(this.gameBoard.players[this.gameBoard.currentPlayer].currentRow +1 > maxRow-1) ){
+                            this.gameBoard.players[this.gameBoard.currentPlayer].currentRow += 1;  // Increment the row for the player.
+                            row = this.gameBoard.players[this.gameBoard.currentPlayer].currentRow; // Get the current row for the player.
+                            this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, row);        // Flip the cards up to show the new row's cards.
+                        }
+                    }
+                    else if(gpInput.P1.press.BTN_UP){ 
+                        // Can move up if the current row is not 0.
+                        if(this.gameBoard.players[this.gameBoard.currentPlayer].currentRow !=0){
+                            this.gameBoard.players[this.gameBoard.currentPlayer].currentRow -= 1;  // Increment the row for the player.
+                            row = this.gameBoard.players[this.gameBoard.currentPlayer].currentRow; // Get the current row for the player.
+                            this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, row);        // Flip the cards up to show the new row's cards.
+                        }
+                    }
+                }
+                if(this.gameBoard.currentPlayer == "P2"){
+                    // Row change.
+                    if(gpInput.P1.press.BTN_LEFT)  {
+                        // Get the card count and the maxRow.
+                        let cardCount = this.deck.countPlayerCards(this.gameBoard.currentPlayer);
+                        let maxRow = Math.ceil(cardCount / 5);
+
+                        // Would adding 1 to currentRow be less than or equal to maxRow -1?
+                        if( !(this.gameBoard.players[this.gameBoard.currentPlayer].currentRow +1 > maxRow-1) ){
+                            this.gameBoard.players[this.gameBoard.currentPlayer].currentRow += 1;  // Increment the row for the player.
+                            row = this.gameBoard.players[this.gameBoard.currentPlayer].currentRow; // Get the current row for the player.
+                            this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, row);        // Flip the cards up to show the new row's cards.
+                        }
+                    }
+                    else if(gpInput.P1.press.BTN_RIGHT){ 
+                        if(this.gameBoard.players[this.gameBoard.currentPlayer].currentRow !=0){
+                            this.gameBoard.players[this.gameBoard.currentPlayer].currentRow -= 1;  // Increment the row for the player.
+                            row = this.gameBoard.players[this.gameBoard.currentPlayer].currentRow; // Get the current row for the player.
+                            this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, row);        // Flip the cards up to show the new row's cards.
+                        }
+                    }
+                }
+                if(this.gameBoard.currentPlayer == "P4"){
+                    // Row change.
+                    if(gpInput.P1.press.BTN_RIGHT)  {
                         // Get the card count and the maxRow.
                         let cardCount = this.deck.countPlayerCards(this.gameBoard.currentPlayer);
                         let maxRow = Math.ceil(cardCount / 5);
@@ -481,7 +541,7 @@
                             this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, row);
                         }
                     }
-                    else if(gpInput.P1.press.BTN_DOWN){ 
+                    else if(gpInput.P1.press.BTN_LEFT){ 
                         // Increment the row for the player.
                         // Get the current row for the player.
                         // Flip the cards up to show the new row's cards.
@@ -493,38 +553,18 @@
                     }
                 }
 
+                // P1, P3: Row or cursor position change?
+                if(this.gameBoard.currentPlayer == "P1" || this.gameBoard.currentPlayer == "P3"){
+                    // Card cursor change.
+                    if     (gpInput.P1.press.BTN_LEFT) { this.gameBoard.moveCursor(-1, this.gameBoard.currentPlayer); }
+                    else if(gpInput.P1.press.BTN_RIGHT){ this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  }
+                }
+
                 // P2, P4: Row or cursor position change?
                 if(this.gameBoard.currentPlayer == "P2" || this.gameBoard.currentPlayer == "P4"){
                     // Card cursor change.
                     if     (gpInput.P1.press.BTN_UP)  { this.gameBoard.moveCursor(-1, this.gameBoard.currentPlayer); }
                     else if(gpInput.P1.press.BTN_DOWN){ this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  }
-
-                    // Row change.
-                    else if(gpInput.P1.press.BTN_LEFT)  {
-                        // Get the card count and the maxRow.
-                        let cardCount = this.deck.countPlayerCards(this.gameBoard.currentPlayer);
-                        let maxRow = Math.ceil(cardCount / 5);
-
-                        // Would adding 1 to currentRow be less than or equal to maxRow -1?
-                        if( !(this.gameBoard.players[this.gameBoard.currentPlayer].currentRow +1 > maxRow-1) ){
-                            // Increment the row for the player.
-                            // Get the current row for the player.
-                            // Flip the cards up to show the new row's cards.
-                            this.gameBoard.players[this.gameBoard.currentPlayer].currentRow += 1;
-                            row = this.gameBoard.players[this.gameBoard.currentPlayer].currentRow;
-                            this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, row);
-                        }
-                    }
-                    else if(gpInput.P1.press.BTN_RIGHT){ 
-                        // Increment the row for the player.
-                        // Get the current row for the player.
-                        // Flip the cards up to show the new row's cards.
-                        if(this.gameBoard.players[this.gameBoard.currentPlayer].currentRow !=0){
-                            this.gameBoard.players[this.gameBoard.currentPlayer].currentRow -= 1;
-                            row = this.gameBoard.players[this.gameBoard.currentPlayer].currentRow;
-                            this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, row);
-                        }
-                    }
                 }
 
                 // Selection made?
@@ -540,6 +580,7 @@
                         return;
                     }
 
+                    
                     // Make sure the selected card is valid.
                     if(!this.debugFlags.skipCardValidityCheck){
                         // Is the card valid? It must be a normal WILD, same color, or same value.
@@ -549,10 +590,22 @@
                         let sameValue    = false;
                         let isNormalWild = false;
                         let isWildDraw4  = false;
-                        if     (this.gameBoard.currentColor == selectedCard.color){ sameColor    = true; } // Color check
+                        if     ( this.gameBoard.currentColor == selectedCard.color || selectedCard.color == this.lastCardPlayed.color){ sameColor    = true; } // Color check
                         else if(this.lastCardPlayed.value   == selectedCard.value){ sameValue    = true; } // Value check
                         else if(selectedCard.value == "CARD_WILD")                { isNormalWild = true; } // Wild check
                         else if(selectedCard.value == "CARD_WILD_DRAW4")          { isWildDraw4  = true; } // Wild d4 check
+
+                        // console.log(
+                        //     `CARD SELECTED` + `\n` + 
+                        //     `currentColor    : ${this.gameBoard.currentColor}` + `\n` + 
+                        //     `selectedCard    :`, selectedCard.color, selectedCard.value, `\n` +
+                        //     `lastCardPlayed  :`, this.lastCardPlayed.color, this.lastCardPlayed.value, `\n` +
+                        //     `sameColor   :`, sameColor   , `\n` +
+                        //     `sameValue   :`, sameValue   , `\n` +
+                        //     `isNormalWild:`, isNormalWild, `\n` +
+                        //     `isWildDraw4 :`, isWildDraw4 , `\n` +
+                        //     ``
+                        // ); 
 
                         // Allow these.
                         if(sameColor || sameValue || isNormalWild){}
@@ -585,7 +638,19 @@
                         // This card cannot be played.
                         else{
                             // Cannot play this card.
-                            // console.log(`card_select: This card cannot be played. Select another card.`); 
+                            // console.log(
+                            //     `CARD_SELECT: THIS CARD CANNOT BE PLAYED.\n`+
+                            //     `selectedCard    :`, selectedCard.color, selectedCard.value, `\n` +
+                            //     `currentColor    : ${this.gameBoard.currentColor}` + `\n` + 
+                            //     `lastCardPlayed  :`, this.lastCardPlayed.color, this.lastCardPlayed.value, `\n` +
+                            //     `FLAGS:\n` + 
+                            //     `  sameColor   :`, sameColor   , `\n` +
+                            //     `  sameValue   :`, sameValue   , `\n` +
+                            //     `  isNormalWild:`, isNormalWild, `\n` +
+                            //     `  isWildDraw4 :`, isWildDraw4 , `\n` +
+                            //     ``
+                            // ); 
+
                             this.gameBoard.displayMessage("invalidCard"  , this.gameBoard.currentPlayer, false);
                             
                             // Wait to clear the message.
@@ -677,6 +742,18 @@
                                 
                                 // Display the discard card.
                                 _this.deck.updateDiscardCard(deckCard);
+
+                                // Set the current color.
+                                _this.gameBoard.currentColor = deckCard.color;
+
+                                // console.log(
+                                //     `CARD PLAYED` + `\n` + 
+                                //     `currentColor    : ${_this.gameBoard.currentColor}` + `\n` + 
+                                //     `deckCard        :`, deckCard.color, deckCard.value, `\n` +
+                                //     `lastSelectedCard:`, _this.lastSelectedCard.color, _this.lastSelectedCard.value, `\n` +
+                                //     `lastCardPlayed  :`, _this.lastCardPlayed.color, _this.lastCardPlayed.value, `\n` +
+                                //     ``
+                                // ); 
 
                                 // Save the last card played.
                                 _this.lastCardPlayed = deckCard;
@@ -784,6 +861,9 @@
                     this.flags.endOfRound.active    = true;
                     this.flags.endOfRound.colorChange   = false; // Skip the check for a wild card.
                     this.flags.endOfRound.setNextFlags  = true;
+                    
+                    // Set a flag to prevent assigning of flags against this.lastPlayedCard.
+                    this.flags.endOfRound.skipFlagCheck  = true;
                 }
 
                 // Go back to Card and row select, round pass.
@@ -811,12 +891,6 @@
             //   this.flags.playerTurn.playing    :: Required for this function.
             //   this.flags.playerTurn.card_select :: Card and row select, round pass.
 
-            // console.log(
-            //     "endOfRound: ", this.flags.endOfRound.active, 
-            //     "p1:", this.flags.endOfRound.colorChange, 
-            //     "p2:", this.flags.endOfRound.setNextFlags
-            // );
-
             // Determine if the color changer needs to be activated.
             if     (this.flags.endOfRound.colorChange){
                 // Display the color changer?
@@ -834,14 +908,18 @@
             }
             // Set end of round flags.
             else if(this.flags.endOfRound.setNextFlags){
+                let skipFlagCheck = this.flags.endOfRound.skipFlagCheck;
+
                 // Clear all flags.
                 this.resetFlags();
 
                 // Determine what flags to set based on the last card played.
-                if     (this.lastCardPlayed.value == "CARD_DRAW2")     { this.flags.nextRoundFlags.draw2  = true; }
-                else if(this.lastCardPlayed.value == "CARD_WILD_DRAW4"){ this.flags.nextRoundFlags.draw4  = true; }
-                else if(this.lastCardPlayed.value == "CARD_SKIP")      { this.flags.nextRoundFlags.skip = true; }
-                else if(this.lastCardPlayed.value == "CARD_REV")       { this.flags.nextRoundFlags.reverse = true; }
+                if(!skipFlagCheck){
+                    if     (this.lastCardPlayed.value == "CARD_DRAW2")     { this.flags.nextRoundFlags.draw2  = true; }
+                    else if(this.lastCardPlayed.value == "CARD_WILD_DRAW4"){ this.flags.nextRoundFlags.draw4  = true; }
+                    else if(this.lastCardPlayed.value == "CARD_SKIP")      { this.flags.nextRoundFlags.skip = true; }
+                    else if(this.lastCardPlayed.value == "CARD_REV")       { this.flags.nextRoundFlags.reverse = true; }
+                }
 
                 // Set these flags.
                 this.flags.playerTurn.play_init = true;
