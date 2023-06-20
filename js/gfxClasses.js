@@ -1565,29 +1565,21 @@ class Gameboard{
 
     // For the row indicator icons.
     static pos_rowIndicators = {
-        P1: { 
-            top    :{ x:6 , y:27, rotation: 0   }, // bottom-left
-            bottom :{ x:6 , y:23, rotation: 0   }, // top-left
-            top2   :{ x:21, y:27, rotation: 0   }, // bottom-right
-            bottom2:{ x:21, y:23, rotation: 0   }, // top-right
+        P1: {
+            A :{ x:6 , y:24, rotation: 0   }, // left
+            B :{ x:21, y:24, rotation: 0   }, // right
         },
-        P2: { 
-            top    :{ x:0 , y:6 , rotation: 90  }, // top-left
-            bottom :{ x:4 , y:6 , rotation: 90  }, // top-right
-            top2   :{ x:0 , y:21, rotation: 90  }, // bottom-left
-            bottom2:{ x:4 , y:21, rotation: 90  }, // bottom-right
+        P2: {
+            A :{ x:3-2 , y:6 , rotation: 90  }, // top
+            B :{ x:3-2 , y:21, rotation: 90  }, // bottom
         },
-        P3: { 
-            top    :{ x:21, y:4 , rotation: 0   }, // bottom-right
-            bottom :{ x:21, y:0 , rotation: 0   }, // top-right
-            top2   :{ x:6 , y:4 , rotation: 0   }, // bottom-left
-            bottom2:{ x:6 , y:0 , rotation: 0   }, // top-left
+        P3: {
+            A :{ x:21, y:3-2 , rotation: 0   }, // right
+            B :{ x:6 , y:3-2 , rotation: 0   }, // left
         },
-        P4: { 
-            top    :{ x:27, y:21, rotation: -90 }, // bottom-right
-            bottom :{ x:23, y:21, rotation: -90 }, // bottom-left
-            top2   :{ x:27, y:6 , rotation: -90 }, // top-left
-            bottom2:{ x:23, y:6 , rotation: -90 }, // top-right
+        P4: {
+            A :{ x:24, y:21, rotation: -90 }, // bottom
+            B :{ x:24, y:6 , rotation: -90 }, // top
         },
     };
 
@@ -1658,23 +1650,13 @@ class Gameboard{
 
         // Create the row indicator LayerObjects.
         _GFX.layerObjs.createOne(LayerObject, { 
-            tilesetKey: `sprite_tiles1`, layerObjKey: `cursor_rows_A`, layerKey: "L3", 
-            tmap: _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none"), 
+            tilesetKey: `sprite_tiles1`, layerObjKey: `rowIndicator_A`, layerKey: "L3", 
+            tmap: _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_none"), 
             xyByGrid: true, x: 0, y: 0, hidden: true,
         } );
         _GFX.layerObjs.createOne(LayerObject, { 
-            tilesetKey: `sprite_tiles1`, layerObjKey: `cursor_rows_A2`, layerKey: "L3", 
-            tmap: _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none"), 
-            xyByGrid: true, x: 0, y: 0, hidden: true,
-        } );
-        _GFX.layerObjs.createOne(LayerObject, { 
-            tilesetKey: `sprite_tiles1`, layerObjKey: `cursor_rows_B`, layerKey: "L3", 
-            tmap: _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none"), 
-            xyByGrid: true, x: 0, y: 0, hidden: true,
-        } );
-        _GFX.layerObjs.createOne(LayerObject, { 
-            tilesetKey: `sprite_tiles1`, layerObjKey: `cursor_rows_B2`, layerKey: "L3", 
-            tmap: _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none"), 
+            tilesetKey: `sprite_tiles1`, layerObjKey: `rowIndicator_B`, layerKey: "L3", 
+            tmap: _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_none"), 
             xyByGrid: true, x: 0, y: 0, hidden: true,
         } );
     }
@@ -1682,44 +1664,41 @@ class Gameboard{
     // (Called from: Deck displayRowIndicators.)
     setRowIndicatorValues(playerKey){
         // Get the indicators.
-        let cursor_rows_A  = _GFX.layerObjs.getOne(`cursor_rows_A`);
-        let cursor_rows_A2 = _GFX.layerObjs.getOne(`cursor_rows_A2`);
-        let cursor_rows_B  = _GFX.layerObjs.getOne(`cursor_rows_B`);
-        let cursor_rows_B2 = _GFX.layerObjs.getOne(`cursor_rows_B2`);
+        let rowIndicator_A  = _GFX.layerObjs.getOne(`rowIndicator_A`);
+        let rowIndicator_B  = _GFX.layerObjs.getOne(`rowIndicator_B`);
 
         // Get the positions for this player.
         let pos = Gameboard.pos_rowIndicators[playerKey];
 
         // Set positions/rotations:
-        cursor_rows_A .x = pos.top    .x;
-        cursor_rows_A .y = pos.top    .y;
-        cursor_rows_A.setSetting("rotation", pos.top.rotation);
-        
-        cursor_rows_A2.x = pos.top2   .x;
-        cursor_rows_A2.y = pos.top2   .y;
-        cursor_rows_A2.setSetting("rotation", pos.top2.rotation);
-        
-        cursor_rows_B .x = pos.bottom .x;
-        cursor_rows_B .y = pos.bottom .y;
-        cursor_rows_B.setSetting("rotation", pos.bottom.rotation);
-        
-        cursor_rows_B2.x = pos.bottom2.x;
-        cursor_rows_B2.y = pos.bottom2.y;
-        cursor_rows_B2.setSetting("rotation", pos.bottom2.rotation);
+        rowIndicator_A .x = pos.A    .x;
+        rowIndicator_A .y = pos.A    .y;
+        rowIndicator_A.setSetting("rotation", pos.A.rotation);
+
+        rowIndicator_B .x = pos.B    .x;
+        rowIndicator_B .y = pos.B    .y;
+        rowIndicator_B.setSetting("rotation", pos.B.rotation);
+    };
+
+    // (Called from: Deck flipPlayerCardsDown.)
+    hideRowIndicators(){
+        // Get the indicators.
+        let rowIndicator_A  = _GFX.layerObjs.getOne(`rowIndicator_A`);
+        let rowIndicator_B  = _GFX.layerObjs.getOne(`rowIndicator_B`);
+
+        rowIndicator_A.hidden = true;
+        rowIndicator_B.hidden = true;
     };
 
     // (Called from: Deck flipPlayerCardsUp.)
-    displayRowIndicators(playerKey, currentRow, playerCards, cardsToDisplay){
-        let cursor_rows_A  = _GFX.layerObjs.getOne(`cursor_rows_A`);
-        let cursor_rows_A2 = _GFX.layerObjs.getOne(`cursor_rows_A2`);
-        let cursor_rows_B  = _GFX.layerObjs.getOne(`cursor_rows_B`);
-        let cursor_rows_B2 = _GFX.layerObjs.getOne(`cursor_rows_B2`);
+    displayRowIndicators(playerKey, currentRow, playerCards, cardsToDisplay){ 
+        // Get the indicators.
+        let rowIndicator_A  = _GFX.layerObjs.getOne(`rowIndicator_A`);
+        let rowIndicator_B  = _GFX.layerObjs.getOne(`rowIndicator_B`);
 
         // Unhide.
-        cursor_rows_A.hidden  = false;
-        cursor_rows_A2.hidden = false;
-        cursor_rows_B.hidden  = false;
-        cursor_rows_B2.hidden = false;
+        rowIndicator_A.hidden = false;
+        rowIndicator_B.hidden = false;
 
         // Set the positions for this player.
         this.setRowIndicatorValues(playerKey);
@@ -1729,12 +1708,10 @@ class Gameboard{
             // console.log(`A: Player cards: ${playerCards.length}, cardsToDisplay: ${cardsToDisplay.length}, row: ${currentRow}`);
             
             // Top indicators.
-            cursor_rows_A.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none");
-            cursor_rows_A2.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none");
+            rowIndicator_A.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_none");
             
             // Bottom indicators.
-            cursor_rows_B.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none");
-            cursor_rows_B2.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none");
+            rowIndicator_B.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_none");
         }
 
         // The player has enough cards where there would be additional rows availble.
@@ -1744,12 +1721,10 @@ class Gameboard{
                 // console.log(`B: Player cards: ${playerCards.length}, cardsToDisplay: ${cardsToDisplay.length}, row: ${currentRow}`);
 
                 // Top indicators.
-                cursor_rows_A.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_down");
-                cursor_rows_A2.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_down");
+                rowIndicator_A.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_downOnly");
                 
                 // Bottom indicators.
-                cursor_rows_B.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none");
-                cursor_rows_B2.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none");
+                rowIndicator_B.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_downOnly");
             }
 
             // This is a row other than the first row.
@@ -1763,12 +1738,10 @@ class Gameboard{
                     // console.log(`C: Player cards: ${playerCards.length}, cardsToDisplay: ${cardsToDisplay.length}, row: ${currentRow}, maxRowValue: ${maxRowValue} (LAST ROW)`);
 
                     // Top indicators.
-                    cursor_rows_A.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none");
-                    cursor_rows_A2.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_none");
+                    rowIndicator_A.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_upOnly");
 
                     // Bottom indicators.
-                    cursor_rows_B.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_up");
-                    cursor_rows_B2.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_up");
+                    rowIndicator_B.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_upOnly");
                 }
 
                 // Not the last row. Rows can be changed in both directions.
@@ -1776,28 +1749,13 @@ class Gameboard{
                     // console.log(`D: Player cards: ${playerCards.length}, cardsToDisplay: ${cardsToDisplay.length}, row: ${currentRow}, maxRowValue: ${maxRowValue} (MORE ROWS REMAIN)`);
 
                     // Top indicators.
-                    cursor_rows_A.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_down");
-                    cursor_rows_A2.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_down");
+                    rowIndicator_A.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_both");
 
                     // Bottom indicators.
-                    cursor_rows_B.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_up");
-                    cursor_rows_B2.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor_rows_up");
+                    rowIndicator_B.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_both");
                 }
             }
         }
-    };
-
-    // (Called from: Deck flipPlayerCardsDown.)
-    hideRowIndicators(){
-        let cursor_rows_A = _GFX.layerObjs.getOne(`cursor_rows_A`);
-        let cursor_rows_B = _GFX.layerObjs.getOne(`cursor_rows_B`);
-        let cursor_rows_A2 = _GFX.layerObjs.getOne(`cursor_rows_A2`);
-        let cursor_rows_B2 = _GFX.layerObjs.getOne(`cursor_rows_B2`);
-
-        cursor_rows_A .hidden = true;
-        cursor_rows_B .hidden = true;
-        cursor_rows_A2.hidden = true;
-        cursor_rows_B2.hidden = true;
     };
 
     // Display in-game message.
