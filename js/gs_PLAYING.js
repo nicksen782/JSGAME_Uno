@@ -65,6 +65,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         cannotPlayCard: 50,
         endOfTurn     : 20,
         unselectCard  : 10,
+        winsRound  : 180,
     },
 
     cardMovements: [],
@@ -98,14 +99,17 @@ _APP.game.gamestates["gs_PLAYING"] = {
             draw4        : false, // Flag
             colorChange  : false, // Flag
         },
+        winsRound: {
+            init  : false, // Flag
+        }
     },
     debugFlags: {
         // Value of false means not active. 
         // Value of true or a non-empty string value means active.
 
-        skipCardValidityCheck   : false, // Allows any card to be played (No validation check.)
+        skipCardValidityCheck   : true, // Allows any card to be played (No validation check.)
         showAllPlayerCardsFaceUp: false, // Shows all player cards face up at the start of each turn.
-        forcedWinner            : false, // (example: "P1") Forces this player to be the winner of the first turn.
+        forcedWinner            : "P1", // (example: "P1") Forces this player to be the winner of the first turn.
         forcedWinnerOnTie       : false, // (example: "P1") On tie this or the first active player will be set as the winner as the first turn.
         
         forcedFirstDiscard: false,             // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
@@ -118,6 +122,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
     },
     lastCardPlayed : null, 
     lastDrawnCard : null, 
+    winningPlayerKey: "",
 
     // Run once upon changing to this game state.
     init: function(){
@@ -170,6 +175,10 @@ _APP.game.gamestates["gs_PLAYING"] = {
         _APP.shared.genTimer.create("skipWait", 0);      // Used by: [ action_skip, ]
         _APP.shared.genTimer.create("reverseWait", 0);   // Used by: [ action_reverse, ]
         _APP.shared.genTimer.create("endOfTurnWait", 0); // Used by: [ ]
+        
+        this.lastCardPlayed   = null,
+        this.lastDrawnCard    = null,
+        this.winningPlayerKey = "";
 
         // Run the debug init.
         if(_APP.debugActive && _DEBUG2){ 
@@ -244,18 +253,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
             }
 
             // This runs after the end of a round when there is a winner.
-            else if(_APP.game.gs2 == "winner"){
-                // this.winner(gpInput);
-
-                // END OF ROUND PLAY:
-                // PLAYER1 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
-                // PLAYER2 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
-                // PLAYER3 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
-                // PLAYER4 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
-                // DISPLAY CARD: 1 (LARGE) (reuse of discard pile)
-                // PLAYER MOVING CARD TO BE THE DISPLAY CARD. (SMALL) (reuse of card moving to draw pile.)
-                // Players not actively adding to the score only show the back card.
-            }
+            else if(_APP.game.gs2 == "winner"){ this.winsRound(gpInput); }
         }
 
         if(_APP.debugActive){ this.debug(gpInput); }

@@ -1026,7 +1026,7 @@ class Deck{
     };
 
     // Flip player cards up.
-    flipPlayerCardsUp(playerKey, row=0){
+    flipPlayerCardsUp(playerKey, row=0, showRowIndicators=true){
         // Get the current color.
         let currentColor = this.gameBoard.currentColor;
 
@@ -1067,7 +1067,9 @@ class Deck{
         let cardsToDisplay = playerCards_sorted.slice((row * 5), (row + 1) * 5);
 
         // Show the row indicators.
-        this.parent.gameBoard.displayRowIndicators(playerKey, row, playerCards, cardsToDisplay);
+        if(showRowIndicators){
+            this.parent.gameBoard.displayRowIndicators(playerKey, row, playerCards, cardsToDisplay);
+        }
 
         this.resetCardPositions(playerKey);
 

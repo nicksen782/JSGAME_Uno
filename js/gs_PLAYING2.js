@@ -228,7 +228,8 @@
                     // Was the last card dealt the last card to be dealt for the initial deal?
                     // if(1+this.flags.getFirstPlayer.initDealPos >= 4) { // ONE ROW
                     // if(1+this.flags.getFirstPlayer.initDealPos >= 11){ // THREE ROWS
-                    if(1+this.flags.getFirstPlayer.initDealPos >= 7) { // TWO ROWS
+                    // if(1+this.flags.getFirstPlayer.initDealPos >= 1) { // ONE ROW
+                    if(1+this.flags.getFirstPlayer.initDealPos >= 7) { // TWO ROWS (default)
                         // Clear the initDeal flag.
                         this.flags.getFirstPlayer.initDeal = false;
 
@@ -365,7 +366,12 @@
             }
 
             // Show the current color.
-            this.gameBoard.setColorIndicators(this.gameBoard.currentPlayer, this.gameBoard.currentColor);
+            if(this.winningPlayerKey){
+                this.gameBoard.setColorIndicators(this.winningPlayerKey, this.gameBoard.currentColor);
+            }
+            else{
+                this.gameBoard.setColorIndicators(this.gameBoard.currentPlayer, this.gameBoard.currentColor);
+            }
 
             // Check flags.
             let canContinueRound = true;
@@ -401,6 +407,7 @@
                     // console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: DRAW4");
                     this.action_draw({playerKey: this.gameBoard.currentPlayer, numCards: 4, msgName: "d4LoseTurn", endDelay: 30});
                 }
+
                 this.resetFlags();
                 
                 // Unset canContinueRound.
@@ -431,6 +438,34 @@
                 // Set flags and change to the next player.
                 this.flags.playerTurn.play_init = true;
                 this.flags.playerTurn.playing = false;
+            }
+            
+            if(this.winningPlayerKey){
+                canContinueRound = false;
+                console.log("WINNER IS:", this.winningPlayerKey);
+                
+                // Reset flags.
+                this.resetFlags();
+
+                _APP.shared.genTimer.create("genWaitTimer1", 1, _APP.game.gs1, ()=>{
+                    // All player cards face down. (This will display any cards drawn by the next player.)
+                    for(let playerKey of this.gameBoard.activePlayerKeys){
+                        this.gameBoard.players[playerKey].currentRow = 0;
+                        this.deck.flipPlayerCardsDown(playerKey, this.gameBoard.players[playerKey].currentRow);
+                    }
+                });
+
+                // After a delay, switch to the winner screen.
+                _APP.shared.genTimer.create("genWaitTimer2", 1, _APP.game.gs1, ()=>{
+                    // Display the winner message.
+                    this.gameBoard.displayMessage("winsRound"  , this.winningPlayerKey, false);
+
+                    _APP.shared.genTimer.create("genWaitTimer2", this.timerDelays.winsRound, _APP.game.gs1, ()=>{
+                        this.gameBoard.displayMessage("none"  , this.winningPlayerKey, false);
+                        this.flags.winsRound.init = true;
+                        _APP.game.changeGs2("winner");
+                    });
+                });
             }
 
             // THE PLAYER CAN CONTINUE THE ROUND.
@@ -925,9 +960,68 @@
                 // Set these flags.
                 this.flags.playerTurn.play_init = true;
 
+                // Did this player just win (has a card count of 0?)
+                let playerKey = this.gameBoard.currentPlayer;
+                let location = Deck.playerCardLocations[playerKey];
+                let cardCount = this.deck.deck.filter(d=>d.location==location).length;
+                if(cardCount == 0){
+                    // WIN
+
+                    // Set winner to the playerKey.
+                    this.winningPlayerKey = playerKey;
+                    console.log("winningPlayerKey:", this.winningPlayerKey);
+                }
+
+
                 this.gameBoard.setNextPlayer(this.flags.nextRoundFlags.reverse, true);
             }
             else{ console.log("endOfRound: INVALID FLAGS"); }
+        },
+
+        winsRound: function(gpInput){
+            // Need to cover the center of the screen with black (within the direction arrows.)
+            // SCORES
+            // PLAYER 1
+            // PLAYER 2
+            // PLAYER 3
+            // PLAYER 4
+
+            // GREEN
+            // SKIP
+
+            // POINTS: 20 [ LARGE IMAGE OF THE CARD ]
+
+            // PLAYER 2
+            // WINS THE GAME!
+            // CONGRATULATIONS!
+
+            /* 
+            One player at a time, cards will be moved from the player's hand to the new discard area.
+            The color, value and points are displayed as soon as the card starts moving.
+            
+            The cards travel small and arrive large.
+            Cards are taken one-by-one, changing rows as needed.
+            Each landed card adds to the displayed score for the player.
+            The winning player receives the points. 
+
+            When all cards are moved, move on to the next player.
+            Process repeats until each player's cards have been moved.
+            */
+
+            // END OF ROUND PLAY:
+            // PLAYER1 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
+            // PLAYER2 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
+            // PLAYER3 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
+            // PLAYER4 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
+            // DISPLAY CARD: 1 (LARGE) (reuse of discard pile)
+            // PLAYER MOVING CARD TO BE THE DISPLAY CARD. (SMALL) (reuse of card moving to draw pile.)
+            // Players not actively adding to the score only show the back card.
+
+            // if(this.flags.playerTurn.play_pass){}
+            // else if(this.flags.playerTurn.play_pass){}
+
+            console.log("WE HAVE A WINNER!", this.winningPlayerKey);
+            _APP.shared.genTimer.create("genWaitTimer1", this.timerDelays.winsRound, _APP.game.gs1, ()=>{});
         },
 
         // Actions based on cards: WILD, WILD_DRAW4, DRAW2, SKIP, REVERSE

@@ -307,20 +307,21 @@ div#layerObjectList1 {
 
 /* DEBUG CARD DISPLAY */
 .debug_cardDisplay {
-  height: 35px;
+  height: 18px;
   overflow-y: scroll;
   font-family: monospace;
 }
 .debug_cardDisplay .card {
   margin: 1px;
-  padding: 1px;
+  /* padding: 1px; */
   display: inline-block;
   text-align: center;
-  width: 50px;
+  width: 40px;
+  height: 20px;
   border-radius: 5px;
 }
 .debug_cardDisplay .card .label {
-  padding: 1px;
+  /* padding: 1px; */
   color: white;
   background-color: rgb(64 64 64 / 70%);
   border-radius: 5px;
@@ -329,7 +330,8 @@ div#layerObjectList1 {
   width: 100%;
   display: inline-block;
   border: 1px dotted white;
-  font-size: 16px;
+  font-size: 12px;
+  vertical-align: top;
 }
 .debug_cardDisplay .card.black {
   background-color: black;
@@ -560,4 +562,8 @@ button#debug_test_toggleGridCanvas {
     font-size: 14px;
     width: 210px;
     height:2em;
+}
+
+div#debug_drawCards {
+    height: 104px;
 }
