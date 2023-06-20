@@ -102,6 +102,7 @@ var gfxMainV5 = {
         // hashCacheHashesUnmodified.add(tilemap.hashCacheHash)
         for(let i=0, len=this.layerKeys.length; i<len; i+=1){
             let tilemaps = _GFX.currentData[this.layerKeys[i]].tilemaps;
+            let tilemap;
             for(let tilemapKey in tilemaps){
                 tilemap = tilemaps[tilemapKey];
                 // if(tilemap.removeHashOnRemoval){
@@ -687,6 +688,9 @@ var gfxMainV5 = {
                             );
                         }
     
+                        // Clear the reference to the overlappedCopy.
+                        overlappedCopy = null;
+
                         // Unset firstRegion flag.
                         firstRegion = false;
                     }
@@ -1084,6 +1088,7 @@ var gfxMainV5 = {
                     let map    = _GFX.currentData[layerKey].tilemaps[mapKey];
                     let imgDataCache = _GFX.layers[layerKey].imgDataCache;
                     let imgData;
+                    let copyUsed = false;
                     
                     // If there is no need for fading just use use the existing ImageData.
                     if( 
@@ -1106,6 +1111,7 @@ var gfxMainV5 = {
                                 0, 0, map.w, map.h
                             )
                         };
+                        copyUsed = true;
         
                         // Apply the per-image fade to the image copy.
                         if(map.settings.fade){
@@ -1157,6 +1163,12 @@ var gfxMainV5 = {
                             map.h,               // h
                         );
                     }
+
+                    // Clear the reference to the copy.
+                    if(copyUsed){
+                        imgData.data = null;
+                    }
+
                 }
             },
             drawImgDataCacheToCanvas      : function(layerKey){

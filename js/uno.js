@@ -571,6 +571,69 @@ _APP.utility = {
             return this.timeItData[key].t;
         }
     },
+
+    determineGlobalsAfter: function(){
+        // Step 2: Capture properties on the window object after your code has run
+        let globalsAfter = new Set(Object.getOwnPropertyNames(window));
+
+        // Step 3: Compare the two sets of properties
+        let newGlobals = [...globalsAfter].filter(property => !_APP.globalsBefore.has(property));
+        let newGlobals_filtered = newGlobals.filter(d=>{
+            if(
+                [
+                    // Variables that I expect and need to be global:
+                    "_WEBW_V",
+                    "_GFX",
+                    "INPUT",
+                    "_INPUT",
+                    "_DEBUG",
+                    "_DEBUG2",
+
+                    // Variables created by the dev tools console:
+                    "dir",
+                    "dirxml",
+                    "profile",
+                    "profileEnd",
+                    "clear",
+                    "table",
+                    "keys",
+                    "values",
+                    "undebug",
+                    "monitor",
+                    "unmonitor",
+                    "inspect",
+                    "copy",
+                    "queryObjects",
+                    "$_",
+                    "$0",
+                    "$1",
+                    "$2",
+                    "$3",
+                    "$4",
+                    "getEventListeners",
+                    "getAccessibleName",
+                    "getAccessibleRole",
+                    "monitorEvents",
+                    "unmonitorEvents",
+                    "$",
+                    "$$",
+                    "$x",
+                    
+                    // UNKNOWN.
+                    "debug",
+                ].indexOf(d) == -1){ 
+                    return true; 
+                }
+        });
+
+
+        // console.log("New global variables:", newGlobals);
+        console.log("New global (filtered) variables:", newGlobals_filtered);
+
+        globalsAfter        = null; delete globalsAfter;
+        newGlobals          = null; delete newGlobals;
+        newGlobals_filtered = null; delete newGlobals_filtered;
+    },
 };
 
 // For loading customized wrappers for plug-ins.
@@ -802,6 +865,7 @@ _APP.navBar1 = {
 };
 
 _APP.init_standAlone = async function(){
+    _APP.globalsBefore = new Set(Object.getOwnPropertyNames(window)); //  DEBUG
     return new Promise(async (resolve,reject)=>{
         await _APP.loader.loadFiles();
         _APP.utility.errorHandler.init();
@@ -815,6 +879,7 @@ _APP.init_standAlone = async function(){
 
 // JSGAME REQUESTS THIS FUNCTION FIRST.
 _APP.init = async function(){
+    const globalsBefore = new Set(Object.getOwnPropertyNames(window)); //  DEBUG
     return new Promise(async (resolve,reject)=>{
         // Set flags. 
         _APP.standAlone       = false;

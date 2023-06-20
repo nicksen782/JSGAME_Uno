@@ -245,8 +245,77 @@ const _GFX = {
             }
             return true;
         },
+
+        // DEBUG
+        globalsBefore: null,
+        determineGlobalsAfter: function(){
+            // Step 2: Capture properties on the window object after your code has run
+            let globalsAfter = new Set(Object.getOwnPropertyNames(self));
+        
+            // Step 3: Compare the two sets of properties
+            let newGlobals = [...globalsAfter].filter(property => !this.globalsBefore.has(property));
+            let newGlobals_filtered = newGlobals.filter(d=>{
+                if(
+                    [
+                        // Variables that I expect and need to be global:
+                        "_WEBW_V",
+                        "_GFX",
+                        "INPUT",
+                        "_INPUT",
+                        "_DEBUG",
+                        "_DEBUG2",
+        
+                        // Variables created by the dev tools console:
+                        "dir",
+                        "dirxml",
+                        "profile",
+                        "profileEnd",
+                        "clear",
+                        "table",
+                        "keys",
+                        "values",
+                        "undebug",
+                        "monitor",
+                        "unmonitor",
+                        "inspect",
+                        "copy",
+                        "queryObjects",
+                        "$_",
+                        "$0",
+                        "$1",
+                        "$2",
+                        "$3",
+                        "$4",
+                        "getEventListeners",
+                        "getAccessibleName",
+                        "getAccessibleRole",
+                        "monitorEvents",
+                        "unmonitorEvents",
+                        "$",
+                        "$$",
+                        "$x",
+
+                        // UNKNOWN.
+                        "debug",
+                    ].indexOf(d) == -1){ 
+                        return true; 
+                    }
+            });
+        
+        
+            // console.log("New global variables:", newGlobals);
+            console.log("New global (filtered) variables:", newGlobals_filtered);
+        
+            globalsAfter        = null; 
+            // delete globalsAfter;
+            newGlobals          = null; 
+            // delete newGlobals;
+            newGlobals_filtered = null; 
+            // delete newGlobals_filtered;
+        }
     },
 };
+
 
 self.onmessage = async function(event) {
     if(! (event.data.version == 2 || event.data.version == 5) ){
@@ -259,3 +328,5 @@ self.onmessage = async function(event) {
         gfxMainV5.messageHander(event);
     }
 };
+
+_GFX.utilities.globalsBefore = new Set(Object.getOwnPropertyNames(self)); //  DEBUG

@@ -2120,7 +2120,7 @@ var _DEBUG = {
             let new_average       = _APP.game.gameLoop.fpsCalc.average.toFixed(0) ?? 0;
             let new_avgMsPerFrame = _APP.game.gameLoop.fpsCalc.avgMsPerFrame.toFixed(1) ?? 0;
             let msDiff            = (_APP.game.gameLoop.fpsCalc.avgMsPerFrame - _APP.game.gameLoop.msFrame).toFixed(1);
-            testText = `AVG: ${new_average}, MS: ${new_avgMsPerFrame}, DELTA: ${msDiff}`;
+            let testText = `AVG: ${new_average}, MS: ${new_avgMsPerFrame}, DELTA: ${msDiff}`;
             _DEBUG.updateIfChanged2(this.DOM.fpsDisplay, "_DEBUG.vault.frameCounters.fpsDisplay", testText);
 
             if(!newData.ALLTIMINGS || !Object.keys(newData.ALLTIMINGS).length){
@@ -2231,7 +2231,7 @@ var _DEBUG = {
             "GfxBar"  : { x:70, y:5+60 , w:560, h:20 },
         },
         mapToWidth: function(value, maxWidth) {
-            canvasWidth = maxWidth; // this.ctx.canvas.width;
+            let canvasWidth = maxWidth; // this.ctx.canvas.width;
 
             // Make sure the value is clamped between 0 and 100
             value = Math.max(0, Math.min(100, value));
@@ -2440,7 +2440,7 @@ var _DEBUG = {
         this.prevGfxTimings.ALLTIMINGS = reducedTimings;
     
         // Set the return data.
-        returnData = this.prevGfxTimings;
+        let returnData = this.prevGfxTimings;
         return returnData;
     },
     configDummyDraw: async function(){
@@ -2578,54 +2578,54 @@ var _DEBUG = {
         let debug_ts = performance.now();
         
         // Get the last saved data.
-        newData = _DEBUG.prevGfxTimings;
+        let newData = _DEBUG.prevGfxTimings;
 
         // Dummy type?
         if(type==2){
             this.configDummyDraw();
         }
 
-        performance.mark('START_debug_total');
+        // performance.mark('START_debug_total');
         
         // SHOWGAMESTATE VIEWER
-        performance.mark('START_showGamestate.display');
+        // performance.mark('START_showGamestate.display');
         _DEBUG.showGamestate.display(false);
-        performance.mark('END_showGamestate.display');
+        // performance.mark('END_showGamestate.display');
         
         // LAYER OBJECTS VIEWER/EDITOR
-        performance.mark('START_layerObjs.display');
+        // performance.mark('START_layerObjs.display');
         _DEBUG.layerObjs.display(false);
-        performance.mark('END_layerObjs.display');
+        // performance.mark('END_layerObjs.display');
         
         // HASH CACHE VIEWER
-        performance.mark('START_hashCache.display');
+        // performance.mark('START_hashCache.display');
         _DEBUG.hashCache.display(newData, false);
-        performance.mark('END_hashCache.display');
+        // performance.mark('END_hashCache.display');
         
         // DRAW TIMINGS
-        performance.mark('START_drawTimings.display');
+        // performance.mark('START_drawTimings.display');
         _DEBUG.drawTimings.display(newData, false);
-        performance.mark('END_drawTimings.display');
+        // performance.mark('END_drawTimings.display');
         
         
         // BARS (Shows the previous value for the debug bar.)
-        performance.mark('START_bars.display');
+        // performance.mark('START_bars.display');
         _DEBUG.updateTimingBars.display(newData, false);
-        performance.mark('END_bars.display');
+        // performance.mark('END_bars.display');
 
         // DONE WITH DEBUG. 
         this.runDebug_lastDuration = performance.now() - debug_ts;
 
         this.runDebug_last = performance.now();
 
-        performance.mark('END_debug_total');
+        // performance.mark('END_debug_total');
 
-        performance.measure('showGamestate.display', 'START_showGamestate.display', 'END_showGamestate.display');
-        performance.measure('layerObjs.display'    , 'START_layerObjs.display'    , 'END_layerObjs.display');
-        performance.measure('hashCache.display'    , 'START_hashCache.display'    , 'END_hashCache.display');
-        performance.measure('drawTimings.display'  , 'START_drawTimings.display'  , 'END_drawTimings.display');
-        performance.measure('bars.display'         , 'START_bars.display'         , 'END_bars.display');
-        performance.measure('debug_total'          , 'START_debug_total'          , 'END_debug_total');
+        // performance.measure('showGamestate.display', 'START_showGamestate.display', 'END_showGamestate.display');
+        // performance.measure('layerObjs.display'    , 'START_layerObjs.display'    , 'END_layerObjs.display');
+        // performance.measure('hashCache.display'    , 'START_hashCache.display'    , 'END_hashCache.display');
+        // performance.measure('drawTimings.display'  , 'START_drawTimings.display'  , 'END_drawTimings.display');
+        // performance.measure('bars.display'         , 'START_bars.display'         , 'END_bars.display');
+        // performance.measure('debug_total'          , 'START_debug_total'          , 'END_debug_total');
     },
 
     init: async function(){

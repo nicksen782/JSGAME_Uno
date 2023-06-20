@@ -195,21 +195,21 @@ _APP.game = {
                 if( !this._lastTick_ ){ this._lastTick_ = now; return 0; }
 
                 // Determine the fps for this tick. 
-                __delta_ = (now - this._lastTick_) / 1000;
-                __fps_ = (1 / __delta_) << 0; // Round down fps.
+                this.__delta_ = (now - this._lastTick_) / 1000;
+                this.__fps_ = (1 / this.__delta_) << 0; // Round down fps.
                 
                 // Add to fps samples the current tick fps value.
-                this._sample_[ this._index_ ] = __fps_;
+                this._sample_[ this._index_ ] = this.__fps_;
                 
                 // Get the fps average by summing all samples and dividing by the sample count. 
-                __average_ = 0;
+                this.__average_ = 0;
                 this.__average_i_ = this._sample_.length; 
-                while (this.__average_i_--) { __average_ += this._sample_[this.__average_i_]; } 
-                __average_ = ( __average_ / this._sample_.length);
+                while (this.__average_i_--) { this.__average_ += this._sample_[this.__average_i_]; } 
+                this.__average_ = ( this.__average_ / this._sample_.length);
 
                 // Set the new FPS average.
-                this.average = __average_;
-                this.avgMsPerFrame = 1000 / __average_;
+                this.average = this.__average_;
+                this.avgMsPerFrame = 1000 / this.__average_;
 
                 // Store current timestamp
                 this._lastTick_ = now;

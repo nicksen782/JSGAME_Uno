@@ -106,23 +106,25 @@ var _GFX = {
         }, 
     },
     create_GFX_UPDATE_DATA: function(){
-        this.GFX_UPDATE_DATA.gs1        = _APP.game.gs1 ;
-        this.GFX_UPDATE_DATA.gs2        = _APP.game.gs2 ;
-        this.GFX_UPDATE_DATA.ALLCLEAR   = _GFX.ALLCLEAR;
-        this.GFX_UPDATE_DATA.hasChanges = _GFX.DRAWNEEDED;
+        let DATA = this.GFX_UPDATE_DATA;
+        DATA.gs1        = _APP.game.gs1 ;
+        DATA.gs2        = _APP.game.gs2 ;
+        DATA.ALLCLEAR   = _GFX.ALLCLEAR;
+        DATA.hasChanges = _GFX.DRAWNEEDED;
 
         for(let layerKey in _GFX.currentData){ 
             let layerData = _GFX.currentData[layerKey];
-            this.GFX_UPDATE_DATA[layerKey].CHANGES       = {};
-            this.GFX_UPDATE_DATA[layerKey].REMOVALS_ONLY = [];
-            this.GFX_UPDATE_DATA[layerKey].fade          = layerData.fade;
-            this.GFX_UPDATE_DATA[layerKey].changes       = layerData.changes;
-            this.GFX_UPDATE_DATA[layerKey].useFlicker    = layerData.useFlicker;
-            if([layerKey] == "L1"){
-                this.GFX_UPDATE_DATA[layerKey].bgColorRgba   = layerData.bgColorRgba;
+            DATA[layerKey].CHANGES       = {};
+            DATA[layerKey].REMOVALS_ONLY = [];
+            DATA[layerKey].fade          = layerData.fade;
+            DATA[layerKey].changes       = layerData.changes;
+            DATA[layerKey].useFlicker    = layerData.useFlicker;
+            if(layerKey == "L1"){
+                DATA[layerKey].bgColorRgba   = layerData.bgColorRgba;
             }
 
             // Process what has changed.
+            let tilemap;
             for(let mapKey in layerData.tilemaps){ 
                 tilemap = layerData.tilemaps[mapKey];
 
@@ -131,19 +133,19 @@ var _GFX = {
                     tilemap.hashPrev == 0 ||
                     tilemap.hashPrev != tilemap.hash
                 ){ 
-                    this.GFX_UPDATE_DATA[layerKey]["CHANGES"][mapKey] = tilemap; 
-                    this.GFX_UPDATE_DATA[layerKey].changes = true; 
+                    DATA[layerKey]["CHANGES"][mapKey] = tilemap; 
+                    DATA[layerKey].changes = true; 
                 }
 
                 // REMOVALS_ONLY (if there are removals AND this mapKey is in removals.)
                 if(_GFX.REMOVALS[layerKey].length && _GFX.REMOVALS[layerKey].indexOf(mapKey) != -1){
-                    this.GFX_UPDATE_DATA.hasChanges = true; 
-                    this.GFX_UPDATE_DATA[layerKey].changes = true;
+                    DATA.hasChanges = true; 
+                    DATA[layerKey].changes = true;
                 }
             }
 
             // Add the REMOVALS_ONLY values.
-            this.GFX_UPDATE_DATA[layerKey]["REMOVALS_ONLY"] = _GFX.REMOVALS[layerKey]
+            DATA[layerKey]["REMOVALS_ONLY"] = _GFX.REMOVALS[layerKey]
         }
     },
 
@@ -232,6 +234,7 @@ var _GFX = {
             this.objs[gamestate][key] = {}; 
             
             // Delete this key.
+            this.objs[gamestate][key] = null;
             delete this.objs[gamestate][key];
 
             // Return the config to the caller (makes reuse easier.)
@@ -334,6 +337,9 @@ var _GFX = {
                     _GFX.funcs.updateLayer(layerKey, layerObjects[layerKey]);
                 }
             }
+
+            layerObjects = null;
+            // delete layerObjects;
         },
     },
 
@@ -469,9 +475,9 @@ var _GFX = {
         // Updates the specified layer (locally.) Can accept multiple tilemaps.
         // Creates/Updates an entry in _GFX.currentData[layer].tilemaps[tilemapKey].
         updateLayer: function(layer, tilemaps={}){
-            // 
+            // Only accept these layerKeys:
             if(layer == "L1" || layer == "L2" || layer == "L3" || layer == "L4"){
-                let tilemap, exists, oldHash, newHash, hashCacheHash, hashCacheHash_BASE;
+                let tilemap, exists, oldHash, newHash;
                 let tw ;
                 let th ;
                 for(let tilemapKey in tilemaps){
@@ -497,7 +503,7 @@ var _GFX = {
                     }
 
                     // Fix settings.
-                    tilemap.settings = Object.assign({}, _GFX.defaultSettings, tilemap.settings ?? {});
+                    // tilemap.settings = Object.assign({}, _GFX.defaultSettings, tilemap.settings ?? {});
 
                     // If it exists then get it's existing hash.
                     if(exists){ oldHash = _GFX.currentData[layer].tilemaps[tilemapKey].hash ?? 0; }
@@ -540,6 +546,9 @@ var _GFX = {
                         _GFX.currentData[layer].changes = true;
                     }
                 }
+            }
+            else{
+                console.error("updateLayer: INVALID LAYER KEY:", layer);
             }
         },
 
@@ -678,6 +687,7 @@ var _GFX = {
             removals.push(mapKey);
         
             // Delete from currentData.
+            _GFX.currentData[layerKey].tilemaps[mapKey] = null;
             delete _GFX.currentData[layerKey].tilemaps[mapKey];
             
             // Set changes to true so that the canvas output updates.
