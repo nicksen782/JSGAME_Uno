@@ -1455,15 +1455,6 @@ var _DEBUG = {
             this.DOM.showHide_Border   = document.getElementById("debug_layerObjects_showHide_Border");
             this.DOM.showHide_hidden   = document.getElementById("debug_layerObjects_showHide_hidden");
 
-            // Add change event listeners.
-            this.DOM.showHide_LayerObject.addEventListener("change", ()=>{ this.values.showHide_LayerObject = this.DOM.showHide_LayerObject.checked; this.showHideByClassName(); }, false);
-            this.DOM.showHide_PrintText  .addEventListener("change", ()=>{ this.values.showHide_PrintText   = this.DOM.showHide_PrintText  .checked; this.showHideByClassName(); }, false);
-            this.DOM.showHide_Cursor1    .addEventListener("change", ()=>{ this.values.showHide_Cursor1     = this.DOM.showHide_Cursor1    .checked; this.showHideByClassName(); }, false);
-            this.DOM.showHide_Card       .addEventListener("change", ()=>{ this.values.showHide_Card        = this.DOM.showHide_Card       .checked; this.showHideByClassName(); }, false);
-            this.DOM.showHide_UnoLetter  .addEventListener("change", ()=>{ this.values.showHide_UnoLetter   = this.DOM.showHide_UnoLetter  .checked; this.showHideByClassName(); }, false);
-            this.DOM.showHide_Border     .addEventListener("change", ()=>{ this.values.showHide_Border      = this.DOM.showHide_Border     .checked; this.showHideByClassName(); }, false);
-            this.DOM.showHide_hidden     .addEventListener("change", ()=>{ this.values.showHide_hidden      = this.DOM.showHide_hidden     .checked; this.showHideByClassName(); }, false);
-
             // Set the default states.
             this.DOM.showHide_LayerObject.checked = this.values.showHide_LayerObject;
             this.DOM.showHide_PrintText  .checked = this.values.showHide_PrintText;
@@ -1472,6 +1463,16 @@ var _DEBUG = {
             this.DOM.showHide_UnoLetter  .checked = this.values.showHide_UnoLetter;
             this.DOM.showHide_Border     .checked = this.values.showHide_Border;
             this.DOM.showHide_hidden     .checked = this.values.showHide_hidden;
+
+            // Add change event listeners.
+            this.DOM.showHide_LayerObject.addEventListener("change", ()=>{ this.values.showHide_LayerObject = this.DOM.showHide_LayerObject.checked; this.showHideByClassName(); }, false);
+            this.DOM.showHide_PrintText  .addEventListener("change", ()=>{ this.values.showHide_PrintText   = this.DOM.showHide_PrintText  .checked; this.showHideByClassName(); }, false);
+            this.DOM.showHide_Cursor1    .addEventListener("change", ()=>{ this.values.showHide_Cursor1     = this.DOM.showHide_Cursor1    .checked; this.showHideByClassName(); }, false);
+            this.DOM.showHide_Card       .addEventListener("change", ()=>{ this.values.showHide_Card        = this.DOM.showHide_Card       .checked; this.showHideByClassName(); }, false);
+            this.DOM.showHide_UnoLetter  .addEventListener("change", ()=>{ this.values.showHide_UnoLetter   = this.DOM.showHide_UnoLetter  .checked; this.showHideByClassName(); }, false);
+            this.DOM.showHide_Border     .addEventListener("change", ()=>{ this.values.showHide_Border      = this.DOM.showHide_Border     .checked; this.showHideByClassName(); }, false);
+            this.DOM.showHide_hidden     .addEventListener("change", ()=>{ this.values.showHide_hidden      = this.DOM.showHide_hidden     .checked; this.showHideByClassName(); }, false);
+            // this.DOM.showHide_hidden     .addEventListener("change", ()=>{ this.values.showHide_hidden      = this.DOM.showHide_hidden     .checked; this.display(true); }, false);
         },
         
         // ** VIEWER **
@@ -1670,73 +1671,66 @@ var _DEBUG = {
             }
             return arr; 
         },
-        showHideByClassName: function(){
-            /*
-            For each displayed layer:
-            Based on attribute "className"
-            Show/hide based on the states of checkboxes.
-            */
 
+        showHideByClassName: function() {
             // Get the list of layerKeys.
             let layerKeys = Object.keys(_GFX.currentData);
-
+        
             // Go through each layerKey...
-            for(let layerKey of layerKeys){ 
+            for (let layerKey of layerKeys) {
                 let updateSource = false;
-
+        
                 // Clone the source.
-                [ this.frags[layerKey] ] = this.createChildNodeClone( [ this.srcDOM[layerKey] ] );
-
+                [this.frags[layerKey]] = this.createChildNodeClone([this.srcDOM[layerKey]]);
+        
                 // Go through each className...
-                for(let className of this.classNames){ 
+                for (let className of this.classNames) {
                     // Get the entries that have this className.
                     let elems = this.frags[layerKey].querySelectorAll(`.layerObjectsStats1_entry[className='${className}']`);
-
+        
                     // Skip if there are not any matches.
-                    if(!elems.length){ continue; }
-                    
+                    if (!elems.length) { continue; }
+        
                     // Go through the list of className matched entries...
-                    for(let elem of elems){
-                        // If this is hidden
-                        if(this.values.showHide_hidden && elem.getAttribute("hidden" == "false")){
-                            // Remove the displayNone class if it IS already there.
-                            if(elem.classList.contains("displayNone")){
-                                elem.classList.remove("displayNone");
-                                
-                                // Set the updateSource flag.
-                                updateSource = true;
-                            }
+                    for (let elem of elems) {
+                        let shouldDisplay = this.values[`showHide_${className}`];
+
+                        // If the element is already hidden and shouldDisplay is false, skip further processing.
+                        if (!shouldDisplay && elem.classList.contains("displayNone")) {
+                            continue;
                         }
 
-                        // If the setting is to show...
-                        else if(this.values[`showHide_${className}`]){
-                            // Remove the displayNone class if it IS already there.
-                            if(elem.classList.contains("displayNone")){
-                                elem.classList.remove("displayNone");
-                                
-                                // Set the updateSource flag.
-                                updateSource = true;
-                            }
+                        let isHidden = elem.getAttribute("hidden") === "true";
+                        let showHidden = this.values.showHide_hidden;
+
+                        // Determine if the element should be displayed.
+                        if (isHidden) {
+                            shouldDisplay = shouldDisplay && showHidden;
                         }
 
-                        else{
-                            // Add the displayNone class if it is NOT already there.
-                            if(!elem.classList.contains("displayNone")){
+                        // Update element's display based on shouldDisplay.
+                        if (shouldDisplay) {
+                            if (elem.classList.contains("displayNone")) {
+                                elem.classList.remove("displayNone");
+                                updateSource = true;
+                            }
+                        } 
+                        else {
+                            if (!elem.classList.contains("displayNone")) {
                                 elem.classList.add("displayNone");
-                                
-                                // Set the updateSource flag.
                                 updateSource = true;
                             }
                         }
                     }
                 }
-
+        
                 // If the updateSource flag is set then replace the source with the modified fragment.
-                if(updateSource){
+                if (updateSource) {
                     this.srcDOM[layerKey].replaceChildren(this.frags[layerKey]);
                 }
             }
-        },
+        }
+        ,
 
         createEntryDiv: function(data){
             // Create the new entry container and add classes and attributes.
@@ -1747,24 +1741,26 @@ var _DEBUG = {
             div_container.setAttribute("className"  , data.className);
             div_container.setAttribute("hidden"     , data.hidden);
 
-            // Should this element be hidden?
+            // Text for hidden elems:
+            let hidden = data.hidden ? "(HIDDEN)" : "";
+
+            // Should this elem be hidden (displayNone) based on the values of the filter checkboxes?
             for(let className of this.classNames){ 
                 // If this entry className matches className AND the setting is to hide...
-                if(data.className == className && !this.values[`showHide_${className}`] ){ 
-                    // Add the displayNone class to hide this entry.
-                    div_container.classList.add("displayNone"); 
-                }
-            }
-            if(!this.values.showHide_hidden && data.hidden){
-                // console.log("hiding");
-                div_container.classList.add("displayNone"); 
-            }
+                if(data.className === className){
+                    // Checkbox is NOT checked. (Means "do not show.")
+                    if(!this.values[`showHide_${className}`] ){ 
+                        // Add the displayNone class to hide this entry.
+                        div_container.classList.add("displayNone"); 
+                        break;
+                    }
 
-            // Is the entry have the setting of 'hidden' set?
-            let hidden;
-            if(data.hidden){
-                // console.log("is hidden");
-                hidden = ` (HIDDEN)`;
+                    // The checkbox for this classname IS checked. (Means "do show.")
+                    // Check if data.hidden is true. Show the elem if true.
+                    if(!this.values.showHide_hidden && data.hidden){
+                        div_container.classList.add("displayNone"); 
+                    }
+                }
             }
 
             // Generate the dimensions text.
@@ -1793,7 +1789,7 @@ var _DEBUG = {
 
             // Add the texts to the entry container.
             div_container.innerText = `` +
-            `C: ${className} : K: ${name}` + `${hidden ? hidden : ""}` +
+            `C: ${className} : K: ${name}` + `${hidden ? " " + hidden : ""}` +
             `\n  D: ${dims}` +
             `\n  S: ${settings}` + 
             `\n  P: ${data.text ? ("(TEXT): '" + data.text).slice(0, 42) + "'" : ""}` +
