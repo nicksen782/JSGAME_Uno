@@ -284,6 +284,9 @@
                 <input type="checkbox" id="debug_layerObjects_showHide_Border" value="1">Border
             </label>
             <label class="debug_layerObjects_showHide_label debug_no-highlight">
+                <input type="checkbox" id="debug_layerObjects_showHide_Fill" value="1">Fill
+            </label>
+            <label class="debug_layerObjects_showHide_label debug_no-highlight">
                 <input type="checkbox" id="debug_layerObjects_showHide_hidden" value="1">(HIDDEN)
             </label>
         </div>
@@ -743,6 +746,55 @@
                                 </td>
                             </tr>
                         </table>
+                        <br>
+                        <!-- TODO: This onclick function has too much code. The button should probably have a normal event listener instead. -->
+                        <button onclick='
+                            // Get the deck.
+                            let deck             = _APP.game.gamestates.gs_PLAYING.deck.deck;
+                            
+                            // Get the player key, location, and their cards.
+                            let playerKey        = _APP.game.gamestates.gs_PLAYING.gameBoard.currentPlayer;
+                            let playerLocation   = Deck.playerCardLocations[playerKey];
+                            let playerCards      = deck.filter(d=>{return d.location == playerLocation});
+
+                            // If the player already has zero cards then just skip all thsi.
+                            if(playerCards.length == 1){
+                                console.log(`${playerKey} already only has one card. ABORTING`);
+                                return;
+                            }
+
+                            // Get the list of active player keys and set a default value for the new location.
+                            let activePlayerKeys = _APP.game.gamestates.gs_PLAYING.gameBoard.activePlayerKeys;
+                            let newLocation      = "CARD_LOCATION_DRAW";
+
+                            // Find the next active player in the activePlayerKeys list.
+                            for(let thisPlayerKey of activePlayerKeys){
+                                // Skip if this is the current player.
+                                if(thisPlayerKey == playerKey){ continue; }
+                                
+                                // Assign the location of this player as the new location.
+                                else{
+                                    // Found an unfortunate player to dump cards onto.
+                                    console.log(`Found an unfortunate player to dump ${playerKey}s cards onto: ${thisPlayerKey}.`);
+                                    newLocation = Deck.playerCardLocations[thisPlayerKey];
+                                    break;
+                                }
+                            }
+
+                            // Was another player found? (Kinda odd but possible in a testing situation.)
+                            if(newLocation === playerLocation){
+                                console.log("No other players? Dumping cards to CARD_LOCATION_DRAW");
+                            }
+
+                            // Change the location of every card other than the first to the new location.
+                            for(let i=1, len=playerCards.length; i<len; i+=1){
+                                playerCards[i].location = newLocation;
+                            }
+
+                            // Flip the player cards up again to reflect the new changes.
+                            _APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsUp(playerKey);
+                        '>Reduce current player's cards to one card</button>
+                        <br>
                         <br>
 
                         <!-- TESTS OF THE HIDDEN FLAG  -->

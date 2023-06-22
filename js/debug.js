@@ -1315,6 +1315,7 @@ var _DEBUG = {
             showHide_Card       : true,
             showHide_UnoLetter  : true,
             showHide_Border     : false,
+            showHide_Fill       : false,
             showHide_hidden     : false,
         },
         classNames : [
@@ -1324,6 +1325,7 @@ var _DEBUG = {
             "Card",
             "UnoLetter",
             "Border",
+            "Fill",
         ],
         DOM:{
             "contextMenu1": "debug_layerObjEdit_contextMenu1",
@@ -1453,6 +1455,7 @@ var _DEBUG = {
             this.DOM.showHide_Card        = document.getElementById("debug_layerObjects_showHide_Card");
             this.DOM.showHide_UnoLetter   = document.getElementById("debug_layerObjects_showHide_UnoLetter");
             this.DOM.showHide_Border   = document.getElementById("debug_layerObjects_showHide_Border");
+            this.DOM.showHide_Fill   = document.getElementById("debug_layerObjects_showHide_Fill");
             this.DOM.showHide_hidden   = document.getElementById("debug_layerObjects_showHide_hidden");
 
             // Set the default states.
@@ -1462,6 +1465,7 @@ var _DEBUG = {
             this.DOM.showHide_Card       .checked = this.values.showHide_Card;
             this.DOM.showHide_UnoLetter  .checked = this.values.showHide_UnoLetter;
             this.DOM.showHide_Border     .checked = this.values.showHide_Border;
+            this.DOM.showHide_Fill     .checked = this.values.showHide_Fill;
             this.DOM.showHide_hidden     .checked = this.values.showHide_hidden;
 
             // Add change event listeners.
@@ -1471,6 +1475,7 @@ var _DEBUG = {
             this.DOM.showHide_Card       .addEventListener("change", ()=>{ this.values.showHide_Card        = this.DOM.showHide_Card       .checked; this.showHideByClassName(); }, false);
             this.DOM.showHide_UnoLetter  .addEventListener("change", ()=>{ this.values.showHide_UnoLetter   = this.DOM.showHide_UnoLetter  .checked; this.showHideByClassName(); }, false);
             this.DOM.showHide_Border     .addEventListener("change", ()=>{ this.values.showHide_Border      = this.DOM.showHide_Border     .checked; this.showHideByClassName(); }, false);
+            this.DOM.showHide_Fill       .addEventListener("change", ()=>{ this.values.showHide_Fill        = this.DOM.showHide_Fill       .checked; this.showHideByClassName(); }, false);
             this.DOM.showHide_hidden     .addEventListener("change", ()=>{ this.values.showHide_hidden      = this.DOM.showHide_hidden     .checked; this.showHideByClassName(); }, false);
             // this.DOM.showHide_hidden     .addEventListener("change", ()=>{ this.values.showHide_hidden      = this.DOM.showHide_hidden     .checked; this.display(true); }, false);
         },
