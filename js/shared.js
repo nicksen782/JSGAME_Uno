@@ -240,6 +240,11 @@ _APP.shared = {
             "press": {},
             "release": {}
         };
+        gpInput["ANY_bool"] = {
+            "held"   : false,
+            "press"  : false,
+            "release": false
+        };
         const states = ["held", "press", "release"];
         const buttons = _INPUT.consts.buttons;
 
@@ -253,6 +258,9 @@ _APP.shared = {
 
                 // Set the value in "ANY" to true if either "P1" or "P2" has that property set to true.
                 gpInput["ANY"][state][button] = gpInput["P1"][state][button] || gpInput["P2"][state][button];
+                if(!gpInput["ANY_bool"][state] && gpInput["P1"][state][button] || gpInput["P2"][state][button]){
+                    gpInput["ANY_bool"][state] = true;
+                }
             }
         }
 

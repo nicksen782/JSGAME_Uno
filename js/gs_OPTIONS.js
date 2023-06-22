@@ -7,8 +7,10 @@ _APP.game.gamestates["gs_OPTIONS"] = {
         P2  : "CPU",
         P3  : "NONE",
         P4  : "NONE",
-        WIN : "atZeroCards", // ["at500pts", "atZeroCards"]
+        WIN : "at500pts", // ["at500pts", "atZeroCards"]
+        // WIN : "atZeroCards", // ["at500pts", "atZeroCards"]
         DRAW: "one",      // ["one", "until"]
+        // DRAW: "until",      // ["one", "until"]
     },
 
     //

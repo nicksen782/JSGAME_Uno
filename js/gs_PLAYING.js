@@ -23,6 +23,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         P3  : "HUMAN",
         P4  : "HUMAN",
         WIN : "atZeroCards", // ["at500pts", "atZeroCards"]
+        // WIN : "at500pts", // ["at500pts", "atZeroCards"]
         DRAW: "one",         // ["one", "until"]
     },
     
@@ -49,24 +50,28 @@ _APP.game.gamestates["gs_PLAYING"] = {
     ],
 
     movementSpeeds:{
-        // GetFirstPlayer.
+        // GetFirstPlayer:
         dealOneCard  : 15, // 20, // Dealing (this.flags.getFirstPlayer.highCardDeal)
         returnOneCard: 20, // 30, // Returning (this.flags.getFirstPlayer.checkHighCard)
         dealingMany  : 10, // 10, // Deal hands (this.flags.getFirstPlayer.initDeal)
 
-        // playerTurn
+        // playerTurn:
         unselectCard: 30,
         selectCard  : 10,
         playCard    : 20,
         draw2       : 20,
         draw4       : 15,
+
+        // Scoring:
+        scoreCardReturn: 20,
     },
     
     timerDelays: {
         cannotPlayCard: 50,
         endOfTurn     : 20,
         unselectCard  : 10,
-        winsRound  : 180,
+        winsRound  : 120,
+        scoreCardReturn  : 20,
     },
 
     cardMovements: [],
@@ -223,7 +228,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         // Pause menu activation/deactivation?
         if(gpInput.P1.press.BTN_START)  { 
             if(this.pauseMenu.active){ this.pauseMenu.hide(); }
-            else                     { this.pauseMenu.show();}
+            else                     { this.pauseMenu.show(); }
         }
 
         // Pause menu active?

@@ -646,18 +646,21 @@
                                 <!-- MESSAGE -->
                                 <td class="">
                                     <select id="debug_PLAYING_messageSelect">
-                                        <option value = "none"        >none</option>
-                                        <option value = "tied"        >tied</option>
-                                        <option value = "playsFirst"  >playsFirst</option>
-                                        <option value = "reversed"    >reversed</option>
-                                        <option value = "loseTurn"    >loseTurn</option>
+                                        <option value = "none">none</option>
+                                        <option value = "tied">tied</option>
+                                        <option value = "playsFirst">playsFirst</option>
+                                        <option value = "reversed">reversed</option>
+                                        <option value = "loseTurn">loseTurn</option>
                                         <option value = "skipLoseTurn">skipLoseTurn</option>
-                                        <option value = "d2LoseTurn"  >d2LoseTurn</option>
-                                        <option value = "d4LoseTurn"  >d4LoseTurn</option>
-                                        <option value = "winsRound"   >winsRound</option>
-                                        <option value = "playCancel"  >playCancel</option>
-                                        <option value = "passCancel"  >passCancel</option>
-                                        <option value = "wrongCard"   >wrongCard</option>
+                                        <option value = "d2LoseTurn">d2LoseTurn</option>
+                                        <option value = "d4LoseTurn">d4LoseTurn</option>
+                                        <option value = "winsRound">winsRound</option>
+                                        <option value = "winsGame">winsGame</option>
+                                        <option value = "startNextRound">startNextRound</option>
+                                        <option value = "playCancel">playCancel</option>
+                                        <option value = "passCancel">passCancel</option>
+                                        <option value = "invalidCard">invalidCard</option>
+                                        <option value = "turnPassed">turnPassed</option>
                                     </select>
                                     <button id="debug_PLAYING_messageButton">SET</button>
                                 </td> 
@@ -908,27 +911,6 @@
                     </div>
 
                     <div id="debug_navBar_gs_PLAYING_view_flags" class="controls_navBarViews">
-                        <table class="debug_table">
-                            <tr><td class="debug_td_header">getFirstPlayer</td></tr>
-                            <tr><td class="debug_monospace" id="debug_flags_getFirstPlayer"></td> </tr>
-                        </table>
-
-                        <table class="debug_table">
-                            <tr><td class="debug_td_header">playerTurn</td></tr>
-                            <tr><td class="debug_monospace" id="debug_flags_playerTurn"></td> </tr>
-                        </table>
-
-                        <table class="debug_table">
-                            <tr><td class="debug_td_header">endOfRound</td></tr>
-                            <tr><td class="debug_monospace" id="debug_flags_endOfRound"></td> </tr>
-                        </table>
-
-                        <table class="debug_table">
-                            <tr><td class="debug_td_header">nextRoundFlags</td></tr>
-                            <tr><td class="debug_monospace" id="debug_flags_nextRoundFlags"></td> </tr>
-                        </table>
-                        <br>
-
                         <!-- <label class="debug_title">CARDMOVEMENTS!</label> -->
                         <table class="debug_table">
                             <tr> 
@@ -954,6 +936,12 @@
                         <table class="debug_table">
                             <tr><td class="debug_td_header">TIMERS2</td></tr>
                             <tr><td class="debug_monospace" id="debug_flags_timers2"></td> </tr>
+                        </table>
+                        <br>
+
+                        <table class="debug_table">
+                            <tr><td class="debug_td_header">Active Flags</td></tr>
+                            <tr><td class="debug_monospace" id="debug_flags_activeFlags"></td> </tr>
                         </table>
                         <br>
 

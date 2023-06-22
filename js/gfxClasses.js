@@ -1285,13 +1285,18 @@ class Deck{
         else if(drawCount <  81 ) { drawBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL3");}
         else                      { drawBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL4");}
 
-        let discardCount = this.deck.filter(d=>d.location=="CARD_LOCATION_DISCARD").length;
         let discardBelow   = _GFX.layerObjs.getOne("discardBelow");
+        let discardCount = this.deck.filter(d=>d.location=="CARD_LOCATION_DISCARD").length;
         if     (discardCount == 0  ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL0");}
+        else if(discardCount == 1  ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL0");}
         else if(discardCount <  27 ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL1");}
         else if(discardCount <  54 ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL2");}
         else if(discardCount <  81 ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL3");}
         else                         { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL4");}
+
+        // Make sure that both the drawBelow and the discardBelow are not hidden.
+        drawBelow.hidden = false;
+        discardBelow.hidden = false;
     };
 };
 
@@ -1500,7 +1505,6 @@ class PauseMenu{
     static text = [
         `  PAUSE   MENU  `,
         ``,
-        ``,
         `   RESET ROUND`,
         `   EXIT GAME`,
         ``, // `   AUTO PLAY`,
@@ -1509,18 +1513,26 @@ class PauseMenu{
         ``,
         ``,
         ``,
+        ``,
+        ``,
+        ``,
         `B:CANCEL   A:SET`,
     ];
 
     static pos = { 
-        box   : { x: 6, y: 9-1 },
+        box   : { x: 6, y: 9-2 },
+        score: { x: 7, y: 9-2+7 },
+        player1_score: { x: 7+1, y: 9-2+7+1 },
+        player2_score: { x: 7+1, y: 9-2+8+1 },
+        player3_score: { x: 7+1, y: 9-2+9+1 },
+        player4_score: { x: 7+1, y: 9-2+10+1 },
     };
 
     static cursorsPos = [
-        {x: PauseMenu.pos.box.x + 1, y: PauseMenu.pos.box.y + 3, action: "RESET_ROUND" },
-        {x: PauseMenu.pos.box.x + 1, y: PauseMenu.pos.box.y + 4, action: "EXIT_GAME"   },
-        // {x: PauseMenu.pos.box.x + 1, y: PauseMenu.pos.box.y + 5, action: "AUTO_PLAY"   },
-        {x: PauseMenu.pos.box.x + 1, y: PauseMenu.pos.box.y + 6, action: "CANCEL"      },
+        {x: PauseMenu.pos.box.x + 1, y: PauseMenu.pos.box.y + 2, action: "RESET_ROUND" },
+        {x: PauseMenu.pos.box.x + 1, y: PauseMenu.pos.box.y + 3, action: "EXIT_GAME"   },
+        // {x: PauseMenu.pos.box.x + 1, y: PauseMenu.pos.box.y + 4, action: "AUTO_PLAY"   },
+        {x: PauseMenu.pos.box.x + 1, y: PauseMenu.pos.box.y + 5, action: "CANCEL"      },
     ];
 
     constructor(config){
@@ -1537,6 +1549,38 @@ class PauseMenu{
             layerKey   : "L3", 
             xyByGrid   : true,
             // settings   : { bgColorRgba: [32, 32, 32, 168] }
+            settings   : { bgColorRgba: [16, 16, 16, 224] }
+        });
+        
+        // Create text lines for the player's scores.
+        _GFX.layerObjs.createOne(PrintText, { 
+            text: `SCORES:`, 
+            x: PauseMenu.pos.score.x,  y: PauseMenu.pos.score.y, 
+            layerObjKey: "pause_menu_score", layerKey: "L4", xyByGrid: true, hidden: true,
+            settings   : { bgColorRgba: [16, 16, 16, 224] }
+        });
+        _GFX.layerObjs.createOne(PrintText, { 
+            text: `PLAYER1_SCORE`, 
+            x: PauseMenu.pos.player1_score.x,  y: PauseMenu.pos.player1_score.y, 
+            layerObjKey: "pause_menu_player1_score", layerKey: "L4", xyByGrid: true, hidden: true,
+            settings   : { bgColorRgba: [16, 16, 16, 224] }
+        });
+        _GFX.layerObjs.createOne(PrintText, { 
+            text: `PLAYER2_SCORE`, 
+            x: PauseMenu.pos.player2_score.x,  y: PauseMenu.pos.player2_score.y, 
+            layerObjKey: "pause_menu_player2_score", layerKey: "L4", xyByGrid: true, hidden: true,
+            settings   : { bgColorRgba: [16, 16, 16, 224] }
+        });
+        _GFX.layerObjs.createOne(PrintText, { 
+            text: `PLAYER3_SCORE`, 
+            x: PauseMenu.pos.player3_score.x,  y: PauseMenu.pos.player3_score.y, 
+            layerObjKey: "pause_menu_player3_score", layerKey: "L4", xyByGrid: true, hidden: true,
+            settings   : { bgColorRgba: [16, 16, 16, 224] }
+        });
+        _GFX.layerObjs.createOne(PrintText, { 
+            text: `PLAYER4_SCORE`, 
+            x: PauseMenu.pos.player4_score.x,  y: PauseMenu.pos.player4_score.y, 
+            layerObjKey: "pause_menu_player4_score", layerKey: "L4", xyByGrid: true, hidden: true,
             settings   : { bgColorRgba: [16, 16, 16, 224] }
         });
 
@@ -1561,6 +1605,11 @@ class PauseMenu{
         this.elems = {
             text   : _GFX.layerObjs.getOne("pause_menu_text"),
             cursor : _GFX.layerObjs.getOne("pause_menu_cursor"),
+            score  : _GFX.layerObjs.getOne("pause_menu_score"),
+            player1_score : _GFX.layerObjs.getOne("pause_menu_player1_score"),
+            player2_score : _GFX.layerObjs.getOne("pause_menu_player2_score"),
+            player3_score : _GFX.layerObjs.getOne("pause_menu_player3_score"),
+            player4_score : _GFX.layerObjs.getOne("pause_menu_player4_score"),
         };
     };
 
@@ -1569,11 +1618,32 @@ class PauseMenu{
         for(let elemKey in this.elems){ this.elems[elemKey].hidden = false; }
         this.active = true;
 
+        let players = this.parent.gameBoard.players;
+
         // Put the cursor at the end.
         let pause_menu_cursor = _GFX.layerObjs.getOne("pause_menu_cursor");
         this.cursorsPosIndex = PauseMenu.cursorsPos.length -1; // Start on cancel.
         pause_menu_cursor.x = PauseMenu.cursorsPos[this.cursorsPosIndex].x;
         pause_menu_cursor.y = PauseMenu.cursorsPos[this.cursorsPosIndex].y;
+
+        // Determine the highest score.
+        let currentHighScore = 0;
+        for(let playerKey of this.parent.gameBoard.activePlayerKeys){
+            if(players[playerKey].score > currentHighScore){ currentHighScore = players[playerKey].score; }
+        }
+        let recoloredWinner = { colorData:[ [ ColorChanger.colors.white, ColorChanger.colors.yellow ] ], bgColorRgba: [128, 128, 32, 168] };
+
+        // Update player scores.
+        this.elems.player1_score.text = `PLAYER1:${players["P1"].score.toString().padStart(4)}`;
+        this.elems.player2_score.text = `PLAYER2:${players["P2"].score.toString().padStart(4)}`;
+        this.elems.player3_score.text = `PLAYER3:${players["P3"].score.toString().padStart(4)}`;
+        this.elems.player4_score.text = `PLAYER4:${players["P4"].score.toString().padStart(4)}`;
+
+        // Highlight the high score.
+        if(players["P1"].score == currentHighScore && currentHighScore != 0){ console.log("high score: P1"); this.elems.player1_score.settings = recoloredWinner; } else{ this.elems.player1_score.settings = {}; }
+        if(players["P2"].score == currentHighScore && currentHighScore != 0){ console.log("high score: P2"); this.elems.player2_score.settings = recoloredWinner; } else{ this.elems.player2_score.settings = {}; }
+        if(players["P3"].score == currentHighScore && currentHighScore != 0){ console.log("high score: P3"); this.elems.player3_score.settings = recoloredWinner; } else{ this.elems.player3_score.settings = {}; }
+        if(players["P4"].score == currentHighScore && currentHighScore != 0){ console.log("high score: P4"); this.elems.player4_score.settings = recoloredWinner; } else{ this.elems.player4_score.settings = {}; }
     };
 
     // Hides the LayerObjects used by this class.
@@ -1720,12 +1790,8 @@ class Gameboard{
     }
 
     winRound_start(playerKey_winner){
-        // Hide some things that will be overlapped.
-        // _GFX.layerObjs.getOne('cBorder_fill').hidden = true; 
-        // _GFX.layerObjs.getOne('draw_card').hidden = true; 
-        // _GFX.layerObjs.getOne('drawBelow').hidden = true; 
-        // _GFX.layerObjs.getOne('discard_card').hidden = true; 
-        // _GFX.layerObjs.getOne('discardBelow').hidden = true; 
+        _GFX.layerObjs.getOne("discard_card").hidden = true;
+        _GFX.layerObjs.getOne("discardBelow").hidden = true;
 
         // Cover L2 (where cBorder_fill is) with a black fill but on L2.
         let cBorder_fill = _GFX.layerObjs.getOne("cBorder_fill");
@@ -1776,10 +1842,6 @@ class Gameboard{
             else if(rec.class === "Fill"){
                 // console.log(rec);
                 Fill.createFill({
-                    // "x" : rec.x-1,
-                    // "y" : rec.y-1,
-                    // "w" : 3+2, 
-                    // "h" : 4+2, 
                     "x" : rec.x,
                     "y" : rec.y,
                     "w" : 3+0, 
@@ -1814,22 +1876,27 @@ class Gameboard{
         // Update the active card display.
         text_cardColor.text = color .toString().padEnd(6 , " ") ; // 6
         text_cardValue.text = value .toString().padEnd(10, " ") ; // 10
-        text_points   .text = points.toString().padEnd(10, " ") ; // 10
+        text_points   .text = ("POINTS: " + (points.toString().padEnd(2, " "))).padEnd(10, " ") ; // 10
     };
 
     // 
-    winRound_end(){
-        // Remove all the objects.
+    winRound_end_part1(){
+        // Remove objects.
+        _GFX.layerObjs.removeOne("winRound_cardColor");
+        _GFX.layerObjs.removeOne("winRound_cardValue");
+        _GFX.layerObjs.removeOne("winRound_points");
+        _GFX.layerObjs.removeOne("winRound_largeCardBg_fill");
+    };
+
+    // 
+    winRound_end_part2(){
+        // Remove objects.
         _GFX.layerObjs.removeOne("centerBlack_fill");
         _GFX.layerObjs.removeOne("winRound_scores");
         _GFX.layerObjs.removeOne("winRound_score_P1");
         _GFX.layerObjs.removeOne("winRound_score_P2");
         _GFX.layerObjs.removeOne("winRound_score_P3");
         _GFX.layerObjs.removeOne("winRound_score_P4");
-        _GFX.layerObjs.removeOne("winRound_cardColor");
-        _GFX.layerObjs.removeOne("winRound_cardValue");
-        _GFX.layerObjs.removeOne("winRound_points");
-        _GFX.layerObjs.removeOne("winRound_largeCardBg_fill");
 
         // Save the scores.
         let startScores = this.parent.startScores;
@@ -1940,79 +2007,94 @@ class Gameboard{
         // this.gameBoard.displayMessage("playsFirst", "P1", false);
         let pos = {
             msgBox: {
-                msgBox      : { x:7, y:18, w:13 , h:3, layerKey: "L4", layerObjKey: "msgBox_text" },
+                // msgBox      : { x:7, y:18, w:13 , h:3, layerKey: "L4", layerObjKey: "msgBox_text" },
+                msgBox      : { x:6, y:18, w:14 , h:3, layerKey: "L4", layerObjKey: "msgBox_text" },
             }
         }
 
-        let playerNum = playerKey.replace(/\D/g,'');
+        let playerNum;
+        if(playerKey){
+            playerNum = playerKey.replace(/\D/g,'');
+        }
 
         let msgs = {
             none  : [
-                `              ` ,
-                `              ` ,
-                `               `
+                `                ` ,
+                `                ` ,
+                `                `
             ],
             tied  : [
-                `     TIED     ` ,
-                `  SAME CARDS  ` ,
-                ` TRYING AGAIN ` ,
+                `      TIED      ` ,
+                `   SAME CARDS   ` ,
+                `  TRYING AGAIN  ` ,
             ],
             playsFirst  : [
-                `   PLAYER ${playerNum}   `,
-                `              ` ,
-                ` PLAYS FIRST! `
+                `    PLAYER ${playerNum}    `,
+                `                ` ,
+                `  PLAYS FIRST!  `,
             ],
             reversed    : [
-                `  PLAY ORDER  ` ,
-                `              ` ,
-                `  REVERSED !  `
+                `   PLAY ORDER   ` ,
+                `                ` ,
+                `   REVERSED !   `,
             ],
             loseTurn    : [
-                `   PLAYER ${playerNum}   ` ,
-                `              ` ,
-                `  LOSE TURN!  `
+                `    PLAYER ${playerNum}    ` ,
+                `                ` ,
+                `   LOSE TURN!   `,
             ],
             skipLoseTurn: [
-                `   PLAYER ${playerNum}   ` ,
-                `    SKIP !    ` ,
-                `  LOSE TURN!  `
+                `    PLAYER ${playerNum}    ` ,
+                `     SKIP !     ` ,
+                `   LOSE TURN!   `,
             ],
             d2LoseTurn  : [
-                `   PLAYER ${playerNum}   ` ,
-                `  DRAW TWO !  ` ,
-                `  LOSE TURN!  `
+                `    PLAYER ${playerNum}    ` ,
+                `   DRAW TWO !   ` ,
+                `   LOSE TURN!   `,
             ],
             d4LoseTurn  : [
-                `   PLAYER ${playerNum}   ` ,
-                `  DRAW FOUR!  ` ,
-                `  LOSE TURN!  `
+                `    PLAYER ${playerNum}    ` ,
+                `   DRAW FOUR!   ` ,
+                `   LOSE TURN!   `,
             ],
             winsRound   : [
-                `   PLAYER ${playerNum}  ` ,
-                `   WINS THE   ` ,
-                `    ROUND!    `
+                `    PLAYER ${playerNum}   ` ,
+                `    WINS THE    ` ,
+                `     ROUND!     `,
+            ],
+            winsGame   : [
+                `    PLAYER ${playerNum}   ` ,
+                ` WINS THE GAME! ` ,
+                `CONGRATULATIONS!`,
+            ],
+            startNextRound   : [
+                `   NEXT ROUND   ` ,
+                `     STARTS     ` ,
+                `      NOW!      `,
             ],
             playCancel  : [
-                `  A:  PLAY    ` ,
-                `              ` ,
-                `  B:  CANCEL  ` 
+                `   A:  PLAY     ` ,
+                `                ` ,
+                `   B:  CANCEL   ` ,
             ],
             passCancel  : [
-                `  A:  PASS    ` ,
-                `              ` ,
-                `  B:  CANCEL  `
+                `   A:  PASS     ` ,
+                `                ` ,
+                `   B:  CANCEL   `,
             ],
             invalidCard   : [
-                ` INVALID CARD ` ,
-                `              ` ,
-                ` PICK ANOTHER `
+                `  INVALID CARD  ` ,
+                `                ` ,
+                `  PICK ANOTHER  `,
             ],
             turnPassed   : [
-                `   PLAYER ${playerNum}   ` ,
-                `     PASS     `,
-                `  DRAW ONE !  ` ,
+                `    PLAYER ${playerNum}    ` ,
+                `      PASS      `,
+                `   DRAW ONE !   `,
             ],
         };
+        // console.log(Object.keys(msgs));
 
         if(! (msgKey in msgs)){ console.log("displayMessage: Invalid message"); return ; }
 

@@ -282,19 +282,16 @@ var _DEBUG2 = {
                     // flags2Text: "",
 
                     hashes: {
+                        hash_activeFlags : 0,
                         hash_getFirstPlayer : 0,
                         hash_playerTurn     : 0,
                         hash_endOfRound     : 0,
                         hash_nextRoundFlags : 0,
                     },
 
-                    flags_getFirstPlayerText: "",
-                    flags_playerTurnText: "",
-                    flags_endOfRoundText: "",
-
+                    activeFlags: "",
                     timers1Text: "",
                     timers2Text: "",
-
 
                     cardsText     : "",
                     funcQueue     : "",
@@ -302,20 +299,13 @@ var _DEBUG2 = {
                     lastCardsText : "",
                 },
                 DOM: { 
-                    // "flags1Text"    : "debug_flags_flags",
-                    // "flags2Text"    : "debug_flags_flags2",
-
-                    "getFirstPlayerText": "debug_flags_getFirstPlayer",
-                    "playerTurnText"    : "debug_flags_playerTurn",
-                    "endOfRoundText"    : "debug_flags_endOfRound",
-                    "nextRoundFlagsText": "debug_flags_nextRoundFlags",
+                    "activeFlags": "debug_flags_activeFlags",
 
                     "cardMovements" : "debug_flags_cardMovements",
                     "funcQueue"     : "debug_flags_funcQueue",
                     "playerHandData": "debug_flags_playerHandData",
                     "timers1Text"   : "debug_flags_timers1",
                     "timers2Text"   : "debug_flags_timers2",
-                    
                     "lastCardsText"   : "debug_flags_lastCardsText",
                 },
                 init: function(parent){
@@ -325,50 +315,66 @@ var _DEBUG2 = {
                     }
                 },
                 updateGameFlags_data: {
-                    getFirstPlayer: { domStr: "getFirstPlayerText", valueKey: "getFirstPlayer", flagsObjKey: "getFirstPlayer", newHash:0, prevHash: 0 },
-                    playerTurn    : { domStr: "playerTurnText"    , valueKey: "playerTurn"    , flagsObjKey: "playerTurn"    , newHash:0, prevHash: 0 },
-                    endOfRound    : { domStr: "endOfRoundText"    , valueKey: "endOfRound"    , flagsObjKey: "endOfRound"    , newHash:0, prevHash: 0 },
-                    nextRoundFlags: { domStr: "nextRoundFlagsText", valueKey: "nextRoundFlags", flagsObjKey: "nextRoundFlags", newHash:0, prevHash: 0 },
+                    activeFlags: { domStr: "activeFlags", valueKey: "activeFlags", flagsObjKey: "activeFlags", newHash:0, prevHash: 0 },
                 },
                 updateGameFlags: function(){
                     let flagsObj = _APP.game.gamestates.gs_PLAYING.flags;
+                    let flagTopKeys = Object.keys(_APP.game.gamestates.gs_PLAYING.flags);
                     let data = this.updateGameFlags_data;
-                    data.getFirstPlayer.newHash = _GFX.utilities.djb2Hash( JSON.stringify( flagsObj.getFirstPlayer ) );
-                    data.playerTurn.newHash     = _GFX.utilities.djb2Hash( JSON.stringify( flagsObj.playerTurn ) );
-                    data.endOfRound.newHash     = _GFX.utilities.djb2Hash( JSON.stringify( flagsObj.endOfRound ) );
-                    data.nextRoundFlags.newHash = _GFX.utilities.djb2Hash( JSON.stringify( flagsObj.nextRoundFlags ) );
+                    data.activeFlags.newHash    = _GFX.utilities.djb2Hash( JSON.stringify( flagsObj ) );
 
-                    let newText;
-                    let maxLen;
-                    for(let key in data){
-                        let rec = data[key];
+                    if(data.activeFlags.newHash == this.values["activeFlags"]){
+                        // console.log("no update needed.");
+                        return;
+                    }
 
-                        // Are the hashes different?
-                        if(rec.newHash != this.values[rec.valueKey]){
-                            // Store the new hash.
-                            this.values[rec.valueKey] = rec.newHash;
+                    let newText = ``;
+                    let maxTopKeyLen;
+                    let maxSubKeyLen;
 
-                            // Regenerate the text.
-                            newText = ``;
-                            maxLen = 0;
-                            for(let key in flagsObj[rec.flagsObjKey]){ if(key.length > maxLen){ maxLen = key.length; } }
-                            for(let key in flagsObj[rec.flagsObjKey]){ 
-                                // Get the value. 
-                                value = flagsObj[rec.flagsObjKey][key];
-                                
-                                // Convert true/false to 1/0.
-                                type = typeof value;
-                                if(type === "boolean"){ value = value ? 1: 0; }
-                                // if(type === "string") { value = value ? 1: 0; }
+                    // Get the max length for the top keys. 
+                    maxTopKeyLen = 0;
+                    for(let topKey of flagTopKeys){ 
+                        if(topKey.length > maxTopKeyLen){ maxTopKeyLen = topKey.length; } 
+                    }
+                    
+                    // Go through each top key and then within each sub key.
+                    for(let topKey of flagTopKeys){ 
+                        // Get the max length for the sub keys. 
+                        maxSubKeyLen = 0;
+                        for(let subKey in flagsObj[topKey]){ 
+                            if(subKey.length > maxSubKeyLen){ maxSubKeyLen = subKey.length; } 
+                        }
 
-                                // Add this as a line to newText.
-                                newText += `${key.padEnd(maxLen, " ")}: ${value}\n`; 
+                        // Go through the sub keys. 
+                        let subKeyHeaderAdded = false;
+                        for(let subKey in flagsObj[topKey]){ 
+                            // Get the value. 
+                            value = flagsObj[topKey][subKey];
+
+                            // Skip false/empty values.
+                            if(!value){ continue; }
+
+                            // Add the subKeyHeader if it has not already been added.
+                            if(!subKeyHeaderAdded){
+                                newText += `${topKey}:\n`;
+                                subKeyHeaderAdded = true; 
                             }
 
-                            // Update the displayed text.
-                            this.DOM[rec.domStr].innerText = newText;
+                            // Convert true/false to 1/0.
+                            type = typeof value;
+                            if(type === "boolean"){ value = value ? 1: 0; }
+
+                            // Add this as a line to newText.
+                            newText += `  ${subKey.padEnd(maxSubKeyLen, " ")}: ${value}\n`; 
                         }
-                    };
+                    }
+
+                    // Update the stored hash.
+                    this.values["activeFlags"] = data.activeFlags.newHash;
+
+                    // Update the displayed text.
+                    this.DOM[data.activeFlags.domStr].innerText = newText;
                 },
                 checkForChanges: function(){
                     // Update game flags.
