@@ -329,7 +329,12 @@
                                 this.flags.nextRoundFlags.colorChange = false;
                                 if     (discardCard.value == "CARD_DRAW2")     { this.flags.nextRoundFlags.draw2  = true; }
                                 else if(discardCard.value == "CARD_SKIP")      { this.flags.nextRoundFlags.skip = true; }
-                                else if(discardCard.value == "CARD_REV")       { this.flags.nextRoundFlags.reverse = true; }
+                                else if( discardCard.value == "CARD_REV"){
+                                    this.flags.nextRoundFlags.reverse = true;
+                                    if(this.gameBoard.activePlayerKeys.length == 2){
+                                        this.flags.nextRoundFlags.skip = true;
+                                    }
+                                }
                                 else if(discardCard.value == "CARD_WILD")      { this.flags.nextRoundFlags.colorChange = true; }
                                 else if(discardCard.value == "CARD_WILD_DRAW4"){ this.flags.nextRoundFlags.draw4  = true; this.flags.nextRoundFlags.colorChange = true; }
 
@@ -442,7 +447,26 @@
 
             // SKIP/REVERSE
             if(skipTurn){
-                if(this.flags.nextRoundFlags.reverse){
+                // In two-player mode a reverse should act like a skip (and the flags should include the skip flag if a reverse was played.)
+                if( this.flags.nextRoundFlags.reverse && this.flags.nextRoundFlags.skip ){
+                    // Need genTimers in order to run each affect sequentially. 
+                    
+                    // Reverse.
+                    _APP.shared.genTimer.create("genWaitTimer2", 5, _APP.game.gs1, ()=>{
+                        this.action_reverse({playerKey: this.gameBoard.currentPlayer, msgName: "reversed", endDelay: 45});
+
+                        // Skip.
+                        _APP.shared.genTimer.create("genWaitTimer2", 5, _APP.game.gs1, ()=>{
+                            this.action_skip({playerKey: this.gameBoard.currentPlayer, msgName: "skipLoseTurn", endDelay: 45});
+                            
+                            // Next player.
+                            _APP.shared.genTimer.create("genWaitTimer2", 5, _APP.game.gs1, ()=>{
+                                this.gameBoard.setNextPlayer(false, true);
+                            });
+                        });
+                    });
+                }
+                else if(this.flags.nextRoundFlags.reverse){
                     // console.log(this.gameBoard.currentPlayer, "CANNOT continue the round due to: REVERSE");
                     this.action_reverse({playerKey: this.gameBoard.currentPlayer, msgName: "reversed", endDelay: 90});
                 }
@@ -538,7 +562,7 @@
                 // Row changes. (P1 and P3 use the same buttons. P2 and P4 each use different buttons.)
                 if(this.gameBoard.currentPlayer == "P1" || this.gameBoard.currentPlayer == "P3"){
                     // Row change.
-                    if(gpInput.P1.press.BTN_DOWN)  {
+                    if(gpInput.ANY.press.BTN_DOWN)  {
                         // Get the card count and the maxRow.
                         let cardCount = this.deck.countPlayerCards(this.gameBoard.currentPlayer);
                         let maxRow = Math.ceil(cardCount / 5);
@@ -550,7 +574,7 @@
                             this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, row);        // Flip the cards up to show the new row's cards.
                         }
                     }
-                    else if(gpInput.P1.press.BTN_UP){ 
+                    else if(gpInput.ANY.press.BTN_UP){ 
                         // Can move up if the current row is not 0.
                         if(this.gameBoard.players[this.gameBoard.currentPlayer].currentRow !=0){
                             this.gameBoard.players[this.gameBoard.currentPlayer].currentRow -= 1;  // Increment the row for the player.
@@ -561,7 +585,7 @@
                 }
                 if(this.gameBoard.currentPlayer == "P2"){
                     // Row change.
-                    if(gpInput.P1.press.BTN_LEFT)  {
+                    if(gpInput.ANY.press.BTN_LEFT)  {
                         // Get the card count and the maxRow.
                         let cardCount = this.deck.countPlayerCards(this.gameBoard.currentPlayer);
                         let maxRow = Math.ceil(cardCount / 5);
@@ -573,7 +597,7 @@
                             this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, row);        // Flip the cards up to show the new row's cards.
                         }
                     }
-                    else if(gpInput.P1.press.BTN_RIGHT){ 
+                    else if(gpInput.ANY.press.BTN_RIGHT){ 
                         if(this.gameBoard.players[this.gameBoard.currentPlayer].currentRow !=0){
                             this.gameBoard.players[this.gameBoard.currentPlayer].currentRow -= 1;  // Increment the row for the player.
                             row = this.gameBoard.players[this.gameBoard.currentPlayer].currentRow; // Get the current row for the player.
@@ -583,7 +607,7 @@
                 }
                 if(this.gameBoard.currentPlayer == "P4"){
                     // Row change.
-                    if(gpInput.P1.press.BTN_RIGHT)  {
+                    if(gpInput.ANY.press.BTN_RIGHT)  {
                         // Get the card count and the maxRow.
                         let cardCount = this.deck.countPlayerCards(this.gameBoard.currentPlayer);
                         let maxRow = Math.ceil(cardCount / 5);
@@ -598,7 +622,7 @@
                             this.deck.flipPlayerCardsUp(this.gameBoard.currentPlayer, row);
                         }
                     }
-                    else if(gpInput.P1.press.BTN_LEFT){ 
+                    else if(gpInput.ANY.press.BTN_LEFT){ 
                         // Increment the row for the player.
                         // Get the current row for the player.
                         // Flip the cards up to show the new row's cards.
@@ -613,19 +637,19 @@
                 // P1, P3: Row or cursor position change?
                 if(this.gameBoard.currentPlayer == "P1" || this.gameBoard.currentPlayer == "P3"){
                     // Card cursor change.
-                    if     (gpInput.P1.press.BTN_LEFT) { this.gameBoard.moveCursor(-1, this.gameBoard.currentPlayer); }
-                    else if(gpInput.P1.press.BTN_RIGHT){ this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  }
+                    if     (gpInput.ANY.press.BTN_LEFT) { this.gameBoard.moveCursor(-1, this.gameBoard.currentPlayer); }
+                    else if(gpInput.ANY.press.BTN_RIGHT){ this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  }
                 }
 
                 // P2, P4: Row or cursor position change?
                 if(this.gameBoard.currentPlayer == "P2" || this.gameBoard.currentPlayer == "P4"){
                     // Card cursor change.
-                    if     (gpInput.P1.press.BTN_UP)  { this.gameBoard.moveCursor(-1, this.gameBoard.currentPlayer); }
-                    else if(gpInput.P1.press.BTN_DOWN){ this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  }
+                    if     (gpInput.ANY.press.BTN_UP)  { this.gameBoard.moveCursor(-1, this.gameBoard.currentPlayer); }
+                    else if(gpInput.ANY.press.BTN_DOWN){ this.gameBoard.moveCursor(1, this.gameBoard.currentPlayer);  }
                 }
 
                 // Selection made?
-                if(gpInput.P1.press.BTN_A)    {
+                if(gpInput.ANY.press.BTN_A)    {
                     // Make the selection
                     let selectedCard;
                     selectedCard = this.gameBoard.acceptCursor(this.gameBoard.currentPlayer);
@@ -747,7 +771,7 @@
                 }
 
                 // Pass this round?
-                if(gpInput.P1.press.BTN_B)    {
+                if(gpInput.ANY.press.BTN_B)    {
                     // Display pass/cancel message.
                     this.gameBoard.displayMessage("passCancel"  , this.gameBoard.currentPlayer, false);
 
@@ -764,7 +788,7 @@
             // Card selected. (needs confirm/pass)
             else if(this.flags.playerTurn.card_selected){
                 // PLAY
-                if     (gpInput.P1.press.BTN_A) { 
+                if     (gpInput.ANY.press.BTN_A) { 
                     // Already selected for play.
 
                     // Clear play/pass message.
@@ -848,7 +872,7 @@
                 }
                 
                 // CANCEL
-                else if(gpInput.P1.press.BTN_B){ 
+                else if(gpInput.ANY.press.BTN_B){ 
                     // Clear play/pass message.
                     this.gameBoard.displayMessage("none"  , this.gameBoard.currentPlayer, false);
 
@@ -890,9 +914,7 @@
                 // Awaiting player choice.
 
                 // Accept the pass. Hide cards, draw one card, end turn.
-                if(gpInput.P1.press.BTN_A)    {
-                    // TODO
-
+                if(gpInput.ANY.press.BTN_A)    {
                     // Clear the displayed message.
                     // this.gameBoard.displayMessage("none"  , this.gameBoard.currentPlayer, false);
                     this.gameBoard.displayMessage("turnPassed", this.gameBoard.currentPlayer, false);
@@ -923,7 +945,7 @@
                 }
 
                 // Go back to Card and row select, round pass.
-                if(gpInput.P1.press.BTN_B)    {
+                if(gpInput.ANY.press.BTN_B)    {
                     // Clear the displayed message.
                     this.gameBoard.displayMessage("none"  , this.gameBoard.currentPlayer, false);
 
@@ -971,10 +993,18 @@
 
                 // Determine what flags to set based on the last card played.
                 if(!skipFlagCheck){
-                    if     (this.lastCardPlayed.value == "CARD_DRAW2")     { this.flags.nextRoundFlags.draw2  = true; }
-                    else if(this.lastCardPlayed.value == "CARD_WILD_DRAW4"){ this.flags.nextRoundFlags.draw4  = true; }
-                    else if(this.lastCardPlayed.value == "CARD_SKIP")      { this.flags.nextRoundFlags.skip = true; }
-                    else if(this.lastCardPlayed.value == "CARD_REV")       { this.flags.nextRoundFlags.reverse = true; }
+                    if     (this.lastCardPlayed.value == "CARD_DRAW2")     { this.flags.nextRoundFlags.draw2 = true; }
+                    else if(this.lastCardPlayed.value == "CARD_WILD_DRAW4"){ this.flags.nextRoundFlags.draw4 = true; }
+                    else if(this.lastCardPlayed.value == "CARD_SKIP")      { this.flags.nextRoundFlags.skip  = true; }
+                    
+                    // In two-player mode a reverse should act like a skip (and the flags should include the skip flag if a reverse was played.)
+                    else if(this.lastCardPlayed.value == "CARD_REV"){
+                        // Set the reverse flag.
+                        this.flags.nextRoundFlags.reverse = true;
+
+                        // Also set the skip flag if there are only 2 players.
+                        if(this.gameBoard.activePlayerKeys.length == 2){ this.flags.nextRoundFlags.skip = true; }
+                    }
                 }
 
                 // Set these flags.
@@ -984,9 +1014,9 @@
                 let playerKey = this.gameBoard.currentPlayer;
                 let location = Deck.playerCardLocations[playerKey];
                 let cardCount = this.deck.deck.filter(d=>d.location==location).length;
+                
+                // WIN?
                 if(cardCount == 0){
-                    // WIN
-
                     // Set winner to the playerKey.
                     this.winningPlayerKey = playerKey;
                     console.log("winningPlayerKey:", this.winningPlayerKey);
@@ -1280,9 +1310,9 @@
         // Actions based on cards: WILD, WILD_DRAW4, DRAW2, SKIP, REVERSE
         action_changeColor: function(gpInput){
             this.colorChanger.nextFrame();
-            if(gpInput.P1.press.BTN_LEFT) { this.colorChanger.moveCursor(-1); }
-            if(gpInput.P1.press.BTN_RIGHT){ this.colorChanger.moveCursor(1); }
-            if(gpInput.P1.press.BTN_A)    { 
+            if(gpInput.ANY.press.BTN_LEFT) { this.colorChanger.moveCursor(-1); }
+            if(gpInput.ANY.press.BTN_RIGHT){ this.colorChanger.moveCursor(1); }
+            if(gpInput.ANY.press.BTN_A)    { 
                 // Accept the color change. (and hides the colorChanger.)
                 this.colorChanger.accept(); 
                 // console.log(`Color changed by: ${this.gameBoard.currentPlayer} to: ${this.gameBoard.currentColor}`);
@@ -1295,16 +1325,16 @@
             this.pauseMenu.nextFrame();
 
             // Move the cursor?
-            if(gpInput.P1.press.BTN_UP) { this.pauseMenu.moveCursor(-1); }
-            else if(gpInput.P1.press.BTN_DOWN){ this.pauseMenu.moveCursor(1); }
+            if(gpInput.ANY.press.BTN_UP) { this.pauseMenu.moveCursor(-1); }
+            else if(gpInput.ANY.press.BTN_DOWN){ this.pauseMenu.moveCursor(1); }
 
             // Exit the pause menu?
-            else if(gpInput.P1.press.BTN_B)    { 
+            else if(gpInput.ANY.press.BTN_B)    { 
                 this.pauseMenu.hide();
             }
 
             // Make a selection.
-            else if(gpInput.P1.press.BTN_A)    { 
+            else if(gpInput.ANY.press.BTN_A)    { 
                 // Accept the action. (and hides the pauseMenu.)
                 let newAction = this.pauseMenu.accept(); 
                 // console.log(`Action set by: ${this.gameBoard.currentPlayer} to: ${PauseMenu.cursorsPos[this.pauseMenu.cursorsPosIndex].action}`);

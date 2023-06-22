@@ -20,8 +20,8 @@ _APP.game.gamestates["gs_PLAYING"] = {
     gameSettings: {
         P1  : "HUMAN",
         P2  : "HUMAN",
-        P3  : "HUMAN",
-        P4  : "HUMAN",
+        P3  : "NONE",
+        P4  : "NONE",
         WIN : "atZeroCards", // ["at500pts", "atZeroCards"]
         // WIN : "at500pts", // ["at500pts", "atZeroCards"]
         DRAW: "one",         // ["one", "until"]
@@ -67,11 +67,11 @@ _APP.game.gamestates["gs_PLAYING"] = {
     },
     
     timerDelays: {
-        cannotPlayCard: 50,
-        endOfTurn     : 20,
-        unselectCard  : 10,
-        winsRound  : 120,
-        scoreCardReturn  : 20,
+        cannotPlayCard : 50,
+        endOfTurn      : 20,
+        unselectCard   : 10,
+        winsRound      : 120,
+        scoreCardReturn: 20,
     },
 
     cardMovements: [],
@@ -121,10 +121,10 @@ _APP.game.gamestates["gs_PLAYING"] = {
         skipCardValidityCheck   : true, // Allows any card to be played (No validation check.)
         showAllPlayerCardsFaceUp: false, // Shows all player cards face up at the start of each turn.
         forcedWinner            : "P1", // (example: "P1") Forces this player to be the winner of the first turn.
-        forcedWinnerOnTie       : false, // (example: "P1") On tie this or the first active player will be set as the winner as the first turn.
+        forcedWinnerOnTie       : "P1", // (example: "P1") On tie this or the first active player will be set as the winner as the first turn.
         
-        forcedFirstDiscard: false,             // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
-        // forcedFirstDiscard: 'CARD_9',          // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
+        // forcedFirstDiscard: false,             // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
+        forcedFirstDiscard: 'CARD_9',          // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
         // forcedFirstDiscard: 'CARD_WILD',       // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
         // forcedFirstDiscard: 'CARD_DRAW2',      // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
         // forcedFirstDiscard: 'CARD_SKIP',       // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
@@ -226,7 +226,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         let gpInput = _APP.shared.getAllGamepadStates();
         
         // Pause menu activation/deactivation?
-        if(gpInput.P1.press.BTN_START)  { 
+        if(gpInput.ANY.press.BTN_START)  { 
             if(this.pauseMenu.active){ this.pauseMenu.hide(); }
             else                     { this.pauseMenu.show(); }
         }
@@ -281,10 +281,10 @@ _APP.game.gamestates["gs_PLAYING"] = {
     debug: function(gpInput){
         // DEBUG CURSOR.
         // _GFX.layerObjs.getOne("debugCursor").nextFrame();
-        // if(gpInput.P1.held.BTN_SR && gpInput.P1.press.BTN_UP)   { _GFX.layerObjs.getOne("debugCursor").y--; }
-        // if(gpInput.P1.held.BTN_SR && gpInput.P1.press.BTN_DOWN) { _GFX.layerObjs.getOne("debugCursor").y++; }
-        // if(gpInput.P1.held.BTN_SR && gpInput.P1.press.BTN_LEFT) { _GFX.layerObjs.getOne("debugCursor").x--; }
-        // if(gpInput.P1.held.BTN_SR && gpInput.P1.press.BTN_RIGHT){ _GFX.layerObjs.getOne("debugCursor").x++; }
+        // if(gpInput.ANY.held.BTN_SR && gpInput.ANY.press.BTN_UP)   { _GFX.layerObjs.getOne("debugCursor").y--; }
+        // if(gpInput.ANY.held.BTN_SR && gpInput.ANY.press.BTN_DOWN) { _GFX.layerObjs.getOne("debugCursor").y++; }
+        // if(gpInput.ANY.held.BTN_SR && gpInput.ANY.press.BTN_LEFT) { _GFX.layerObjs.getOne("debugCursor").x--; }
+        // if(gpInput.ANY.held.BTN_SR && gpInput.ANY.press.BTN_RIGHT){ _GFX.layerObjs.getOne("debugCursor").x++; }
 
         if(_APP.debugActive && _DEBUG2){ _DEBUG2.debugGamestate.run(_APP.game.gs1, _APP.game.gs2)}
     },
