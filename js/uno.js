@@ -1,3 +1,4 @@
+"use strict";
 // @ts-nocheck
 
 _APP.debugActive = false;
@@ -77,6 +78,20 @@ _APP.initOutputScaleControls = function(){
 };
 
 _APP.utility = {
+    // This is used to verify that strict mode is on. (only used manually for debugging.)
+    isStrictMode() {
+        try {
+            // In strict mode, this will throw an error.
+            // In non-strict mode, it will not.
+            someUndeclaredVariable = 1; 
+        } 
+        catch (e) {
+            // If an error is caught, it means strict mode is enabled.
+            return true;
+        }
+        // If no error was caught, it means strict mode is not enabled.
+        return false;
+    },
     //
     ww_ImageDataAssetsGenerated: false, 
     generateCoreImageDataAssets: async function(){
@@ -630,9 +645,12 @@ _APP.utility = {
         // console.log("New global variables:", newGlobals);
         console.log("New global (filtered) variables:", newGlobals_filtered);
 
-        globalsAfter        = null; delete globalsAfter;
-        newGlobals          = null; delete newGlobals;
-        newGlobals_filtered = null; delete newGlobals_filtered;
+        globalsAfter        = null; 
+        // delete globalsAfter;
+        newGlobals          = null; 
+        // delete newGlobals;
+        newGlobals_filtered = null; 
+        // delete newGlobals_filtered;
     },
 };
 

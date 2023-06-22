@@ -799,7 +799,16 @@ var gfxCoreV5 = {
                     );
                 }
                 else{ 
-                    console.log("missing tile", index, tmapArr, tileset); 
+                    console.log(
+                        `createImageDataFromTilemap: missing tile: ` + "\n" +
+                        `  tilemap index: ${index}`+ "\n" + 
+                        `  tileId       : ${tmapArr[index]}`+ "\n" + 
+                        `  tmapObj.ts   : ${tmapObj.ts}`+ "\n" + 
+                        `  tmapObj: `, tmapObj, "\n" +
+                        `  tmapArr: `, tmapArr, "\n" +
+                        `  tileset: `, tileset, "\n" +
+                        ``
+                    ); 
                     throw "missing tile"; 
                 }
 

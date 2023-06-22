@@ -27,10 +27,10 @@ body{
 }
 #wrapper{
     background-color:#181818 !important;
-    padding:5px !important;
+    /* padding:5px !important; */
     border:1px solid white;
-    padding:5px;
-    background-color:cornflowerblue;
+    padding: 2px;
+    /* background-color:cornflowerblue; */
     display: inline-block;
     font-size: 14px;
 }

@@ -66,10 +66,10 @@ var _GFX = {
     ALLCLEAR: true,         //
     DRAWNEEDED: false,      //
     REMOVALS: {
-        L1: [],
-        L2: [],
-        L3: [],
-        L4: [],
+        L1: new Set(),
+        L2: new Set(),
+        L3: new Set(),
+        L4: new Set(),
     },      //
     
     GFX_UPDATE_DATA: {
@@ -134,18 +134,31 @@ var _GFX = {
                     tilemap.hashPrev != tilemap.hash
                 ){ 
                     DATA[layerKey]["CHANGES"][mapKey] = tilemap; 
+                    DATA.hasChanges = true; 
                     DATA[layerKey].changes = true; 
                 }
-
-                // REMOVALS_ONLY (if there are removals AND this mapKey is in removals.)
-                if(_GFX.REMOVALS[layerKey].length && _GFX.REMOVALS[layerKey].indexOf(mapKey) != -1){
-                    DATA.hasChanges = true; 
-                    DATA[layerKey].changes = true;
+            }
+            
+            // REMOVALS_ONLY 
+            // Compare the keys of changes against the keys of removals. 
+            // Any key that is in changes should NOT be in removals.
+            let changesKeys = new Set( Object.keys(DATA[layerKey].CHANGES) );
+            for(let key of _GFX.REMOVALS[layerKey]){
+                if(!changesKeys.has(key)){ 
+                    // console.log(`Adding '${key}' to removals because it is NOT in changes`);
+                    DATA[layerKey]["REMOVALS_ONLY"].push(key); 
+                }
+                else{
+                    // console.log(`NOT adding '${key}' to removals because it is also in changes`);
                 }
             }
-
-            // Add the REMOVALS_ONLY values.
-            DATA[layerKey]["REMOVALS_ONLY"] = _GFX.REMOVALS[layerKey]
+            
+            // If there is a removal on this layer then then the layer should be flagged for changes. 
+            if(DATA[layerKey]["REMOVALS_ONLY"].length){
+                DATA.hasChanges = true; 
+                DATA[layerKey].changes = true;
+            }
+            // DATA[layerKey]["REMOVALS_ONLY"] = [ ... _GFX.REMOVALS[layerKey] ];
         }
     },
 
@@ -154,6 +167,9 @@ var _GFX = {
         // Holds the layer objects per gamestate.
         objs: {},
         
+        // Holds object key that are to be removed (hidden first THEN removed on the next frame.)
+        // removalQueue: new Set(),
+
         // Returns the specified layer object for a gamestate.
         getOne: function(key, gamestate){
             /* 
@@ -226,6 +242,8 @@ var _GFX = {
 
             // If this layer object does not have a render function then assume the layer object is not created yet and skip the render.
             if(!this.objs[gamestate][key].render){ return {}; }
+
+            // this.removalQueue.add(key);
 
             // Remove from the graphics cache. 
             let config = this.objs[gamestate][key].removeLayerObject();
@@ -375,7 +393,7 @@ var _GFX = {
                 layer.changes = false;
 
                 // Clear the REMOVALS array.
-                _GFX.REMOVALS[layerKey] = [];
+                _GFX.REMOVALS[layerKey].clear();
 
                 // Update prevFade to currFade.
                 // if(layer.fade.fade && layer.fade.prevFade != layer.fade.currFade){
@@ -430,7 +448,9 @@ var _GFX = {
             // Local data clear.
             for(let layerKey in _GFX.currentData){ 
                 // Add to REMOVALS.
-                for(let mapKey in _GFX.currentData[layerKey].tilemaps){ _GFX.REMOVALS[layerKey].push(mapKey); }
+                for(let mapKey in _GFX.currentData[layerKey].tilemaps){ 
+                    _GFX.REMOVALS[layerKey].add(mapKey); 
+                }
 
                 // Remove all tilemaps. 
                 for(let layerObjKey in _GFX.currentData[layerKey].tilemaps){
@@ -444,6 +464,11 @@ var _GFX = {
                 if(layerKey == "L1" && !keepBg1BgColor){
                     _GFX.currentData[layerKey].bgColorRgba = [0,0,0,0];
                 }
+
+                // Clear all changes and removals for this layer. 
+                _GFX.REMOVALS[layerKey].clear();
+                _GFX.currentData[layerKey].REMOVALS_ONLY = [];
+                _GFX.currentData[layerKey].CHANGES = {};
 
                 // Set changes true so that this updates the canvas output.
                 _GFX.currentData[layerKey].changes = true;
@@ -674,21 +699,14 @@ var _GFX = {
                 return; 
             }
 
-            // Get a handle to REMOVALS for this layer.
-            const removals = _GFX.REMOVALS[layerKey];
-            
-            // Find the index in REMOVALS for this mapkey.
-            const index = removals.indexOf(mapKey);
+            // Add to the set (won't add if it is already there.)
+            _GFX.REMOVALS[layerKey].add(mapKey);
 
-            // Remove from REMOVALS if the mapKey was found. (So that the key does not appear more than once.)
-            if (index !== -1) { removals.splice(index, 1); }
-            
-            // Add to REMOVALS.
-            removals.push(mapKey);
-        
             // Delete from currentData.
-            _GFX.currentData[layerKey].tilemaps[mapKey] = null;
-            delete _GFX.currentData[layerKey].tilemaps[mapKey];
+            if(_GFX.currentData[layerKey].tilemaps[mapKey]){
+                _GFX.currentData[layerKey].tilemaps[mapKey] = null;
+                delete _GFX.currentData[layerKey].tilemaps[mapKey];
+            }
             
             // Set changes to true so that the canvas output updates.
             _GFX.currentData[layerKey].changes = true;

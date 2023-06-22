@@ -24,13 +24,14 @@ _APP.game.gamestates["gs_PLAYING"] = {
         P4  : "HUMAN",
         WIN : "atZeroCards", // ["at500pts", "atZeroCards"]
         DRAW: "one",         // ["one", "until"]
-        
-        P1_SCORE: 0,
-        P2_SCORE: 0,
-        P3_SCORE: 0,
-        P4_SCORE: 0,
     },
     
+    startScores: {
+        P1: 0,
+        P2: 0,
+        P3: 0,
+        P4: 0,
+    },
     gameBoard   : null,
     deck        : null,
     colorChanger: null,
@@ -100,7 +101,12 @@ _APP.game.gamestates["gs_PLAYING"] = {
             colorChange  : false, // Flag
         },
         winsRound: {
-            init  : false, // Flag
+            init        : false, // Flag
+            scoring     : false, // Flag
+            // currentPlayerKey: "", // Var
+            checkGameWin: false, // Flag
+            GameWin     : false, // Flag
+            nextRound   : false, // Flag
         }
     },
     debugFlags: {
@@ -159,8 +165,11 @@ _APP.game.gamestates["gs_PLAYING"] = {
         // Clear cardMovements.
         this.cardMovements = [];
 
+        // Clear funcQueue.
+        _APP.shared.funcQueue.clearQueue(_APP.game.gs1);
+
         // Init the gameBoard and the deck.
-        this.gameBoard.initPlayers();
+        this.gameBoard.initPlayers(this.startScores);
         this.gameBoard.currentPlayer = "P1";
         this.gameBoard.setDirectionIndicators("F");
         this.gameBoard.updatePlayerText(true);
@@ -193,6 +202,9 @@ _APP.game.gamestates["gs_PLAYING"] = {
             for(let key in this.debugFlags){ this.debugFlags[key] = false; }
         }
 
+        // Reset game flags.
+        this.resetFlags();
+
         // Set gamestate 2.
         _APP.game.changeGs2("gamestart");
 
@@ -222,7 +234,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         
         // Queued functions.
         else if(!_APP.shared.funcQueue.runNext(_APP.game.gs1)){}
-
+        
         // Wait? (specific) 
         else if(!_APP.shared.genTimer.check("discardWait"))  {}
         else if(!_APP.shared.genTimer.check("drawWait"))     {}
@@ -327,6 +339,17 @@ _APP.game.gamestates["gs_PLAYING"] = {
                 cardMovement.timer = _APP.shared.genTimer.get(cardMovement.timerKey);
                 cardMovement.card = _GFX.layerObjs.getOne(cardMovement.layerObjKey);
                 cardMovement.card.moveDrawCardToHome(cardMovement.playerKey, cardMovement.cardSlot, cardMovement.movementSpeed); 
+                cardMovement.started=true; 
+                cardMovement.card.hidden = false;
+            };
+        }
+        else if(type == "score"){
+            cardMovement.func = "moveCardToScoring";
+            cardMovement.start = function(){
+                _APP.shared.genTimer.create(cardMovement.timerKey, cardMovement.timerFrames);
+                cardMovement.timer = _APP.shared.genTimer.get(cardMovement.timerKey);
+                cardMovement.card = _GFX.layerObjs.getOne(cardMovement.layerObjKey);
+                cardMovement.card.moveCardToScoring( cardMovement.movementSpeed ); 
                 cardMovement.started=true; 
                 cardMovement.card.hidden = false;
             };

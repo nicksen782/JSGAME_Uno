@@ -370,10 +370,12 @@ _APP.game.gamestates["gs_OPTIONS"] = {
                 gameSettings["P4"]   = this.gameSettings["P4"];
                 gameSettings["WIN"]  = this.gameSettings["WIN"];
                 gameSettings["DRAW"] = this.gameSettings["DRAW"];
-                gameSettings["P1_SCORE"] = 0;
-                gameSettings["P2_SCORE"] = 0;
-                gameSettings["P3_SCORE"] = 0;
-                gameSettings["P4_SCORE"] = 0;
+                
+                // Clear the scores.
+                let startScores = _APP.game.gamestates["gs_PLAYING"].startScores;
+                for(let playerKey in startScores){
+                    startScores[playerKey] = 0;
+                }
 
                 _APP.game.changeGs1("gs_PLAYING");
                 _APP.game.changeGs2("init");

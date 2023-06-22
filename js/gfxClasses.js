@@ -441,6 +441,13 @@ class Card extends LayerObject{
         this.moveCardFromPosToPos( from, dest, speed );
     };
 
+    moveCardToScoring(speed=1){
+        let destPos = {x:18, y:15};
+        let from = { x:this.x, y:this.y };
+        let dest = { x: destPos.x, y: destPos.y };
+        this.moveCardFromPosToPos( from, dest, speed );
+    };
+
     // Sends a card from it's current position to the draw pile position.
     moveDrawCardToHome(playerKey, cardSlot, speed=1){
         let cardPos = Deck.cardPos[playerKey][cardSlot];
@@ -645,30 +652,7 @@ class Border extends LayerObject{
 
         // Fill the border?
         if(config.fill){
-            tilemaps["fill"] = { 
-                layerObjKey: `${config.layerObjKey}_fill`, 
-                layerKey   : config.layerKey ?? "L4", 
-                tilesetKey : config.tilesetKey ?? "bg_tiles1",
-                tmap: new Uint8Array(
-                    // Dimensions.
-                    [ config.w-2, config.h-2 ]
-                    // Tiles
-                    .concat(Array.from({ length: ((config.w-2) * (config.h-2)) }, () => config.fillTile))
-                ),
-                x:config.x+1, y:config.y+1,
-            }
-
-            // Draw the fill.
-            _GFX.layerObjs.createOne(Border, {
-                layerObjKey: tilemaps["fill"].layerObjKey, 
-                layerKey   : tilemaps["fill"].layerKey, 
-                tilesetKey : tilemaps["fill"].tilesetKey, 
-                tmap       : tilemaps["fill"].tmap, 
-                x          : tilemaps["fill"].x, 
-                y          : tilemaps["fill"].y, 
-                xyByGrid: true, settings: {},
-                removeHashOnRemoval: true, noResort: false,
-            });
+            Fill.createFill(config, true);
         }
 
         // Return the tilemap data.
@@ -678,7 +662,81 @@ class Border extends LayerObject{
     constructor(config){
         super(config);
         this.className = this.constructor.name;
-    }
+    };
+};
+
+class Fill extends LayerObject{
+    static createFill(config, onlyFillInner=true){
+        /*
+        EXAMPLE USAGE:
+            Fill.createFill({
+                "x" : 5,
+                "y" : 5,
+                "w" : 18,
+                "h" : 18,
+                "xyByGrid"   : true,
+                "layerObjKey": "NAME_FOR_FILL", // ("_fill" will be appended to this.)
+                "layerKey"   : "L1",
+                "tilesetKey" : "bg_tiles1",
+                "fillTile"   : _GFX.funcs.getTilemap("bg_tiles1", "blackTile")[2],
+            }, true);
+        */
+
+        let layerObjKey = config.layerObjKey + "_fill";
+        let layerKey    = config.layerKey;
+        let tilesetKey  = config.tilesetKey;
+        let x = config.x;
+        let y = config.y;
+        let w = config.w;
+        let h = config.h;
+        let xyByGrid   = config.xyByGrid;
+        let settings    = config.settings;
+        let fillTile    = config.fillTile;
+
+        // Is this a fill for a border? If so then the position/dimensions need adjustment.
+        if(onlyFillInner){
+            x = x + 1;
+            y = y + 1;
+            w = w - 2;
+            h = h - 2;
+        }
+
+        // Draw the fill.
+        _GFX.layerObjs.createOne(Fill, {
+            layerObjKey: layerObjKey, 
+            layerKey   : layerKey, 
+            tilesetKey : tilesetKey, 
+            tmap       : new Uint8Array(
+                // Dimensions.
+                [ w, h ]
+                // Tiles.
+                .concat(Array.from({ length: ((w) * (h)) }, () => fillTile))
+            ), 
+            x          : x, 
+            y          : y, 
+            xyByGrid   : xyByGrid, 
+            settings   : settings,
+            removeHashOnRemoval: true, 
+            noResort           : false,
+        });
+
+        // Clear variables.
+        layerObjKey  = null;
+        layerKey     = null;
+        tilesetKey   = null;
+        x            = null;
+        y            = null;
+        w            = null;
+        h            = null;
+        xyByGrid     = null;
+        settings     = null;
+        fillTile     = null;
+    };
+
+    constructor(config){
+        super(config);
+        this.className = this.constructor.name;
+    };
 };
 
 class Deck{
@@ -1174,40 +1232,38 @@ class Deck{
     getNextCardFromDrawpile(){
         // Filter out only the available cards.
         let availableCards = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
-
+        
         // Are there any available cards in the draw pile?
-        if(availableCards.length == 0){
-            // No cards left. Convert the discard pile to the draw pile and shuffle those cards.
+        if(availableCards.length){ 
+            // Return the next card.
+            return availableCards[0]; 
+        }
+        // No cards left. 
+        else{
+            // Convert the discard pile to the draw pile and shuffle those cards.
             for(let card of this.deck){
                 if(card.location == "CARD_LOCATION_DISCARD"){
                     card.location = "CARD_LOCATION_DRAW"
                 };
             }
     
-            // Filter out only the available cards.
-            // availableCards = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
-            
-            // Shuffle these cards.
-            // this.shuffleArray(availableCards);
-            
             // Shuffle the deck.
             this.shuffleDeck();
-            
+
             // Filter out only the available cards.
             availableCards = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW");
 
+            // Are there any available cards in the draw pile?
             if(availableCards.length){
                 // Return the next card.
                 return availableCards[0];
             }
+            // No cards left. 
             else{
+                // Return false. Logic will skip the assignment/movement of a new card.
                 console.log("OUT OF CARDS", availableCards);
                 return false;
             }
-        }
-        else{
-            // Return the next card.
-            return availableCards[0];
         }
     };
 
@@ -1599,10 +1655,10 @@ class Gameboard{
         this.gameSettings = config.gameSettings;
 
         this.players = {
-            P1: { type: "NONE", active:false, currentRow: 0 },
-            P2: { type: "NONE", active:false, currentRow: 0 },
-            P3: { type: "NONE", active:false, currentRow: 0 },
-            P4: { type: "NONE", active:false, currentRow: 0 },
+            P1: { type: "NONE", active:false, currentRow: 0, score: 0 },
+            P2: { type: "NONE", active:false, currentRow: 0, score: 0 },
+            P3: { type: "NONE", active:false, currentRow: 0, score: 0 },
+            P4: { type: "NONE", active:false, currentRow: 0, score: 0 },
         };
 
         this.activePlayerKeys = [];
@@ -1662,6 +1718,125 @@ class Gameboard{
             xyByGrid: true, x: 0, y: 0, hidden: true,
         } );
     }
+
+    winRound_start(playerKey_winner){
+        // Hide some things that will be overlapped.
+        // _GFX.layerObjs.getOne('cBorder_fill').hidden = true; 
+        // _GFX.layerObjs.getOne('draw_card').hidden = true; 
+        // _GFX.layerObjs.getOne('drawBelow').hidden = true; 
+        // _GFX.layerObjs.getOne('discard_card').hidden = true; 
+        // _GFX.layerObjs.getOne('discardBelow').hidden = true; 
+
+        // Cover L2 (where cBorder_fill is) with a black fill but on L2.
+        let cBorder_fill = _GFX.layerObjs.getOne("cBorder_fill");
+        Fill.createFill({
+            "x" : cBorder_fill.x,
+            "y" : cBorder_fill.y,
+            "w" : cBorder_fill.tmap[0],
+            "h" : cBorder_fill.tmap[1],
+            "xyByGrid"   : true,
+            "layerObjKey": "centerBlack", // ("_fill" will be appended to this.)
+            "layerKey"   : "L2", // Layer 2 instead of layer one. This will block the draw/discard piles.
+            "tilesetKey" : "bg_tiles1",
+            "fillTile"   : _GFX.funcs.getTilemap("bg_tiles1", "blackTile")[2],
+            // "fillTile"   : _GFX.funcs.getTilemap("bg_tiles1", "colorFill2_black")[2],
+        }, false);
+
+        // Create the score text.
+        let objects = {
+            scores   : { text: "SCORES:"       , x:7 , y:7 , layerKey: "L4", layerObjKey: "winRound_scores"   , class: "PrintText", len: 7 }, 
+            score_P1 : { text: "PLAYER 1 00000", x:7 , y:9 , layerKey: "L4", layerObjKey: "winRound_score_P1" , class: "PrintText", len: 14 }, 
+            score_P2 : { text: "PLAYER 2 00000", x:7 , y:10 , layerKey: "L4", layerObjKey: "winRound_score_P2" , class: "PrintText", len: 14 }, 
+            score_P3 : { text: "PLAYER 3 00000", x:7 , y:11, layerKey: "L4", layerObjKey: "winRound_score_P3" , class: "PrintText", len: 14 }, 
+            score_P4 : { text: "PLAYER 4 00000", x:7 , y:12, layerKey: "L4", layerObjKey: "winRound_score_P4" , class: "PrintText", len: 14 }, 
+            cardColor: { text: "------"        , x:7 , y:15, layerKey: "L4", layerObjKey: "winRound_cardColor", class: "PrintText", len: 6}, 
+            cardValue: { text: "----------"    , x:7 , y:16, layerKey: "L4", layerObjKey: "winRound_cardValue", class: "PrintText", len: 10}, 
+            points   : { text: "----------"    , x:7 , y:18, layerKey: "L4", layerObjKey: "winRound_points"   , class: "PrintText", len: 10}, 
+            // largeCardBg: { x:18, y:15, layerKey: "L2", layerObjKey: "winRound_largeCardBg", class: "Fill", fillTile: _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_fill")[2] }, 
+        };
+
+        // Create the graphics objects.
+        for(let key in objects){
+            // Get the record in pos.
+            let rec = objects[key];
+
+            if(rec.class == "PrintText"){
+                let recolorWinner = false;
+                if(key.replace("score_", "") == playerKey_winner){ recolorWinner = true; }
+
+                _GFX.layerObjs.createOne(PrintText, { 
+                    text: rec.text.padEnd(rec.len, " ")  , x:rec.x, y:rec.y, layerObjKey: rec.layerObjKey, layerKey: rec.layerKey, xyByGrid: true,
+                    // Highlight the winner's name in yellow.
+                    settings: 
+                    recolorWinner 
+                        ? { colorData:[ [ ColorChanger.colors.white, ColorChanger.colors.yellow ] ], bgColorRgba: [128, 128, 32, 168] } 
+                        : {}
+                });   
+            }
+            else if(rec.class === "Fill"){
+                // console.log(rec);
+                Fill.createFill({
+                    // "x" : rec.x-1,
+                    // "y" : rec.y-1,
+                    // "w" : 3+2, 
+                    // "h" : 4+2, 
+                    "x" : rec.x,
+                    "y" : rec.y,
+                    "w" : 3+0, 
+                    "h" : 4+0, 
+                    "xyByGrid"   : true,
+                    "layerObjKey": rec.layerObjKey, // ("_fill" will be appended to this.)
+                    "layerKey"   : rec.layerKey, 
+                    "tilesetKey" : "bg_tiles1",
+                    "fillTile"   : rec.fillTile,
+                }, false);
+            }
+        }
+    };
+
+    winRound_updateScores(color, value, points){
+        // Get the scores.
+        let score_P1  = _GFX.layerObjs.getOne("winRound_score_P1");
+        let score_P2  = _GFX.layerObjs.getOne("winRound_score_P2");
+        let score_P3  = _GFX.layerObjs.getOne("winRound_score_P3");
+        let score_P4  = _GFX.layerObjs.getOne("winRound_score_P4");
+
+        let text_cardColor = _GFX.layerObjs.getOne("winRound_cardColor");
+        let text_cardValue = _GFX.layerObjs.getOne("winRound_cardValue");
+        let text_points    = _GFX.layerObjs.getOne("winRound_points");
+
+        // // Update the scores.
+        score_P1.text = `PLAYER 1 ${this.players["P1"].score.toString().padStart(5, " ")}`;
+        score_P2.text = `PLAYER 2 ${this.players["P2"].score.toString().padStart(5, " ")}`;
+        score_P3.text = `PLAYER 3 ${this.players["P3"].score.toString().padStart(5, " ")}`;
+        score_P4.text = `PLAYER 4 ${this.players["P4"].score.toString().padStart(5, " ")}`;
+
+        // Update the active card display.
+        text_cardColor.text = color .toString().padEnd(6 , " ") ; // 6
+        text_cardValue.text = value .toString().padEnd(10, " ") ; // 10
+        text_points   .text = points.toString().padEnd(10, " ") ; // 10
+    };
+
+    // 
+    winRound_end(){
+        // Remove all the objects.
+        _GFX.layerObjs.removeOne("centerBlack_fill");
+        _GFX.layerObjs.removeOne("winRound_scores");
+        _GFX.layerObjs.removeOne("winRound_score_P1");
+        _GFX.layerObjs.removeOne("winRound_score_P2");
+        _GFX.layerObjs.removeOne("winRound_score_P3");
+        _GFX.layerObjs.removeOne("winRound_score_P4");
+        _GFX.layerObjs.removeOne("winRound_cardColor");
+        _GFX.layerObjs.removeOne("winRound_cardValue");
+        _GFX.layerObjs.removeOne("winRound_points");
+        _GFX.layerObjs.removeOne("winRound_largeCardBg_fill");
+
+        // Save the scores.
+        let startScores = this.parent.startScores;
+        for(let playerKey of this.activePlayerKeys){
+            startScores[playerKey] = this.players[playerKey].score;
+        }
+    };
 
     // (Called from: Deck displayRowIndicators.)
     setRowIndicatorValues(playerKey){
@@ -1878,7 +2053,7 @@ class Gameboard{
     };
 
     // Init the players and determine which are active.
-    initPlayers(){
+    initPlayers(scores){
         // Player 1
         if(this.parent.gameSettings.P1 != "NONE"){ this.players["P1"].active = true; } 
         else                                     { this.players["P1"].active = false; }
@@ -1901,6 +2076,11 @@ class Gameboard{
 
         // Generate and store a list of active player keys.
         this.activePlayerKeys = Object.keys(this.players).filter(d=>this.players[d].active);;
+
+        // Set starting scores.
+        for(let playerKey of this.activePlayerKeys){
+            if(undefined != scores[playerKey]){ this.players[playerKey].score = scores[playerKey]; }
+        }
 
         // Add the text. (For each active player.)
         // this.updatePlayerText();
@@ -1968,6 +2148,9 @@ class Gameboard{
         colorIndicatorBar.y = data.y;
         colorIndicatorBar.w = data.w;
         colorIndicatorBar.h = data.h;
+
+        // Set it to visible.
+        colorIndicatorBar.hidden = false; 
     };
     generateColorIndicatorBar(playerKey, type){
         // Set/determine the type.
@@ -1991,6 +2174,13 @@ class Gameboard{
 
         // Return the completed tilemap.
         return tmap;
+    };
+    hideColorIndictors(){
+        // Get the colorIndicatorBar LayerObject.
+        let colorIndicatorBar = _GFX.layerObjs.getOne( "colorIndicatorBar" );
+
+        // Set it to hidden.
+        colorIndicatorBar.hidden = true; 
     };
     nextFrame_colorIndicators(){
         // Time to change frames?

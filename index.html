@@ -8,7 +8,8 @@
     <title>UNO v2</title>
 </head>
 
-<body style="background-color: #181818; padding: 5px;">
+<body style="background-color: #181818; margin:5px;">
+<!-- <body style="background-color: #181818; padding: 5px;"> -->
     <!-- Stand-Alone loading indicator. -->
     <div id="loading">
         LOADING
@@ -43,7 +44,7 @@
                             <!-- OUTPUT SCALING -->
                             <div class="controls_border">
                                 <label class="controls_title">SCALE</label>
-                                <input type="range" id="scaleSlider" min="1" max="4" step="0.25" value="3.5">
+                                <input type="range" id="scaleSlider" min="1" max="4" step="0.25" value="3.0">
                                 <input type="text" id="scaleSliderText">
                             </div>
                             
@@ -59,6 +60,7 @@
 
     <!-- JavaScript for loading the Stand-Alone version. -->
     <script>
+        "use strict";
         // If you already have _APP and _JSG then you are running through JSGAME.
         // JSGAME should have used uno.js _APP.init (instead of _APP.init_standAlone.)
         // JSGAME _APP.init only includes the #wrapper div. 
@@ -69,8 +71,8 @@
             typeof _JSG.appStart_timestamp !== "undefined" 
         ) ){
             // Running as stand-alone.
-            _JSG = {}; 
-            _APP = {
+            var _JSG = {}; 
+            var _APP = {
                 standAlone : true,
                 usingJSGAME: false,
                 usingJSGAME_INPUT: false,

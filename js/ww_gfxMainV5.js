@@ -428,6 +428,7 @@ var gfxMainV5 = {
                 return [...flaggedForRedraw];
             },
             
+            //
             checkOverlapsRecursive: function(mapKey1, rect1, tilemaps, flaggedForRedraw) {
                 // Iterate through all the mapKeys in the tilemaps.
                 for (let mapKey2 in tilemaps) {
@@ -463,7 +464,7 @@ var gfxMainV5 = {
 
             // 
             // Returns a list of specific regions that were overlapped by removed images on the same layer.
-            getRegionsUsedByMapKeys: function(layerKey, mapKeys, layerData) {
+            OLDgetRegionsUsedByMapKeys: function(layerKey, mapKeys, layerData) {
                 // Go through the supplied mapKeys...
                 let regionsToClear = {};
                 let overlappedRegions = {}; // These would be cleared when the map they are on top of is cleared.
@@ -481,13 +482,13 @@ var gfxMainV5 = {
                     // Store rectangle dimensions for the region occupied by the old map.
                     regionsToClear[mapKey] = { x:map.x, y:map.y, w:map.w, h:map.h };
                 }
-            
+                
                 let tilemaps = _GFX.currentData[layerKey].tilemaps;
                 let regionsToClear_keys = Object.keys(regionsToClear);
                 let overlap;
                 let rect1;
                 let rect2;
-            
+
                 // Go through each of the regionsToClear...
                 for (let mapKey1 of regionsToClear_keys) {
                     // Create rectangle dimensions for the map.
@@ -501,10 +502,10 @@ var gfxMainV5 = {
                     // Go through each mapKey of currentMapKeys...
                     for(let mapKey2 of Object.keys(tilemaps)){
                         // Don't check an entry against itself.
-                        if(mapKey1 == mapKey2) { continue; }
-            
                         // If this map is already in CHANGES then it would be redrawn anyway. Skip it.
                         if(changedMapKeys.has(mapKey2)){ continue; }
+
+                        if(mapKey1 == mapKey2) { continue; }
             
                         // Get the map from the current graphics cache.
                         let map = tilemaps[mapKey2];
@@ -550,12 +551,116 @@ var gfxMainV5 = {
                 return {
                     // These need to be cleared.
                     toClear: Object.keys(regionsToClear).length ? regionsToClear : false,
+
                     // These need to be restored after the clear.
                     overlappedRegions: hasOverlaps ? overlappedRegions : false,
                 };
             },
             
+            // Used for REMOVALS_ONLY and CHANGES.
+            getRegionsUsedByMapKeys: function(layerKey, mapKeys, layerData) {
+                // Go through the supplied mapKeys...
+                let regionsToClear = {};
+                let overlappedRegions = {}; // These would be cleared when the map they are on top of is cleared.
+                let hasOverlaps = false;
+                let changedMapKeys = new Set(Object.keys(layerData["CHANGES"]));
+                let removedMapKeys = new Set(layerData["REMOVALS_ONLY"]);
+                let additionalCHANGES_toRestore = [];
+            
+                let tilemaps = _GFX.currentData[layerKey].tilemaps;
+                let overlap;
+                let rect1;
+                let rect2;
+            
+                for(let mapKey of mapKeys){
+                    // Get the map from the graphics cache.
+                    let map = _GFX.currentData[layerKey].tilemaps[mapKey]; 
+            
+                    // If it was not found then skip.
+                    if(!map){ continue; }
+                    
+                    // Store rectangle dimensions for the region occupied by the old map.
+                    regionsToClear[mapKey] = { x:map.x, y:map.y, w:map.w, h:map.h };
+                }
 
+                // Go through each of the regionsToClear...
+                for (let mapKey1 of Object.keys(regionsToClear)) {
+                    // Create rectangle dimensions for the map.
+                    rect1 = regionsToClear[mapKey1];
+            
+                    // Changes need to be faded individually (Later in drawImgDataCacheFromDataCache.)
+                    if(layerData["CHANGES"][mapKey1] && layerData.fade.currFade != null){
+                        layerData["CHANGES"][mapKey1].fadeBeforeDraw = true;
+                    }
+
+                    // Create a set to store mapKeys that should be redrawn due to overlaps.
+                    let flaggedForRedraw = new Set();
+            
+                    // Recursively check for overlaps with other tilemaps and add them to flaggedForRedraw.
+                    this.checkOverlapsRecursive(mapKey1, rect1, tilemaps, flaggedForRedraw);
+            
+                    // Process the overlaps
+                    for (let mapKey2 of flaggedForRedraw) {
+                    // for(let mapKey2 of Object.keys(tilemaps)){
+                        // Don't check against self.
+                        if(mapKey1 == mapKey2) { continue; }
+
+                        // If this map is already in CHANGES then it would be redrawn anyway. Skip it.
+                        if(changedMapKeys.has(mapKey2)){ continue; }
+
+                        // Skip any keys are are in REMOVALS_ONLY. (Removals are not intended for restore.)
+                        if(removedMapKeys.has(mapKey2)){ continue; }
+
+                        // Get the map from the current graphics cache.
+                        let map = tilemaps[mapKey2];
+            
+                        // Make sure the map exists.
+                        if (!map) continue;
+            
+                        // Do not restore the region if the overlapped tilemap is hidden.
+                        if (map.hidden) continue;
+
+                        // Create rectangle dimensions for the map.
+                        rect2 = { x: map.x, y: map.y, w: map.w, h: map.h };
+            
+                        // Determine if this map overlaps with rect1. 
+                        overlap = _GFX.utilities.aabb_collisionDetection(rect1, rect2);
+            
+                        // If overlapped and the overlapped mapKey is not in changes...
+                        if (overlap.collision) {
+                            // Create the key if it doesn't exist yet. 
+                            if (!overlappedRegions[mapKey2]) { overlappedRegions[mapKey2] = []; }
+            
+                            // Add the data for the overlap. 
+                            overlappedRegions[mapKey2].push({
+                                src_img: {
+                                    x: (overlap.x - map.x), w: overlap.w,
+                                    y: (overlap.y - map.y), h: overlap.h,
+                                    imgData        : map.imgData,
+                                    hasTransparency: map.hasTransparency,
+                                    settings       : map.settings
+                                },
+                                dest_layer: {
+                                    x: overlap.x, w: overlap.w,
+                                    y: overlap.y, h: overlap.h
+                                },
+                            });
+            
+                            // Set the hasOverlaps flag.
+                            hasOverlaps = true;
+                        }
+                    }
+                }
+            
+                return {
+                    // These need to be cleared.
+                    toClear: Object.keys(regionsToClear).length ? regionsToClear : false,
+            
+                    // These need to be restored after the clear.
+                    overlappedRegions: hasOverlaps ? overlappedRegions : false,
+                };
+            },
+            
             // Generates the data used to clear regions occupied by removed images.
             // Uses getRegionsUsedByMapKeys.
             // Does perform clearing. That is done by drawToImgDataCache using data returned by this function.
@@ -624,7 +729,15 @@ var gfxMainV5 = {
                 // }
 
                 let removedRegions    = this.getRegionsUsedByMapKeys(layerKey, toClear, layerData);
-                return removedRegions;
+
+                return {
+                    // These need to be cleared.
+                    toClear: removedRegions.toClear,
+
+                    // These need to be restored after the clear.
+                    overlappedRegions: removedRegions.overlappedRegions,
+                };
+                // return removedRegions;
             },
         },
         // Drawing functions.
@@ -641,9 +754,15 @@ var gfxMainV5 = {
                 let imgDataCache = _GFX.layers[layerKey].imgDataCache;
                 let region;
     
+                let regionKeys = Object.keys(regions);
+                let currentMapKeys = Object.keys(_GFX.currentData[layerKey].tilemaps);
+                regionKeys.sort((a, b) => currentMapKeys.indexOf(a) - currentMapKeys.indexOf(b));
+
                 // Get the overlapped graphic clips and write them to imgDataCache.
                 let firstRegion = true;
-                for(let regionKey in regions){
+                for(let regionKey of regionKeys){
+                    // console.log("regionKey:", regionKey, regionKeys, regions);
+                    // debugger;
                     region = regions[regionKey];
                     for(let rec of region){
                         // Create a copy of the overlapped region from the source ImageData.
@@ -986,7 +1105,8 @@ var gfxMainV5 = {
             },
             drawToImgDataCache            : function(layerKey, layerData, forceLayerRedraw=false, toClear, overlappedRegions){
                 let allMapKeys;
-                
+                let currentMapKeys = Object.keys(_GFX.currentData[layerKey].tilemaps);
+
                 // If this is a forcedLayerRedraw then use ALL mapKeys. 
                 if(forceLayerRedraw){
                     allMapKeys = Object.keys(_GFX.currentData[layerKey].tilemaps);
@@ -997,7 +1117,6 @@ var gfxMainV5 = {
                     allMapKeys = [ ...Object.keys(layerData["CHANGES"]) ];
 
                     // Re-sort allMapKeys to match the key order in _GFX.currentData[layerKey].tilemaps.
-                    let currentMapKeys = Object.keys(_GFX.currentData[layerKey].tilemaps);
                     allMapKeys.sort((a, b) => currentMapKeys.indexOf(a) - currentMapKeys.indexOf(b));
                 }
                 
@@ -1023,6 +1142,13 @@ var gfxMainV5 = {
                         // Skip the drawing of any maps that have their hidden flag set.
                         if(map.hidden){ 
                             // console.log("Skipping hidden map:", allMapKeys[i]);
+                            continue; 
+                        }
+
+                        // Make sure that any removed image is not included in the draw. 
+                        // (This was fixed by create_GFX_UPDATE_DATA on the main thread and should not occur.)
+                        if(layerData.REMOVALS_ONLY.indexOf(allMapKeys[i]) != -1){ 
+                            console.log("This map should not be drawn because it is in REMOVALS_ONLY.", allMapKeys[i]); 
                             continue; 
                         }
 
@@ -1065,6 +1191,25 @@ var gfxMainV5 = {
     
                 // STEP 2: Draw the overlaps second.
                 if(overlappedRegions){
+                    // if(Object.keys(overlappedRegions).indexOf("winRound_largeCardBg") != -1){
+                    //     console.log(overlappedRegions);
+                    //     debugger;
+                    // }
+                    
+                    // // Check for the restore of removed or hidden maps.
+                    // let keys = Object.keys(overlappedRegions);
+                    // for(let key of keys){
+                    //     let map = _GFX.currentData[layerKey].tilemaps[key];
+                    //     if(layerData.REMOVALS_ONLY.indexOf(key) != -1){ 
+                    //         console.log("This map should not be drawn because it is in REMOVALS_ONLY."); 
+                    //         continue; 
+                    //     }
+                    //     if(map.hidden){ 
+                    //         console.log("This map should not be drawn because it has hidden."); 
+                    //         continue; 
+                    //     }
+                    // }
+
                     // Replace the overlapped regions with their original data.
                     gfxMainV5.gfx.DRAW.restoreOverlapsToMapKey(layerKey, overlappedRegions);
                 }

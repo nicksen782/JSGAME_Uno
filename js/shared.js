@@ -217,7 +217,14 @@ _APP.shared = {
 
             // The funcObj is no longer part of this.funcs[gamestate].
             return false;
-        }
+        },
+        clearQueue: function(gamestate){
+            // Add the gamestate key to the funcs object if it is missing.
+            if(this.funcs[gamestate] == undefined){ this.funcs[gamestate] = []; }
+
+            // Clear the queued functions.
+            this.funcs[gamestate] = [];
+        },
     },
 
     getAllGamepadStates: function(){

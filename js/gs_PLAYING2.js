@@ -18,7 +18,8 @@
         },
 
         gamestart: function() {
-            // Shuffle the deck.
+            // Reset and shuffle the deck.
+            this.deck.resetDeck();
             this.deck.shuffleDeck();
 
             // Set next gs2.
@@ -32,26 +33,28 @@
             if(this.flags.getFirstPlayer.highCardDeal){
                 // Get the next card in the deck and assign to the player.
                 let card = this.deck.getNextCardFromDrawpile();
-                card.location = Deck.playerCardLocations[this.gameBoard.currentPlayer];
+                if(card){
+                    card.location = Deck.playerCardLocations[this.gameBoard.currentPlayer];
 
-                let layerObjKey = `${this.gameBoard.currentPlayer}_card_2`;
-                let cardLayerObj = _GFX.layerObjs.getOne(layerObjKey);
-                cardLayerObj.change_wholeCard("sm", card.color, card.value);
+                    let layerObjKey = `${this.gameBoard.currentPlayer}_card_2`;
+                    let cardLayerObj = _GFX.layerObjs.getOne(layerObjKey);
+                    cardLayerObj.change_wholeCard("sm", card.color, card.value);
 
-                // Start deal animation.
-                _APP.game.gamestates.gs_PLAYING.addCardMovement(
-                    "draw"  , { 
-                        timerKey   : "moveDrawToCard"+`${this.gameBoard.currentPlayer}_card_2`   , 
-                        timerFrames: 10,
-                        movementSpeed: this.movementSpeeds.dealOneCard,
-                        playerKey  : this.gameBoard.currentPlayer  , 
-                        layerObjKey: `${this.gameBoard.currentPlayer}_card_2`,
-                        cardSlot   : 2,
-                        finish: function(){ 
-                            this.card.change_wholeCard("sm", card.color, card.value); 
-                            _APP.shared.genTimer.removeOne(this.timerKey, null);
-                        }
-                });
+                    // Start deal animation.
+                    _APP.game.gamestates.gs_PLAYING.addCardMovement(
+                        "draw"  , { 
+                            timerKey   : "moveDrawToCard"+`${this.gameBoard.currentPlayer}_card_2`   , 
+                            timerFrames: 10,
+                            movementSpeed: this.movementSpeeds.dealOneCard,
+                            playerKey  : this.gameBoard.currentPlayer  , 
+                            layerObjKey: `${this.gameBoard.currentPlayer}_card_2`,
+                            cardSlot   : 2,
+                            finish: function(){ 
+                                this.card.change_wholeCard("sm", card.color, card.value); 
+                                _APP.shared.genTimer.removeOne(this.timerKey, null);
+                            }
+                    });
+                }
 
                 // Update the player text (ignoring the win and uno states.)
                 this.gameBoard.updatePlayerText(true);
@@ -200,25 +203,27 @@
             else if(this.flags.getFirstPlayer.initDeal){
                 // Get the next card in the deck and assign to the player.
                 let card = this.deck.getNextCardFromDrawpile();
-                card.location = Deck.playerCardLocations[this.gameBoard.currentPlayer];
-                let layerObjKey = `${this.gameBoard.currentPlayer}_card_${this.flags.getFirstPlayer.initDealPos%5}`;
-                _GFX.layerObjs.getOne(layerObjKey).change_wholeCard("sm", "CARD_BLACK", "CARD_BACK"); ;
+                if(card){
+                    card.location = Deck.playerCardLocations[this.gameBoard.currentPlayer];
+                    let layerObjKey = `${this.gameBoard.currentPlayer}_card_${this.flags.getFirstPlayer.initDealPos%5}`;
+                    _GFX.layerObjs.getOne(layerObjKey).change_wholeCard("sm", "CARD_BLACK", "CARD_BACK"); ;
 
-                // Start deal animation.
-                let _this = this;
-                _APP.game.gamestates.gs_PLAYING.addCardMovement(
-                    "draw"  , { 
-                        timerKey   : "moveDrawToCard_"+layerObjKey   , 
-                        timerFrames: 1,
-                        movementSpeed: this.movementSpeeds.dealingMany,
-                        playerKey  : this.gameBoard.currentPlayer  , 
-                        layerObjKey: `${this.gameBoard.currentPlayer}_card_${this.flags.getFirstPlayer.initDealPos%5}`,
-                        // layerObjKey: `temp_card`,
-                        cardSlot   : (this.flags.getFirstPlayer.initDealPos % 5),
-                        finish: function(){ 
-                            _APP.shared.genTimer.removeOne(this.timerKey, null);
-                        }
-                });
+                    // Start deal animation.
+                    let _this = this;
+                    _APP.game.gamestates.gs_PLAYING.addCardMovement(
+                        "draw"  , { 
+                            timerKey   : "moveDrawToCard_"+layerObjKey   , 
+                            timerFrames: 0,
+                            movementSpeed: this.movementSpeeds.dealingMany,
+                            playerKey  : this.gameBoard.currentPlayer  , 
+                            layerObjKey: `${this.gameBoard.currentPlayer}_card_${this.flags.getFirstPlayer.initDealPos%5}`,
+                            // layerObjKey: `temp_card`,
+                            cardSlot   : (this.flags.getFirstPlayer.initDealPos % 5),
+                            finish: function(){ 
+                                _APP.shared.genTimer.removeOne(this.timerKey, null);
+                            }
+                    });
+                }
 
                 // Change to next player.
                 this.gameBoard.setNextPlayer(false, false); // Don't reset the current row.
@@ -271,10 +276,11 @@
                             cardObj.hidden = false; 
 
                             // Add a movement to move the card from the draw pile to the discard pile. 
+                            let _this = this;
                             _APP.game.gamestates.gs_PLAYING.addCardMovement(
                                 "discard"  , { 
                                     timerKey     : `moveCardInitialDiscard`, 
-                                    timerFrames  : 20,
+                                    timerFrames  : 10,
                                     movementSpeed: this.movementSpeeds.dealOneCard,
                                     layerObjKey  : `discard_card`,
                                     finish       : function(){ 
@@ -366,11 +372,12 @@
             }
 
             // Show the current color.
-            if(this.winningPlayerKey){
-                this.gameBoard.setColorIndicators(this.winningPlayerKey, this.gameBoard.currentColor);
+            if(!this.winningPlayerKey){
+                this.gameBoard.setColorIndicators(this.gameBoard.currentPlayer, this.gameBoard.currentColor);
             }
             else{
-                this.gameBoard.setColorIndicators(this.gameBoard.currentPlayer, this.gameBoard.currentColor);
+                this.gameBoard.hideColorIndictors();
+                // this.gameBoard.setColorIndicators(this.winningPlayerKey, this.gameBoard.currentColor);
             }
 
             // Check flags.
@@ -378,11 +385,14 @@
             let colorChange = false;
             let skipTurn = false;
             let mustDraw = false;
-            if(this.flags.nextRoundFlags.draw2)     { mustDraw = true; }
-            if(this.flags.nextRoundFlags.skip)    { skipTurn = true; }
+            if(this.flags.nextRoundFlags.draw2)      { mustDraw = true; }
+            if(this.flags.nextRoundFlags.skip)       { skipTurn = true; }
             if(this.flags.nextRoundFlags.reverse)    { skipTurn = true; }
-            if(this.flags.nextRoundFlags.draw4)     { mustDraw = true; }
-            if(this.flags.nextRoundFlags.colorChange){ console.log("COLOR CHANGE! FIRST TURN?"); colorChange = true; }
+            if(this.flags.nextRoundFlags.draw4)      { mustDraw = true; }
+            if(this.flags.nextRoundFlags.colorChange){ 
+                console.log("COLOR CHANGE! THIS SHOULD ONLY BE POSSIBLE HERE ON THE FIRST TURN."); 
+                colorChange = true; 
+            }
 
             // COLOR CHANGE: NOTE: This would only happen on the first turn. 
             if(colorChange){
@@ -616,7 +626,6 @@
                         return;
                     }
 
-                    
                     // Make sure the selected card is valid.
                     if(!this.debugFlags.skipCardValidityCheck){
                         // Is the card valid? It must be a normal WILD, same color, or same value.
@@ -709,7 +718,7 @@
                     _APP.game.gamestates.gs_PLAYING.addCardMovement(
                         "selected"  , { 
                             timerKey   : "moveCardToSelected", 
-                            timerFrames: 20,
+                            timerFrames: 0, // Frames to wait after the completion of the movement.
                             playerKey  : this.gameBoard.currentPlayer  , 
                             layerObjKey: layerObjKey ,
                             movementSpeed: _APP.game.gamestates.gs_PLAYING.movementSpeeds.selectCard,
@@ -972,29 +981,279 @@
                     console.log("winningPlayerKey:", this.winningPlayerKey);
                 }
 
-
                 this.gameBoard.setNextPlayer(this.flags.nextRoundFlags.reverse, true);
             }
             else{ console.log("endOfRound: INVALID FLAGS"); }
         },
 
         winsRound: function(gpInput){
-            // Need to cover the center of the screen with black (within the direction arrows.)
-            // SCORES
-            // PLAYER 1
-            // PLAYER 2
-            // PLAYER 3
-            // PLAYER 4
+            // init
+            // scoring
+            // checkGameWin
+            // GameWin
+            // nextRound
+            // Update the largeCardBg colors if it is there.
+            // let winRound_largeCardBg = _GFX.layerObjs.objs['gs_PLAYING']['winRound_largeCardBg'];
+            // if(winRound_largeCardBg){ winRound_largeCardBg.nextFrame(); }
 
-            // GREEN
-            // SKIP
+            if(this.flags.winsRound.init){
+                console.log("init");
+                this.gameBoard.winRound_start(this.winningPlayerKey);
 
-            // POINTS: 20 [ LARGE IMAGE OF THE CARD ]
+                // All player cards face down.
+                for(let playerKey of this.gameBoard.activePlayerKeys){
+                    this.gameBoard.players[playerKey].currentRow = 0;
+                    this.deck.flipPlayerCardsDown(playerKey, this.gameBoard.players[playerKey].currentRow);
+                }
+
+                // Set direction to forward.
+                this.gameBoard.setDirectionIndicators("F");
+
+                // Set the current player to the winning player.
+                this.gameBoard.currentPlayer = this.winningPlayerKey;
+                this.gameBoard.setNextPlayer(false, false); // Don't reset the current row.
+
+                // console.log(`currentPlayer: ${this.gameBoard.currentPlayer}, winningPlayer: ${this.winningPlayerKey}`);
+
+                // Set flags.
+                this.resetFlags();
+                this.flags.winsRound.init = false;
+                this.flags.winsRound.scoring = true;
+            }
+            else if(this.flags.winsRound.scoring){
+                // console.log("scoring");
+                // Cards move card by card, row by row, one player at a time to the destination.
+                // The start of each card movement needs to update the text for the card color, value, and points.
+
+                // Start with the player directly after the winning player (forward direction.)
+                // Stop when the current player matches the winning player.
+                // Get the max row count for the current player.
+                // Get the current row for the current player.
+                // Get the number of remaining displayed cards for the current player.
+                // There are up to 5 card "slots" availble for display at a time.
+                // If there are no more cards displayed and there is another row then switch to that row.
+                // Repeat until all rows and cards have been moved.
+                // THEN switch to the next player. 
+                // 
+
+                // this.winningPlayerKey
+                // Use the funcQueue.
+                // Should work kinda like action_draw.
+
+                // Is this the last player to have their cards removed?
+                if(this.gameBoard.currentPlayer == this.winningPlayerKey){
+                    console.log("All cards moved!");
+                    this.gameBoard.winRound_end();
+                    // DONE!
+
+                    // RESET THE GAME.
+                    this.resetFlags();
+                    // debugger;
+                    _APP.shared.genTimer.create("genWaitTimer1", 40, _APP.game.gs1, ()=>{});
+                    _APP.shared.genTimer.create("genWaitTimer2", 40, _APP.game.gs1, ()=>{});
+                    return;
+                }
+
+                let canQueue = false;
+                let playerKey = this.gameBoard.currentPlayer;
+                let slots = [
+                    `${playerKey}_card_0`,
+                    `${playerKey}_card_1`,
+                    `${playerKey}_card_2`,
+                    `${playerKey}_card_3`,
+                    `${playerKey}_card_4`,
+                ];
+                let playerCardCount = this.deck.deck.filter(d => d.location == location).length;
+                let curRowValue = this.gameBoard.players[playerKey].currentRow;
+                let maxRowValue = (Math.ceil(playerCardCount / 5)) -1;
+                if(maxRowValue < 0){ maxRowValue = 0; }
+                
+                // Flip up the cards.
+                this.deck.flipPlayerCardsUp(playerKey, curRowValue);
+                
+                let displayedCardCount = slots.filter(d=>_GFX.layerObjs.getOne(d).hidden==false).length;
+
+                let func = function(playerKey, timerKey, layerObjKey, cardSlot){
+                    let _this = this;
+
+                    // Update the points for the player.
+                    let activeCard = _GFX.layerObjs.getOne(layerObjKey);
+                    let color = activeCard.color.replace("CARD_", "");
+                    let value = activeCard.value.replace("CARD_", "");
+                    let points = Deck.cardPoints[activeCard.value]
+                    _this.gameBoard.players[this.winningPlayerKey].score += points;
+
+                    // Update the card's rotation.
+                    activeCard.setSetting("rotation", 0);
+
+                    // Update the card's size.
+                    activeCard.size = "lg";
+
+                    // Update the display.
+                    _this.gameBoard.winRound_updateScores(color, value, points);
+
+                    // Update the text for the color, value, points.
+                    // Points are added to the total score when the card is finished moving. 
+                    _APP.game.gamestates.gs_PLAYING.addCardMovement(
+                        "score"  , { 
+                            timerKey     : timerKey, 
+                            timerFrames  : 15,
+                            movementSpeed: _this.movementSpeeds.returnOneCard,
+                            playerKey    : playerKey, 
+                            layerObjKey  : layerObjKey,
+                            cardSlot     : cardSlot,
+                            finish: function(){ 
+                                // console.log("Finish: score:", layerObjKey);
+                                // Find the first instance of this card in the deck.
+                                let cardInDeck = _this.deck.deck.find(d=>
+                                    d.color==this.card.color && 
+                                    d.value==this.card.value && 
+                                    d.location != "CARD_LOCATION_DISCARD" &&
+                                    d.location != "CARD_LOCATION_DRAW"
+                                );
+
+                                // This should not happen.
+                                if(!cardInDeck){
+                                    console.log("CARD NOT FOUND IN DECK/LOCATION:", this.card);
+                                    debugger;
+                                }
+
+                                // Change the location to discard.
+                                cardInDeck.location = "CARD_LOCATION_DISCARD";
+                                
+                                // Restore the correct card rotation.
+                                activeCard.size = "sm";
+                                activeCard.setSetting("rotation", Deck.playerCardRotations[playerKey]);
+                                
+                                // Set the card LayerObject to hidden.
+                                let cardObj = this.card;
+                                cardObj.hidden = true;
+                                
+                                // // Use the card LayerObject to update the displayed discard card.
+                                // _this.deck.updateDiscardCard(this.card);
+
+                                // // Unhide the discard card.
+                                // _GFX.layerObjs.getOne("discard_card").hidden = false;
+
+                                _APP.shared.genTimer.removeOne(this.timerKey, null);
+                            }
+                        }
+                    );
+                };
+
+                // Queue up card movements for this row for this player?
+                if(displayedCardCount){
+                    // console.log("There are cards to move on this row.");
+                    canQueue = true;
+                }
+
+                // No cards visible. Is there another row?
+                else if(curRowValue != maxRowValue){
+                    console.log("Next row for:", playerKey);
+                    // Change the row and flip up the cards.
+                    curRowValue += 1;
+                    this.deck.flipPlayerCardsUp(playerKey, curRowValue);
+
+                    // Get the new visible cards.
+                    displayedCardCount = slots.filter(d=>_GFX.layerObjs.getOne(d).hidden==false).length;
+
+                    canQueue = true;
+                }
+
+                // Done with this player's cards.
+                else{
+                    // Change to next player.
+                    // console.log("Changing to the next player from", playerKey);
+                    this.gameBoard.setNextPlayer(false, true);
+                }
+
+                // Will we be moving cards?
+                if(canQueue){
+                    // Queue the movements.
+                    for(let i=0, len=slots.length; i<len; i+=1){
+                        if(_GFX.layerObjs.getOne(slots[i]).hidden==true){ continue; }
+
+                        let funcName = `score_${playerKey}_card_${i}`;
+                        _APP.shared.funcQueue.create(funcName, _APP.game.gs1, {
+                            args: [playerKey, funcName, slots[i], i],
+                            bind: this,
+                            func: func
+                        });
+                    }
+                }
+
+                // this.gameSettings.P1_SCORE
+                // The text update should happen at the start of each card movement.
+                // console.log(
+                //     `\n  currentPlayer     : ${this.gameBoard.currentPlayer}, ` +
+                //     `\n  winningPlayer     : ${this.winningPlayerKey}, ` + 
+                //     `\n  playerCardCount   : ${playerCardCount}` +
+                //     `\n  curRowValue       : ${curRowValue}` +
+                //     `\n  maxRowValue       : ${maxRowValue}` +
+                //     `\n  displayedCardCount: ${displayedCardCount}` +
+                //     ``
+                // );
+                // debugger;
+                
+                // Set flags.
+                // this.resetFlags();
+                // this.flags.winsRound.scoring = false;
+                // this.flags.winsRound.checkGameWin = true;
+            }
+            else if(this.flags.winsRound.checkGameWin){
+                console.log("checkGameWin");
+                
+                // Set flags.
+                // this.resetFlags();
+                // this.flags.winsRound.checkGameWin = false;
+                // this.flags.winsRound.GameWin = true;
+                // this.flags.winsRound.nextRound = true;
+            }
+            else if(this.flags.winsRound.GameWin){
+                console.log("GameWin");
+                
+                // Set flags.
+                // this.resetFlags();
+                // this.flags.winsRound.GameWin = false;
+                // this.flags.winsRound.scoring = true;
+            }
+            else if(this.flags.winsRound.nextRound){
+                console.log("nextRound");
+                
+                // Set flags.
+                // this.resetFlags();
+                // this.flags.winsRound.nextRound = false;
+                // this.flags.getFirstPlayer.highCardDeal = true;
+                // _APP.game.changeGs2("gamestart");
+            }
+            else{ 
+                console.log("winsRound: INVALID FLAGS"); 
+                _APP.shared.genTimer.create("genWaitTimer1", 40, _APP.game.gs1, ()=>{});
+            }
+            if(1){ return; }
 
             // PLAYER 2
             // WINS THE GAME!
             // CONGRATULATIONS!
+            
 
+            // Cover L2 (where cBorder_fill is) with a black fill but on L2.
+            // let cBorder_fill = _GFX.layerObjs.getOne("cBorder_fill");
+            // Fill.createFill({
+            //     "x" : cBorder_fill.x,
+            //     "y" : cBorder_fill.y,
+            //     "w" : cBorder_fill.tmap[0],
+            //     "h" : cBorder_fill.tmap[1],
+            //     "xyByGrid"   : true,
+            //     "layerObjKey": "centerBlack", // ("_fill" will be appended to this.)
+            //     "layerKey"   : "L2", // Layer 2 instead of layer one. This will block the draw/discard piles.
+            //     "tilesetKey" : "bg_tiles1",
+            //     "fillTile"   : _GFX.funcs.getTilemap("bg_tiles1", "blackTile")[2],
+            // }, false);
+
+            // Get a handle to centerBlack_fill.
+            // let centerBlack_fill = _GFX.layerObjs.getOne("centerBlack_fill");
+            
             /* 
             One player at a time, cards will be moved from the player's hand to the new discard area.
             The color, value and points are displayed as soon as the card starts moving.
@@ -1008,20 +1267,23 @@
             Process repeats until each player's cards have been moved.
             */
 
-            // END OF ROUND PLAY:
-            // PLAYER1 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
-            // PLAYER2 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
-            // PLAYER3 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
-            // PLAYER4 CARDS (DISPLAY OF 5.) (SMALL) (reuse of above)
-            // DISPLAY CARD: 1 (LARGE) (reuse of discard pile)
-            // PLAYER MOVING CARD TO BE THE DISPLAY CARD. (SMALL) (reuse of card moving to draw pile.)
-            // Players not actively adding to the score only show the back card.
-
-            // if(this.flags.playerTurn.play_pass){}
-            // else if(this.flags.playerTurn.play_pass){}
-
             console.log("WE HAVE A WINNER!", this.winningPlayerKey);
             _APP.shared.genTimer.create("genWaitTimer1", this.timerDelays.winsRound, _APP.game.gs1, ()=>{});
+            
+            // _APP.shared.genTimer.create("genWaitTimer2", this.timerDelays.winsRound, _APP.game.gs1, ()=>{
+            //     // Clear all flags.
+            //     this.resetFlags();
+                
+            //     // DONE! Remove all the new layerObjects.
+            //     _GFX.layerObjs.removeOne("centerBlack_fill");
+
+            //     _APP.game.changeGs2("EEEEE");
+
+            //     _APP.shared.genTimer.create("genWaitTimer1", this.timerDelays.winsRound, _APP.game.gs1, ()=>{});
+            // });
+
+            // DONE! Remove all the new layerObjects.
+            // _GFX.layerObjs.removeOne("centerBlack_fill");
         },
 
         // Actions based on cards: WILD, WILD_DRAW4, DRAW2, SKIP, REVERSE
