@@ -139,10 +139,6 @@ class Cursor1 extends LayerObject{
         blue   : [36 , 72 , 170, 255], // 
         green  : [0  , 145, 0  , 255], // 
     };
-    static frames_type1 = [
-    ];
-    static frames_type2 = [
-    ];
 
     constructor(config){
         config.tilesetKey = "sprite_tiles1";
@@ -165,6 +161,14 @@ class Cursor1 extends LayerObject{
                 _GFX.funcs.getTilemap("sprite_tiles1", "cursor2_f2"),
             ];
         }
+        else if(this.cursorType == 3){
+            this.frames = [
+                _GFX.funcs.getTilemap("sprite_tiles1", "cursor3_f1"),
+                _GFX.funcs.getTilemap("sprite_tiles1", "cursor3_f2"),
+                _GFX.funcs.getTilemap("sprite_tiles1", "cursor3_f3"),
+                _GFX.funcs.getTilemap("sprite_tiles1", "cursor3_f2"),
+            ];
+        }
 
         // DEBUG
         // let tileId1 = this.frames[0][2];
@@ -174,7 +178,7 @@ class Cursor1 extends LayerObject{
 
         this.framesIndex = 0;
         this.framesCounter = 0;
-        this.framesBeforeIndexChange = 15;
+        this.framesBeforeIndexChange = config.framesBeforeIndexChange ?? 15;
         // this.framesBeforeIndexChange = 60;
         this.repeatCount = 0;
         this.repeats = 0;
@@ -1502,30 +1506,13 @@ class ColorChanger{
 };
 
 class PauseMenu{
-    static text = [
-        `  PAUSE   MENU  `,
-        ``,
-        `   RESET ROUND`,
-        `   EXIT GAME`,
-        ``, // `   AUTO PLAY`,
-        `   CANCEL`,
-        ``,
-        ``,
-        ``,
-        ``,
-        ``,
-        ``,
-        ``,
-        `B:CANCEL   A:SET`,
-    ];
-
     static pos = { 
         box   : { x: 6, y: 9-2 },
-        score: { x: 7, y: 9-2+7 },
-        player1_score: { x: 7+1, y: 9-2+7+1 },
-        player2_score: { x: 7+1, y: 9-2+8+1 },
-        player3_score: { x: 7+1, y: 9-2+9+1 },
-        player4_score: { x: 7+1, y: 9-2+10+1 },
+        score: { x: 7-1, y: 9-2+7 },
+        player1_score: { x: 7+1-2, y: 9-2+7+1 },
+        player2_score: { x: 7+1-2, y: 9-2+8+1 },
+        player3_score: { x: 7+1-2, y: 9-2+9+1 },
+        player4_score: { x: 7+1-2, y: 9-2+10+1 },
     };
 
     static cursorsPos = [
@@ -1535,53 +1522,131 @@ class PauseMenu{
         {x: PauseMenu.pos.box.x + 1, y: PauseMenu.pos.box.y + 5, action: "CANCEL"      },
     ];
 
+    static settingsGrayOut = {
+        colorData: [ [ [255,255,255,255], [104,104,104,255] ]],
+        bgColorRgba: [16, 16, 16, 224]
+    };
+    static defaultScoreSettings = {
+        bgColorRgba: [16, 16, 16, 224]
+    };
+
+    allHiddenLayerObjects = [];
+
+    hideAllLayerObjects(ignoreThese={}){
+        // Clear this.allHiddenLayerObjects.
+        this.allHiddenLayerObjects = [];
+
+        // 
+        let ignoreKeys = new Set( Object.keys(ignoreThese) );
+
+        // Get a list of all LayerObjects for this gamestate.
+        let allKeys = Object.keys(_GFX.layerObjs.objs[_APP.game.gs1]);
+
+        // Add to the LayerObjectKey to allHiddenLayerObjects if the LayerObject is NOT hidden. Then hide the LayerObject.
+        for(let key of allKeys){
+            if(ignoreKeys.has(key)){ continue; }
+            // Hidden?
+            if(!_GFX.layerObjs.objs[_APP.game.gs1][key].hidden){ 
+                // Add.
+                this.allHiddenLayerObjects.push(key); 
+                // Hide.
+                _GFX.layerObjs.objs[_APP.game.gs1][key].hidden = true;
+            }
+        }
+    };
+    restoreAllLayerObjects(){
+        // Go through the allHiddenLayerObjects list...
+        for(let key of this.allHiddenLayerObjects){
+            // Unhide.
+            if(_GFX.layerObjs.objs[_APP.game.gs1][key]){
+                _GFX.layerObjs.objs[_APP.game.gs1][key].hidden = false;
+            }
+        }
+
+        // Clear this.allHiddenLayerObjects.
+        this.allHiddenLayerObjects = [];
+    };
+
     constructor(config){
         this.parent       = config.parent;
         this.active = false;
+        // console.log(this.parent.gameBoard.activePlayerKeys);
 
         // Create the print text.
-        _GFX.layerObjs.createOne(PrintText, { 
-            hidden: true,
-            text       : PauseMenu.text, 
-            x          : PauseMenu.pos.box.x, 
-            y          : PauseMenu.pos.box.y, 
-            layerObjKey: "pause_menu_text", 
-            layerKey   : "L3", 
-            xyByGrid   : true,
-            // settings   : { bgColorRgba: [32, 32, 32, 168] }
-            settings   : { bgColorRgba: [16, 16, 16, 224] }
-        });
+        // Create multiple lines each being a separate LayerObject allowing each line to have different settings.
+        let layerObjectKeys;
+        {
+            // Specify some settings that can be used by lines.
+            let settingsGrayOut = PauseMenu.settingsGrayOut;
+    
+            // Create the lines.
+            layerObjectKeys = PrintText.genMultipleLines({
+                // Start position of x and y.
+                x:PauseMenu.pos.box.x, 
+                y:PauseMenu.pos.box.y, 
+    
+                // Starts as hidden (true/false)
+                hidden:true,
+    
+                // This indicates if each line should be the same width as the longest line (padded with spaces.)
+                padLines: true, 
+    
+                layerObjKey: "pause_menu_text", tilesetKey: "font_tiles1", layerKey: "L4", 
+    
+                // Shared settings (if settings is not specified for a line.)
+                settings: { 
+                    bgColorRgba: PauseMenu.defaultScoreSettings.bgColorRgba 
+                },
+                
+                lines: [
+                    { t: `  PAUSE   MENU  `   , },
+                    { t: ``                   , },
+                    { t: `   RESET ROUND`     , },
+                    { t: `   EXIT GAME`       , },
+                    { t: `   AUTO PLAY`       , s: settingsGrayOut },
+                    { t: `   CANCEL`          , },
+                    { t: ``                   , },
+                    { t: ``                   , skip: true }, // Will be used by 'pause_menu_score'
+                    { t: ``                   , skip: true }, // Will be used by 'pause_menu_player1_score'
+                    { t: ``                   , skip: true }, // Will be used by 'pause_menu_player2_score'
+                    { t: ``                   , skip: true }, // Will be used by 'pause_menu_player3_score'
+                    { t: ``                   , skip: true }, // Will be used by 'pause_menu_player4_score'
+                    { t: ``                   , },
+                    { t: `B:CANCEL   A:SET`   , },
+                ]
+            });
+        }
         
         // Create text lines for the player's scores.
         _GFX.layerObjs.createOne(PrintText, { 
-            text: `SCORES:`, 
+            text: ` SCORES:`.padEnd(16, " "), 
             x: PauseMenu.pos.score.x,  y: PauseMenu.pos.score.y, 
             layerObjKey: "pause_menu_score", layerKey: "L4", xyByGrid: true, hidden: true,
-            settings   : { bgColorRgba: [16, 16, 16, 224] }
+            settings   : PauseMenu.defaultScoreSettings
         });
         _GFX.layerObjs.createOne(PrintText, { 
-            text: `PLAYER1_SCORE`, 
+            text: `  PLAYER1:`.padEnd(16, " "), 
             x: PauseMenu.pos.player1_score.x,  y: PauseMenu.pos.player1_score.y, 
             layerObjKey: "pause_menu_player1_score", layerKey: "L4", xyByGrid: true, hidden: true,
-            settings   : { bgColorRgba: [16, 16, 16, 224] }
+            settings: this.parent.gameBoard.players["P1"].active ? PauseMenu.defaultScoreSettings : PauseMenu.settingsGrayOut
         });
         _GFX.layerObjs.createOne(PrintText, { 
-            text: `PLAYER2_SCORE`, 
+            text: `  PLAYER2:`.padEnd(16, " "),
             x: PauseMenu.pos.player2_score.x,  y: PauseMenu.pos.player2_score.y, 
             layerObjKey: "pause_menu_player2_score", layerKey: "L4", xyByGrid: true, hidden: true,
-            settings   : { bgColorRgba: [16, 16, 16, 224] }
+            settings: this.parent.gameBoard.players["P2"].active ? PauseMenu.defaultScoreSettings : PauseMenu.settingsGrayOut
         });
         _GFX.layerObjs.createOne(PrintText, { 
-            text: `PLAYER3_SCORE`, 
+            text: `  PLAYER3:`.padEnd(16, " "), 
             x: PauseMenu.pos.player3_score.x,  y: PauseMenu.pos.player3_score.y, 
             layerObjKey: "pause_menu_player3_score", layerKey: "L4", xyByGrid: true, hidden: true,
-            settings   : { bgColorRgba: [16, 16, 16, 224] }
+            settings: this.parent.gameBoard.players["P3"].active ? PauseMenu.defaultScoreSettings : PauseMenu.settingsGrayOut
         });
         _GFX.layerObjs.createOne(PrintText, { 
-            text: `PLAYER4_SCORE`, 
+            text: `  PLAYER4:`.padEnd(16, " "), 
             x: PauseMenu.pos.player4_score.x,  y: PauseMenu.pos.player4_score.y, 
             layerObjKey: "pause_menu_player4_score", layerKey: "L4", xyByGrid: true, hidden: true,
-            settings   : { bgColorRgba: [16, 16, 16, 224] }
+            settings: this.parent.gameBoard.players["P4"].active ? PauseMenu.defaultScoreSettings : PauseMenu.settingsGrayOut
         });
 
         // Create the cursor.
@@ -1603,7 +1668,7 @@ class PauseMenu{
 
         // Store the elems for later use.
         this.elems = {
-            text   : _GFX.layerObjs.getOne("pause_menu_text"),
+            text   : layerObjectKeys.map(d=>_GFX.layerObjs.getOne(d)),
             cursor : _GFX.layerObjs.getOne("pause_menu_cursor"),
             score  : _GFX.layerObjs.getOne("pause_menu_score"),
             player1_score : _GFX.layerObjs.getOne("pause_menu_player1_score"),
@@ -1611,11 +1676,36 @@ class PauseMenu{
             player3_score : _GFX.layerObjs.getOne("pause_menu_player3_score"),
             player4_score : _GFX.layerObjs.getOne("pause_menu_player4_score"),
         };
+        // console.log(this.elems);
     };
 
     // Unhides the LayerObjects used by this class.
     show(){
-        for(let elemKey in this.elems){ this.elems[elemKey].hidden = false; }
+        let pauseMenuLayerObjs = {};
+        for(let elemKey in this.elems){ 
+            if(Array.isArray(this.elems[elemKey])){
+                for(let elemKey2 in this.elems[elemKey]){ 
+                    let layerObjKey = this.elems[elemKey][elemKey2].layerObjKey;
+                    pauseMenuLayerObjs[layerObjKey] = this.elems[elemKey][elemKey2];
+                }
+            }
+            else{ 
+                let layerObjKey = this.elems[elemKey].layerObjKey;
+                pauseMenuLayerObjs[layerObjKey] = this.elems[elemKey];
+            }
+        }
+
+        let textKey_msgBox   = _GFX.layerObjs.getOne( "msgBox_text" );
+        if(textKey_msgBox && this.parent.gameBoard.displayMessage_currentKey != "none"){ 
+            _GFX.layerObjs.removeOne( "msgBox_text" );
+        }
+
+        this.hideAllLayerObjects(pauseMenuLayerObjs);
+        for(let layerObjKey in pauseMenuLayerObjs){ 
+            let layerObj = pauseMenuLayerObjs[layerObjKey];
+            layerObj.hidden = false; 
+        }
+
         this.active = true;
 
         let players = this.parent.gameBoard.players;
@@ -1631,25 +1721,48 @@ class PauseMenu{
         for(let playerKey of this.parent.gameBoard.activePlayerKeys){
             if(players[playerKey].score > currentHighScore){ currentHighScore = players[playerKey].score; }
         }
-        let recoloredWinner = { colorData:[ [ ColorChanger.colors.white, ColorChanger.colors.yellow ] ], bgColorRgba: [128, 128, 32, 168] };
+        let settings_winner = { colorData:[ [ ColorChanger.colors.white, ColorChanger.colors.yellow ] ], bgColorRgba: [128, 128, 32, 168] };
 
         // Update player scores.
-        this.elems.player1_score.text = `PLAYER1:${players["P1"].score.toString().padStart(4)}`;
-        this.elems.player2_score.text = `PLAYER2:${players["P2"].score.toString().padStart(4)}`;
-        this.elems.player3_score.text = `PLAYER3:${players["P3"].score.toString().padStart(4)}`;
-        this.elems.player4_score.text = `PLAYER4:${players["P4"].score.toString().padStart(4)}`;
-
         // Highlight the high score.
-        if(players["P1"].score == currentHighScore && currentHighScore != 0){ console.log("high score: P1"); this.elems.player1_score.settings = recoloredWinner; } else{ this.elems.player1_score.settings = {}; }
-        if(players["P2"].score == currentHighScore && currentHighScore != 0){ console.log("high score: P2"); this.elems.player2_score.settings = recoloredWinner; } else{ this.elems.player2_score.settings = {}; }
-        if(players["P3"].score == currentHighScore && currentHighScore != 0){ console.log("high score: P3"); this.elems.player3_score.settings = recoloredWinner; } else{ this.elems.player3_score.settings = {}; }
-        if(players["P4"].score == currentHighScore && currentHighScore != 0){ console.log("high score: P4"); this.elems.player4_score.settings = recoloredWinner; } else{ this.elems.player4_score.settings = {}; }
+        if(this.parent.gameBoard.players["P1"].active){
+            this.elems.player1_score.text = `  PLAYER1:${players["P1"].score.toString().padStart(4)}  `;
+            if(players["P1"].score == currentHighScore && currentHighScore != 0){ this.elems.player1_score.settings = settings_winner; } 
+            else{ this.elems.player1_score.settings = PauseMenu.defaultScoreSettings; }
+        }
+        if(this.parent.gameBoard.players["P2"].active){
+            this.elems.player2_score.text = `  PLAYER2:${players["P2"].score.toString().padStart(4)}  `;
+            if(players["P2"].score == currentHighScore && currentHighScore != 0){ this.elems.player2_score.settings = settings_winner; } 
+            else{ this.elems.player2_score.settings = PauseMenu.defaultScoreSettings; }
+        }
+        if(this.parent.gameBoard.players["P3"].active){
+            this.elems.player3_score.text = `  PLAYER3:${players["P3"].score.toString().padStart(4)}  `;
+            if(players["P3"].score == currentHighScore && currentHighScore != 0){ this.elems.player3_score.settings = settings_winner; } 
+            else{ this.elems.player3_score.settings = PauseMenu.defaultScoreSettings; }
+        }
+        if(this.parent.gameBoard.players["P4"].active){
+            this.elems.player4_score.hidden = false;
+            this.elems.player4_score.text = `  PLAYER4:${players["P4"].score.toString().padStart(4)}  `;
+            if(players["P4"].score == currentHighScore && currentHighScore != 0){ this.elems.player4_score.settings = settings_winner; } 
+            else{ this.elems.player4_score.settings = PauseMenu.defaultScoreSettings; }
+        }
     };
 
     // Hides the LayerObjects used by this class.
     hide(){
-        for(let elemKey in this.elems){ this.elems[elemKey].hidden = true; }
+        for(let elemKey in this.elems){ 
+            if(Array.isArray(this.elems[elemKey])){
+                for(let elemKey2 in this.elems[elemKey]){ this.elems[elemKey][elemKey2].hidden = true; }
+            }
+            else{ this.elems[elemKey].hidden = true; }
+        }
         this.active = false;
+
+        this.restoreAllLayerObjects();
+
+        if(this.parent.gameBoard.displayMessage_currentKey != "none"){ 
+            this.parent.gameBoard.displayMessage(this.parent.gameBoard.displayMessage_currentKey, this.parent.gameBoard.displayMessage_currentPlayerKey);
+        }
     };
 
     // Accepts the action choice based on the cursorsPosIndex.action.
@@ -1713,10 +1826,10 @@ class Gameboard{
 
     // For the cursor positions when the player is to select a card.
     static cardCursorsPos = {
-        P1: [ [7 ,23], [10,23], [13,23], [16,23], [19,23] ], // CARD CURSORS: p1_pos_cursor
-        P2: [ [4 ,7 ], [4 ,10], [4 ,13], [4 ,16], [4 ,19] ], // CARD CURSORS: p2_pos_cursor
-        P3: [ [7 ,4 ], [10,4 ], [13,4 ], [16,4 ], [19,4 ] ], // CARD CURSORS: p3_pos_cursor
-        P4: [ [23,7 ], [23,10], [23,13], [23,16], [23,19] ], // CARD CURSORS: p4_pos_cursor
+        P1: [ [7 ,23-1], [10,23-1], [13,23-1], [16,23-1], [19,23-1] ], // CARD CURSORS: p1_pos_cursor
+        P2: [ [4 ,7 -1], [4 ,10-1], [4 ,13-1], [4 ,16-1], [4 ,19-1] ], // CARD CURSORS: p2_pos_cursor
+        P3: [ [7 ,4 -1], [10,4 -1], [13,4 -1], [16,4 -1], [19,4 -1] ], // CARD CURSORS: p3_pos_cursor
+        P4: [ [23,7 -1], [23,10-1], [23,13-1], [23,16-1], [23,19-1] ], // CARD CURSORS: p4_pos_cursor
     };
 
     constructor(config){
@@ -1772,8 +1885,12 @@ class Gameboard{
             layerObjKey : `card_select_cursor`, 
             layerKey    : "L3", 
             xyByGrid    : true, 
-            cursorType  : 1,
-            settings    : { rotation: 0 }
+            cursorType  : 3,
+            framesBeforeIndexChange: 10,
+            settings    : { 
+                rotation: 0,
+                colorData: [ [ Cursor1.colors.white, [255, 255, 255, 240] ] ]
+            }
         } );
 
         // Create the row indicator LayerObjects.
@@ -1854,6 +1971,27 @@ class Gameboard{
                 }, false);
             }
         }
+
+        if(!this.parent.gameBoard.players["P1"].active){ 
+            let score_P1  = _GFX.layerObjs.getOne("winRound_score_P1"); 
+            score_P1.hidden = true; 
+            // score_P1.settings = PauseMenu.settingsGrayOut;
+        }
+        if(!this.parent.gameBoard.players["P2"].active){ 
+            let score_P2  = _GFX.layerObjs.getOne("winRound_score_P2"); 
+            score_P2.hidden = true; 
+            // score_P2.settings = PauseMenu.settingsGrayOut;
+        }
+        if(!this.parent.gameBoard.players["P3"].active){ 
+            let score_P3  = _GFX.layerObjs.getOne("winRound_score_P3"); 
+            score_P3.hidden = true; 
+            // score_P3.settings = PauseMenu.settingsGrayOut;
+        }
+        if(!this.parent.gameBoard.players["P4"].active){ 
+            let score_P4  = _GFX.layerObjs.getOne("winRound_score_P4"); 
+            score_P4.hidden = true; 
+            // score_P4.settings = PauseMenu.settingsGrayOut;
+        }
     };
 
     winRound_updateScores(color, value, points){
@@ -1867,7 +2005,7 @@ class Gameboard{
         let text_cardValue = _GFX.layerObjs.getOne("winRound_cardValue");
         let text_points    = _GFX.layerObjs.getOne("winRound_points");
 
-        // // Update the scores.
+        // Update the scores.
         score_P1.text = `PLAYER 1 ${this.players["P1"].score.toString().padStart(5, " ")}`;
         score_P2.text = `PLAYER 2 ${this.players["P2"].score.toString().padStart(5, " ")}`;
         score_P3.text = `PLAYER 3 ${this.players["P3"].score.toString().padStart(5, " ")}`;
@@ -2003,12 +2141,13 @@ class Gameboard{
     };
 
     // Display in-game message.
+    displayMessage_currentKey = "none";
+    displayMessage_currentPlayerKey = "";
     displayMessage(msgKey, playerKey, hide=false){
         // this.gameBoard.displayMessage("playsFirst", "P1", false);
         let pos = {
             msgBox: {
-                // msgBox      : { x:7, y:18, w:13 , h:3, layerKey: "L4", layerObjKey: "msgBox_text" },
-                msgBox      : { x:6, y:18, w:14 , h:3, layerKey: "L4", layerObjKey: "msgBox_text" },
+                msgBox: { x:6, y:18, w:14 , h:3, layerKey: "L4", layerObjKey: "msgBox_text" },
             }
         }
 
@@ -2127,6 +2266,9 @@ class Gameboard{
             // Set the text.
             textKey_msgBox.text = msgs[msgKey];
         }
+
+        this.displayMessage_currentKey = msgKey;
+        this.displayMessage_currentPlayerKey = playerKey;
     };
 
     // Display in-game menu.

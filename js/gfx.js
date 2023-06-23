@@ -1339,23 +1339,54 @@ class PrintText extends LayerObject{
     // Create one line as one LayerObject.
     _GFX.layerObjs.createOne(PrintText, { text: "LINE OF TEXT: ", x:0, y: 0, layerObjKey: `textLine1`, layerKey: "L4", xyByGrid: true, });
 
-    // Create multiple lines as one LayerObject. (Width of the entire tilemap is determined by the longest line. Shorter lines are padded with spaces.)
+    // Create multiple lines as one LayerObject. 
+    // (Width of the entire tilemap is determined by the longest line. 
+    // Shorter lines are padded with spaces.)
     _GFX.layerObjs.createOne(PrintText, { text: ["LINE 1", "THIS IS LINE 2"], x:0, y: 0, layerObjKey: `textLine1`, layerKey: "L4", xyByGrid: true, });
 
     // Create multiple lines each being a separate LayerObject allowing each line to have different settings.
-    PrintText.genMultipleLines({
-        x:1, y:1, 
-        layerObjKey: "rules_text", tilesetKey: "font_tiles1", layerKey: "L4", 
-        settings: {},
-        settingsGreenText: { colorData: [ [ [255,255,255,255], [96,255,96,255] ]] },
-        settingsRedText  : { colorData: [ [ [255,255,255,255], [255,96,96,255] ]] },
-        lines: [
-            { t: `LINE WITH NO SETTINGS `                            },
-            { t: `LINE WITH INCLUDED SETTINGS `, s: this.settings     },
-            { t: `LINE WITH GREEN TEXT `       , s: settingsGreenText },
-            { t: `LINE WITH RED TEXT `         , s: settingsRedText   },
-        ]
-    });
+    // layerObjectKeys will contain an array of the LayerObject keys created.
+    let layerObjectKeys;
+    {
+        // Specify some settings that can be used by lines.
+        let bgColorRgba = [16, 16, 16, 224];
+        let settingsGrayOut   = { colorData: [ [ [255,255,255,255], [104,104,104,255] ]], bgColorRgba: bgColorRgba };
+
+        // Create the lines.
+        layerObjectKeys = PrintText.genMultipleLines({
+            // Start position of x and y.
+            x:PauseMenu.pos.box.x, 
+            y:PauseMenu.pos.box.y, 
+
+            // Starts as hidden (true/false)
+            hidden:true,
+
+            // This indicates if each line should be the same width as the longest line (padded with spaces.)
+            padLines: true, 
+
+            layerObjKey: "pause_menu_text", tilesetKey: "font_tiles1", layerKey: "L4", 
+
+            // Shared settings (if settings is not specified for a line.)
+            settings: { bgColorRgba: [16, 16, 16, 224] },
+            
+            lines: [
+                { t: `  PAUSE   MENU  `   , },
+                { t: ``                   , },
+                { t: `   RESET ROUND`     , },
+                { t: `   EXIT GAME`       , },
+                { t: `   AUTO PLAY`       , s: settingsGrayOut }, // This line has grayOut settings applied.
+                { t: `   CANCEL`          , },
+                { t: ``                   , },
+                { t: ``                   , skip: true }, // These lines are ignored but y still increments.
+                { t: ``                   , skip: true }, // These lines are ignored but y still increments.
+                { t: ``                   , skip: true }, // These lines are ignored but y still increments.
+                { t: ``                   , skip: true }, // These lines are ignored but y still increments.
+                { t: ``                   , skip: true }, // These lines are ignored but y still increments.
+                { t: ``                   , },
+                { t: `B:CANCEL   A:SET`   , },
+            ]
+        });
+    }
     */
 
     get text()   { return this._text; } 
@@ -1364,37 +1395,58 @@ class PrintText extends LayerObject{
     static genMultipleLines(config){
         let line;
         let settings;
+        let padLines = config.padLines ?? false;
+        let textWidth;
+        if(padLines){
+            // Determine the longest line. 
+            textWidth = config.lines.reduce((longestLength, current) => {
+                return current.t.length > longestLength ? current.t.length : longestLength;
+            }, 0);
+        }
 
         // Get the x and y from the config.
         let x = config.x;
         let y = config.y;
 
+        let layerObjectKey;
+        let layerObjectKeys = [];
+
         // Create each line from the config.
         for(let i=0, len=config.lines.length; i<len; i+=1){
-            // Get the text for this line (trim the right side of the line.)
-            line     = config.lines[i].t.trimRight();
+            // Go to the next line down.
+            if(config.lines[i].skip){ y+=1; continue; }
+
+            // Get the text for this line (trim the right side of the line or pad it.)
+            if(padLines){ line = config.lines[i].t.padEnd(textWidth, " "); }
+            else        { line = config.lines[i].t.trimRight(); }
 
             // Get the settings for this line.
-            settings = config.lines[i].s ?? {};
+            settings = config.lines[i].s ?? config.settings ?? {};
 
             // If the line has length then create the line with the text and settings for this line.
             if(line.length){
+                layerObjectKey = `${config.layerObjKey}_L_${i}`;
                 // Create the line.
                 _GFX.layerObjs.createOne(PrintText, { 
                     text: line, 
                     x: x, 
                     y: y,
-                    layerObjKey: `${config.layerObjKey}_L_${i}`, 
+                    layerObjKey: layerObjectKey, 
                     layerKey   : config.layerKey   ?? "L4", 
                     tilesetKey : config.tilesetKey ?? "font_tiles1", 
                     xyByGrid   : true, 
                     settings   : settings,
+                    hidden: config.hidden ?? false,
                 });
+                layerObjectKeys.push(layerObjectKey);
             }
 
             // Go to the next line down.
             y+=1;
         }
+
+        // Return the array of layerObjectKeys.
+        return layerObjectKeys;
     };
 
     constructor(config){

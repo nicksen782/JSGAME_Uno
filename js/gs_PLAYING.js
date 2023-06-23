@@ -162,11 +162,6 @@ _APP.game.gamestates["gs_PLAYING"] = {
             parent       : this,
         });
 
-        // Create the pauseMenu menu.
-        this.pauseMenu = new PauseMenu({
-            parent       : this,
-        });
-
         // Clear cardMovements.
         this.cardMovements = [];
 
@@ -180,6 +175,11 @@ _APP.game.gamestates["gs_PLAYING"] = {
         this.gameBoard.updatePlayerText(true);
         this.deck.storeGameBoard(this.gameBoard);
         this.deck.createCardPlaceholders();
+
+        // Create the pauseMenu menu.
+        this.pauseMenu = new PauseMenu({
+            parent       : this,
+        });
 
         // Create general wait timers.
         _APP.shared.genTimer.create("genWaitTimer1", 0); // Used by: [ getFirstPlayer, ]
@@ -226,7 +226,7 @@ _APP.game.gamestates["gs_PLAYING"] = {
         let gpInput = _APP.shared.getAllGamepadStates();
         
         // Pause menu activation/deactivation?
-        if(gpInput.ANY.press.BTN_START)  { 
+        if(_APP.game.gs2 != "winner" && gpInput.ANY.press.BTN_START)  { 
             if(this.pauseMenu.active){ this.pauseMenu.hide(); }
             else                     { this.pauseMenu.show(); }
         }
