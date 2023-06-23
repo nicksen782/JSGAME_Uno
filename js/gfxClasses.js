@@ -1435,8 +1435,8 @@ class ColorChanger{
         switch (dominantColor) {
             case "CARD_YELLOW": { this.cursorsPosIndex = 0; break; }
             case "CARD_BLUE"  : { this.cursorsPosIndex = 1; break; }
-            case "CARD_GREEN" : { this.cursorsPosIndex = 2; break; }
-            case "CARD_RED"   : { this.cursorsPosIndex = 3; break; }
+            case "CARD_RED"   : { this.cursorsPosIndex = 2; break; }
+            case "CARD_GREEN" : { this.cursorsPosIndex = 3; break; }
             
             // Default to CARD_YELLOW.
             default           : { this.cursorsPosIndex = 0; break; }
