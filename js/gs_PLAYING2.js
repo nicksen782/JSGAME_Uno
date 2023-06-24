@@ -841,6 +841,9 @@
                                 _this.lastDrawnCard = deckCard;
                                 // console.log("NORMAL PLAY: DISCARD: deckCard:", deckCard, _this.lastDrawnCard);
 
+                                _this.gameBoard.updatePlayerText();
+                                _this.deck.updateUnderPiles();
+
                                 // Clear flag: this.flags.playerTurn.playing
                                 _this.flags.playerTurn.playing = false;
 
@@ -958,6 +961,7 @@
                     this.gameBoard.showCursor(this.gameBoard.currentPlayer);
                 }
             }
+
             else{ console.log("playerTurn: INVALID FLAGS"); }
         },
 
@@ -1172,6 +1176,9 @@
                                 // Set the card LayerObject to hidden.
                                 let cardObj = this.card;
                                 cardObj.hidden = true;
+
+                                _this.gameBoard.updatePlayerText();
+                                _this.deck.updateUnderPiles();
                                 
                                 _APP.shared.genTimer.removeOne(this.timerKey, null);
                             }
@@ -1421,6 +1428,10 @@
                                     newCard.location = Deck.playerCardLocations[playerKey];
                                     _this.lastDrawnCard = newCard;
                                     // console.log("newCard:", newCard, _this.lastDrawnCard);
+
+                                    _this.gameBoard.updatePlayerText();
+                                    _this.deck.updateUnderPiles();
+                                    
                                     _APP.shared.genTimer.removeOne(this.timerKey, null);
                                 }
                             }

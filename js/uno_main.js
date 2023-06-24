@@ -163,12 +163,18 @@ _APP.game = {
             _APP.game.gamestates_list = Object.keys(_APP.game.gamestates);
         
             // Set the first gamestate.
-            // _APP.game.changeGs1("gs_JSG");
-            // _APP.game.changeGs1("gs_N782");
-            // _APP.game.changeGs1("gs_TITLE");
-            // _APP.game.changeGs1("gs_RULES");
-            // _APP.game.changeGs1("gs_OPTIONS");
-            _APP.game.changeGs1("gs_PLAYING");
+            if(_APP.configObj.firstGamestate1 || _APP.configObj.firstGamestate2){
+                if(_APP.configObj.firstGamestate1){ _APP.game.changeGs1( _APP.configObj.firstGamestate1 ); }
+                if(_APP.configObj.firstGamestate2){ _APP.game.changeGs1( _APP.configObj.firstGamestate2 ); }
+            }
+            else{
+                // _APP.game.changeGs1("gs_JSG");
+                // _APP.game.changeGs1("gs_N782");
+                // _APP.game.changeGs1("gs_TITLE");
+                // _APP.game.changeGs1("gs_RULES");
+                // _APP.game.changeGs1("gs_OPTIONS");
+                _APP.game.changeGs1("gs_PLAYING");
+            }
         
             // Change to the set gamestate.
             _APP.game._changeGs1();

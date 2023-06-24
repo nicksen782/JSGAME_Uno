@@ -183,13 +183,90 @@ var _DEBUG2 = {
         gs_N782: {
             parent: null,
             inited: false,
-            DOM: {},
+            DOM: {
+                "N782_face_anim_xy"       : "debug_N782_face_anim_xy",
+                "N782_face_anim_posIndex" : "debug_N782_face_anim_posIndex",
+                "N782_face_anim_repeats"  : "debug_N782_face_anim_repeats",
+                "N782_star_anim1_xy"      : "debug_N782_star_anim1_xy",
+                "N782_star_anim1_posIndex": "debug_N782_star_anim1_posIndex",
+                "N782_star_anim1_repeats" : "debug_N782_star_anim1_repeats",
+                "N782_star_anim2_xy"      : "debug_N782_star_anim2_xy",
+                "N782_star_anim2_posIndex": "debug_N782_star_anim2_posIndex",
+                "N782_star_anim2_repeats" : "debug_N782_star_anim2_repeats",
+            },
+            hashes: {
+                N782_face_anim_xy       : null,
+                N782_face_anim_posIndex : null,
+                N782_face_anim_repeats  : null,
+                N782_star_anim1_xy      : null,
+                N782_star_anim1_posIndex: null,
+                N782_star_anim1_repeats : null,
+                N782_star_anim2_xy      : null,
+                N782_star_anim2_posIndex: null,
+                N782_star_anim2_repeats : null,
+            },
             initOnce: function(){},
             init: function(){
                 _DEBUG2.navBar1.showOne("view_gs_N782");
                 this.inited = true; 
             },
+            showAnimationData: function(){
+                let N782_face_anim = _GFX.layerObjs.getOne("N782_face_anim");
+                let N782_star_anim1 = _GFX.layerObjs.getOne("N782_star_anim1");
+                let N782_star_anim2 = _GFX.layerObjs.getOne("N782_star_anim2");
+
+                let data = {
+                    N782_face_anim : {
+                        xy      : `(${N782_face_anim .x}, ${N782_face_anim.y})`,
+                        posIndex: `n/a`,
+                        repeats : `${N782_face_anim.framesCounter}/${N782_face_anim.framesBeforeIndexChange}, ${N782_face_anim.repeatCount}/${N782_face_anim.repeats} ${N782_face_anim.done ? "(DONE)" : ""}`,
+                        hash_xy:0,
+                        hash_posIndex:0,
+                        hash_repeats:0,
+                    },
+                    N782_star_anim1: {
+                        xy      : `(${N782_star_anim1.x}, ${N782_star_anim1.y})`,
+                        posIndex: `${N782_star_anim1.posIndex}/${N782_oneStar_anim.star_pos.length}`,
+                        repeats : `${N782_star_anim1.framesCounter}/${N782_star_anim1.framesBeforeIndexChange}, ${N782_star_anim1.repeatCount}/${N782_star_anim1.repeats} ${N782_star_anim1.done ? "(DONE)" : ""}`,
+                        hash_xy:0,
+                        hash_posIndex:0,
+                        hash_repeats:0,
+                    },
+                    N782_star_anim2: {
+                        xy      : `(${N782_star_anim2.x}, ${N782_star_anim2.y})`,
+                        posIndex: `${N782_star_anim2.posIndex}/${N782_oneStar_anim.star_pos.length}`,
+                        repeats : `${N782_star_anim2.framesCounter}/${N782_star_anim2.framesBeforeIndexChange}, ${N782_star_anim2.repeatCount}/${N782_star_anim2.repeats} ${N782_star_anim2.done ? "(DONE)" : ""}`,
+                        hash_xy:0,
+                        hash_posIndex:0,
+                        hash_repeats:0,
+                    },
+                };
+
+                // HASH
+                data.N782_face_anim.hash_xy       = _GFX.utilities.djb2Hash( JSON.stringify( data.N782_face_anim.xy ) );
+                data.N782_face_anim.hash_posIndex = _GFX.utilities.djb2Hash( JSON.stringify( data.N782_face_anim.posIndex ) );
+                data.N782_face_anim.hash_repeats  = _GFX.utilities.djb2Hash( JSON.stringify( data.N782_face_anim.repeats ) );
+                data.N782_star_anim1.hash_xy       = _GFX.utilities.djb2Hash( JSON.stringify( data.N782_star_anim1.xy ) );
+                data.N782_star_anim1.hash_posIndex = _GFX.utilities.djb2Hash( JSON.stringify( data.N782_star_anim1.posIndex ) );
+                data.N782_star_anim1.hash_repeats  = _GFX.utilities.djb2Hash( JSON.stringify( data.N782_star_anim1.repeats ) );
+                data.N782_star_anim2.hash_xy       = _GFX.utilities.djb2Hash( JSON.stringify( data.N782_star_anim2.xy ) );
+                data.N782_star_anim2.hash_posIndex = _GFX.utilities.djb2Hash( JSON.stringify( data.N782_star_anim2.posIndex ) );
+                data.N782_star_anim2.hash_repeats  = _GFX.utilities.djb2Hash( JSON.stringify( data.N782_star_anim2.repeats ) );
+
+                if(data.N782_face_anim.hash_xy        != this.hashes["N782_face_anim_xy"])       { this.hashes["N782_face_anim_xy"]        = data.N782_face_anim.hash_xy       ; this.DOM["N782_face_anim_xy"]       .innerText = data.N782_face_anim.xy;       }
+                if(data.N782_face_anim.hash_posIndex  != this.hashes["N782_face_anim_posIndex"]) { this.hashes["N782_face_anim_posIndex"]  = data.N782_face_anim.hash_posIndex ; this.DOM["N782_face_anim_posIndex"] .innerText = data.N782_face_anim.posIndex; }
+                if(data.N782_face_anim.hash_repeats   != this.hashes["N782_face_anim_repeats"])  { this.hashes["N782_face_anim_repeats"]   = data.N782_face_anim.hash_repeats  ; this.DOM["N782_face_anim_repeats"]  .innerText = data.N782_face_anim.repeats;  }
+                if(data.N782_star_anim1.hash_xy       != this.hashes["N782_star_anim1_xy"])      { this.hashes["N782_star_anim1_xy"]       = data.N782_star_anim1.hash_xy      ; this.DOM["N782_star_anim1_xy"]      .innerText = data.N782_star_anim1.xy;       }
+                if(data.N782_star_anim1.hash_posIndex != this.hashes["N782_star_anim1_posIndex"]){ this.hashes["N782_star_anim1_posIndex"] = data.N782_star_anim1.hash_posIndex; this.DOM["N782_star_anim1_posIndex"].innerText = data.N782_star_anim1.posIndex; }
+                if(data.N782_star_anim1.hash_repeats  != this.hashes["N782_star_anim1_repeats"]) { this.hashes["N782_star_anim1_repeats"]  = data.N782_star_anim1.hash_repeats ; this.DOM["N782_star_anim1_repeats"] .innerText = data.N782_star_anim1.repeats;  }
+                if(data.N782_star_anim2.hash_xy       != this.hashes["N782_star_anim2_xy"])      { this.hashes["N782_star_anim2_xy"]       = data.N782_star_anim2.hash_xy      ; this.DOM["N782_star_anim2_xy"]      .innerText = data.N782_star_anim2.xy;       }
+                if(data.N782_star_anim2.hash_posIndex != this.hashes["N782_star_anim2_posIndex"]){ this.hashes["N782_star_anim2_posIndex"] = data.N782_star_anim2.hash_posIndex; this.DOM["N782_star_anim2_posIndex"].innerText = data.N782_star_anim2.posIndex; }
+                if(data.N782_star_anim2.hash_repeats  != this.hashes["N782_star_anim2_repeats"]) { this.hashes["N782_star_anim2_repeats"]  = data.N782_star_anim2.hash_repeats ; this.DOM["N782_star_anim2_repeats"] .innerText = data.N782_star_anim2.repeats;  }
+            },
             gs1: function(){
+                if(_DEBUG2.navBar1.DOM.view_gs_N782.tab.classList.contains("active")){
+                    this.showAnimationData();
+                }
             },
             anim1: function(){
             },

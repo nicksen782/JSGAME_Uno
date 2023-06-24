@@ -1,21 +1,3 @@
-/*
-MAX CARDS EXPECTED TO BE ON SCREEN DURING PLAY:
-    DRAW PILE (UNO BACK)
-    DISCARD PILE FACE-UP CARD.
-    PLAYER1 CARDS 0-4 (5 total displayed)
-    PLAYER2 CARDS 0-4 (5 total displayed)
-    PLAYER3 CARDS 0-4 (5 total displayed)
-    PLAYER4 CARDS 0-4 (5 total displayed)
-    Non-active players only show the back card.
-    
-MAX CARDS EXPECTED TO BE ON SCREEN DURING END OF ROUND:
-    PLAYER1 CARDS 0-4 (5 total displayed)
-    PLAYER2 CARDS 0-4 (5 total displayed)
-    PLAYER3 CARDS 0-4 (5 total displayed)
-    PLAYER4 CARDS 0-4 (5 total displayed)
-    LARGE CARD: 1
-    Players not actively adding to the score only show the back card.
-*/
 _APP.game.gamestates["gs_PLAYING"] = {
     gameSettings: {
         P1  : "HUMAN",
@@ -118,13 +100,13 @@ _APP.game.gamestates["gs_PLAYING"] = {
         // Value of false means not active. 
         // Value of true or a non-empty string value means active.
 
-        skipCardValidityCheck   : true, // Allows any card to be played (No validation check.)
+        skipCardValidityCheck   : false, // Allows any card to be played (No validation check.)
         showAllPlayerCardsFaceUp: false, // Shows all player cards face up at the start of each turn.
-        forcedWinner            : "P1", // (example: "P1") Forces this player to be the winner of the first turn.
-        forcedWinnerOnTie       : "P1", // (example: "P1") On tie this or the first active player will be set as the winner as the first turn.
+        forcedWinner            : "", // (example: "P1") Forces this player to be the winner of the first turn.
+        forcedWinnerOnTie       : "", // (example: "P1") On tie this or the first active player will be set as the winner as the first turn.
         
-        // forcedFirstDiscard: false,             // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
-        forcedFirstDiscard: 'CARD_9',          // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
+        forcedFirstDiscard: false,             // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
+        // forcedFirstDiscard: 'CARD_9',          // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
         // forcedFirstDiscard: 'CARD_WILD',       // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
         // forcedFirstDiscard: 'CARD_DRAW2',      // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
         // forcedFirstDiscard: 'CARD_SKIP',       // (example: "CARD_9") Forces the value of the initial discard. Can be any valid card value (may arrive as any color.)
@@ -144,6 +126,9 @@ _APP.game.gamestates["gs_PLAYING"] = {
 
         // Set the L1 background color.
         _GFX.funcs.updateL1BgColorRgba([32,32,48,255]);
+
+        // Turn off any existing global fades.
+        _GFX.funcs.setFade("ALL", null);
 
         // Create the deck.
         this.deck = new Deck({ 
@@ -194,11 +179,8 @@ _APP.game.gamestates["gs_PLAYING"] = {
         this.lastDrawnCard    = null,
         this.winningPlayerKey = "";
 
-        // Run the debug init.
+        // Run the debug2 init.
         if(_APP.debugActive && _DEBUG2){ 
-            // DEBUG CURSOR.
-            // _GFX.layerObjs.createOne(Cursor1, { x:5, y:5, layerObjKey: `debugCursor`   , layerKey: "L2", xyByGrid: true, settings:{rotation: 90} } );
-
             _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); 
         }
 
@@ -273,19 +255,12 @@ _APP.game.gamestates["gs_PLAYING"] = {
             else if(_APP.game.gs2 == "winner"){ this.winsRound(gpInput); }
         }
 
-        if(_APP.debugActive){ this.debug(gpInput); }
+        if(_APP.debugActive){ this.debug(); }
     },
 
     // Should be called by the game loop.
     // Calls debug functions specific to this gamestate.
-    debug: function(gpInput){
-        // DEBUG CURSOR.
-        // _GFX.layerObjs.getOne("debugCursor").nextFrame();
-        // if(gpInput.ANY.held.BTN_SR && gpInput.ANY.press.BTN_UP)   { _GFX.layerObjs.getOne("debugCursor").y--; }
-        // if(gpInput.ANY.held.BTN_SR && gpInput.ANY.press.BTN_DOWN) { _GFX.layerObjs.getOne("debugCursor").y++; }
-        // if(gpInput.ANY.held.BTN_SR && gpInput.ANY.press.BTN_LEFT) { _GFX.layerObjs.getOne("debugCursor").x--; }
-        // if(gpInput.ANY.held.BTN_SR && gpInput.ANY.press.BTN_RIGHT){ _GFX.layerObjs.getOne("debugCursor").x++; }
-
+    debug: function(){
         if(_APP.debugActive && _DEBUG2){ _DEBUG2.debugGamestate.run(_APP.game.gs1, _APP.game.gs2)}
     },
 

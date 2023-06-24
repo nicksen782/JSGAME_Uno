@@ -2693,7 +2693,8 @@ var _DEBUG = {
 
         // Set the output scaling (only in debug mode.)
         let scaleSlider = document.getElementById("scaleSlider");
-        scaleSlider.value = "2.5";
+        // scaleSlider.value = "2.5";
+        scaleSlider.value = "3.25";
         scaleSlider.dispatchEvent(new Event("input"));
 
         // Load the grid canvas.

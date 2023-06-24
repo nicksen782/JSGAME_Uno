@@ -617,7 +617,35 @@
         </div>
         <div id="debug_navBarViews2">
             <div id="debug_navBar2_view_gs_JSG" class="controls_navBarViews">view: gs_JSG</div>
-            <div id="debug_navBar2_view_gs_N782" class="controls_navBarViews">view: gs_N782</div>
+            <div id="debug_navBar2_view_gs_N782" class="controls_navBarViews">
+                <table class="debug_table">
+                    <tr> 
+                        <td class="debug_td_header"></td>
+                        <td class="debug_td_header">N782_face_anim</td>
+                        <td class="debug_td_header">N782_star_anim1</td>
+                        <td class="debug_td_header">N782_star_anim2</td>
+                    </tr>
+                    <tr> 
+                        <td class="">x,y</td>
+                        <td class="" id="debug_N782_face_anim_xy"></td>
+                        <td class="" id="debug_N782_star_anim1_xy"></td>
+                        <td class="" id="debug_N782_star_anim2_xy"></td>
+                    </tr> 
+                    <tr> 
+                        <td class="">posIndex</td>
+                        <td class="" id="debug_N782_face_anim_posIndex" ></td>
+                        <td class="" id="debug_N782_star_anim1_posIndex" ></td>
+                        <td class="" id="debug_N782_star_anim2_posIndex" ></td>
+                    </tr> 
+                    <tr> 
+                        <td class="">repeats</td>
+                        <td class="" id="debug_N782_face_anim_repeats" ></td>
+                        <td class="" id="debug_N782_star_anim1_repeats" ></td>
+                        <td class="" id="debug_N782_star_anim2_repeats" ></td>
+                    </tr> 
+                </table>
+                
+            </div>
             <div id="debug_navBar2_view_gs_TITLE" class="controls_navBarViews">
                 view_gs_TITLE
             </div>
@@ -793,6 +821,10 @@
                             for(let i=1, len=playerCards.length; i<len; i+=1){
                                 playerCards[i].location = newLocation;
                             }
+
+                            // Update the player text and the underPiles.
+                            _APP.game.gamestates.gs_PLAYING.gameBoard.updatePlayerText();
+                            _APP.game.gamestates.gs_PLAYING.deck.updateUnderPiles();
 
                             // Flip the player cards up again to reflect the new changes.
                             _APP.game.gamestates.gs_PLAYING.deck.flipPlayerCardsUp(playerKey);

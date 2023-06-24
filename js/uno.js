@@ -8,6 +8,11 @@ _APP.debug2Active = false;
 _APP.configObj = {
     appName: "UNO!",
 
+    // First gamestates.
+    firstGamestate1:"gs_JSG",
+    // firstGamestate1:"gs_N782",
+    firstGamestate2:"",
+
     // Controls if the loop will wait for the graphics draw to finish before continuing.
     // awaitDraw: true,
     awaitDraw: false,
@@ -28,8 +33,9 @@ _APP.configObj = {
 
     // Relative paths need to be correctly relative to whatever loads this file (the web page or the web worker.)
     tilesetFiles: [
+        "../UAM/JSON/default_tiles.json",
         "../UAM/JSON/bg_tiles1.json",
-        // "../UAM/JSON/bg_tiles2.json",
+        "../UAM/JSON/bg_tiles2.json",
         "../UAM/JSON/font_tiles1.json",
         "../UAM/JSON/sprite_tiles1.json",
     ],
@@ -364,13 +370,14 @@ _APP.utility = {
                     break; 
                 }
 
+                // DISABLED. SHOULD BE FIXED.
                 case "json": { 
                     // Get the data.
-                    let data = await _JSG.net.http.send(`${relativePath}/${rec.f}`, { type:"json", method:"GET" }, 5000);
-                    if(data === false){
-                        console.log("addFile: json: FAILURE:", `${relativePath}/${rec.f}`);
-                        rej(data); return;
-                    }
+                    // let data = await _JSG.net.http.send(`${relativePath}/${rec.f}`, { type:"json", method:"GET" }, 5000);
+                    // if(data === false){
+                    //     console.log("addFile: json: FAILURE:", `${relativePath}/${rec.f}`);
+                    //     rej(data); return;
+                    // }
 
                     // Determine the data name. 
                     // let dataName;

@@ -580,9 +580,18 @@ var _GFX = {
         // Sets the fade over-ride values for all or any layers.
         // NOTE: Fade uses preGenerated fadeTiles so color replacements will be skipped.
         setFade: function(layer="ALL", level=0){
+            // EXAMPLE USAGE:
             // _GFX.funcs.setFade("ALL", 5);
+            // NOTES: 
             // layer can be one of: [ "L1", "L2", "L3", "TXT1", "ALL" ].
-            // level can be one of: [ null, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
+            // level can be one of: [ null, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ]
+            // level for null can alternatively be: [ "off" ]
+            // level for 10 and 11 can alternatively be one of: [ "black", "clear" ]
+
+            // Convert named levels to their actual level value.
+            if     (level == "off"){ level = null; }
+            else if(level == "black"){ level = 10; }
+            else if(level == "clear"){ level = 11; }
 
             // Affect all layers?
             if(layer=="ALL"){
