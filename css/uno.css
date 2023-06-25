@@ -182,3 +182,21 @@ body{
 div#outputContainer {
     display: flex;
 }
+#audio_userInputNeeded_container{/* background-color: rgb(32 32 48 / 90%); */background-color: rgb(174 157 0 / 75%);color: black;position: fixed;left: 20px;top: 20px;/* top: 10px; *//* height: 100%; *//* width: 100%; */z-index: 1100;/* padding: 10px; */box-shadow: 0px 0px 10px 10px rgb(32 32 48 / 90%);}
+#audio_userInputNeeded{
+    border: 1px solid gold;
+    /* color: mediumblue; */
+    /* background-color: mediumblue; */
+    display: inline-block;
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 42px;
+    /* position: fixed; */
+    /* left: 50%; */
+    /* top: 50%; */
+    /* transform: translate(-50%, -50%); */
+    padding: 0.5em;
+    /* left: 10px; */
+    /* top: 10px; */
+}

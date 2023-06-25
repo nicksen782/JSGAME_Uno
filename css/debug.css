@@ -567,3 +567,37 @@ button#debug_test_toggleGridCanvas {
 div#debug_drawCards {
     height: 104px;
 }
+
+.debug_music_note{
+  border:1px solid black;
+  display:inline-block;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+  padding: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor:pointer;
+}
+.debug_music_note.active{
+  background-color: yellow;
+}
+
+#debug_music_simpleNoteSynth{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    font-weight: 100;
+}
+.debug_music_simpleNoteSynth_row{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+.debug_music_simpleNoteSynth_col{
+  min-height:2em;
+  min-width:2em;
+  text-align:center;
+}
+.debug_music_simpleNoteSynth_col:nth-child(odd) { color:black; background-color:white;}
+.debug_music_simpleNoteSynth_col:nth-child(even){ color: white; background-color:black; }

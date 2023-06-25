@@ -5,6 +5,7 @@
     <div id="debug_navBar1_tab_hashCacheStats1" class="controls_navBarTabs ">Hash Cache</div>
     <div id="debug_navBar1_tab_layerObjects" class="controls_navBarTabs ">Layer Objects</div>
     <div id="debug_navBar1_tab_layerObjEdit" class="controls_navBarTabs ">LayerObj Edit</div>
+    <div id="debug_navBar1_tab_music1" class="controls_navBarTabs ">music1</div>
 </div>
 
 <div id="debug_navBarViews">
@@ -522,6 +523,146 @@
             </div>
 
         </div>
+    </div>
+
+    <!-- MUSIC -->
+    <div id="debug_navBar1_view_music1" class="controls_navBarViews">
+        simpleNoteSynth<br>
+        <label><input id="debug_music_mousedownCheckbox" type="checkbox" checked>Play by Click</label>
+        <label><input id="debug_music_mouseenterCheckbox" type="checkbox">Play by Mouse-enter</label>
+        <div id="debug_music_simpleNoteSynth">
+            <div class="debug_music_simpleNoteSynth_row">
+                <div class="debug_music_simpleNoteSynth_col">C0</div>
+                <div class="debug_music_simpleNoteSynth_col">D0</div>
+                <div class="debug_music_simpleNoteSynth_col">E0</div>
+                <div class="debug_music_simpleNoteSynth_col">F0</div>
+                <div class="debug_music_simpleNoteSynth_col">G0</div>
+                <div class="debug_music_simpleNoteSynth_col">A0</div>
+                <div class="debug_music_simpleNoteSynth_col">B0</div>
+            </div>
+            <div class="debug_music_simpleNoteSynth_row">
+                <div class="debug_music_simpleNoteSynth_col">C1</div>
+                <div class="debug_music_simpleNoteSynth_col">D1</div>
+                <div class="debug_music_simpleNoteSynth_col">E1</div>
+                <div class="debug_music_simpleNoteSynth_col">F1</div>
+                <div class="debug_music_simpleNoteSynth_col">G1</div>
+                <div class="debug_music_simpleNoteSynth_col">A1</div>
+                <div class="debug_music_simpleNoteSynth_col">B1</div>
+            </div>
+            <div class="debug_music_simpleNoteSynth_row">
+                <div class="debug_music_simpleNoteSynth_col">C2</div>
+                <div class="debug_music_simpleNoteSynth_col">D2</div>
+                <div class="debug_music_simpleNoteSynth_col">E2</div>
+                <div class="debug_music_simpleNoteSynth_col">F2</div>
+                <div class="debug_music_simpleNoteSynth_col">G2</div>
+                <div class="debug_music_simpleNoteSynth_col">A2</div>
+                <div class="debug_music_simpleNoteSynth_col">B2</div>
+            </div>
+            <div class="debug_music_simpleNoteSynth_row">
+                <div class="debug_music_simpleNoteSynth_col">C3</div>
+                <div class="debug_music_simpleNoteSynth_col">D3</div>
+                <div class="debug_music_simpleNoteSynth_col">E3</div>
+                <div class="debug_music_simpleNoteSynth_col">F3</div>
+                <div class="debug_music_simpleNoteSynth_col">G3</div>
+                <div class="debug_music_simpleNoteSynth_col">A3</div>
+                <div class="debug_music_simpleNoteSynth_col">B3</div>
+            </div>
+            <div class="debug_music_simpleNoteSynth_row">
+                <div class="debug_music_simpleNoteSynth_col">C4</div>
+                <div class="debug_music_simpleNoteSynth_col">D4</div>
+                <div class="debug_music_simpleNoteSynth_col">E4</div>
+                <div class="debug_music_simpleNoteSynth_col">F4</div>
+                <div class="debug_music_simpleNoteSynth_col">G4</div>
+                <div class="debug_music_simpleNoteSynth_col">A4</div>
+                <div class="debug_music_simpleNoteSynth_col">B4</div>
+            </div>
+            <div class="debug_music_simpleNoteSynth_row">
+                <div class="debug_music_simpleNoteSynth_col">C5</div>
+                <div class="debug_music_simpleNoteSynth_col">D5</div>
+                <div class="debug_music_simpleNoteSynth_col">E5</div>
+                <div class="debug_music_simpleNoteSynth_col">F5</div>
+                <div class="debug_music_simpleNoteSynth_col">G5</div>
+                <div class="debug_music_simpleNoteSynth_col">A5</div>
+                <div class="debug_music_simpleNoteSynth_col">B5</div>
+            </div>
+            <div class="debug_music_simpleNoteSynth_row">
+                <div class="debug_music_simpleNoteSynth_col">C6</div>
+                <div class="debug_music_simpleNoteSynth_col">D6</div>
+                <div class="debug_music_simpleNoteSynth_col">E6</div>
+                <div class="debug_music_simpleNoteSynth_col">F6</div>
+                <div class="debug_music_simpleNoteSynth_col">G6</div>
+                <div class="debug_music_simpleNoteSynth_col">A6</div>
+                <div class="debug_music_simpleNoteSynth_col">B6</div>
+            </div>
+            <div class="debug_music_simpleNoteSynth_row">
+                <div class="debug_music_simpleNoteSynth_col">C7</div>
+                <div class="debug_music_simpleNoteSynth_col">D7</div>
+                <div class="debug_music_simpleNoteSynth_col">E7</div>
+                <div class="debug_music_simpleNoteSynth_col">F7</div>
+                <div class="debug_music_simpleNoteSynth_col">G7</div>
+                <div class="debug_music_simpleNoteSynth_col">A7</div>
+                <div class="debug_music_simpleNoteSynth_col">B7</div>
+            </div>
+        </div>
+        <div id="debug_music_activeSynths">activeSynths: 0</div>
+        <span class="debug_music_note" id="debug_music_note_C0" note="C0">C0</span>
+        <span class="debug_music_note" id="debug_music_note_D0" note="D0">D0</span>
+        <span class="debug_music_note" id="debug_music_note_E0" note="E0">E0</span>
+        <span class="debug_music_note" id="debug_music_note_F0" note="F0">F0</span>
+        <span class="debug_music_note" id="debug_music_note_G0" note="G0">G0</span>
+        <span class="debug_music_note" id="debug_music_note_A0" note="A0">A0</span>
+        <span class="debug_music_note" id="debug_music_note_B0" note="B0">B0</span>        <br>
+        <span class="debug_music_note" id="debug_music_note_C1" note="C1">C1</span>
+        <span class="debug_music_note" id="debug_music_note_D1" note="D1">D1</span>
+        <span class="debug_music_note" id="debug_music_note_E1" note="E1">E1</span>
+        <span class="debug_music_note" id="debug_music_note_F1" note="F1">F1</span>
+        <span class="debug_music_note" id="debug_music_note_G1" note="G1">G1</span>
+        <span class="debug_music_note" id="debug_music_note_A1" note="A1">A1</span>
+        <span class="debug_music_note" id="debug_music_note_B1" note="B1">B1</span>        <br>
+        <span class="debug_music_note" id="debug_music_note_C2" note="C2">C2</span>
+        <span class="debug_music_note" id="debug_music_note_D2" note="D2">D2</span>
+        <span class="debug_music_note" id="debug_music_note_E2" note="E2">E2</span>
+        <span class="debug_music_note" id="debug_music_note_F2" note="F2">F2</span>
+        <span class="debug_music_note" id="debug_music_note_G2" note="G2">G2</span>
+        <span class="debug_music_note" id="debug_music_note_A2" note="A2">A2</span>
+        <span class="debug_music_note" id="debug_music_note_B2" note="B2">B2</span>        <br>
+        <span class="debug_music_note" id="debug_music_note_C3" note="C3">C3</span>
+        <span class="debug_music_note" id="debug_music_note_D3" note="D3">D3</span>
+        <span class="debug_music_note" id="debug_music_note_E3" note="E3">E3</span>
+        <span class="debug_music_note" id="debug_music_note_F3" note="F3">F3</span>
+        <span class="debug_music_note" id="debug_music_note_G3" note="G3">G3</span>
+        <span class="debug_music_note" id="debug_music_note_A3" note="A3">A3</span>
+        <span class="debug_music_note" id="debug_music_note_B3" note="B3">B3</span>        <br>
+        <span class="debug_music_note" id="debug_music_note_C4" note="C4">C4</span>
+        <span class="debug_music_note" id="debug_music_note_D4" note="D4">D4</span>
+        <span class="debug_music_note" id="debug_music_note_E4" note="E4">E4</span>
+        <span class="debug_music_note" id="debug_music_note_F4" note="F4">F4</span>
+        <span class="debug_music_note" id="debug_music_note_G4" note="G4">G4</span>
+        <span class="debug_music_note" id="debug_music_note_A4" note="A4">A4</span>
+        <span class="debug_music_note" id="debug_music_note_B4" note="B4">B4</span>        <br>
+        <span class="debug_music_note" id="debug_music_note_C5" note="C5">C5</span>
+        <span class="debug_music_note" id="debug_music_note_D5" note="D5">D5</span>
+        <span class="debug_music_note" id="debug_music_note_E5" note="E5">E5</span>
+        <span class="debug_music_note" id="debug_music_note_F5" note="F5">F5</span>
+        <span class="debug_music_note" id="debug_music_note_G5" note="G5">G5</span>
+        <span class="debug_music_note" id="debug_music_note_A5" note="A5">A5</span>
+        <span class="debug_music_note" id="debug_music_note_B5" note="B5">B5</span>        <br>
+        <span class="debug_music_note" id="debug_music_note_C6" note="C6">C6</span>
+        <span class="debug_music_note" id="debug_music_note_D6" note="D6">D6</span>
+        <span class="debug_music_note" id="debug_music_note_E6" note="E6">E6</span>
+        <span class="debug_music_note" id="debug_music_note_F6" note="F6">F6</span>
+        <span class="debug_music_note" id="debug_music_note_G6" note="G6">G6</span>
+        <span class="debug_music_note" id="debug_music_note_A6" note="A6">A6</span>
+        <span class="debug_music_note" id="debug_music_note_B6" note="B6">B6</span>        <br>
+        <span class="debug_music_note" id="debug_music_note_C7" note="C7">C7</span>
+        <span class="debug_music_note" id="debug_music_note_D7" note="D7">D7</span>
+        <span class="debug_music_note" id="debug_music_note_E7" note="E7">E7</span>
+        <span class="debug_music_note" id="debug_music_note_F7" note="F7">F7</span>
+        <span class="debug_music_note" id="debug_music_note_G7" note="G7">G7</span>
+        <span class="debug_music_note" id="debug_music_note_A7" note="A7">A7</span>
+        <span class="debug_music_note" id="debug_music_note_B7" note="B7">B7</span>        <br>
+        <br>
+        sequenceNotesSynth<br>
     </div>
 
 </div>

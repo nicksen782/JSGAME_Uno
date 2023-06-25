@@ -251,6 +251,13 @@ _APP.game = {
                 // Calculate the time difference between the new timestamp and the lastLoopRun. 
                 this.delta = timestamp - this.lastLoopRun;
 
+                // Skip the loop if the audio is not enabled yet?
+                if(_APP.configObj.soundConfig.blockLoopIfSoundNotLoaded && !_SND.audioStarted){
+                    // End the loop and run any end of loop tasks.
+                    this.endOfLoopTasks(false);
+                    return;
+                }
+
                 // Is it time to run the next loop?
                 if( (this.delta >= this.msFrame) ){
                     // Track performance.

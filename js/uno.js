@@ -61,7 +61,12 @@ _APP.configObj = {
         "useGamepads"   : true,
         "listeningElems": ["output"],
         "webElem"       : "controls_navBar1_view_input",
-    }
+    },
+
+    soundConfig: {
+        interActionNeededId        : "audio_userInputNeeded_container",
+        blockLoopIfSoundNotLoaded: false,
+    },
 };
 _APP.initOutputScaleControls = function(){
     let canvasOutputContainer = document.getElementById("output");
@@ -473,10 +478,19 @@ _APP.utility = {
     
             if(e.type == "unhandledrejection"){
                 try{
-                    console.error( `ERRORHANDLER: ${e.type}\n  e.reason.message:`, e.reason ); 
+                    console.error( 
+                        `ERRORHANDLER: ${e.type}` + "\n" +
+                        `  e.reason.message:`, e.reason + "\n" +
+                        `  e:`, e,
+                        ``
+                    ); 
                 } 
                 catch(innerError){
-                    console.error( `ERRORHANDLER: ${e.type}\n  INNERERROR:`, e, innerError ); 
+                    console.error( 
+                        `ERRORHANDLER: ${e.type}` + "\n" +
+                        `  INNERERROR:`, innerError, + "\n" +
+                        `  e:`, e
+                    ); 
                 }
             }
             else if(e.type == "uncaughtException"){
@@ -508,7 +522,8 @@ _APP.utility = {
                 _APP.game.gameLoop.loop_stop();
 
                 // Display the error.
-                this.displayError(e.message ?? e.reason.message);
+                let msg = e.message ?? e.reason.message ?? "UNKNOWN ERROR";
+                this.displayError(msg);
 
                 //
                 console.error(`${_APP.configObj.appName}: STOPPED THE GAMELOOP DUE TO ERROR`);
@@ -718,6 +733,7 @@ _APP.loader = {
             await _APP.utility.addFile( { f:"js/webv.js"                   , t:"js"  }, relPath); // CORE
             await _APP.utility.addFile( { f:"js/gfx.js"                    , t:"js"  }, relPath); // CORE
             await _APP.utility.addFile( { f:"js/gfxClasses.js"             , t:"js"  }, relPath); // GAME
+            await _APP.utility.addFile( { f:"js/SOUND_B/soundModeB_core.js", t:"js"  }, relPath); // CORE
             await _APP.utility.addFile( { f:"js/INPUT_A/inputModeA_core.js", t:"js"  }, relPath); // CORE
             await _APP.utility.addFile( { f:"js/inputModeA_customized.js"  , t:"js"  }, relPath); // _INPUT customizer
             if(_APP.debugActive) { await _APP.utility.addFile( { f:"js/debug.js"  , t:"js"  }, relPath); }
@@ -768,6 +784,18 @@ _APP.loader = {
         // Input init.
         await _INPUT.customized.init(_APP.configObj.inputConfig);
         
+        // Sound (main thread)
+        _SND.canPlayAudio = await _SND.detectUserInteraction();
+        if(!_SND.canPlayAudio){
+            // Show the user interaction needed message.
+            document.getElementById("audio_userInputNeeded_container").style.display = "block";
+
+            // A document.body event listener will be added by _SND.init.
+            // Clicking the body will allow audio to load and will dismiss the message.
+            // The game should pause too while waiting for the user to interact with the page.
+        }
+        await _SND.init(_APP, _APP.configObj.soundConfig);
+
         // Gameloop init.
         await _APP.game.gameLoop.init();
 

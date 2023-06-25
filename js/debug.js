@@ -2161,6 +2161,183 @@ var _DEBUG = {
             _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_ALL, '_DEBUG.vault.ALLTIMINGS.gfx'                   , newData.ALLTIMINGS["gfx"].toFixed(1)+" ms");
         },
     },
+
+    // music1
+    music1: {
+        simpleNoteSynth: {
+            DOM: {
+                keyboard: {
+                    // C, D, E, F, G, A, B
+                    "note_A0": "debug_music_note_A0",
+                    "note_B0": "debug_music_note_B0",
+                    "note_C0": "debug_music_note_C0",
+                    "note_D0": "debug_music_note_D0",
+                    "note_E0": "debug_music_note_E0",
+                    "note_F0": "debug_music_note_F0",
+                    "note_G0": "debug_music_note_G0",
+                    "note_A1": "debug_music_note_A1",
+                    "note_B1": "debug_music_note_B1",
+                    "note_C1": "debug_music_note_C1",
+                    "note_D1": "debug_music_note_D1",
+                    "note_E1": "debug_music_note_E1",
+                    "note_F1": "debug_music_note_F1",
+                    "note_G1": "debug_music_note_G1",
+                    "note_A2": "debug_music_note_A2",
+                    "note_B2": "debug_music_note_B2",
+                    "note_C2": "debug_music_note_C2",
+                    "note_D2": "debug_music_note_D2",
+                    "note_E2": "debug_music_note_E2",
+                    "note_F2": "debug_music_note_F2",
+                    "note_G2": "debug_music_note_G2",
+                    "note_A3": "debug_music_note_A3",
+                    "note_B3": "debug_music_note_B3",
+                    "note_C3": "debug_music_note_C3",
+                    "note_D3": "debug_music_note_D3",
+                    "note_E3": "debug_music_note_E3",
+                    "note_F3": "debug_music_note_F3",
+                    "note_G3": "debug_music_note_G3",
+                    "note_A4": "debug_music_note_A4",
+                    "note_B4": "debug_music_note_B4",
+                    "note_C4": "debug_music_note_C4",
+                    "note_D4": "debug_music_note_D4",
+                    "note_E4": "debug_music_note_E4",
+                    "note_F4": "debug_music_note_F4",
+                    "note_G4": "debug_music_note_G4",
+                    "note_A5": "debug_music_note_A5",
+                    "note_B5": "debug_music_note_B5",
+                    "note_C5": "debug_music_note_C5",
+                    "note_D5": "debug_music_note_D5",
+                    "note_E5": "debug_music_note_E5",
+                    "note_F5": "debug_music_note_F5",
+                    "note_G5": "debug_music_note_G5",
+                    "note_A6": "debug_music_note_A6",
+                    "note_B6": "debug_music_note_B6",
+                    "note_C6": "debug_music_note_C6",
+                    "note_D6": "debug_music_note_D6",
+                    "note_E6": "debug_music_note_E6",
+                    "note_F6": "debug_music_note_F6",
+                    "note_G6": "debug_music_note_G6",
+                    "note_A7": "debug_music_note_A7",
+                    "note_B7": "debug_music_note_B7",
+                    "note_C7": "debug_music_note_C7",
+                    "note_D7": "debug_music_note_D7",
+                    "note_E7": "debug_music_note_E7",
+                    "note_F7": "debug_music_note_F7",
+                    "note_G7": "debug_music_note_G7",
+                },
+                other: {
+                    "activeSynths": "debug_music_activeSynths",
+                    "mouseenter": "debug_music_mouseenterCheckbox",
+                    "mousedown": "debug_music_mousedownCheckbox",
+                },
+            },
+            values:{
+                "activeSynths": 0,
+            },
+            numSynths: 25,
+            synths: [
+            ],
+            playSound: function(note="C4", duration="32n"){
+                let synth;
+                // Find an active synth.
+                for(let i=0; i<this.numSynths; i+=1){
+                    if(!this.synths[i].active){ 
+                        synth = this.synths[i].synth;
+                        this.synths[i].active = true;
+                        this.synths[i].note = note;
+                        this.synths[i].duration = duration;
+                        break;
+                    }
+                }
+                if(!synth){
+                    console.error("An inactive synth was not found.", this.synths);
+                    return;
+                }
+    
+                // synth.triggerAttackRelease(note, duration, Tone.now()+1);
+                synth.triggerAttackRelease(note, duration);
+                // synth.triggerAttackRelease(note);
+            },
+            showSynthData: function(){
+                let activeSynths = this.synths.filter(d=>d.active);
+                if(this.values.activeSynths != activeSynths.length){
+                    // console.log(activeSynths);
+                    this.values.activeSynths = activeSynths.length;
+                    this.DOM.other.activeSynths.innerText = `activeSynths: ${activeSynths.length}`;
+                }
+            },
+            init: async function(){
+                // Save DOM.
+                for(let key in this.DOM){ 
+                    for(let elemKey in this.DOM[key]){ this.DOM[key][elemKey] = document.getElementById(this.DOM[key][elemKey]);}
+                }
+    
+                // Wait for the audio promise to resolve.
+                await _SND.canPlayAudio_promise.promise;
+    
+                // Create synths.
+                for(let i=0; i<this.numSynths; i+=1){
+                    this.synths[i] = { synth: new Tone.Synth({
+                        oscillator: { 
+                            // type: 'sine',
+                            type: 'square'  ,
+                            // type: 'triangle',
+                            // type: "sawtooth",
+                        },
+                        envelope : {
+                            attack : 0.005 ,
+                            decay : 0.50 ,
+                            sustain : 0.05 ,
+                            release : 0.005
+                        }
+                    }).toDestination(), active: false }
+                    this.synths[i].synth.onsilence = ()=>{ 
+                        this.synths[i].active = false; 
+                    };
+                }
+    
+                // Add the event listeners.
+                for(let elemKey in this.DOM.keyboard){
+                    let elem =  this.DOM.keyboard[elemKey];
+                    elem.addEventListener("mouseup", ()=>{
+                        if(elem.classList.contains("active")){ elem.classList.remove("active"); }
+                    }, false);
+    
+                    elem.addEventListener("mouseleave", ()=>{
+                        if(elem.classList.contains("active")){ elem.classList.remove("active"); }
+                    }, false);
+    
+                    elem.addEventListener("mousedown", ()=>{
+                        if(!elem.classList.contains("active")){ elem.classList.add("active"); }
+                        if(!this.DOM.other.mousedown.checked){ return; }
+                        let note = elem.getAttribute("note");
+                        let duration = elem.getAttribute("duration") ?? "16n";
+                        this.playSound(note, duration);
+                    }, false); 
+    
+                    elem.addEventListener("mouseenter", ()=>{
+                        if(!elem.classList.contains("active")){ elem.classList.add("active"); }
+                        if(!this.DOM.other.mouseenter.checked){ return; }
+                        let note = elem.getAttribute("note");
+                        let duration = elem.getAttribute("duration") ?? "16n";
+                        this.playSound(note, duration);
+                    }, false); 
+                }
+            },
+        },
+        sequenceNotesSynth: {
+            DOM:{},
+            init: async function(){},
+        },
+        runTests: function(){
+            this.simpleNoteSynth.showSynthData();
+        },
+        init: async function(){
+            this.simpleNoteSynth.init();
+            this.sequenceNotesSynth.init();
+        },
+    },
+
     // NavBar1 buttons for the left-side debug view.
     navBar1:{
         // Holds the DOM for the nav buttons and nav views.
@@ -2180,6 +2357,10 @@ var _DEBUG = {
             'view_layerObjEdit': {
                 'tab' : 'debug_navBar1_tab_layerObjEdit',
                 'view': 'debug_navBar1_view_layerObjEdit',
+            },
+            'view_music1': {
+                'tab' : 'debug_navBar1_tab_music1',
+                'view': 'debug_navBar1_view_music1',
             },
             'view_hashCacheStats1': {
                 'tab' : 'debug_navBar1_tab_hashCacheStats1',
@@ -2621,6 +2802,8 @@ var _DEBUG = {
         // DONE WITH DEBUG. 
         this.runDebug_lastDuration = performance.now() - debug_ts;
 
+        _DEBUG.music1.runTests();
+
         this.runDebug_last = performance.now();
 
         // performance.mark('END_debug_total');
@@ -2719,10 +2902,11 @@ var _DEBUG = {
         this.navBar1.init();
         // _DEBUG.navBar1.showOne("view_colorFinder");
         // _DEBUG.navBar1.showOne("view_drawStats");
-        _DEBUG.navBar1.showOne("view_fade");
+        // _DEBUG.navBar1.showOne("view_fade");
         // _DEBUG.navBar1.showOne("view_hashCacheStats1");
         // _DEBUG.navBar1.showOne("view_layerObjects");
         // _DEBUG.navBar1.showOne("view_layerObjEdit");
+        _DEBUG.navBar1.showOne("view_music1");
         
         // Load the HashCache viewer.
         this.hashCache.init();
@@ -2735,6 +2919,9 @@ var _DEBUG = {
         
         // Load the updateTimingBars.
         this.updateTimingBars.init();
+
+        // Load the music1
+        this.music1.init();
         
         // Load the navBar3 tabs.
         this.navBar3.init();
