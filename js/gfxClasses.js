@@ -560,6 +560,7 @@ class Border extends LayerObject{
         let tile_border_vert;
         let tile_border_horz;
         config.borderType = config.borderType ?? 1;
+        let pointersSize = _GFX.tilesets[config.tilesetKey].config.pointersSize;
 
         // Border with transparency.
         if(config.borderType == 1){
@@ -596,7 +597,9 @@ class Border extends LayerObject{
                 layerObjKey: `${config.layerObjKey}_TL`, 
                 layerKey   : config.layerKey   ?? "L4", 
                 tilesetKey : config.tilesetKey ?? "bg_tiles1",
-                tmap: new Uint8Array( [1, 1, tile_border_tl ] ),
+                tmap: pointersSize == 8 
+                    ? new Uint8Array( [1, 1, tile_border_tl ] ) 
+                    : new Uint16Array( [1, 1, tile_border_tl ] ),
                 x: config.x, y: config.y, 
             },
             // BORDER: CORNER: TOP-RIGHT
@@ -604,7 +607,9 @@ class Border extends LayerObject{
                 layerObjKey: `${config.layerObjKey}_TR`, 
                 layerKey   : config.layerKey   ?? "L4", 
                 tilesetKey : config.tilesetKey ?? "bg_tiles1",
-                tmap: new Uint8Array( [1, 1, tile_border_tr ] ),
+                tmap: pointersSize == 8 
+                    ? new Uint8Array( [1, 1, tile_border_tr ] ) 
+                    : new Uint16Array( [1, 1, tile_border_tr ] ),
                 x: config.x+config.w-1, y: config.y, 
             },
             // BORDER: CORNER: BOTTOM-LEFT
@@ -612,7 +617,9 @@ class Border extends LayerObject{
                 layerObjKey: `${config.layerObjKey}_BL`, 
                 layerKey   : config.layerKey   ?? "L4", 
                 tilesetKey : config.tilesetKey ?? "bg_tiles1",
-                tmap: new Uint8Array( [1, 1, tile_border_bl ] ),
+                tmap: pointersSize == 8 
+                    ? new Uint8Array( [1, 1, tile_border_bl ] ) 
+                    : new Uint16Array( [1, 1, tile_border_bl ] ),
                 x: config.x, y: config.y+config.h-1, 
             },
             // BORDER: CORNER: BOTTOM-RIGHT
@@ -620,7 +627,9 @@ class Border extends LayerObject{
                 layerObjKey: `${config.layerObjKey}_BR`, 
                 layerKey   : config.layerKey   ?? "L4", 
                 tilesetKey : config.tilesetKey ?? "bg_tiles1",
-                tmap: new Uint8Array( [1, 1, tile_border_br ] ),
+                tmap: pointersSize == 8 
+                    ? new Uint8Array( [1, 1, tile_border_br ] ) 
+                    : new Uint16Array( [1, 1, tile_border_br ] ),
                 x: config.x+config.w-1, y: config.y+config.h-1, 
             },
             
@@ -629,7 +638,9 @@ class Border extends LayerObject{
                 layerObjKey: `${config.layerObjKey}_T`, 
                 layerKey   : config.layerKey   ?? "L4", 
                 tilesetKey : config.tilesetKey ?? "bg_tiles1",
-                tmap: new Uint8Array( [config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) ),
+                tmap: pointersSize == 8 
+                    ? new Uint8Array( [config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) )  
+                    : new Uint16Array( [config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) ),
                 x: config.x+1, y: config.y, 
             },
             // BORDER: BOTTOM
@@ -637,7 +648,9 @@ class Border extends LayerObject{
                 layerObjKey: `${config.layerObjKey}_B`,
                 layerKey   : config.layerKey   ?? "L4", 
                 tilesetKey : config.tilesetKey ?? "bg_tiles1",
-                tmap: new Uint8Array([config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) ),
+                tmap: pointersSize == 8 
+                    ? new Uint8Array([config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) )   
+                    : new Uint16Array([config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) ),
                 x: config.x+1, y: config.y + config.h-1, 
             },
             // BORDER: LEFT
@@ -645,7 +658,9 @@ class Border extends LayerObject{
                 layerObjKey: `${config.layerObjKey}_L`,
                 layerKey   : config.layerKey   ?? "L4", 
                 tilesetKey : config.tilesetKey ?? "bg_tiles1",
-                tmap: new Uint8Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ),
+                tmap: pointersSize == 8 
+                    ? new Uint8Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ) 
+                    : new Uint16Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ),
                 x: config.x, y: config.y+1, 
             },
             // BORDER: RIGHT
@@ -653,7 +668,9 @@ class Border extends LayerObject{
                 layerObjKey: `${config.layerObjKey}_R`,
                 layerKey   : config.layerKey   ?? "L4", 
                 tilesetKey : config.tilesetKey ?? "bg_tiles1",
-                tmap: new Uint8Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ),
+                tmap: pointersSize == 8 
+                    ? new Uint8Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ) 
+                    : new Uint16Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ),
                 x: config.x+config.w-1, y: config.y+1, 
             },
         };
@@ -708,6 +725,7 @@ class Fill extends LayerObject{
         let layerObjKey = config.layerObjKey + "_fill";
         let layerKey    = config.layerKey;
         let tilesetKey  = config.tilesetKey;
+        let pointersSize = _GFX.tilesets[config.tilesetKey].config.pointersSize;
         let x = config.x;
         let y = config.y;
         let w = config.w;
@@ -729,12 +747,9 @@ class Fill extends LayerObject{
             layerObjKey: layerObjKey, 
             layerKey   : layerKey, 
             tilesetKey : tilesetKey, 
-            tmap       : new Uint8Array(
-                // Dimensions.
-                [ w, h ]
-                // Tiles.
-                .concat(Array.from({ length: ((w) * (h)) }, () => fillTile))
-            ), 
+            tmap       :  pointersSize == 8 
+                ? new Uint8Array( [ w, h ].concat(Array.from({ length: ((w) * (h)) }, () => fillTile)) )
+                : new Uint16Array( [ w, h ].concat(Array.from({ length: ((w) * (h)) }, () => fillTile)) ), 
             x          : x, 
             y          : y, 
             xyByGrid   : xyByGrid, 
@@ -1394,10 +1409,10 @@ class ColorChanger{
 
         // Add the colors.
         let tmp = [
-            { layerObjKey: "color_changer_yellow", x: ColorChanger.pos.yellow.x, y: ColorChanger.pos.yellow.y, tmap: this.createFillMap(3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_yellow")[2]) },
-            { layerObjKey: "color_changer_blue"  , x: ColorChanger.pos.blue.x  , y: ColorChanger.pos.blue.y  , tmap: this.createFillMap(3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_blue")  [2]) },
-            { layerObjKey: "color_changer_red"   , x: ColorChanger.pos.red.x   , y: ColorChanger.pos.red.y   , tmap: this.createFillMap(3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_red")   [2]) },
-            { layerObjKey: "color_changer_green" , x: ColorChanger.pos.green.x , y: ColorChanger.pos.green.y , tmap: this.createFillMap(3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_green") [2]) },
+            { layerObjKey: "color_changer_yellow", x: ColorChanger.pos.yellow.x, y: ColorChanger.pos.yellow.y, tmap: this.createFillMap("bg_tiles1", 3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_yellow")[2]) },
+            { layerObjKey: "color_changer_blue"  , x: ColorChanger.pos.blue.x  , y: ColorChanger.pos.blue.y  , tmap: this.createFillMap("bg_tiles1", 3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_blue")  [2]) },
+            { layerObjKey: "color_changer_red"   , x: ColorChanger.pos.red.x   , y: ColorChanger.pos.red.y   , tmap: this.createFillMap("bg_tiles1", 3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_red")   [2]) },
+            { layerObjKey: "color_changer_green" , x: ColorChanger.pos.green.x , y: ColorChanger.pos.green.y , tmap: this.createFillMap("bg_tiles1", 3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_green") [2]) },
         ];
         for(let rec of tmp){
             _GFX.layerObjs.createOne(LayerObject, {
@@ -1430,12 +1445,11 @@ class ColorChanger{
     }
 
     // Creates a fill map using tileId and the specified width and height.
-    createFillMap(w, h, tileId){
-        return new Uint8Array( 
-            [ w, h ]
-            .concat(
-                Array.from( { length: w * h }, () => tileId )
-            ) )
+    createFillMap(ts, w, h, tileId){
+        let pointersSize = _GFX.tilesets[ts].config.pointersSize;
+        return pointersSize == 8 
+            ? new Uint8Array( [ w, h ].concat( Array.from( { length: w * h }, () => tileId ) ) )
+            : new Uint16Array( [ w, h ].concat( Array.from( { length: w * h }, () => tileId ) ) );
     };
 
     // Unhides the LayerObjects used by this class.
@@ -1874,7 +1888,8 @@ class Gameboard{
         // Color indicator.
         let pos = Gameboard.pos_colorIndicators;
         let type = 0;
-        let fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_black`)[2]
+        let fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_black`)[2];
+        let pointersSize = _GFX.tilesets["bg_tiles1"].config.pointersSize;
         _GFX.layerObjs.createOne(LayerObject, {
             layerObjKey: "colorIndicatorBar", 
             layerKey   : "L1", 
@@ -1882,12 +1897,9 @@ class Gameboard{
             xyByGrid: true, settings: {},
             removeHashOnRemoval: true, noResort: false,
             x: pos["P1"].x, y: pos["P1"].y,
-            tmap: new Uint8Array(
-                // Dimensions.
-                [ pos["P1"].w, pos["P1"].h ]
-                // Tiles
-                .concat(Array.from({ length: ((pos["P1"].w) * (pos["P1"].h)) }, () => fillTile))
-            ),
+            tmap: pointersSize == 8 
+                ? new Uint8Array( [ pos["P1"].w, pos["P1"].h ].concat(Array.from({ length: ((pos["P1"].w) * (pos["P1"].h)) }, () => fillTile)) )
+                : new Uint16Array( [ pos["P1"].w, pos["P1"].h ].concat(Array.from({ length: ((pos["P1"].w) * (pos["P1"].h)) }, () => fillTile)) ),
         });
 
         // Color indicator animation.
@@ -2407,13 +2419,11 @@ class Gameboard{
         fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_${color}`)[2];
 
         // Create a tilemap of the fillTile that match the dimensions for the player.
+        let pointersSize = _GFX.tilesets["bg_tiles1"].config.pointersSize;
         let data = Gameboard.pos_colorIndicators[playerKey];
-        let tmap = new Uint8Array(
-            // Dimensions.
-            [ data.w, data.h ]
-            // Tiles
-            .concat(Array.from({ length: ((data.w) * (data.h)) }, () => fillTile))
-        );
+        let tmap = pointersSize == 8
+            ? new Uint8Array( [ data.w, data.h ].concat(Array.from({ length: ((data.w) * (data.h)) }, () => fillTile)) )
+            : new Uint16Array( [ data.w, data.h ].concat(Array.from({ length: ((data.w) * (data.h)) }, () => fillTile)) );
 
         // Return the completed tilemap.
         return tmap;

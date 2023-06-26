@@ -265,7 +265,6 @@ var gfxCoreV5 = {
             const width = imageData.width;
             const height = imageData.height;
             const data = new Uint32Array(imageData.data.buffer);
-            const bytesPerRow = width * 4;
         
             for (let y = 0; y < height; y++) {
                 // Calculate the index of the start of the row
@@ -281,7 +280,6 @@ var gfxCoreV5 = {
             }
         
             // Convert back to Uint8Array
-            // imageData.data.set(new Uint8ClampedArray(data.buffer));
             imageData.data.set(new Uint8Array(data.buffer));
         },
         
@@ -306,7 +304,6 @@ var gfxCoreV5 = {
             }
         
             // Convert back to Uint8Array
-            // imageData.data.set(new Uint8ClampedArray(data.buffer));
             imageData.data.set(new Uint8Array(data.buffer));
         },
 
@@ -322,6 +319,7 @@ var gfxCoreV5 = {
 
             // Create new array for the rotated data.
             const rotatedData = new Uint8Array(newWidth * newHeight * 4);
+
             for (let y = 0; y < height; y++) {
                 for (let x = 0; x < width; x++) {
                     const sourceIndex = (y * width + x) * 4;
@@ -565,10 +563,13 @@ var gfxCoreV5 = {
                             }
                         }
                 
-                        // Tilemap data: Parse/convert the JSON-string(s) to Uint8Array.
+                        // Tilemap data: Parse/convert the JSON-string(s) to Uint8Array/Uint16Array.
                         if(file.tilemaps){
+                            let pointersSize = tileset.config.pointersSize;
                             for(let key in file.tilemaps){ 
-                                let tilemap = new Uint8Array( JSON.parse(file.tilemaps[key]) );
+                                let tilemap = pointersSize == 8
+                                 ? new Uint8Array( JSON.parse(file.tilemaps[key]) )
+                                 : new Uint16Array( JSON.parse(file.tilemaps[key]) );
                                 tileset.tilemaps[key] = tilemap; 
                             }
                         }
@@ -751,13 +752,17 @@ var gfxCoreV5 = {
         // This will trigger missingTile (since there will not be a tile index after the dimensions) and leave the image data as an empty transparent tile.
         if(mapW == 0 || mapH == 0){ mapW = 1; mapW = 1; mapH = 1; }
 
+        let pointersSize = _GFX.tilesets[tmapObj.ts].config.pointersSize;
+
         // Start the tilemap image object.
         let tmiObj = {
             // "imgData"            : new ImageData(mapW * tw, mapH * th),
             "imgData": {
                 width : mapW * tw,
                 height: mapH * th,
-                data : new Uint8Array( mapW * tw * mapH * th *4 )
+                data : pointersSize == 8
+                    ? new Uint8Array( mapW * tw * mapH * th *4 )
+                    : new Uint16Array( mapW * tw * mapH * th *4 ),
             },
             "ts"                 : tmapObj.ts, 
             "settings"           : tmapObj.settings, 

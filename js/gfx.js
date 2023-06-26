@@ -694,12 +694,18 @@ var _GFX = {
             
             // Value copy.
             let tilemap = _GFX.tilesets[ts].tilemaps[mapKey];
+            let pointersSize = _GFX.tilesets[ts].config.pointersSize;
 
             if(!tilemap){ 
                 console.error(`Missing tile map for '${ts}':'${mapKey}'. Returning blank tilemap.`);
-                return new Uint8Array([0,0, 0]);
+                return pointersSize == 8 
+                    ? new Uint8Array([0,0, 0])
+                    : new Uint16Array([0,0, 0]);
             }
-            return new Uint8Array(tilemap);
+
+            return pointersSize == 8 
+                ? new Uint8Array(tilemap)
+                : new Uint16Array(tilemap);
         },
 
         // Removes a layer object and sets the changes for that layer to true. 
@@ -733,11 +739,6 @@ var _GFX = {
             if(undefined == obj.x)      { console.log(obj); throw `createLayerObjData: Missing x: ${JSON.stringify(obj)}`; }
             if(undefined == obj.y)      { console.log(obj); throw `createLayerObjData: Missing y: ${JSON.stringify(obj)}`; }
             obj.settings = this.correctSettings(obj.settings); // Make sure that settings is an object.
-
-            // Handle tilemap transforms.
-            if(obj.settings.rotation || obj.settings.xFlip || obj.settings.yFlip){
-                obj.tmap = _GFX.utilities.tilemapTransform(obj.tmap, obj.settings);
-            }
 
             // Create the layerObject.
             let newObj = { 
@@ -787,7 +788,12 @@ var _GFX = {
             let mapHeight = obj.text.length;
             
             // Start the new tilemap.
-            let newTilemap = new Uint8Array( 2 + (mapWidth * mapHeight) );
+            let newTilemap;
+            let pointersSize = _GFX.tilesets[obj.ts].config.pointersSize;
+            newTilemap = pointersSize == 8 
+                ? new Uint8Array( 2 + (mapWidth * mapHeight) )
+                : new Uint16Array( 2 + (mapWidth * mapHeight) );
+            
             newTilemap[0] = mapWidth;
             newTilemap[1] = mapHeight;
 
@@ -820,11 +826,6 @@ var _GFX = {
                     // Increment the next newTilemap index.
                     index +=1 ;
                 }
-            }
-
-            // Handle tilemap transforms.
-            if(obj.settings.rotation || obj.settings.xFlip || obj.settings.yFlip){
-                newTilemap = _GFX.utilities.tilemapTransform(newTilemap, obj.settings);
             }
 
             // Create the layerObject.
@@ -903,152 +904,6 @@ var _GFX = {
                 hash = ((hash << 5) + hash) + str.charCodeAt(i); /* hash * 33 + c */
             }
             return hash;
-        },
-
-        // ******************
-        // TILEMAP TRANSFORMS
-        // ******************
-
-        // Performs a X flip (horizontal) transform on a tilemap.
-        tilemap_flipX: function(map){
-            // Make sure a map was provided.
-            if(!map){ console.log("No map"); return; }
-
-            // Break-out only the tile data portion of the map.
-            let srcMap = map.slice(2);
-
-            // Get the dimensions of the tilemap. 
-            let width  = map[0];
-            let height = map[1];
-
-            // This will hold the flipped tile indexes.
-            let tileIndexes = new Array(width * height);
-
-            // Flip horizontally.
-            let index1 = 0;
-            for (let y = 0; y < height; y += 1) {
-                for (let x = width - 1; x >= 0; x -= 1) {
-                    tileIndexes[ ((y * width) + x) ] = srcMap[index1++];
-                }
-            }
-
-            // Return a new tilemap with the width, height, and new tileIndexes.
-            return new Uint8Array([width, height, ...tileIndexes]);
-        },
-        // Performs a Y flip (vertical) transform on a tilemap.
-        tilemap_flipY: function(map){
-            // Make sure a map was provided.
-            if(!map){ console.log("No map"); return; }
-
-            // Break-out only the tile data portion of the map.
-            let srcMap = map.slice(2);
-
-            // Get the dimensions of the tilemap. 
-            let width  = map[0];
-            let height = map[1];
-            
-            // This will hold the flipped tile indexes.
-            let tileIndexes = new Array(width * height);
-
-            // Flip vertically.
-            let index1 = 0;
-            for (let y = height - 1; y >= 0; y -= 1) {
-                for (let x = 0; x < width; x += 1) {
-                    tileIndexes[ ((y * width) + x) ] = srcMap[index1++];
-                }
-            }
-
-            // Return a new tilemap with the width, height, and new tileIndexes.
-            return new Uint8Array([width, height, ...tileIndexes]);
-        },
-        // Performs a rotational transform on a tilemap.
-        tilemap_rotate: function(map, degrees){
-            // Make sure a map was provided.
-            if(!map){ console.error("tilemap_rotate: Missing tilemap.", map); return map; }
-            
-            // Make sure a rotation was provided. (0 is considered invalid here.)
-            if(!degrees){ console.error("tilemap_rotate: Missing degrees.", degrees); return map; }
-
-            // Make sure that the rotation specified is allowed.
-            let allowedDegrees = [-90, 90, -180, 180, 270];
-            if(allowedDegrees.indexOf(degrees) == -1){
-                console.error(`Invalid degrees value: ${degrees}. Must be within:`, allowedDegrees);
-                return map;
-            }
-
-            // Break-out only the tile data portion of the map.
-            let srcMap = map.slice(2);
-
-            // Get the dimensions of the tilemap. 
-            let width  = map[0];
-            let height = map[1];
-            
-            // This will hold the rotated tile indexes.
-            let tileIndexes = new Array(width * height);
-
-            // Holds the calculated index for the tileIds as they are stored.
-            let index;
-
-            // NOTE: The index formula for no rotation would be: tileIndexes[y * width + x] = srcMap[index];
-            //       This would be unnecessary since the tiles would already be in order for 0 degree rotation.
-
-            // Rotation for 90 and -270 degrees.
-            if (degrees === 90 || degrees === -270) {
-                for (let x = 0; x < width; x++) {
-                    for (let y = height - 1; y >= 0; y--) {
-                        index = y * width + x;
-                        // The x and y coordinates are swapped, and the y coordinate is reversed.
-                        tileIndexes[x * height + (height - y - 1)] = srcMap[index];
-                    }
-                }
-            }
-
-            // Rotation for -90 and 270 degrees.
-            else if (degrees === -90 || degrees === 270) {
-                for (let x = width - 1; x >= 0; x--) {
-                    for (let y = 0; y < height; y++) {
-                        index = y * width + x;
-                        // The x and y coordinates are swapped, and the x coordinate is reversed.
-                        tileIndexes[(width - x - 1) * height + y] = srcMap[index];
-                    }
-                }
-            }
-
-            // Rotation for 180 and -180 degrees.
-            else if (degrees === 180 || degrees === -180) {
-                for (let y = height - 1; y >= 0; y--) {
-                    for (let x = width - 1; x >= 0; x--) {
-                        index = y * width + x;
-                        // Both the x and y coordinates are reversed.
-                        tileIndexes[((height - 1 - y) * width) + (width - 1 - x)] = srcMap[index];
-                    }
-                }
-            }
-
-            // Swap the width and the height if needed.
-            if(degrees == 90 || degrees == -90 || degrees == 270 || degrees == -270){
-                [width, height] = [height, width];
-            }
-
-            // Return a new tilemap with the width, height, and new tileIndexes.
-            return new Uint8Array([width, height, ...tileIndexes]);
-        },
-        // Performs required transforms to a tilemap and returns the new tilemap.
-        tilemapTransform: function(tmap, settings){
-            // DISABLED:
-            return tmap;
-            
-            // Handle rotation.
-            // NOTE: If a tilemap is NOT a square then the tilemap will have swapped new width and height values.
-            if(settings.rotation){ tmap = _GFX.utilities.tilemap_rotate(tmap, settings.rotation); }
-            
-            // Handle xFlip.
-            if(settings.xFlip){ tmap = _GFX.utilities.tilemap_flipX(tmap); }
-            
-            // Handle yFlip.
-            if(settings.yFlip){ tmap = _GFX.utilities.tilemap_flipY(tmap); }
-
-            return tmap;
         },
     },
 };
@@ -1242,7 +1097,7 @@ class LayerObject {
         this.noResort = config.noResort ?? false;
 
         // Tilemap. (It is possible that a tilemap is not provided/required.)
-        this.tmap = config.tmap; // ?? new Uint8Array([1,1,0]);
+        this.tmap = config.tmap; 
 
         // X position.
         this.x = config.x ?? 0;
