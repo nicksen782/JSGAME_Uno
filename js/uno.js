@@ -9,8 +9,8 @@ _APP.configObj = {
     appName: "UNO!",
 
     // First gamestates.
-    firstGamestate1:"gs_JSG",
-    // firstGamestate1:"gs_N782",
+    // firstGamestate1:"gs_JSG",
+    firstGamestate1:"gs_N782",
     firstGamestate2:"",
 
     // Controls if the loop will wait for the graphics draw to finish before continuing.
@@ -33,6 +33,7 @@ _APP.configObj = {
 
     // Relative paths need to be correctly relative to whatever loads this file (the web page or the web worker.)
     tilesetFiles: [
+        "../UAM/JSON/combined1.json",
         "../UAM/JSON/default_tiles.json",
         "../UAM/JSON/bg_tiles1.json",
         "../UAM/JSON/bg_tiles2.json",

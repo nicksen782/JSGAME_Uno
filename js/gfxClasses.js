@@ -2703,19 +2703,30 @@ class N782_face_anim extends LayerObject{
         super(config);
         this.className = this.constructor.name;
 
-        this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
+        // this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
+        this.tilesetKey = config.tilesetKey ?? "combined1";
         
+        this.frameKeys = [
+            "N782_FACE1_F1b",
+            "N782_FACE1_F2b",
+            "N782_FACE1_F3b",
+            "N782_FACE1_F4b",
+            "N782_FACE1_F5b",
+            "N782_FACE1_F1b",
+        ];
         this.frames = [
-            _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F1b"),
-            _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F2b"),
-            _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F3b"),
-            _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F4b"),
-            _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F5b"),
-            _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F1b"),
+            _GFX.funcs.getTilemap(this.tilesetKey, "N782_FACE1_F1b"),
+            _GFX.funcs.getTilemap(this.tilesetKey, "N782_FACE1_F2b"),
+            _GFX.funcs.getTilemap(this.tilesetKey, "N782_FACE1_F3b"),
+            _GFX.funcs.getTilemap(this.tilesetKey, "N782_FACE1_F4b"),
+            _GFX.funcs.getTilemap(this.tilesetKey, "N782_FACE1_F5b"),
+            _GFX.funcs.getTilemap(this.tilesetKey, "N782_FACE1_F1b"),
         ];
         this.framesIndex = 0;
+        
         this.framesCounter = 0;
         this.framesBeforeIndexChange = 7;
+
         this.repeatCount = 0;
         this.repeats = 2;
         this.done = false;
@@ -2740,6 +2751,12 @@ class N782_face_anim extends LayerObject{
             // Increment the framesIndex
             if(this.framesIndex < this.frames.length -1){ 
                 this.framesIndex += 1; 
+
+                // Set the new tmap.
+                this.tmap = this.frames[this.framesIndex];
+                this._changed = true;
+
+                // console.log("hey", this.frameKeys[this.framesIndex], this.frames[this.framesIndex].tidLookup);
             }
             else { 
                 // Reset the framesIndex.
@@ -2750,17 +2767,13 @@ class N782_face_anim extends LayerObject{
 
                 // Stop after repeating up to this.repeats.
                 if(this.repeatCount == this.repeats) { 
-                    this.tmap = _GFX.funcs.getTilemap("bg_tiles2", "N782_FACE1_F1b");
+                    // console.log("done!");
+                    this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, "N782_FACE1_F1b");
                     this.done = true; 
                     return; 
                 }
-                else{
-                }
             }
         }
-
-        // Set the new tmap.
-        this.tmap = this.frames[this.framesIndex];
     };
 };
 class N782_oneStar_anim extends LayerObject{
@@ -2802,7 +2815,8 @@ class N782_oneStar_anim extends LayerObject{
         super(config);
         this.className = this.constructor.name;
 
-        this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
+        // this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
+        this.tilesetKey = config.tilesetKey ?? "combined1";
 
         this.pos = N782_oneStar_anim.star_pos;
 
@@ -2825,7 +2839,8 @@ class N782_oneStar_anim extends LayerObject{
         this.x = N782_oneStar_anim.star_home_pos.x + this.pos[this.posIndex].x;
         this.y = N782_oneStar_anim.star_home_pos.y + this.pos[this.posIndex].y;
 
-        this.tmap = _GFX.funcs.getTilemap("bg_tiles2", "N782_STAR");
+        // this.tmap = _GFX.funcs.getTilemap("bg_tiles2", "N782_STAR");
+        this.tmap = _GFX.funcs.getTilemap("combined1", "N782_STAR");
     }
 
     // Render functions.
@@ -2864,8 +2879,6 @@ class N782_oneStar_anim extends LayerObject{
 
             // Stop after repeating up to this.repeats.
             if(this.repeatCount == this.repeats && this.repeats != 0) { 
-                // this.tmap = _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F1");
-                // this.tmap = this.frames[0];
                 this.done = true; 
                 this.hidden = true;
                 return; 

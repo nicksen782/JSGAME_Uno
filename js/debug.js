@@ -1769,8 +1769,19 @@ var _DEBUG = {
             }
 
             // Generate the dimensions text.
-            let w = data.tmap[0];
-            let h = data.tmap[1];
+            let type = _GFX.tilesets[data.tilesetKey].config.type ?? 1;
+            let w, h;
+            if(type == 1){
+                w = data.tmap[0];
+                h = data.tmap[1];
+            }
+            else if(type == 2){
+                w = data.tmap.tmap[0];
+                h = data.tmap.tmap[1];
+            }
+
+            // let w = data.tmap[0];
+            // let h = data.tmap[1];
             let x = data.x;
             let y = data.y;
             let dims       = `` + 
@@ -1792,12 +1803,17 @@ var _DEBUG = {
             }
             settings = activeSettingsArray.join(", ");
 
+            if(data.frameKeys){
+                // console.log(data);
+                console.log(data.frameKeys[data.framesIndex], data.frameKeys);
+            }
+
             // Add the texts to the entry container.
             div_container.innerText = `` +
             `C: ${className} : K: ${name}` + `${hidden ? " " + hidden : ""}` +
             `\n  D: ${dims}` +
             `\n  S: ${settings}` + 
-            `\n  P: ${data.text ? ("(TEXT): '" + data.text).slice(0, 42) + "'" : ""}` +
+            `\n  T: ${data.text ? ("(TEXT): '" + data.text).slice(0, 42) + "'" : ""}` +
             ``;
 
             // Return the completed entry container.
@@ -1824,8 +1840,17 @@ var _DEBUG = {
             if(e.type == "mouseenter") {
                 let layerObjKey = elem.getAttribute("layerObjKey");
                 let data = _GFX.layerObjs.objs[_APP.game.gs1][layerObjKey];
-                let w = data.tmap[0];
-                let h = data.tmap[1];
+                let w;
+                let h;
+                let type = _GFX.tilesets[data.tilesetKey].config.type ?? 1;
+                if(type == 1){
+                    w = data.tmap[0];
+                    h = data.tmap[1];
+                }
+                else if(type == 2){
+                    w = data.tmap.tmap[0];
+                    h = data.tmap.tmap[1];
+                }
                 let x = data.x;
                 let y = data.y;
                 _DEBUG.layerObjs.highlightOnHover(

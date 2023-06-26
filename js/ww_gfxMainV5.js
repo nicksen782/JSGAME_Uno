@@ -1088,9 +1088,9 @@ var gfxMainV5 = {
                                 map.origin, map.text
                             );
     
-                            if(!added){
-                                console.log(`ALREADY EXISTS: hashCache entry: ${map.mapKey}, ${map.relatedMapKey}`);
-                            }
+                            // if(!added){
+                            //     console.log(`ALREADY EXISTS: hashCache entry: ${map.mapKey}, ${map.relatedMapKey}`);
+                            // }
                             // else{
                             //     console.log(`Added new hashCache entry: ${map.mapKey}, ${map.relatedMapKey}`);
                             // }
@@ -1454,7 +1454,7 @@ var gfxMainV5 = {
                             // console.log(`Added new hashCache entry: ${map.relatedMapKey}`); 
                             base_totalMapsCached += 1;
                         }
-                        else     { console.log(`ALREADY EXISTS: hashCache entry: relatedMapKey: ${map.relatedMapKey}`); }
+                        // else     { console.log(`ALREADY EXISTS: hashCache entry: relatedMapKey: ${map.relatedMapKey}`); }
                     }
                 }
             }

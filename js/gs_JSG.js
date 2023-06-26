@@ -51,10 +51,12 @@ _APP.game.gamestates["gs_JSG"] = {
         ];
 
         _GFX.layerObjs.createOne(LayerObject, { 
-            tilesetKey: `default_tiles`, 
+            // tilesetKey: `default_tiles`, 
+            tilesetKey: `combined1`, 
             layerObjKey: `JSGAME_LOGO`, 
             layerKey   : "L2", 
-            tmap       : _GFX.funcs.getTilemap("default_tiles", "JSGAME_LOGO"), 
+            // tmap       : _GFX.funcs.getTilemap("default_tiles", "JSGAME_LOGO"), 
+            tmap       : _GFX.funcs.getTilemap("combined1", "JSGAME_LOGO"), 
             xyByGrid   : true,
             x          : 2, 
             y          : 4, 
@@ -66,6 +68,7 @@ _APP.game.gamestates["gs_JSG"] = {
         _APP.shared.genTimer.create("genWaitTimer2", 0);
 
         this.JSGAME_LOGO = _GFX.layerObjs.getOne(`JSGAME_LOGO`);
+        console.log("this.JSGAME_LOGO:", this.JSGAME_LOGO);
 
         // Set the initial gamestate 2.
         _APP.game.changeGs2("");
@@ -112,6 +115,7 @@ _APP.game.gamestates["gs_JSG"] = {
             }
             else{
                 _APP.shared.genTimer.create("genWaitTimer1", 60, _APP.game.gs1, ()=>{
+                    // _APP.game.changeGs1("gs_JSG");
                     _APP.game.changeGs1("gs_N782");
                 });
             }

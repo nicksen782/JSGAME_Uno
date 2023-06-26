@@ -280,8 +280,9 @@ var gfxCoreV5 = {
                 }
             }
         
-            // Convert back to Uint8ClampedArray
-            imageData.data.set(new Uint8ClampedArray(data.buffer));
+            // Convert back to Uint8Array
+            // imageData.data.set(new Uint8ClampedArray(data.buffer));
+            imageData.data.set(new Uint8Array(data.buffer));
         },
         
         flipImageDataVertically: function(imageData) {
@@ -304,8 +305,9 @@ var gfxCoreV5 = {
                 }
             }
         
-            // Convert back to Uint8ClampedArray
-            imageData.data.set(new Uint8ClampedArray(data.buffer));
+            // Convert back to Uint8Array
+            // imageData.data.set(new Uint8ClampedArray(data.buffer));
+            imageData.data.set(new Uint8Array(data.buffer));
         },
 
         
@@ -522,9 +524,10 @@ var gfxCoreV5 = {
                 return true;
             }
             else{
-                // console.error(
-                //     `addTilemapImagesToHashCache: This hashCache entry already exists. mapKey: '${map.mapKey}', relatedMapKey: '${map.relatedMapKey}' (${hashCacheHash}):`, 
-                //     map.settings, map
+                // console.log(
+                //     `ALREADY EXISTS: hashCache entry: relatedMapKey: '${map.relatedMapKey}' (${hashCacheHash}):`, 
+                //     // map.settings, map
+                //     ""
                 // );
                 return false;
             }

@@ -694,9 +694,10 @@ var _GFX = {
             
             // Value copy.
             let tilemap = _GFX.tilesets[ts].tilemaps[mapKey];
+
             if(!tilemap){ 
-                console.error(`getTilemap: Missing tmap: ts: ${ts}, mapKey: ${mapKey}`); 
-                throw `getTilemap: Missing tmap: ts: ${ts}, mapKey: ${mapKey}`; 
+                console.error(`Missing tile map for '${ts}':'${mapKey}'. Returning blank tilemap.`);
+                return new Uint8Array([0,0, 0]);
             }
             return new Uint8Array(tilemap);
         },
@@ -1163,7 +1164,7 @@ class LayerObject {
     get y()          { return this._y; } 
     get tmap()       { return this._tmap; } 
     get layerKey()   { return this._layerKey; } 
-    // get tilesetKey() { return this._tilesetKey; } 
+    get tilesetKey() { return this._tilesetKey; } 
     get settings()   { return this._settings; } 
     get xyByGrid()   { return this._xyByGrid; } 
     get hidden()     { return this._hidden; } 
@@ -1186,7 +1187,12 @@ class LayerObject {
         this._layerKey   = value; 
         this._changed = true; 
     } }
-    // set tilesetKey(value) { if( this._tilesetKey !== value){ this._tilesetKey = value; this._changed = true; } }
+    set tilesetKey(value) { 
+        if( this._tilesetKey !== value){ 
+            this._tilesetKey = value; 
+            this._changed = true; 
+        } 
+    }
     set settings(value)   { 
         // this._settings = value; 
         this._settings = Object.assign({}, _GFX.defaultSettings, value ?? {});
@@ -1233,7 +1239,7 @@ class LayerObject {
         this.layerKey    = config.layerKey;
         this.tilesetKey  = config.tilesetKey;
         this.removeHashOnRemoval = config.removeHashOnRemoval ?? true;
-        this.noResort = config.noResort ?? false,
+        this.noResort = config.noResort ?? false;
 
         // Tilemap. (It is possible that a tilemap is not provided/required.)
         this.tmap = config.tmap; // ?? new Uint8Array([1,1,0]);
