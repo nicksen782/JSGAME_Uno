@@ -9,8 +9,13 @@ _APP.configObj = {
     appName: "UNO!",
 
     // First gamestates.
-    // firstGamestate1:"gs_JSG",
-    firstGamestate1:"gs_N782",
+    firstGamestate1:"gs_JSG",
+    // firstGamestate1:"gs_N782",
+    // firstGamestate1:"gs_TITLE",
+    // firstGamestate1:"gs_RULES",
+    // firstGamestate1:"gs_CREDITS",
+    // firstGamestate1:"gs_OPTIONS",
+    // firstGamestate1:"gs_PLAYING",
     firstGamestate2:"",
 
     // Controls if the loop will wait for the graphics draw to finish before continuing.
@@ -34,13 +39,12 @@ _APP.configObj = {
     // Relative paths need to be correctly relative to whatever loads this file (the web page or the web worker.)
     tilesetFiles: [
         "../UAM/JSON/combined1.json",
-        "../UAM/JSON/default_tiles.json",
-        "../UAM/JSON/bg_tiles1.json",
-        "../UAM/JSON/bg_tiles2.json",
-        "../UAM/JSON/font_tiles1.json",
-        "../UAM/JSON/sprite_tiles1.json",
+        // "../UAM/JSON/bg_tiles1.json",
+        // "../UAM/JSON/bg_tiles2.json",
+        // "../UAM/JSON/font_tiles1.json",
+        // "../UAM/JSON/sprite_tiles1.json",
     ],
-    
+    fontObj: { ts: "combined1", tmap: "fontset_part1_UC", forceUpperCase: true },
     dimensions: {
         "tileWidth" : 8,
         "tileHeight": 8,
@@ -481,10 +485,12 @@ _APP.utility = {
                 try{
                     console.error( 
                         `ERRORHANDLER: ${e.type}` + "\n" +
-                        `  e.reason.message:`, e.reason + "\n" +
-                        `  e:`, e,
+                        `  message:`, e.reason.message + "\n" +
+                        `  stack  :`, e.reason.stack + "\n" +
+                        `  e      :`, e,
                         ``
                     ); 
+                    console.log(e);
                 } 
                 catch(innerError){
                     console.error( 

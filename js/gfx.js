@@ -511,7 +511,7 @@ var _GFX = {
                     tw = _GFX.tilesets[tilemap.ts].config.tileWidth;
                     th = _GFX.tilesets[tilemap.ts].config.tileHeight;
 
-                    // Make sure that settings is an object.
+                    // Make sure that settings is an object and is correct.
                     tilemap.settings = this.correctSettings(tilemap.settings);
 
                     // Ensure that x and y are integers.
@@ -526,9 +526,6 @@ var _GFX = {
                         tilemap.x += ( (_APP.configObj.globalOffsets.x ?? 0) * tw);
                         tilemap.y += ( (_APP.configObj.globalOffsets.y ?? 0) * th);
                     }
-
-                    // Fix settings.
-                    // tilemap.settings = Object.assign({}, _GFX.defaultSettings, tilemap.settings ?? {});
 
                     // If it exists then get it's existing hash.
                     if(exists){ oldHash = _GFX.currentData[layer].tilemaps[tilemapKey].hash ?? 0; }
@@ -694,6 +691,7 @@ var _GFX = {
             
             // Value copy.
             let tilemap = _GFX.tilesets[ts].tilemaps[mapKey];
+
             let pointersSize = _GFX.tilesets[ts].config.pointersSize;
 
             if(!tilemap){ 
@@ -775,8 +773,11 @@ var _GFX = {
             if(undefined == obj.y)      { console.log(obj); throw `createPrintLayerObjData: Missing y: ${JSON.stringify(obj)}`; }
             obj.settings = this.correctSettings(obj.settings); // Make sure that settings is an object.
 
+            let fontObj = _APP.configObj.fontObj ;
+            let fontMap = _GFX.funcs.getTilemap(fontObj.ts, fontObj.tmap);
+
             // Get the highest tile. (For handling font tilesets that only have capital letters.)
-            let maxTileId = _GFX.tilesets[obj.ts].tileCount -1;
+            let maxTileId = fontMap.length -3; // Subtract for dimensions, and 1 more for max id.
 
             // Convert string to array of that string.
             if(!Array.isArray(obj.text)){ obj.text = [ obj.text ]; }
@@ -799,29 +800,39 @@ var _GFX = {
 
             // Go through each line.
             let index = 2;
+            let line, chars, tileId, charCode, c, len;
             for(let l=0; l<obj.text.length; l+=1){
                 // Get the line.
-                let line = obj.text[l];
+                line = obj.text[l];
 
                 // Convert numbers to string.
                 if(typeof line == "number"){ line = line.toString(); }
 
-                // Convert the string to upper case.
-                // line = line.toUpperCase();
+                // Convert the string to upper case (indicated by the fontObj config.)
+                if(fontObj.forceUpperCase){ line = line.toUpperCase(); }
 
                 // Pad the end of the line with spaces.
                 line = line.padEnd(mapWidth, " ");
 
-                // Need to create a tilemap of the characters in the string.
-                let chars = Array.from(line); 
+                // Create a tilemap of the characters in the string.
+                chars = Array.from(line); 
                 
-                let tileId;
-                for(let c=0; c<chars.length; c+=1){
-                    // Convert the ASCII value to a tileId.
-                    tileId = chars[c].charCodeAt(0) - 32;
-
-                    // Add the tileId to the newTilemap. (Make sure to only use a valid font tileId.)
-                    newTilemap[index] = Math.min(tileId, maxTileId);
+                // Convert the ASCII values to tileIds.
+                for(c=0, len=chars.length; c<len; c+=1){
+                    // Get the char code (ASCII) of the charactor.
+                    charCode = chars[c].charCodeAt(0);
+                    
+                    // Remove 32 to get a tileId index.
+                    tileId = charCode - 32;
+                    
+                    // Ensure that the tileId index is no greater than maxTileId.
+                    tileId = Math.min(tileId, maxTileId);
+                    
+                    // Use the tileId index to get the tileId based on the fontMap. (+2 to handle dimension bytes.)
+                    tileId = fontMap[tileId+2];
+                    
+                    // Add the tileId to the newTilemap.
+                    newTilemap[index] = tileId;
 
                     // Increment the next newTilemap index.
                     index +=1 ;
@@ -1061,8 +1072,9 @@ class LayerObject {
         
         // Get the tileWidth and tileHeight from the tileset config. 
         if(this.tilesetKey){
-            this.tw = _GFX.tilesets[this.tilesetKey].config.tileWidth ;
-            this.th = _GFX.tilesets[this.tilesetKey].config.tileHeight;
+            // console.log(this._tilesetKey, _GFX.tilesets[this._tilesetKey]);
+            this.tw = _GFX.tilesets[this._tilesetKey].config.tileWidth ;
+            this.th = _GFX.tilesets[this._tilesetKey].config.tileHeight;
         }
         // Get the tileWidth and tileHeight from the configObj.dimensions config.
         else{
@@ -1092,7 +1104,7 @@ class LayerObject {
         // layerObjKey (MapKey), layerKey, and tilesetKey.
         this.layerObjKey = config.layerObjKey;
         this.layerKey    = config.layerKey;
-        this.tilesetKey  = config.tilesetKey;
+        this.tilesetKey  = config.tilesetKey ?? "combined1";
         this.removeHashOnRemoval = config.removeHashOnRemoval ?? true;
         this.noResort = config.noResort ?? false;
 
@@ -1234,7 +1246,7 @@ class PrintText extends LayerObject{
             // This indicates if each line should be the same width as the longest line (padded with spaces.)
             padLines: true, 
 
-            layerObjKey: "pause_menu_text", tilesetKey: "font_tiles1", layerKey: "L4", 
+            layerObjKey: "pause_menu_text", tilesetKey: "combined1", layerKey: "L4", 
 
             // Shared settings (if settings is not specified for a line.)
             settings: { bgColorRgba: [16, 16, 16, 224] },
@@ -1303,7 +1315,7 @@ class PrintText extends LayerObject{
                     y: y,
                     layerObjKey: layerObjectKey, 
                     layerKey   : config.layerKey   ?? "L4", 
-                    tilesetKey : config.tilesetKey ?? "font_tiles1", 
+                    tilesetKey : config.tilesetKey ?? "combined1", 
                     xyByGrid   : true, 
                     settings   : settings,
                     hidden: config.hidden ?? false,
@@ -1330,7 +1342,7 @@ class PrintText extends LayerObject{
         this.noResort = config.noResort ?? true;
 
         if(!this.layerKey)  { this.layerKey = "L4";}
-        if(!this.tilesetKey){ this.tilesetKey = "font_tiles1"; }
+        if(!this.tilesetKey){ this.tilesetKey = "combined1"; }
 
         // This part should be handled already by _GFX.funcs.layerObjs.createOne.
         // TODO: This could result in a very large name.

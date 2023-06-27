@@ -2,8 +2,8 @@ _APP.game.gamestates["gs_PLAYING"] = {
     gameSettings: {
         P1  : "HUMAN",
         P2  : "HUMAN",
-        P3  : "NONE",
-        P4  : "NONE",
+        P3  : "HUMAN",
+        P4  : "HUMAN",
         WIN : "atZeroCards", // ["at500pts", "atZeroCards"]
         // WIN : "at500pts", // ["at500pts", "atZeroCards"]
         DRAW: "one",         // ["one", "until"]

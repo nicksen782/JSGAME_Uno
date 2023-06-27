@@ -43,7 +43,7 @@ _APP.game.gamestates["gs_TITLE"] = {
             let y = 12;
             Border.createBorder({
                 x:2, y:y+=2, w: 24, h: 11, 
-                layerObjKey: `border1`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1"
+                layerObjKey: `border1`, layerKey: "L2", xyByGrid: true, tilesetKey: "combined1"
             });
             _GFX.layerObjs.createOne(PrintText, { text: "PLAY GAME (LOCAL)"  , x:6, y: y+=2, layerObjKey: `text1`, layerKey: "L4", xyByGrid: true, });
             _GFX.layerObjs.createOne(PrintText, { text: "PLAY GAME (NETPLAY)", x:6, y: y+=2, layerObjKey: `text2`, layerKey: "L4", xyByGrid: true, settings: { colorData: [ [[255,255,255,255],[64,64,64,255] ]] } } );

@@ -14,12 +14,12 @@ _APP.game.gamestates["gs_RULES"] = {
 
         Border.createBorder({
             x:0, y:0, w: 28, h: 28, 
-            layerObjKey: `border1`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1"
+            layerObjKey: `border1`, layerKey: "L2", xyByGrid: true, tilesetKey: "combined1"
         });
 
         let linesConfig = {
             x:1, y:1, 
-            layerObjKey: "rules_text", tilesetKey: "font_tiles1", layerKey: "L4", 
+            layerObjKey: "rules_text", tilesetKey: "combined1", layerKey: "L4", 
             // settings: {},
             lines: [
                 { t: `BE THE FIRST TO DISCARD `   },
@@ -52,7 +52,7 @@ _APP.game.gamestates["gs_RULES"] = {
         };
         let linesConfig2 = {
             x:1, y:1, 
-            layerObjKey: "rules_text", tilesetKey: "font_tiles1", layerKey: "L4", 
+            layerObjKey: "rules_text", tilesetKey: "combined1", layerKey: "L4", 
             // settings: {},
             lines: [
                 { t: `SKIP    : SKIP NEXT PLAYER` },

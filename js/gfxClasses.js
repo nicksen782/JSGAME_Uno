@@ -15,12 +15,12 @@ _GFX.layerObjs.getOne("N782_face_anim", "gs_N782").x = 8;
 _GFX.layerObjs.getOne("N782_face_anim", "gs_N782").y += 8;
 
 // CHANGE TILEMAP:
-_GFX.layerObjs.getOne("board_28x28"   , "gs_JSG") .tmap = _GFX.tilesets.bg_tiles2.tilemaps.N782_TEXT1_F2;
-_GFX.layerObjs.getOne("board_28x28"   , "gs_JSG") .tmap = _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXT1_F2");
+_GFX.layerObjs.getOne("board_28x28"   , "gs_JSG") .tmap = _GFX.tilesets.combined1.tilemaps.N782_TEXT1_F2;
+_GFX.layerObjs.getOne("board_28x28"   , "gs_JSG") .tmap = _GFX.funcs.getTilemap("combined1", "N782_TEXT1_F2");
 
 // CHANGE TILESET:
-_GFX.layerObjs.getOne("N782_text_anim", "gs_N782").tilesetKey = "bg_tiles";
-_GFX.layerObjs.getOne("board_28x28"   , "gs_JSG") .tilesetKey = "bg_tiles2";
+_GFX.layerObjs.getOne("N782_text_anim", "gs_N782").tilesetKey = "combined1";
+_GFX.layerObjs.getOne("board_28x28"   , "gs_JSG") .tilesetKey = "combined1";
 
 // CHANGE SETTINGS:
 _GFX.layerObjs.getOne("N782_oneStar_anim2_10", "gs_N782").setSetting("colorData", [ [ [ 255,182,  0,255], [ 255,72,36,255] ], ]);
@@ -81,16 +81,16 @@ class UnoLetter extends LayerObject{
     constructor(config){
         super(config);
         this.className = this.constructor.name;
+        this.tilesetKey = config.tilesetKey ?? "combined1";
         
-        if     (config.letter == "u") { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_u"); }
-        else if(config.letter == "n") { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_n"); }
-        else if(config.letter == "o") { this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_o"); }
-        else if(config.letter == "u2"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno2_u"); }
-        else if(config.letter == "n2"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno2_n"); }
-        else if(config.letter == "o2"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", "letter_uno2_o"); }
+        if     (config.letter == "u") { this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, "letter_uno_u"); }
+        else if(config.letter == "n") { this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, "letter_uno_n"); }
+        else if(config.letter == "o") { this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, "letter_uno_o"); }
+        else if(config.letter == "u2"){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, "letter_uno2_u"); }
+        else if(config.letter == "n2"){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, "letter_uno2_n"); }
+        else if(config.letter == "o2"){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, "letter_uno2_o"); }
         else{ console.log("Unmatched letter!"); throw "Unmatched letter"; }
         
-        this.tilesetKey = "bg_tiles1";
         this.framesIndex = config.framesIndex ?? 0;
         if(this.framesIndex >= UnoLetter.colorFrames.length){ this.framesIndex = 0; }
         this.framesCounter = 0;
@@ -160,32 +160,33 @@ class Cursor1 extends LayerObject{
     };
 
     constructor(config){
-        config.tilesetKey = "sprite_tiles1";
+        config.tilesetKey = "combined1";
         super(config);
         this.className = this.constructor.name;
 
-        this.tilesetKey = "sprite_tiles1";
+        this.tilesetKey = config.tilesetKey;
 
         this.cursorType = config.cursorType ?? 1;
 
         if(this.cursorType == 1){
             this.frames = [
-                _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f1"),
-                _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f2"),
+                _GFX.funcs.getTilemap(this.tilesetKey, "cursor1_f1"),
+                _GFX.funcs.getTilemap(this.tilesetKey, "cursor1_f2"),
             ];
         }
         else if(this.cursorType == 2){
             this.frames = [
-                _GFX.funcs.getTilemap("sprite_tiles1", "cursor2_f1"),
-                _GFX.funcs.getTilemap("sprite_tiles1", "cursor2_f2"),
+                _GFX.funcs.getTilemap(this.tilesetKey, "cursor2_f1"),
+                _GFX.funcs.getTilemap(this.tilesetKey, "cursor2_f2"),
             ];
         }
+        // Big cursor.
         else if(this.cursorType == 3){
             this.frames = [
-                _GFX.funcs.getTilemap("sprite_tiles1", "cursor3_f1"),
-                _GFX.funcs.getTilemap("sprite_tiles1", "cursor3_f2"),
-                _GFX.funcs.getTilemap("sprite_tiles1", "cursor3_f3"),
-                _GFX.funcs.getTilemap("sprite_tiles1", "cursor3_f2"),
+                _GFX.funcs.getTilemap(this.tilesetKey, "cursor3_f1"),
+                _GFX.funcs.getTilemap(this.tilesetKey, "cursor3_f2"),
+                _GFX.funcs.getTilemap(this.tilesetKey, "cursor3_f3"),
+                _GFX.funcs.getTilemap(this.tilesetKey, "cursor3_f2"),
             ];
         }
 
@@ -234,7 +235,6 @@ class Cursor1 extends LayerObject{
 
                 // Stop after repeating up to this.repeats.
                 if(this.repeatCount == this.repeats) { 
-                    // this.tmap = _GFX.funcs.getTilemap("sprite_tiles1", "cursor1_f1");
                     this.tmap = this.frames[0];
                     this.done = true; 
                     this._changed = true; 
@@ -298,22 +298,22 @@ class Card extends LayerObject{
         }
 
         // Set the card tilemap.
-        if     (value == "CARD_0"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_0`);         }
-        else if(value == "CARD_1"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_1`);         }
-        else if(value == "CARD_2"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_2`);         }
-        else if(value == "CARD_3"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_3`);         }
-        else if(value == "CARD_4"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_4`);         }
-        else if(value == "CARD_5"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_5`);         }
-        else if(value == "CARD_6"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_6`);         }
-        else if(value == "CARD_7"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_7`);         }
-        else if(value == "CARD_8"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_8`);         }
-        else if(value == "CARD_9"         ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_9`);         }
-        else if(value == "CARD_DRAW2"     ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_draw2`);     }
-        else if(value == "CARD_SKIP"      ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_skip`);      }
-        else if(value == "CARD_REV"       ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_reverse`);   }
-        else if(value == "CARD_WILD"      ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_wild`);      }
-        else if(value == "CARD_WILD_DRAW4"){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_wildDraw4`); }
-        else if(value == "CARD_BACK"      ){ this.tmap = _GFX.funcs.getTilemap("bg_tiles1", `card_${this._size}_back`);      }
+        if     (value == "CARD_0"         ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_0`);         }
+        else if(value == "CARD_1"         ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_1`);         }
+        else if(value == "CARD_2"         ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_2`);         }
+        else if(value == "CARD_3"         ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_3`);         }
+        else if(value == "CARD_4"         ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_4`);         }
+        else if(value == "CARD_5"         ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_5`);         }
+        else if(value == "CARD_6"         ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_6`);         }
+        else if(value == "CARD_7"         ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_7`);         }
+        else if(value == "CARD_8"         ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_8`);         }
+        else if(value == "CARD_9"         ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_9`);         }
+        else if(value == "CARD_DRAW2"     ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_draw2`);     }
+        else if(value == "CARD_SKIP"      ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_skip`);      }
+        else if(value == "CARD_REV"       ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_reverse`);   }
+        else if(value == "CARD_WILD"      ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_wild`);      }
+        else if(value == "CARD_WILD_DRAW4"){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_wildDraw4`); }
+        else if(value == "CARD_BACK"      ){ this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, `card_${this._size}_back`);      }
         else{ 
             console.error(`Invalid card value: ${value}`, this); 
             throw `Invalid card value: ${value}`; 
@@ -357,6 +357,7 @@ class Card extends LayerObject{
             throw `Invalid card size: ${this.size}`; 
         }
         this._size = size;
+        // this._size = "lg";
 
         // Set the card tilemap.
         this._change_value(this._value);
@@ -365,7 +366,7 @@ class Card extends LayerObject{
     };
 
     constructor(config){
-        config.tilesetKey = "bg_tiles1";
+        config.tilesetKey = config.tilesetKey ?? "combined1";
         super(config);
         this.className = this.constructor.name;
 
@@ -373,6 +374,8 @@ class Card extends LayerObject{
         this._value = config.value;
         this._color = config.color;
 
+        // this.size = "lg";
+        
         // Set the card tilemap.
         this._change_value(config.value);
 
@@ -544,51 +547,58 @@ class Border extends LayerObject{
     This class is basically identical to LayerObject. but using it allows filtering in LayerObjects debug.
     */
 
+    static borderTiles = [
+        {
+            tl  : {ts: "combined1", tmap: "border1_tl"  }, // Has tranparency.
+            tr  : {ts: "combined1", tmap: "border1_tr"  }, // Has tranparency.
+            bl  : {ts: "combined1", tmap: "border1_bl"  }, // Has tranparency.
+            br  : {ts: "combined1", tmap: "border1_br"  }, // Has tranparency.
+            vert: {ts: "combined1", tmap: "border1_row" }, // Has tranparency.
+            horz: {ts: "combined1", tmap: "border1_col" }, // Has tranparency.
+        },
+        {
+            tl  : {ts: "combined1", tmap: "border2_tl"  }, // For the gameboard.
+            tr  : {ts: "combined1", tmap: "border2_tr"  }, // For the gameboard.
+            bl  : {ts: "combined1", tmap: "border2_bl"  }, // For the gameboard.
+            br  : {ts: "combined1", tmap: "border2_br"  }, // For the gameboard.
+            vert: {ts: "combined1", tmap: "border2_row" }, // For the gameboard.
+            horz: {ts: "combined1", tmap: "border2_col" }, // For the gameboard.
+        },
+        {
+            tl  : {ts: "combined1", tmap: "border3_tl"  }, // Has black instead of transparency.
+            tr  : {ts: "combined1", tmap: "border3_tr"  }, // Has black instead of transparency.
+            bl  : {ts: "combined1", tmap: "border3_bl"  }, // Has black instead of transparency.
+            br  : {ts: "combined1", tmap: "border3_br"  }, // Has black instead of transparency.
+            vert: {ts: "combined1", tmap: "border3_row" }, // Has black instead of transparency.
+            horz: {ts: "combined1", tmap: "border3_col" }, // Has black instead of transparency.
+        },
+    ];
+
+    // This type of border consists of 4 corner tiles and horz and vert tiles. Total of 8 LayerObjects.
+    // With a fill there will be an additional fill tmap which can be large depending on the border dimensions.
     static createBorder(config){
         /* 
         Border.createBorder({
             x:1, y:9, w: 26, h: 11, 
-            layerObjKey: `border1`, layerKey: "L4", xyByGrid: true, tilesetKey: "bg_tiles1"
+            layerObjKey: `border1`, layerKey: "L4", xyByGrid: true, tilesetKey: "combined1".
+            fill: true, fillTile: _GFX.funcs.getTilemap("combined1", "colorFill1_black")[2],
         });
-    
         */
+
         // A border uses 6 different tiles.
-        let tile_border_tl;
-        let tile_border_tr;
-        let tile_border_bl;
-        let tile_border_br;
-        let tile_border_vert;
-        let tile_border_horz;
         config.borderType = config.borderType ?? 1;
+        config.borderType = ((config.borderType - 1) % Border.borderTiles.length) + 1;
+
+        config.tilesetKey = config.tilesetKey ?? "combined1";
         let pointersSize = _GFX.tilesets[config.tilesetKey].config.pointersSize;
 
-        // Border with transparency.
-        if(config.borderType == 1){
-            tile_border_tl   = _GFX.funcs.getTilemap("bg_tiles1", "border1_tl")[2];
-            tile_border_tr   = _GFX.funcs.getTilemap("bg_tiles1", "border1_tr")[2];
-            tile_border_bl   = _GFX.funcs.getTilemap("bg_tiles1", "border1_bl")[2];
-            tile_border_br   = _GFX.funcs.getTilemap("bg_tiles1", "border1_br")[2];
-            tile_border_vert = _GFX.funcs.getTilemap("bg_tiles1", "border1_row")[2];
-            tile_border_horz = _GFX.funcs.getTilemap("bg_tiles1", "border1_col")[2];
-        }
-        // Gameboard border.
-        else if(config.borderType == 2){
-            tile_border_tl   = _GFX.funcs.getTilemap("bg_tiles1", "border2_tl")[2];
-            tile_border_tr   = _GFX.funcs.getTilemap("bg_tiles1", "border2_tr")[2];
-            tile_border_bl   = _GFX.funcs.getTilemap("bg_tiles1", "border2_bl")[2];
-            tile_border_br   = _GFX.funcs.getTilemap("bg_tiles1", "border2_br")[2];
-            tile_border_vert = _GFX.funcs.getTilemap("bg_tiles1", "border2_row")[2];
-            tile_border_horz = _GFX.funcs.getTilemap("bg_tiles1", "border2_col")[2];
-        }
-        // Border with black instead of transparency.
-        else if(config.borderType == 3){
-            tile_border_tl   = _GFX.funcs.getTilemap("bg_tiles1", "border3_tl")[2];
-            tile_border_tr   = _GFX.funcs.getTilemap("bg_tiles1", "border3_tr")[2];
-            tile_border_bl   = _GFX.funcs.getTilemap("bg_tiles1", "border3_bl")[2];
-            tile_border_br   = _GFX.funcs.getTilemap("bg_tiles1", "border3_br")[2];
-            tile_border_vert = _GFX.funcs.getTilemap("bg_tiles1", "border3_row")[2];
-            tile_border_horz = _GFX.funcs.getTilemap("bg_tiles1", "border3_col")[2];
-        }
+        // Border tiles.
+        let tile_border_tl   = _GFX.funcs.getTilemap(Border.borderTiles[config.borderType-1].tl  .ts, Border.borderTiles[config.borderType-1].tl  .tmap)[2];
+        let tile_border_tr   = _GFX.funcs.getTilemap(Border.borderTiles[config.borderType-1].tr  .ts, Border.borderTiles[config.borderType-1].tr  .tmap)[2];
+        let tile_border_bl   = _GFX.funcs.getTilemap(Border.borderTiles[config.borderType-1].bl  .ts, Border.borderTiles[config.borderType-1].bl  .tmap)[2];
+        let tile_border_br   = _GFX.funcs.getTilemap(Border.borderTiles[config.borderType-1].br  .ts, Border.borderTiles[config.borderType-1].br  .tmap)[2];
+        let tile_border_vert = _GFX.funcs.getTilemap(Border.borderTiles[config.borderType-1].vert.ts, Border.borderTiles[config.borderType-1].vert.tmap)[2];
+        let tile_border_horz = _GFX.funcs.getTilemap(Border.borderTiles[config.borderType-1].horz.ts, Border.borderTiles[config.borderType-1].horz.tmap)[2];
     
         // A border has 8 parts and thus 8 tilemaps. Potentially one more tilemap for the fill.
         let tilemaps = {
@@ -596,7 +606,7 @@ class Border extends LayerObject{
             corner_tl   : { 
                 layerObjKey: `${config.layerObjKey}_TL`, 
                 layerKey   : config.layerKey   ?? "L4", 
-                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tilesetKey : config.tilesetKey,
                 tmap: pointersSize == 8 
                     ? new Uint8Array( [1, 1, tile_border_tl ] ) 
                     : new Uint16Array( [1, 1, tile_border_tl ] ),
@@ -606,7 +616,7 @@ class Border extends LayerObject{
             corner_tr   : { 
                 layerObjKey: `${config.layerObjKey}_TR`, 
                 layerKey   : config.layerKey   ?? "L4", 
-                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tilesetKey : config.tilesetKey,
                 tmap: pointersSize == 8 
                     ? new Uint8Array( [1, 1, tile_border_tr ] ) 
                     : new Uint16Array( [1, 1, tile_border_tr ] ),
@@ -616,7 +626,7 @@ class Border extends LayerObject{
             corner_bl   : { 
                 layerObjKey: `${config.layerObjKey}_BL`, 
                 layerKey   : config.layerKey   ?? "L4", 
-                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tilesetKey : config.tilesetKey,
                 tmap: pointersSize == 8 
                     ? new Uint8Array( [1, 1, tile_border_bl ] ) 
                     : new Uint16Array( [1, 1, tile_border_bl ] ),
@@ -626,7 +636,7 @@ class Border extends LayerObject{
             corner_br   : { 
                 layerObjKey: `${config.layerObjKey}_BR`, 
                 layerKey   : config.layerKey   ?? "L4", 
-                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tilesetKey : config.tilesetKey,
                 tmap: pointersSize == 8 
                     ? new Uint8Array( [1, 1, tile_border_br ] ) 
                     : new Uint16Array( [1, 1, tile_border_br ] ),
@@ -637,7 +647,7 @@ class Border extends LayerObject{
             top   : { 
                 layerObjKey: `${config.layerObjKey}_T`, 
                 layerKey   : config.layerKey   ?? "L4", 
-                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tilesetKey : config.tilesetKey,
                 tmap: pointersSize == 8 
                     ? new Uint8Array( [config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) )  
                     : new Uint16Array( [config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) ),
@@ -647,7 +657,7 @@ class Border extends LayerObject{
             bottom: { 
                 layerObjKey: `${config.layerObjKey}_B`,
                 layerKey   : config.layerKey   ?? "L4", 
-                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tilesetKey : config.tilesetKey,
                 tmap: pointersSize == 8 
                     ? new Uint8Array([config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) )   
                     : new Uint16Array([config.w-2, 1 ].concat(Array.from({ length: config.w-2 }, () => tile_border_horz)) ),
@@ -657,7 +667,7 @@ class Border extends LayerObject{
             left  : { 
                 layerObjKey: `${config.layerObjKey}_L`,
                 layerKey   : config.layerKey   ?? "L4", 
-                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tilesetKey : config.tilesetKey,
                 tmap: pointersSize == 8 
                     ? new Uint8Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ) 
                     : new Uint16Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ),
@@ -667,7 +677,7 @@ class Border extends LayerObject{
             right : { 
                 layerObjKey: `${config.layerObjKey}_R`,
                 layerKey   : config.layerKey   ?? "L4", 
-                tilesetKey : config.tilesetKey ?? "bg_tiles1",
+                tilesetKey : config.tilesetKey,
                 tmap: pointersSize == 8 
                     ? new Uint8Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ) 
                     : new Uint16Array( [ 1, config.h-2 ].concat(Array.from({ length: config.h-2 }, () => tile_border_vert)) ),
@@ -698,6 +708,89 @@ class Border extends LayerObject{
         // Return the tilemap data.
         return tilemaps;
     };
+
+    // This type of border is 1 tilemap with either transparent tiles for the fill or a selected fillTile.
+    // Because of the fill the tmap can be large depending on the border dimensions.
+    static createBorder2(config){
+        /* 
+        Border.createBorder2({
+            x:15, y:20, w: 5, h: 3, 
+            layerObjKey: `border1`, layerKey: "L4", xyByGrid: true, tilesetKey: "combined1",
+            borderType: 1, fillTile: _GFX.funcs.getTilemap("combined1", "colorFill1_red")[2],
+        });
+        Border.createBorder2({
+            x:15, y:20, w: 5, h: 3, 
+            layerObjKey: `border1`, layerKey: "L4", xyByGrid: true, tilesetKey: "combined1",
+            borderType: 3, fillTile: _GFX.funcs.getTilemap("combined1", "transparentTile")[2],
+        });
+        */
+
+       let pointersSize = _GFX.tilesets[config.tilesetKey].config.pointersSize;
+       config.borderType = config.borderType ?? 1;
+       config.borderType = ((config.borderType - 1) % Border.borderTiles.length) + 1;
+
+       // Border tiles.
+       let tile_border_tl   = _GFX.funcs.getTilemap(Border.borderTiles[config.borderType-1].tl  .ts, Border.borderTiles[config.borderType-1].tl  .tmap)[2];
+       let tile_border_tr   = _GFX.funcs.getTilemap(Border.borderTiles[config.borderType-1].tr  .ts, Border.borderTiles[config.borderType-1].tr  .tmap)[2];
+       let tile_border_bl   = _GFX.funcs.getTilemap(Border.borderTiles[config.borderType-1].bl  .ts, Border.borderTiles[config.borderType-1].bl  .tmap)[2];
+       let tile_border_br   = _GFX.funcs.getTilemap(Border.borderTiles[config.borderType-1].br  .ts, Border.borderTiles[config.borderType-1].br  .tmap)[2];
+       let tile_border_vert = _GFX.funcs.getTilemap(Border.borderTiles[config.borderType-1].vert.ts, Border.borderTiles[config.borderType-1].vert.tmap)[2];
+       let tile_border_horz = _GFX.funcs.getTilemap(Border.borderTiles[config.borderType-1].horz.ts, Border.borderTiles[config.borderType-1].horz.tmap)[2];
+
+        // Create a custom tilemap of the border and the till. A fill tile MUST be specified.
+        let tmap = pointersSize == 8 
+            ? new Uint8Array ( 2 + (config.w * config.h) )
+            : new Uint16Array( 2 + (config.w * config.h) );
+        tmap[0] = config.w;
+        tmap[1] = config.h;
+        let index = 2;
+        let tileId;
+        for(let y=0; y<config.h; y+=1){
+            for(let x=0; x<config.w; x+=1){
+                // Top row and corners.
+                if(y==0){
+                    if     (x==0)         { tileId = tile_border_tl; }
+                    else if(x==config.w-1){ tileId = tile_border_tr; }
+                    else                  { tileId = tile_border_horz; }
+                }
+                
+                // Bottom row and corners.
+                else if(y==config.h-1){
+                    if     (x==0)         { tileId = tile_border_bl; }
+                    else if(x==config.w-1){ tileId = tile_border_br; }
+                    else                  { tileId = tile_border_horz; }
+                }
+                
+                // Inner.
+                else { 
+                    if     (x==0)         { tileId = tile_border_vert; }
+                    else if(x==config.w-1){ tileId = tile_border_vert; }
+                    else                  { tileId = config.fillTile;  }
+                }
+
+                // Set.
+                tmap[index] = tileId;
+
+                // Increment the next tmap index.
+                index +=1 ;
+            }
+        }
+
+        // Create the Border LayerObject.
+        _GFX.layerObjs.createOne(Border, {
+            hidden: false,
+            layerObjKey: config.layerObjKey, 
+            layerKey   : "L4", 
+            tilesetKey : "combined1", 
+            tmap       : tmap, 
+            x          : config.x, 
+            y          : config.y, 
+            xyByGrid: config.xyByGrid, 
+            settings: config.settings,
+            removeHashOnRemoval: true, 
+            noResort: false,
+        });
+    };
     
     constructor(config){
         super(config);
@@ -717,8 +810,8 @@ class Fill extends LayerObject{
                 "xyByGrid"   : true,
                 "layerObjKey": "NAME_FOR_FILL", // ("_fill" will be appended to this.)
                 "layerKey"   : "L1",
-                "tilesetKey" : "bg_tiles1",
-                "fillTile"   : _GFX.funcs.getTilemap("bg_tiles1", "blackTile")[2],
+                "tilesetKey" : "combined1",
+                "fillTile"   : _GFX.funcs.getTilemap("combined1", "blackTile")[2],
             }, true);
         */
 
@@ -1008,10 +1101,10 @@ class Deck{
             hidden: false,
         } );
         _GFX.layerObjs.createOne(LayerObject, { 
-            tilesetKey: `bg_tiles1`, 
+            tilesetKey: `combined1`, 
             layerObjKey: `drawBelow`, 
             layerKey   : "L2", 
-            tmap       : _GFX.funcs.getTilemap("bg_tiles1", "underPileL4"), 
+            tmap       : _GFX.funcs.getTilemap("combined1", "underPileL4"), 
             xyByGrid   : true,
             x          : Deck.drawPosBelow[0], 
             y          : Deck.drawPosBelow[1], 
@@ -1033,10 +1126,10 @@ class Deck{
             hidden: true,
         } );
         _GFX.layerObjs.createOne(LayerObject, { 
-            tilesetKey: `bg_tiles1`, 
+            tilesetKey: `combined1`, 
             layerObjKey: `discardBelow`, 
             layerKey   : "L2", 
-            tmap       : _GFX.funcs.getTilemap("bg_tiles1", "underPileL0"), 
+            tmap       : _GFX.funcs.getTilemap("combined1", "underPileL0"), 
             xyByGrid   : true,
             x          : Deck.discardPosBelow[0], 
             y          : Deck.discardPosBelow[1], 
@@ -1317,20 +1410,20 @@ class Deck{
     updateUnderPiles(){
         let drawCount    = this.deck.filter(d=>d.location=="CARD_LOCATION_DRAW").length;
         let drawBelow      = _GFX.layerObjs.getOne("drawBelow");
-        if     (drawCount == 0  ) { drawBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL0");}
-        else if(drawCount <  27 ) { drawBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL1");}
-        else if(drawCount <  54 ) { drawBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL2");}
-        else if(drawCount <  81 ) { drawBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL3");}
-        else                      { drawBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL4");}
+        if     (drawCount == 0  ) { drawBelow.tmap = _GFX.funcs.getTilemap("combined1", "underPileL0");}
+        else if(drawCount <  27 ) { drawBelow.tmap = _GFX.funcs.getTilemap("combined1", "underPileL1");}
+        else if(drawCount <  54 ) { drawBelow.tmap = _GFX.funcs.getTilemap("combined1", "underPileL2");}
+        else if(drawCount <  81 ) { drawBelow.tmap = _GFX.funcs.getTilemap("combined1", "underPileL3");}
+        else                      { drawBelow.tmap = _GFX.funcs.getTilemap("combined1", "underPileL4");}
 
         let discardBelow   = _GFX.layerObjs.getOne("discardBelow");
         let discardCount = this.deck.filter(d=>d.location=="CARD_LOCATION_DISCARD").length;
-        if     (discardCount == 0  ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL0");}
-        else if(discardCount == 1  ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL0");}
-        else if(discardCount <  27 ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL1");}
-        else if(discardCount <  54 ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL2");}
-        else if(discardCount <  81 ) { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL3");}
-        else                         { discardBelow.tmap = _GFX.funcs.getTilemap("bg_tiles1", "underPileL4");}
+        if     (discardCount == 0  ) { discardBelow.tmap = _GFX.funcs.getTilemap("combined1", "underPileL0");}
+        else if(discardCount == 1  ) { discardBelow.tmap = _GFX.funcs.getTilemap("combined1", "underPileL0");}
+        else if(discardCount <  27 ) { discardBelow.tmap = _GFX.funcs.getTilemap("combined1", "underPileL1");}
+        else if(discardCount <  54 ) { discardBelow.tmap = _GFX.funcs.getTilemap("combined1", "underPileL2");}
+        else if(discardCount <  81 ) { discardBelow.tmap = _GFX.funcs.getTilemap("combined1", "underPileL3");}
+        else                         { discardBelow.tmap = _GFX.funcs.getTilemap("combined1", "underPileL4");}
 
         // Make sure that both the drawBelow and the discardBelow are not hidden.
         drawBelow.hidden = false;
@@ -1340,30 +1433,31 @@ class Deck{
 
 class ColorChanger{
     static text = [
-        // `              ` ,
-        `  CHOOSE COLOR  ` ,
+        `                  ` ,
+        `   CHOOSE COLOR   ` ,
         `` ,
         `` ,
-        ``, //`  YELBLUREDGRE  ` ,
-        ``, //`  YELBLUREDGRE  ` ,
-        ``, //`  YELBLUREDGRE  ` ,
+        ``, 
+        ``, 
+        ``, 
         `` ,
         `` ,
-        `  DPAD: CHANGE  `,
-        `     A: SELECT  ` ,
+        `   DPAD: CHANGE   `,
+        `      A: SELECT   ` ,
+        `                  ` ,
     ];
     static pos = { 
-        box   : { x: 6, y: 9 },
-        yellow: { x: 8, y:12 },
-        blue  : { x:11, y:12 },
-        red   : { x:14, y:12 },
-        green : { x:17, y:12 },
+        box   : { x: 5, y: 8 },
+        yellow: { x: 8-2, y:12-1 },
+        blue  : { x:11-1, y:12-1 },
+        red   : { x:14-0, y:12-1 },
+        green : { x:17+1, y:12-1 },
     };
     static cursorsPos = [
-        {x: ColorChanger.pos.yellow.x + 1, y: ColorChanger.pos.yellow.y + 3, color: "CARD_YELLOW" },
-        {x: ColorChanger.pos.blue  .x + 1, y: ColorChanger.pos.blue  .y + 3, color: "CARD_BLUE"   },
-        {x: ColorChanger.pos.red   .x + 1, y: ColorChanger.pos.red   .y + 3, color: "CARD_RED"    },
-        {x: ColorChanger.pos.green .x + 1, y: ColorChanger.pos.green .y + 3, color: "CARD_GREEN"  },
+        { x: ColorChanger.pos.yellow.x + 1, y: ColorChanger.pos.yellow.y + 4, color: "CARD_YELLOW" },
+        { x: ColorChanger.pos.blue  .x + 1, y: ColorChanger.pos.blue  .y + 4, color: "CARD_BLUE"   },
+        { x: ColorChanger.pos.red   .x + 1, y: ColorChanger.pos.red   .y + 4, color: "CARD_RED"    },
+        { x: ColorChanger.pos.green .x + 1, y: ColorChanger.pos.green .y + 4, color: "CARD_GREEN"  },
     ];
     static colors = {
         white  : [255, 255, 255, 255],
@@ -1401,7 +1495,7 @@ class ColorChanger{
             layerObjKey : `color_changer_cursor`, 
             layerKey    : "L4", 
             xyByGrid    : true, 
-            cursorType  : 1,
+            cursorType  : 3,
             settings    : { 
                 rotation: 0,
             }
@@ -1409,17 +1503,17 @@ class ColorChanger{
 
         // Add the colors.
         let tmp = [
-            { layerObjKey: "color_changer_yellow", x: ColorChanger.pos.yellow.x, y: ColorChanger.pos.yellow.y, tmap: this.createFillMap("bg_tiles1", 3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_yellow")[2]) },
-            { layerObjKey: "color_changer_blue"  , x: ColorChanger.pos.blue.x  , y: ColorChanger.pos.blue.y  , tmap: this.createFillMap("bg_tiles1", 3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_blue")  [2]) },
-            { layerObjKey: "color_changer_red"   , x: ColorChanger.pos.red.x   , y: ColorChanger.pos.red.y   , tmap: this.createFillMap("bg_tiles1", 3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_red")   [2]) },
-            { layerObjKey: "color_changer_green" , x: ColorChanger.pos.green.x , y: ColorChanger.pos.green.y , tmap: this.createFillMap("bg_tiles1", 3, 3, _GFX.funcs.getTilemap("bg_tiles1", "solid_green") [2]) },
+            { layerObjKey: "color_changer_yellow", x: ColorChanger.pos.yellow.x, y: ColorChanger.pos.yellow.y, tmap: this.createFillMap("combined1", 4, 4, _GFX.funcs.getTilemap("combined1", "solid_yellow")[2]) },
+            { layerObjKey: "color_changer_blue"  , x: ColorChanger.pos.blue.x  , y: ColorChanger.pos.blue.y  , tmap: this.createFillMap("combined1", 4, 4, _GFX.funcs.getTilemap("combined1", "solid_blue")  [2]) },
+            { layerObjKey: "color_changer_red"   , x: ColorChanger.pos.red.x   , y: ColorChanger.pos.red.y   , tmap: this.createFillMap("combined1", 4, 4, _GFX.funcs.getTilemap("combined1", "solid_red")   [2]) },
+            { layerObjKey: "color_changer_green" , x: ColorChanger.pos.green.x , y: ColorChanger.pos.green.y , tmap: this.createFillMap("combined1", 4, 4, _GFX.funcs.getTilemap("combined1", "solid_green") [2]) },
         ];
         for(let rec of tmp){
             _GFX.layerObjs.createOne(LayerObject, {
                 hidden: true,
                 layerObjKey: rec.layerObjKey, 
                 layerKey   : "L4", 
-                tilesetKey : "bg_tiles1", 
+                tilesetKey : "combined1", 
                 tmap       : rec.tmap, 
                 x          : rec.x, 
                 y          : rec.y, 
@@ -1624,7 +1718,7 @@ class PauseMenu{
                 // This indicates if each line should be the same width as the longest line (padded with spaces.)
                 padLines: true, 
     
-                layerObjKey: "pause_menu_text", tilesetKey: "font_tiles1", layerKey: "L4", 
+                layerObjKey: "pause_menu_text", tilesetKey: "combined1", layerKey: "L4", 
     
                 // Shared settings (if settings is not specified for a line.)
                 settings: { 
@@ -1859,10 +1953,34 @@ class Gameboard{
 
     // For the cursor positions when the player is to select a card.
     static cardCursorsPos = {
-        P1: [ [7 ,23-1], [10,23-1], [13,23-1], [16,23-1], [19,23-1] ], // CARD CURSORS: p1_pos_cursor
-        P2: [ [4 ,7 -1], [4 ,10-1], [4 ,13-1], [4 ,16-1], [4 ,19-1] ], // CARD CURSORS: p2_pos_cursor
-        P3: [ [7 ,4 -1], [10,4 -1], [13,4 -1], [16,4 -1], [19,4 -1] ], // CARD CURSORS: p3_pos_cursor
-        P4: [ [23,7 -1], [23,10-1], [23,13-1], [23,16-1], [23,19-1] ], // CARD CURSORS: p4_pos_cursor
+        "P1": [
+            { "x": 7, "y": 22 },
+            { "x": 10, "y": 22 },
+            { "x": 13, "y": 22 },
+            { "x": 16, "y": 22 },
+            { "x": 19, "y": 22 }
+        ],
+        "P2": [
+            { "x": 4, "y": 7},
+            { "x": 4, "y": 10 },
+            { "x": 4, "y": 13 },
+            { "x": 4, "y": 16 },
+            { "x": 4, "y": 19 }
+        ],
+        "P3": [
+            { "x": 7, "y": 4 },
+            { "x": 10, "y": 4 },
+            { "x": 13, "y": 4 },
+            { "x": 16, "y": 4 },
+            { "x": 19, "y": 4}
+        ],
+        "P4": [
+            { "x": 22, "y": 7 },
+            { "x": 22, "y": 10 },
+            { "x": 22, "y": 13 },
+            { "x": 22, "y": 16 }, 
+            { "x": 22, "y": 19 }
+        ]
     };
 
     constructor(config){
@@ -1888,12 +2006,12 @@ class Gameboard{
         // Color indicator.
         let pos = Gameboard.pos_colorIndicators;
         let type = 0;
-        let fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_black`)[2];
-        let pointersSize = _GFX.tilesets["bg_tiles1"].config.pointersSize;
+        let fillTile = _GFX.funcs.getTilemap("combined1", `colorFill${type+1}_black`)[2];
+        let pointersSize = _GFX.tilesets["combined1"].config.pointersSize;
         _GFX.layerObjs.createOne(LayerObject, {
             layerObjKey: "colorIndicatorBar", 
             layerKey   : "L1", 
-            tilesetKey : "bg_tiles1", 
+            tilesetKey : "combined1", 
             xyByGrid: true, settings: {},
             removeHashOnRemoval: true, noResort: false,
             x: pos["P1"].x, y: pos["P1"].y,
@@ -1911,8 +2029,8 @@ class Gameboard{
         this.cursorsPosIndex = 0;
         _GFX.layerObjs.createOne(Cursor1, { 
             hidden: true,
-            x           : Gameboard.cardCursorsPos[this.currentPlayer][this.cursorsPosIndex][0], 
-            y           : Gameboard.cardCursorsPos[this.currentPlayer][this.cursorsPosIndex][1], 
+            x           : Gameboard.cardCursorsPos[this.currentPlayer][this.cursorsPosIndex].x, 
+            y           : Gameboard.cardCursorsPos[this.currentPlayer][this.cursorsPosIndex].y, 
             layerObjKey : `card_select_cursor`, 
             layerKey    : "L3", 
             xyByGrid    : true, 
@@ -1926,13 +2044,13 @@ class Gameboard{
 
         // Create the row indicator LayerObjects.
         _GFX.layerObjs.createOne(LayerObject, { 
-            tilesetKey: `sprite_tiles1`, layerObjKey: `rowIndicator_A`, layerKey: "L3", 
-            tmap: _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_none"), 
+            tilesetKey: `combined1`, layerObjKey: `rowIndicator_A`, layerKey: "L3", 
+            tmap: _GFX.funcs.getTilemap("combined1", "rowIndicator_none"), 
             xyByGrid: true, x: 0, y: 0, hidden: true,
         } );
         _GFX.layerObjs.createOne(LayerObject, { 
-            tilesetKey: `sprite_tiles1`, layerObjKey: `rowIndicator_B`, layerKey: "L3", 
-            tmap: _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_none"), 
+            tilesetKey: `combined1`, layerObjKey: `rowIndicator_B`, layerKey: "L3", 
+            tmap: _GFX.funcs.getTilemap("combined1", "rowIndicator_none"), 
             xyByGrid: true, x: 0, y: 0, hidden: true,
         } );
     }
@@ -1951,9 +2069,9 @@ class Gameboard{
             "xyByGrid"   : true,
             "layerObjKey": "centerBlack", // ("_fill" will be appended to this.)
             "layerKey"   : "L2", // Layer 2 instead of layer one. This will block the draw/discard piles.
-            "tilesetKey" : "bg_tiles1",
-            "fillTile"   : _GFX.funcs.getTilemap("bg_tiles1", "blackTile")[2],
-            // "fillTile"   : _GFX.funcs.getTilemap("bg_tiles1", "colorFill2_black")[2],
+            "tilesetKey" : "combined1",
+            "fillTile"   : _GFX.funcs.getTilemap("combined1", "blackTile")[2],
+            // "fillTile"   : _GFX.funcs.getTilemap("combined1", "colorFill2_black")[2],
         }, false);
 
         // Create the score text.
@@ -1966,7 +2084,6 @@ class Gameboard{
             cardColor: { text: "------"        , x:7 , y:15, layerKey: "L4", layerObjKey: "winRound_cardColor", class: "PrintText", len: 6}, 
             cardValue: { text: "----------"    , x:7 , y:16, layerKey: "L4", layerObjKey: "winRound_cardValue", class: "PrintText", len: 10}, 
             points   : { text: "----------"    , x:7 , y:18, layerKey: "L4", layerObjKey: "winRound_points"   , class: "PrintText", len: 10}, 
-            // largeCardBg: { x:18, y:15, layerKey: "L2", layerObjKey: "winRound_largeCardBg", class: "Fill", fillTile: _GFX.funcs.getTilemap("bg_tiles1", "letter_uno_fill")[2] }, 
         };
 
         // Create the graphics objects.
@@ -1997,7 +2114,7 @@ class Gameboard{
                     "xyByGrid"   : true,
                     "layerObjKey": rec.layerObjKey, // ("_fill" will be appended to this.)
                     "layerKey"   : rec.layerKey, 
-                    "tilesetKey" : "bg_tiles1",
+                    "tilesetKey" : "combined1",
                     "fillTile"   : rec.fillTile,
                 }, false);
             }
@@ -2121,10 +2238,10 @@ class Gameboard{
             // console.log(`A: Player cards: ${playerCards.length}, cardsToDisplay: ${cardsToDisplay.length}, row: ${currentRow}`);
             
             // Top indicators.
-            rowIndicator_A.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_none");
+            rowIndicator_A.tmap  = _GFX.funcs.getTilemap("combined1", "rowIndicator_none");
             
             // Bottom indicators.
-            rowIndicator_B.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_none");
+            rowIndicator_B.tmap  = _GFX.funcs.getTilemap("combined1", "rowIndicator_none");
         }
 
         // The player has enough cards where there would be additional rows availble.
@@ -2134,10 +2251,10 @@ class Gameboard{
                 // console.log(`B: Player cards: ${playerCards.length}, cardsToDisplay: ${cardsToDisplay.length}, row: ${currentRow}`);
 
                 // Top indicators.
-                rowIndicator_A.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_downOnly");
+                rowIndicator_A.tmap  = _GFX.funcs.getTilemap("combined1", "rowIndicator_downOnly");
                 
                 // Bottom indicators.
-                rowIndicator_B.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_downOnly");
+                rowIndicator_B.tmap  = _GFX.funcs.getTilemap("combined1", "rowIndicator_downOnly");
             }
 
             // This is a row other than the first row.
@@ -2151,10 +2268,10 @@ class Gameboard{
                     // console.log(`C: Player cards: ${playerCards.length}, cardsToDisplay: ${cardsToDisplay.length}, row: ${currentRow}, maxRowValue: ${maxRowValue} (LAST ROW)`);
 
                     // Top indicators.
-                    rowIndicator_A.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_upOnly");
+                    rowIndicator_A.tmap  = _GFX.funcs.getTilemap("combined1", "rowIndicator_upOnly");
 
                     // Bottom indicators.
-                    rowIndicator_B.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_upOnly");
+                    rowIndicator_B.tmap  = _GFX.funcs.getTilemap("combined1", "rowIndicator_upOnly");
                 }
 
                 // Not the last row. Rows can be changed in both directions.
@@ -2162,10 +2279,10 @@ class Gameboard{
                     // console.log(`D: Player cards: ${playerCards.length}, cardsToDisplay: ${cardsToDisplay.length}, row: ${currentRow}, maxRowValue: ${maxRowValue} (MORE ROWS REMAIN)`);
 
                     // Top indicators.
-                    rowIndicator_A.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_both");
+                    rowIndicator_A.tmap  = _GFX.funcs.getTilemap("combined1", "rowIndicator_both");
 
                     // Bottom indicators.
-                    rowIndicator_B.tmap  = _GFX.funcs.getTilemap("sprite_tiles1", "rowIndicator_both");
+                    rowIndicator_B.tmap  = _GFX.funcs.getTilemap("combined1", "rowIndicator_both");
                 }
             }
         }
@@ -2416,10 +2533,10 @@ class Gameboard{
         
         // Get the fillTile.
         let fillTile;
-        fillTile = _GFX.funcs.getTilemap("bg_tiles1", `colorFill${type+1}_${color}`)[2];
+        fillTile = _GFX.funcs.getTilemap("combined1", `colorFill${type+1}_${color}`)[2];
 
         // Create a tilemap of the fillTile that match the dimensions for the player.
-        let pointersSize = _GFX.tilesets["bg_tiles1"].config.pointersSize;
+        let pointersSize = _GFX.tilesets["combined1"].config.pointersSize;
         let data = Gameboard.pos_colorIndicators[playerKey];
         let tmap = pointersSize == 8
             ? new Uint8Array( [ data.w, data.h ].concat(Array.from({ length: ((data.w) * (data.h)) }, () => fillTile)) )
@@ -2468,8 +2585,8 @@ class Gameboard{
             if(this.cursorsPosIndex -1 < 0){ this.cursorsPosIndex = Gameboard.cardCursorsPos[playerKey].length -1; }
             else{ this.cursorsPosIndex -= 1;}
         }
-        card_select_cursor.x = Gameboard.cardCursorsPos[playerKey][this.cursorsPosIndex][0];
-        card_select_cursor.y = Gameboard.cardCursorsPos[playerKey][this.cursorsPosIndex][1];
+        card_select_cursor.x = Gameboard.cardCursorsPos[playerKey][this.cursorsPosIndex].x;
+        card_select_cursor.y = Gameboard.cardCursorsPos[playerKey][this.cursorsPosIndex].y;
 
         // // Change the cursor color.
         // this.changeCursorColor();
@@ -2494,8 +2611,8 @@ class Gameboard{
 
         let card_select_cursor = _GFX.layerObjs.getOne("card_select_cursor");
         card_select_cursor.setSetting("rotation", rotation);
-        card_select_cursor.x = pos[this.cursorsPosIndex][0];
-        card_select_cursor.y = pos[this.cursorsPosIndex][1];
+        card_select_cursor.x = pos[this.cursorsPosIndex].x;
+        card_select_cursor.y = pos[this.cursorsPosIndex].y;
         card_select_cursor.hidden = false;
         // for(let elemKey in this.elems){ this.elems[elemKey].hidden = false; }
         // this.active = true;
@@ -2528,16 +2645,16 @@ class Gameboard{
         // console.log("this.currentDirection WAS:", this.currentDirection);
         this.currentDirection = dir;
         if(dir == "F"){
-            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionF_tl"), x:5, y:5, layerObjKey: `direction_tl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
-            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionF_tr"), x:20, y:5, layerObjKey: `direction_tr`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
-            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionF_bl"), x:5, y:20, layerObjKey: `direction_bl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
-            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionF_br"), x:20, y:20, layerObjKey: `direction_br`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("combined1", "directionF_tl"), x:5, y:5, layerObjKey: `direction_tl`, layerKey: "L1", tilesetKey: "combined1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("combined1", "directionF_tr"), x:20, y:5, layerObjKey: `direction_tr`, layerKey: "L1", tilesetKey: "combined1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("combined1", "directionF_bl"), x:5, y:20, layerObjKey: `direction_bl`, layerKey: "L1", tilesetKey: "combined1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("combined1", "directionF_br"), x:20, y:20, layerObjKey: `direction_br`, layerKey: "L1", tilesetKey: "combined1", xyByGrid: true });
         }
         else if(dir == "R"){
-            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_tl"), x:5, y:5, layerObjKey: `direction_tl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
-            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_tr"), x:20, y:5, layerObjKey: `direction_tr`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
-            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_bl"), x:5, y:20, layerObjKey: `direction_bl`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
-            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("bg_tiles1", "directionR_br"), x:20, y:20, layerObjKey: `direction_br`, layerKey: "L1", tilesetKey: "bg_tiles1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("combined1", "directionR_tl"), x:5, y:5, layerObjKey: `direction_tl`, layerKey: "L1", tilesetKey: "combined1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("combined1", "directionR_tr"), x:20, y:5, layerObjKey: `direction_tr`, layerKey: "L1", tilesetKey: "combined1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("combined1", "directionR_bl"), x:5, y:20, layerObjKey: `direction_bl`, layerKey: "L1", tilesetKey: "combined1", xyByGrid: true });
+            _GFX.layerObjs.createOne(LayerObject, { tmap: _GFX.funcs.getTilemap("combined1", "directionR_br"), x:20, y:20, layerObjKey: `direction_br`, layerKey: "L1", tilesetKey: "combined1", xyByGrid: true });
         }
         // DEBUG
         else if(dir == "N"){
@@ -2655,50 +2772,50 @@ class Gameboard{
         // border/fill: center
         Border.createBorder({
             x:pos.centerBorder.x, y:pos.centerBorder.y, w: pos.centerBorder.w, h: pos.centerBorder.h, 
-            layerObjKey: `cBorder`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1", 
-            fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "border2_fill")[2], borderType: borderType_center 
+            layerObjKey: `cBorder`, layerKey: "L1", xyByGrid: true, tilesetKey: "combined1", 
+            fill: true, fillTile: _GFX.funcs.getTilemap("combined1", "border2_fill")[2], borderType: borderType_center 
         });
 
         // Border/fill: player 1
         Border.createBorder({
             x:pos.p1Border.x, y:pos.p1Border.y, w: pos.p1Border.w, h: pos.p1Border.h, 
-            layerObjKey: `p1Border`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1",
-            fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "wood2")[2], borderType: borderType_player 
+            layerObjKey: `p1Border`, layerKey: "L1", xyByGrid: true, tilesetKey: "combined1",
+            fill: true, fillTile: _GFX.funcs.getTilemap("combined1", "wood2")[2], borderType: borderType_player 
         });
         
         // Border/fill: player 2
         Border.createBorder({
             x:pos.p2Border.x, y:pos.p2Border.y, w: pos.p2Border.w, h: pos.p2Border.h, 
-            layerObjKey: `p2Border`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1",
-            fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "wood2")[2], borderType: borderType_player 
+            layerObjKey: `p2Border`, layerKey: "L1", xyByGrid: true, tilesetKey: "combined1",
+            fill: true, fillTile: _GFX.funcs.getTilemap("combined1", "wood2")[2], borderType: borderType_player 
         });
         
         // Border/fill: player 3
         Border.createBorder({
             x:pos.p3Border.x, y:pos.p3Border.y, w: pos.p3Border.w, h: pos.p3Border.h, 
-            layerObjKey: `p3Border`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1",
-            fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "wood2")[2], borderType: borderType_player 
+            layerObjKey: `p3Border`, layerKey: "L1", xyByGrid: true, tilesetKey: "combined1",
+            fill: true, fillTile: _GFX.funcs.getTilemap("combined1", "wood2")[2], borderType: borderType_player 
         });
         
         // Border/fill: player 4
         Border.createBorder({
             x:pos.p4Border.x, y:pos.p4Border.y, w: pos.p4Border.w, h: pos.p4Border.h, 
-            layerObjKey: `p4Border`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1",
-            fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "wood2")[2], borderType: borderType_player 
+            layerObjKey: `p4Border`, layerKey: "L1", xyByGrid: true, tilesetKey: "combined1",
+            fill: true, fillTile: _GFX.funcs.getTilemap("combined1", "wood2")[2], borderType: borderType_player 
         });
 
         // Border/fill: draw pile
         Border.createBorder({
             x:pos.drawBorder.x, y:pos.drawBorder.y, w: pos.drawBorder.w, h: pos.drawBorder.h, 
-            layerObjKey: `drapBorder`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1",
-            fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "wood2")[2], borderType: borderType_draw 
+            layerObjKey: `drapBorder`, layerKey: "L1", xyByGrid: true, tilesetKey: "combined1",
+            fill: true, fillTile: _GFX.funcs.getTilemap("combined1", "wood2")[2], borderType: borderType_draw 
         });
         
         // Border/fill: discard pile
         Border.createBorder({
             x:pos.discBorder.x, y:pos.discBorder.y, w: pos.discBorder.w, h: pos.discBorder.h, 
-            layerObjKey: `dispBorder`, layerKey: "L1", xyByGrid: true, tilesetKey: "bg_tiles1",
-            fill: true, fillTile: _GFX.funcs.getTilemap("bg_tiles1", "wood2")[2], borderType: borderType_discard 
+            layerObjKey: `dispBorder`, layerKey: "L1", xyByGrid: true, tilesetKey: "combined1",
+            fill: true, fillTile: _GFX.funcs.getTilemap("combined1", "wood2")[2], borderType: borderType_discard 
         });
     };
 };
@@ -2713,7 +2830,6 @@ class N782_face_anim extends LayerObject{
         super(config);
         this.className = this.constructor.name;
 
-        // this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
         this.tilesetKey = config.tilesetKey ?? "combined1";
         
         this.frameKeys = [
@@ -2825,7 +2941,6 @@ class N782_oneStar_anim extends LayerObject{
         super(config);
         this.className = this.constructor.name;
 
-        // this.tilesetKey = config.tilesetKey ?? "bg_tiles2";
         this.tilesetKey = config.tilesetKey ?? "combined1";
 
         this.pos = N782_oneStar_anim.star_pos;
@@ -2849,8 +2964,7 @@ class N782_oneStar_anim extends LayerObject{
         this.x = N782_oneStar_anim.star_home_pos.x + this.pos[this.posIndex].x;
         this.y = N782_oneStar_anim.star_home_pos.y + this.pos[this.posIndex].y;
 
-        // this.tmap = _GFX.funcs.getTilemap("bg_tiles2", "N782_STAR");
-        this.tmap = _GFX.funcs.getTilemap("combined1", "N782_STAR");
+        this.tmap = _GFX.funcs.getTilemap(this.tilesetKey, "N782_STAR");
     }
 
     // Render functions.
@@ -2869,9 +2983,7 @@ class N782_oneStar_anim extends LayerObject{
 
             // If posIndex is out-of-bounds reset to 0.
             if(this.posIndex >= this.pos.length){
-                // console.log("reseting", this.layerObjKey);
                 this.posIndex = 0;
-
             }
 
             if(this.moveCounter >= this.pos.length){
@@ -2894,9 +3006,6 @@ class N782_oneStar_anim extends LayerObject{
                 return; 
             }
         }
-
-        // Set the new tmap.
-        // this.tmap = this.frames[this.framesIndex];
     };
 };
 

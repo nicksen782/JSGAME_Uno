@@ -22,7 +22,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Screen border and title.
             Border.createBorder({
                 x:x+0, y:y+0, w: 28, h: 28, 
-                layerObjKey: `brdr_All`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1"
+                layerObjKey: `brdr_All`, layerKey: "L2", xyByGrid: true, tilesetKey: "combined1"
             });
             _GFX.layerObjs.createOne(PrintText, { text: "OPTIONS", x:x+11, y: y+0, layerObjKey: `screen_title`, layerKey: "L4", xyByGrid: true, settings: { bgColorRgba: [0,0,0,168] } });
 
@@ -38,7 +38,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Border around the players options. 
             Border.createBorder({
                 x:x+0, y:y+0, w: 12, h: 6, 
-                layerObjKey: `brdr_playersB`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `brdr_playersB`, layerKey: "L2", xyByGrid: true, tilesetKey: "combined1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
 
@@ -48,8 +48,8 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Border around the "PLAYERS" text.
             Border.createBorder({
                 x:x+0, y:y-2, w: 9, h: 3, 
-                layerObjKey: `brdr_playersA`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
-                settings: { bgColorRgba: [0,0,0,255] }
+                layerObjKey: `brdr_playersA`, layerKey: "L2", xyByGrid: true, tilesetKey: "combined1",
+                // settings: { bgColorRgba: [0,0,0,255] }
             });
 
             // Text for the player options. 
@@ -85,7 +85,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Border around the win style options. 
             Border.createBorder({
                 x:x+0, y:y+0, w: 11, h: 6, 
-                layerObjKey: `brdr_winStyle_B`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `brdr_winStyle_B`, layerKey: "L2", xyByGrid: true, tilesetKey: "combined1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
             
@@ -95,7 +95,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
                 // Border around the "WIN STYLE" text.
                 Border.createBorder({
                 x:x+0, y:y-2, w: 11, h: 3, 
-                layerObjKey: `brdr_winStyle_A`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `brdr_winStyle_A`, layerKey: "L2", xyByGrid: true, tilesetKey: "combined1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
 
@@ -111,7 +111,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Border around the noPlayableCard options. 
             Border.createBorder({
                 x:x+0, y:y+0, w: 23, h: 4, 
-                layerObjKey: `brdr_npc_B`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `brdr_npc_B`, layerKey: "L2", xyByGrid: true, tilesetKey: "combined1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
             
@@ -121,7 +121,7 @@ _APP.game.gamestates["gs_OPTIONS"] = {
             // Border around the "IF NO PLAYABLE CARD" text.
             Border.createBorder({
                 x:x+0, y:y-2, w: 21, h: 3, 
-                layerObjKey: `brdr_npc_A`, layerKey: "L2", xyByGrid: true, tilesetKey: "bg_tiles1",
+                layerObjKey: `brdr_npc_A`, layerKey: "L2", xyByGrid: true, tilesetKey: "combined1",
                 settings: { bgColorRgba: [0,0,0,255] }
             });
 

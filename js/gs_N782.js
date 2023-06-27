@@ -28,20 +28,16 @@ _APP.game.gamestates["gs_N782"] = {
             _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); 
         }
 
-        // _GFX.layerObjs.createOne(N782_face_anim, { xyByGrid: true, layerObjKey: "N782_face_anim", layerKey: "L1", tilesetKey: "bg_tiles2" });
         _GFX.layerObjs.createOne(N782_face_anim, { xyByGrid: true, layerObjKey: "N782_face_anim", layerKey: "L1", hidden: false });
 
         for(let i=0; i<this.numStars; i+=1){
-        //     // _GFX.layerObjs.createOne(N782_oneStar_anim, { star: i+1, xyByGrid: true, layerObjKey: `N782_star_anim${i+1}`, layerKey: "L1", tilesetKey: "bg_tiles2" });
             _GFX.layerObjs.createOne(N782_oneStar_anim, { star: i+1, xyByGrid: true, layerObjKey: `N782_star_anim${i+1}`, layerKey: "L1", tilesetKey: "combined1" });
         }
 
         _GFX.layerObjs.createOne(LayerObject, { 
-            // tilesetKey: `bg_tiles2`, 
             tilesetKey: `combined1`, 
             layerObjKey: `n782_text`, 
             layerKey   : "L1", 
-            // tmap       : _GFX.funcs.getTilemap("bg_tiles2", "N782_TEXTb"), 
             tmap       : _GFX.funcs.getTilemap("combined1", "N782_TEXTb"), 
             xyByGrid   : true,
             x          : 11, 
@@ -131,11 +127,11 @@ _APP.game.gamestates["gs_N782"] = {
         // It is done.
         else{
             _APP.shared.genTimer.create("genWaitTimer1", 60, _APP.game.gs1, ()=>{
-                // _APP.game.changeGs1("gs_TITLE");
-                // _APP.game.changeGs2("DONE");
+                _APP.game.changeGs1("gs_TITLE");
+                _APP.game.changeGs2("DONE");
 
-                _APP.game.changeGs1("gs_N782");
-                _APP.game.changeGs2("init");
+                // _APP.game.changeGs1("gs_N782");
+                // _APP.game.changeGs2("init");
 
             });
         }

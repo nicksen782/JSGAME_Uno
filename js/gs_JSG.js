@@ -10,15 +10,19 @@ Gamestate will then change to the next gamestate.
 _APP.game.gamestates["gs_JSG"] = {
     colors: {    
         // JSGAME_C1 : [72, 72 , 85 , 255], // JSGAME: darkBlueGray
-        JSGAME_C2 : [0 , 145, 170, 255], // JSGAME: darkCyan
-        JSGAME_C3 : [0 , 182, 255, 255], // JSGAME: brightSkyBlue
         // JSGAME_C1b: [72, 72 , 85 , 255], // JSGAME: slateGray
+        
+        JSGAME_C2 : [0 , 145, 170, 255], // JSGAME: darkCyan
         JSGAME_C2b: [0 , 109, 170, 255], // JSGAME: deepSkyBlue
+
+        JSGAME_C3 : [0 , 182, 255, 255], // JSGAME: brightSkyBlue
         JSGAME_C3b: [0 , 145, 255, 255], // JSGAME: brightSkyBlue2
     },
     JSGAME_LOGO: null, 
     current_logo_palette: 1,
     logo_palettes: [],
+    blinkCountMax: 4,
+    blinkCount: 0,
 
     // Run once upon changing to this game state.
     init: function(){
@@ -68,7 +72,6 @@ _APP.game.gamestates["gs_JSG"] = {
         _APP.shared.genTimer.create("genWaitTimer2", 0);
 
         this.JSGAME_LOGO = _GFX.layerObjs.getOne(`JSGAME_LOGO`);
-        console.log("this.JSGAME_LOGO:", this.JSGAME_LOGO);
 
         // Set the initial gamestate 2.
         _APP.game.changeGs2("");
@@ -84,8 +87,6 @@ _APP.game.gamestates["gs_JSG"] = {
     },
 
     // Main function of this game state. Calls other functions/handles logic, etc.
-    blinkCountMax: 4,
-    blinkCount: 0,
     main: function(){
         // Run init and return if this gamestate is not yet inited.
         if(!this.inited){ this.init(); return; }
@@ -108,13 +109,14 @@ _APP.game.gamestates["gs_JSG"] = {
         else{
             if(this.blinkCount < this.blinkCountMax){
                 this.blinkCount += 1;
-                _APP.shared.genTimer.create("genWaitTimer1", 7, _APP.game.gs1, ()=>{
+                _APP.shared.genTimer.create("genWaitTimer1", 17, _APP.game.gs1, ()=>{
                     this.JSGAME_LOGO.setSetting("colorData", this.logo_palettes[this.current_logo_palette]);
                     this.current_logo_palette = +(!this.current_logo_palette);
                 });
             }
             else{
                 _APP.shared.genTimer.create("genWaitTimer1", 60, _APP.game.gs1, ()=>{
+                    // console.log("DONE");
                     // _APP.game.changeGs1("gs_JSG");
                     _APP.game.changeGs1("gs_N782");
                 });
