@@ -568,8 +568,8 @@ var gfxCoreV5 = {
                             let pointersSize = tileset.config.pointersSize;
                             for(let key in file.tilemaps){ 
                                 let tilemap = pointersSize == 8
-                                 ? new Uint8Array( JSON.parse(file.tilemaps[key]) )
-                                 : new Uint16Array( JSON.parse(file.tilemaps[key]) );
+                                    ? new Uint8Array( JSON.parse(file.tilemaps[key]) )
+                                    : new Uint16Array( JSON.parse(file.tilemaps[key]) );
                                 tileset.tilemaps[key] = tilemap; 
                             }
                         }
@@ -752,17 +752,13 @@ var gfxCoreV5 = {
         // This will trigger missingTile (since there will not be a tile index after the dimensions) and leave the image data as an empty transparent tile.
         if(mapW == 0 || mapH == 0){ mapW = 1; mapW = 1; mapH = 1; }
 
-        let pointersSize = _GFX.tilesets[tmapObj.ts].config.pointersSize;
-
         // Start the tilemap image object.
         let tmiObj = {
             // "imgData"            : new ImageData(mapW * tw, mapH * th),
             "imgData": {
                 width : mapW * tw,
                 height: mapH * th,
-                data : pointersSize == 8
-                    ? new Uint8Array( mapW * tw * mapH * th *4 )
-                    : new Uint16Array( mapW * tw * mapH * th *4 ),
+                data : new Uint8Array( mapW * tw * mapH * th *4 ),
             },
             "ts"                 : tmapObj.ts, 
             "settings"           : tmapObj.settings, 
@@ -1261,9 +1257,9 @@ var gfxCoreV5 = {
         let colorIndex = 0;
 
         let tests = [
-            { name:"letter_uno_u",    blit:false, dx:2*8  , dy:6*8, img:_GFX.tilesets.bg_tiles1.tilemapImages.letter_uno_u    , settings:{}, },
-            { name:"letter_uno_n",    blit:false, dx:10*8 , dy:6*8, img:_GFX.tilesets.bg_tiles1.tilemapImages.letter_uno_n    , settings:{}, },
-            { name:"letter_uno_o",    blit:false, dx:18*8 , dy:6*8, img:_GFX.tilesets.bg_tiles1.tilemapImages.letter_uno_o    , settings:{}, },
+            { name:"letter_uno_u",    blit:false, dx:2*8  , dy:6*8, img:_GFX.tilesets.combined1.tilemapImages.letter_uno_u    , settings:{}, },
+            { name:"letter_uno_n",    blit:false, dx:10*8 , dy:6*8, img:_GFX.tilesets.combined1.tilemapImages.letter_uno_n    , settings:{}, },
+            { name:"letter_uno_o",    blit:false, dx:18*8 , dy:6*8, img:_GFX.tilesets.combined1.tilemapImages.letter_uno_o    , settings:{}, },
         ];
 
         // Draw the initial graphics (UNO)
@@ -1336,27 +1332,27 @@ var gfxCoreV5 = {
         let layerKey = "L3";
         let imgDataCache = _GFX.layers[layerKey].imgDataCache;
         let tests = [
-            { name:"card_sm_1",       blit:false, dx:0*8 , dy:0*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.card_sm_1       , settings:{}, },
-            { name:"card_sm_2",       blit:false, dx:3*8 , dy:0*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.card_sm_2       , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 255,182,85,255 ] ] ]}, },
-            { name:"card_sm_3",       blit:false, dx:6*8 , dy:0*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.card_sm_3       , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 36,72,170,255  ] ] ]}, },
-            { name:"card_sm_4",       blit:false, dx:9*8 , dy:0*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.card_sm_4       , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 0,145,0,255    ] ] ]}, },
-            { name:"card_sm_5",       blit:false, dx:12*8, dy:0*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.card_sm_5       , settings:{ rotation: 90 }, },
-            { name:"card_sm_6",       blit:false, dx:16*8, dy:0*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.card_sm_6       , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 255,182,85,255 ] ] ]}, },
-            { name:"card_sm_7",       blit:false, dx:19*8, dy:0*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.card_sm_7       , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 36,72,170,255  ] ] ]}, },
-            { name:"card_sm_8",       blit:false, dx:22*8, dy:0*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.card_sm_8       , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 0,145,0,255    ] ] ]}, },
-            { name:"card_sm_9",       blit:false, dx:25*8, dy:0*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.card_sm_9       , settings:{}, },
-            { name:"border1_col",     blit:false, dx:0*8 , dy:4*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.border1_col     , settings:{ bgColorRgba: [0,255,0,255] }, },
-            { name:"border1_col",     blit:false, dx:6*8 , dy:5*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.border1_col     , settings:{} },
-            { name:"card_sm_draw2",   blit:false, dx:0*8 , dy:6*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.card_sm_draw2   , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 255,182,85,255 ] ] ]}, },
-            { name:"card_sm_reverse", blit:false, dx:3*8 , dy:6*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.card_sm_reverse , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 36,72,170,255  ] ] ]}, },
-            { name:"card_sm_skip",    blit:false, dx:6*8 , dy:6*8 , img:_GFX.tilesets.bg_tiles1.tilemapImages.card_sm_skip    , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 0,145,0,255    ] ] ]}, },
-            { name:"letter_uno_u",    blit:false, dx:0*8 , dy:10*8, img:_GFX.tilesets.bg_tiles1.tilemapImages.letter_uno_u    , settings:{}, },
-            { name:"cursor1_f1",      blit:true , dx:1*8 , dy:11*8, img:_GFX.tilesets.sprite_tiles1.tilemapImages.cursor1_f1  , settings:{ rotation: 0 }, },
-            { name:"cursor1_f1",      blit:true , dx:5*8 , dy:11*8, img:_GFX.tilesets.sprite_tiles1.tilemapImages.cursor1_f1  , settings:{ rotation: 0 }, },
-            { name:"cursor1_f1",      blit:true , dx:2*8 , dy:3*8 , img:_GFX.tilesets.sprite_tiles1.tilemapImages.cursor1_f1  , settings:{ rotation: 0 }, },
-            { name:"cursor1_f1",      blit:true , dx:2*8 , dy:4*8 , img:_GFX.tilesets.sprite_tiles1.tilemapImages.cursor1_f1  , settings:{ rotation: 0 }, },
-            { name:"cursor1_f1",      blit:true , dx:10*8, dy:3*8 , img:_GFX.tilesets.sprite_tiles1.tilemapImages.cursor1_f1  , settings:{ rotation: 0 }, },
-            { name:"cursor1_f1",      blit:true , dx:10*8, dy:4*8 , img:_GFX.tilesets.sprite_tiles1.tilemapImages.cursor1_f1  , settings:{ rotation: 0 }, },
+            { name:"card_sm_1",       blit:false, dx:0*8 , dy:0*8 , img:_GFX.tilesets.combined1.tilemapImages.card_sm_1       , settings:{}, },
+            { name:"card_sm_2",       blit:false, dx:3*8 , dy:0*8 , img:_GFX.tilesets.combined1.tilemapImages.card_sm_2       , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 255,182,85,255 ] ] ]}, },
+            { name:"card_sm_3",       blit:false, dx:6*8 , dy:0*8 , img:_GFX.tilesets.combined1.tilemapImages.card_sm_3       , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 36,72,170,255  ] ] ]}, },
+            { name:"card_sm_4",       blit:false, dx:9*8 , dy:0*8 , img:_GFX.tilesets.combined1.tilemapImages.card_sm_4       , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 0,145,0,255    ] ] ]}, },
+            { name:"card_sm_5",       blit:false, dx:12*8, dy:0*8 , img:_GFX.tilesets.combined1.tilemapImages.card_sm_5       , settings:{ rotation: 90 }, },
+            { name:"card_sm_6",       blit:false, dx:16*8, dy:0*8 , img:_GFX.tilesets.combined1.tilemapImages.card_sm_6       , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 255,182,85,255 ] ] ]}, },
+            { name:"card_sm_7",       blit:false, dx:19*8, dy:0*8 , img:_GFX.tilesets.combined1.tilemapImages.card_sm_7       , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 36,72,170,255  ] ] ]}, },
+            { name:"card_sm_8",       blit:false, dx:22*8, dy:0*8 , img:_GFX.tilesets.combined1.tilemapImages.card_sm_8       , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 0,145,0,255    ] ] ]}, },
+            { name:"card_sm_9",       blit:false, dx:25*8, dy:0*8 , img:_GFX.tilesets.combined1.tilemapImages.card_sm_9       , settings:{}, },
+            { name:"border1_col",     blit:false, dx:0*8 , dy:4*8 , img:_GFX.tilesets.combined1.tilemapImages.border1_col     , settings:{ bgColorRgba: [0,255,0,255] }, },
+            { name:"border1_col",     blit:false, dx:6*8 , dy:5*8 , img:_GFX.tilesets.combined1.tilemapImages.border1_col     , settings:{} },
+            { name:"card_sm_draw2",   blit:false, dx:0*8 , dy:6*8 , img:_GFX.tilesets.combined1.tilemapImages.card_sm_draw2   , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 255,182,85,255 ] ] ]}, },
+            { name:"card_sm_reverse", blit:false, dx:3*8 , dy:6*8 , img:_GFX.tilesets.combined1.tilemapImages.card_sm_reverse , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 36,72,170,255  ] ] ]}, },
+            { name:"card_sm_skip",    blit:false, dx:6*8 , dy:6*8 , img:_GFX.tilesets.combined1.tilemapImages.card_sm_skip    , settings:{ colorData: [ [ [ 218,0,0,255 ], [ 0,145,0,255    ] ] ]}, },
+            { name:"letter_uno_u",    blit:false, dx:0*8 , dy:10*8, img:_GFX.tilesets.combined1.tilemapImages.letter_uno_u    , settings:{}, },
+            { name:"cursor1_f1",      blit:true , dx:1*8 , dy:11*8, img:_GFX.tilesets.combined1.tilemapImages.cursor1_f1  , settings:{ rotation: 0 }, },
+            { name:"cursor1_f1",      blit:true , dx:5*8 , dy:11*8, img:_GFX.tilesets.combined1.tilemapImages.cursor1_f1  , settings:{ rotation: 0 }, },
+            { name:"cursor1_f1",      blit:true , dx:2*8 , dy:3*8 , img:_GFX.tilesets.combined1.tilemapImages.cursor1_f1  , settings:{ rotation: 0 }, },
+            { name:"cursor1_f1",      blit:true , dx:2*8 , dy:4*8 , img:_GFX.tilesets.combined1.tilemapImages.cursor1_f1  , settings:{ rotation: 0 }, },
+            { name:"cursor1_f1",      blit:true , dx:10*8, dy:3*8 , img:_GFX.tilesets.combined1.tilemapImages.cursor1_f1  , settings:{ rotation: 0 }, },
+            { name:"cursor1_f1",      blit:true , dx:10*8, dy:4*8 , img:_GFX.tilesets.combined1.tilemapImages.cursor1_f1  , settings:{ rotation: 0 }, },
             // { name:"cBorder_fill",    blit:false, dx:6*8 , dy:6*8 , img:_GFX.currentData.L1.tilemaps.cBorder_fill             , settings:{ rotation: 0 }, },
         ];
         
