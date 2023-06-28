@@ -1140,7 +1140,7 @@ class LayerObject {
     };
 
     // Force x and y values to be within the acceptable range.
-    clampXandY(x, y, w, h){
+    _clampXandY(x, y, w, h){
         let maxX = _APP.configObj.dimensions.cols * _APP.configObj.dimensions.tileWidth;
         let maxY = _APP.configObj.dimensions.rows * _APP.configObj.dimensions.tileHeight;
         
@@ -1181,7 +1181,7 @@ class LayerObject {
         // Clamp x and y to the acceptable range on screen.
         let w = this.tmap[0] * _APP.configObj.dimensions.tileWidth;
         let h = this.tmap[1] * _APP.configObj.dimensions.tileHeight;
-        ({x,y} = this.clampXandY(x,y, w, h));
+        ({x,y} = this._clampXandY(x,y, w, h));
 
         //
         let layerObjectData;
@@ -1390,7 +1390,7 @@ class PrintText extends LayerObject{
         // Clamp x and y to the acceptable range on screen.
         let w = this.tmap[0];
         let h = this.tmap[1];
-        ({x:layerObjectData[this.layerObjKey].x ,y: layerObjectData[this.layerObjKey].y} = this.clampXandY(x,y, w, h));
+        ({x:layerObjectData[this.layerObjKey].x ,y: layerObjectData[this.layerObjKey].y} = this._clampXandY(x,y, w, h));
         // this.text
 
         if(onlyReturnLayerObjData){ 

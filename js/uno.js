@@ -94,6 +94,35 @@ _APP.initOutputScaleControls = function(){
 };
 
 _APP.utility = {
+    player: null,
+    stopTrack: function(id){
+        if(!_SND.audioStarted){ console.log("Audio has not been started yet."); return ;}
+        if(this.player){ this.player.stop(); }
+    },
+    playTrack: function(id){
+        if(!_SND.audioStarted){ console.log("Audio has not been started yet."); return ;}
+
+        let tracks = [
+            // https://www.fesliyanstudios.com/royalty-free-music/downloads-c/8-bit-music/6
+            'audio/SLOWER2019-01-02_-_8_Bit_Menu_-_David_Renda_-_FesliyanStudios.com.mp3',
+            'audio/FASTER2019-01-02_-_8_Bit_Menu_-_David_Renda_-_FesliyanStudios.com.mp3',
+            'audio/15-Seconds-2020-03-22_-_8_Bit_Surf_-_FesliyanStudios.com_-_David_Renda.mp3',
+            // https://www.zapsplat.com/sound-effect-category/game-music-and-loops/
+            'audio/music_zapsplat_game_music_childrens_soft_warm_cuddly_calm_015.mp3',
+            'audio/music_zapsplat_game_music_childrens_calm_slow_arpeggio_plucked_soft_warm_caring_005.mp3',
+            'audio/Movie_Themes_-_1492_Conquest_of_Paradise.mid',
+        ];
+        if(this.player){ this.player.stop(); }
+        this.player = new Tone.Player({url: tracks[id], loop: true}).toDestination();
+
+        // play as soon as the buffer is loaded
+        this.player.autostart = true;
+
+        // player.start();
+        // player.stop();
+
+        console.log(`Playing track #${id}, ${tracks[id]}`);
+    },
     // This is used to verify that strict mode is on. (only used manually for debugging.)
     isStrictMode() {
         try {
@@ -324,6 +353,7 @@ _APP.utility = {
     // Adds the specified file.
     addFile: function(rec, relativePath){
         return new Promise(async (res,rej)=>{
+            if(relativePath){ relativePath += "/"; }
             switch(rec.t){
                 case "js": { 
                     // Create the script. 
@@ -340,7 +370,7 @@ _APP.utility = {
                     // Onload.
                     script.onload = function () { res(); script.onload = null; };
                     script.onerror = function (err) { 
-                        console.log("addFile: js: FAILURE:", `${relativePath}/${rec.f}`);
+                        console.log("addFile: js: FAILURE:", `${relativePath}${rec.f}`);
                         rej(err); script.onload = null; 
                     };
 
@@ -348,7 +378,7 @@ _APP.utility = {
                     document.head.appendChild(script);
 
                     // Set source. 
-                    script.src = `${relativePath}/${rec.f}`;
+                    script.src = `${relativePath}${rec.f}`;
                     
                     break; 
                 }
@@ -357,25 +387,14 @@ _APP.utility = {
                     // Get the data.
                     let img = new Image();
                     img.onload = function(){
-                        // Determine the data name. 
-                        // let dataName;
-                        // if(rec.n){ dataName = rec.n; }
-                        // else{ dataName = rec.f }
-
-                        // Create the files key in the game if it doesn't exist. 
-                        // if(!_APP.files){ _APP.files = {"_WARNING":"_WARNING"}};
-                        
-                        // // Save the data to the files object. 
-                        // _APP.files[dataName] = img;
-                        
                         res(img);
                         img.onload = null;
                     };
                     img.onerror = function (err) { 
-                        console.log("addFile: image: FAILURE:", `${relativePath}/${rec.f}`);
+                        console.log("addFile: image: FAILURE:", `${relativePath}${rec.f}`);
                         rej(err); img.onload = null; 
                     };
-                    img.src = `${relativePath}/${rec.f}`;
+                    img.src = `${relativePath}${rec.f}`;
 
                     break; 
                 }
@@ -383,9 +402,9 @@ _APP.utility = {
                 // DISABLED. SHOULD BE FIXED.
                 case "json": { 
                     // Get the data.
-                    // let data = await _JSG.net.http.send(`${relativePath}/${rec.f}`, { type:"json", method:"GET" }, 5000);
+                    // let data = await _JSG.net.http.send(`${relativePath}${rec.f}`, { type:"json", method:"GET" }, 5000);
                     // if(data === false){
-                    //     console.log("addFile: json: FAILURE:", `${relativePath}/${rec.f}`);
+                    //     console.log("addFile: json: FAILURE:", `${relativePath}${rec.f}`);
                     //     rej(data); return;
                     // }
 
@@ -406,23 +425,12 @@ _APP.utility = {
                 
                 case "html": { 
                     // Get the data.
-                    // let data = await _JSG.net.http.send(`${relativePath}/${rec.f}`, { type:"text", method:"GET" }, 5000);
-                    let data = await (await fetch(`${relativePath}/${rec.f}`)).text();
+                    // let data = await _JSG.net.http.send(`${relativePath}${rec.f}`, { type:"text", method:"GET" }, 5000);
+                    let data = await (await fetch(`${relativePath}${rec.f}`)).text();
                     // if(data === false){
-                    //     console.log("addFile: html: FAILURE:", `${relativePath}/${rec.f}`);
+                    //     console.log("addFile: html: FAILURE:", `${relativePath}${rec.f}`);
                     //     rej(data); return;
                     // }
-
-                    // Determine the data name. 
-                    // let dataName;
-                    // if(rec.n){ dataName = rec.n; }
-                    // else{ dataName = rec.f }
-
-                    // Create the files key in the game if it doesn't exist. 
-                    // if(!_APP.files){ _APP.files = {"_WARNING":"_WARNING"}};
-
-                    // // Save the data to the files object. 
-                    // _APP.files[dataName] = data;
 
                     res(data);
                     break; 
@@ -437,21 +445,19 @@ _APP.utility = {
                     link.rel    = 'stylesheet';
 
                     // Set the name.
-                    // if(rec.n){ link.setAttribute("name", rec.n); }
-                    // else{ link.setAttribute("name", rec.f); }
                     link.setAttribute("name", rec.f);
 
                     // Onload.
                     link.onload = function() { res(); link.onload = null; };
                     link.onerror = function (err) { 
-                        console.log("addFile: css: FAILURE:", `${relativePath}/${rec.f}`, err);
+                        console.log("addFile: css: FAILURE:", `${relativePath}${rec.f}`, err);
                         rej(err); link.onload = null; 
                     };
                     // Append the element. 
                     document.head.appendChild( link );
 
                     // Set source.
-                    link.href   = `${relativePath}/${rec.f}`;
+                    link.href   = `${relativePath}${rec.f}`;
 
                     break; 
                 }

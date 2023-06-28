@@ -55,11 +55,9 @@ _APP.game.gamestates["gs_JSG"] = {
         ];
 
         _GFX.layerObjs.createOne(LayerObject, { 
-            // tilesetKey: `default_tiles`, 
             tilesetKey: `combined1`, 
             layerObjKey: `JSGAME_LOGO`, 
             layerKey   : "L2", 
-            // tmap       : _GFX.funcs.getTilemap("default_tiles", "JSGAME_LOGO"), 
             tmap       : _GFX.funcs.getTilemap("combined1", "JSGAME_LOGO"), 
             xyByGrid   : true,
             x          : 2, 
