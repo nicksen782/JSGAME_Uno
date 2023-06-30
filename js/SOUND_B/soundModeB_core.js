@@ -34,6 +34,9 @@ _SND = {
     soundStart_bound: null,
     soundStart: async function(){
         document.body.removeEventListener("click", this.soundStart_bound, false);
+        document.body.removeEventListener("mousedown", this.soundStart_bound, false);
+        document.body.removeEventListener("keydown", this.soundStart_bound, false);
+        document.body.removeEventListener("touchstart", this.soundStart_bound, false);
 
         // Dismiss the user interaction required box?
         if(this.config){ 
@@ -50,6 +53,8 @@ _SND = {
         proms1 = [
             // LIBRARY
             new Promise( async (res,rej) => { await _APP.utility.addFile( { f:"node_modules/tone/build/Tone.js", t:"js" }, relPath); res(); } ),
+            // new Promise( async (res,rej) => { await _APP.utility.addFile( { f:"node_modules/@tonejs/midi/dist/Midi.js", t:"js" }, relPath); res(); } ),
+            // new Promise( async (res,rej) => { await _APP.utility.addFile( { f:"https://unpkg.com/@tonejs/midi@2.0.28/build/Midi.js", t:"js" }, ""); res(); } ),
             // This plug-in.
             new Promise( async (res,rej) => { await _APP.utility.addFile({f:"js/SOUND_B/soundModeB_user.js"    , t:"js"  }, relPath); res(); } ),
         ];
@@ -89,11 +94,14 @@ _SND = {
         });
         this.canPlayAudio_promise = deferred;
 
-        if(this.canPlayAudio){ await soundStart(); }
+        if(this.canPlayAudio){ await this.soundStart(); }
         else{
             // Add event listeners to the body to wait for user input before continuing the sound init.
             this.soundStart_bound = this.soundStart.bind(this);
             document.body.addEventListener("click", this.soundStart_bound, false);
+            document.body.addEventListener("mousedown", this.soundStart_bound, false);
+            document.body.addEventListener("keydown", this.soundStart_bound, false);
+            document.body.addEventListener("touchstart", this.soundStart_bound, false);
         }
 
         return this.audioStarted;
