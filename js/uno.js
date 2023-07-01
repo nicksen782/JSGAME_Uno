@@ -5,8 +5,9 @@ _APP.debugActive = false;
 _APP.debug2Active = false;
 
 // _APP.debugActive = true;
+
 _APP.configObj = {
-    appName: "UNO!",
+    appName: "JSGAME_Uno",
 
     // First gamestates.
     firstGamestate1:"gs_JSG",
@@ -69,8 +70,15 @@ _APP.configObj = {
     },
 
     soundConfig: {
+        enabled: true,
         interActionNeededId        : "audio_userInputNeeded_container",
         blockLoopIfSoundNotLoaded: false,
+    },
+
+    // Detects little or big endianness for the browser.
+    endianness : {
+        isBigEndian    : new Uint8Array(new Uint32Array([0x12345678]).buffer)[0] === 0x12 ? true : false,
+        isLittleEndian : new Uint8Array(new Uint32Array([0x12345678]).buffer)[0] === 0x78 ? true : false,
     },
 };
 _APP.initOutputScaleControls = function(){
@@ -96,10 +104,12 @@ _APP.initOutputScaleControls = function(){
 _APP.utility = {
     player: null,
     stopTrack: function(id){
+        if(!_APP.configObj.soundConfig.enabled){ return; }
         if(!_SND.audioStarted){ console.log("Audio has not been started yet."); return ;}
         if(this.player){ this.player.stop(); }
     },
     playTrack: function(id){
+        if(!_APP.configObj.soundConfig.enabled){ return; }
         if(!_SND.audioStarted){ console.log("Audio has not been started yet."); return ;}
 
         let tracks = [
@@ -107,6 +117,7 @@ _APP.utility = {
             'audio/SLOWER2019-01-02_-_8_Bit_Menu_-_David_Renda_-_FesliyanStudios.com.mp3',
             'audio/FASTER2019-01-02_-_8_Bit_Menu_-_David_Renda_-_FesliyanStudios.com.mp3',
             'audio/15-Seconds-2020-03-22_-_8_Bit_Surf_-_FesliyanStudios.com_-_David_Renda.mp3',
+
             // https://www.zapsplat.com/sound-effect-category/game-music-and-loops/
             'audio/music_zapsplat_game_music_childrens_soft_warm_cuddly_calm_015.mp3',
             'audio/music_zapsplat_game_music_childrens_calm_slow_arpeggio_plucked_soft_warm_caring_005.mp3',
@@ -687,6 +698,19 @@ _APP.utility = {
         newGlobals_filtered = null; 
         // delete newGlobals_filtered;
     },
+
+    // Prevent certain keys from shifting the window view.
+    preventScroll : function(e){
+        if(e.target==document.body){
+            switch(e.keyCode){
+                case 32 : { e.preventDefault(); break; } // Space bar.
+                case 37 : { e.preventDefault(); break; } // Left arrow
+                case 38 : { e.preventDefault(); break; } // Up arrow
+                case 39 : { e.preventDefault(); break; } // Right arrow
+                case 40 : { e.preventDefault(); break; } // Down arrow
+            }
+        }
+    },
 };
 
 // For loading customized wrappers for plug-ins.
@@ -717,7 +741,7 @@ _APP.loader = {
     loadFiles: async function(){
         return new Promise(async (resolve,reject)=>{
             let relPath = ".";
-            if(_APP.usingJSGAME){ relPath = "./games/JSGAME_Uno"; }
+            if(_APP.usingJSGAME){ relPath = `./games/${_APP.configObj.appName}`; }
 
             // URL params can affect app settings.
             let params = _APP.utility.getUrlParams();
@@ -798,16 +822,18 @@ _APP.loader = {
         await _INPUT.customized.init(_APP.configObj.inputConfig);
         
         // Sound (main thread)
-        _SND.canPlayAudio = await _SND.detectUserInteraction();
-        if(!_SND.canPlayAudio){
-            // Show the user interaction needed message.
-            document.getElementById("audio_userInputNeeded_container").style.display = "block";
+        if(_APP.configObj.soundConfig.enabled){
+            _SND.canPlayAudio = await _SND.detectUserInteraction();
+            if(!_SND.canPlayAudio){
+                // Show the user interaction needed message.
+                document.getElementById("audio_userInputNeeded_container").style.display = "block";
 
-            // A document.body event listener will be added by _SND.init.
-            // Clicking the body will allow audio to load and will dismiss the message.
-            // The game should pause too while waiting for the user to interact with the page.
+                // A document.body event listener will be added by _SND.init.
+                // Clicking the body will allow audio to load and will dismiss the message.
+                // The game should pause too while waiting for the user to interact with the page.
+            }
+            await _SND.init(_APP, _APP.configObj.soundConfig);
         }
-        await _SND.init(_APP, _APP.configObj.soundConfig);
 
         // Gameloop init.
         await _APP.game.gameLoop.init();
@@ -827,6 +853,10 @@ _APP.loader = {
             // _APP.navBar1.showOne("view_input");
             // _APP.navBar1.showOne("view_debug");
         }
+
+        // Prevent certain keys from shifting the window view.
+        window.onkeydown = _APP.utility.preventScroll;
+        window.onkeyup   = _APP.utility.preventScroll;
     },
 };
 
@@ -881,10 +911,12 @@ _APP.navBar1 = {
             if(this.DOM2 && this.DOM2.aux){
                 if(key == "view_input"){ 
                     _INPUT.web.mainView.showInput_hideOthers();
+                    this.DOM2.aux.classList.add("open");
                     this.DOM2.aux.classList.add("wide");
                     this.DOM2.aux.classList.remove("wide2");
                 }
                 else if(_APP.debugActive && key == "view_debug"){ 
+                    this.DOM2.aux.classList.add("open");
                     this.DOM2.aux.classList.remove("wide");
                     this.DOM2.aux.classList.add("wide2");
                 }
@@ -892,6 +924,7 @@ _APP.navBar1 = {
                     _INPUT.web.mainView.hideInput_restoreOthers(); 
 
                     if(this.DOM2.aux && this.DOM2.aux.classList){
+                        this.DOM2.aux.classList.remove("open");
                         this.DOM2.aux.classList.remove("wide"); 
                         this.DOM2.aux.classList.remove("wide2"); 
                     }
