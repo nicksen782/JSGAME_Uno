@@ -523,8 +523,8 @@ var _GFX = {
 
                     // If useGlobalOffsets is defined use them to offset x and y.
                     if(_APP.configObj.useGlobalOffsets){
-                        tilemap.x += ( (_APP.configObj.globalOffsets.x ?? 0) * tw);
-                        tilemap.y += ( (_APP.configObj.globalOffsets.y ?? 0) * th);
+                        tilemap.x += ( (_APP.configObj.globalOffsets_x ?? 0) * tw);
+                        tilemap.y += ( (_APP.configObj.globalOffsets_y ?? 0) * th);
                     }
 
                     // If it exists then get it's existing hash.

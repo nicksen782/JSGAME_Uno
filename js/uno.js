@@ -32,19 +32,49 @@ _APP.configObj = {
     // Offset x and y for all drawings by this number of tiles.
     // useGlobalOffsets: true,
     useGlobalOffsets: false,
-    globalOffsets:{
-        x: 1,
-        y: 1,
-    },
+    globalOffsets_x: 1,
+    globalOffsets_y: 1,
 
     // Relative paths need to be correctly relative to whatever loads this file (the web page or the web worker.)
     tilesetFiles: [
         "../UAM/JSON/combined1.json",
-        // "../UAM/JSON/bg_tiles1.json",
-        // "../UAM/JSON/bg_tiles2.json",
-        // "../UAM/JSON/font_tiles1.json",
-        // "../UAM/JSON/sprite_tiles1.json",
     ],
+
+    // Files for the game.
+    gameFiles: {
+        seq1: [
+            { f:"css/uno.css"                 , t:"css" },
+            { f:"js/uno_main.js"              , t:"js"  },
+            { f:"js/shared.js"                 , t:"js"  },
+            { f:"js/webv.js"                   , t:"js"  },
+            { f:"js/gfx.js"                    , t:"js"  },
+            { f:"js/gfxClasses.js"             , t:"js"  },
+            { f:"js/SOUND_B/soundModeB_core.js", t:"js"  },
+            { f:"js/INPUT_A/inputModeA_core.js", t:"js"  },
+            { f:"js/inputModeA_customized.js"  , t:"js"  },
+        ],
+        batch1: [
+            {f:"js/gs_JSG.js", t:"js" },
+            {f:"js/gs_N782.js", t:"js" },
+            {f:"js/gs_TITLE.js", t:"js" },
+            {f:"js/gs_RULES.js", t:"js" },
+            {f:"js/gs_CREDITS.js", t:"js" },
+            {f:"js/gs_OPTIONS.js", t:"js" },
+            {f:"js/gs_PLAYING.js", t:"js" },
+        ],
+        seq2: [
+            {f:"js/gs_PLAYING2.js", t:"js" },
+        ],
+        debug1: [
+            {f:"js/debug.js"  , t:"js" },
+            {f:"css/debug.css", t:"css" },
+        ],
+        debug2: [
+            {f:"js/debug2.js"  , t:"js" },
+            // {f:"css/debug2.css", t:"css" },
+        ]
+    },
+
     fontObj: { ts: "combined1", tmap: "fontset_part1_UC", forceUpperCase: true },
     dimensions: {
         "tileWidth" : 8,
@@ -65,7 +95,7 @@ _APP.configObj = {
     inputConfig :{
         "useKeyboard"   : true, 
         "useGamepads"   : true,
-        "listeningElems": ["output"],
+        "listeningElems": ["game_uno", "output"],
         "webElem"       : "controls_navBar1_view_input",
     },
 
@@ -758,37 +788,40 @@ _APP.loader = {
                     // _APP.configObj.generateCoreImageDataAssets;
                     // _APP.configObj.useGlobalOffsets = true;
                     // _APP.configObj.useGlobalOffsets = false;
-                    // _APP.configObj.globalOffsets.x = 0;
-                    // _APP.configObj.globalOffsets.y = 0;
+                    // _APP.configObj.globalOffsets_x = 0;
+                    // _APP.configObj.globalOffsets_y = 0;
                 }
             }
 
-            // Download these files sequentially as some depend on the others.
-            await _APP.utility.addFile( { f:"css/uno.css"                  , t:"css" }, relPath); // GAME
-            await _APP.utility.addFile( { f:"js/uno_main.js"               , t:"js"  }, relPath); // GAME
-            await _APP.utility.addFile( { f:"js/shared.js"                 , t:"js"  }, relPath); // GAME
-            await _APP.utility.addFile( { f:"js/webv.js"                   , t:"js"  }, relPath); // CORE
-            await _APP.utility.addFile( { f:"js/gfx.js"                    , t:"js"  }, relPath); // CORE
-            await _APP.utility.addFile( { f:"js/gfxClasses.js"             , t:"js"  }, relPath); // GAME
-            await _APP.utility.addFile( { f:"js/SOUND_B/soundModeB_core.js", t:"js"  }, relPath); // CORE
-            await _APP.utility.addFile( { f:"js/INPUT_A/inputModeA_core.js", t:"js"  }, relPath); // CORE
-            await _APP.utility.addFile( { f:"js/inputModeA_customized.js"  , t:"js"  }, relPath); // _INPUT customizer
-            if(_APP.debugActive) { await _APP.utility.addFile( { f:"js/debug.js"  , t:"js"  }, relPath); }
+            // DOWNLOAD THESE FILES IN SEQUENCE.
+            if(_APP.configObj.gameFiles.seq1){
+                for(let rec of _APP.configObj.gameFiles.seq1){ await _APP.utility.addFile( rec, relPath); }
+            }
 
-            // Download these files in parallel. The only depend on the previously loaded files.
-            let files2 = [
-                _APP.utility.addFile( {f:"js/gs_JSG.js"    , t:"js" }, relPath), // GAME
-                _APP.utility.addFile( {f:"js/gs_N782.js"   , t:"js" }, relPath), // GAME
-                _APP.utility.addFile( {f:"js/gs_TITLE.js"  , t:"js" }, relPath), // GAME
-                _APP.utility.addFile( {f:"js/gs_RULES.js"  , t:"js" }, relPath), // GAME
-                _APP.utility.addFile( {f:"js/gs_CREDITS.js", t:"js" }, relPath), // GAME
-                _APP.utility.addFile( {f:"js/gs_OPTIONS.js", t:"js" }, relPath), // GAME
-                _APP.utility.addFile( {f:"js/gs_PLAYING.js", t:"js" }, relPath), // GAME
-            ];
-            await Promise.all(files2);
+            // DOWNLOAD THESE FILES IN PARALLEL.
+            let parallelFiles = [];
+            if(_APP.configObj.gameFiles.batch1){
+                for(let rec of _APP.configObj.gameFiles.batch1){ 
+                    parallelFiles.push(_APP.utility.addFile( rec, relPath) ); 
+                }
+                await Promise.all(parallelFiles);
+            }
+
+            // DOWNLOAD THESE FILES IN SEQUENCE.
+            if(_APP.configObj.gameFiles.seq2){
+                for(let rec of _APP.configObj.gameFiles.seq2){ await _APP.utility.addFile( rec, relPath); }
+            }
+
+            // DOWNLOAD IN SEQUENCE THESE FILES ONLY IF DEBUG IS ACTIVE.
+            if(_APP.debugActive && _APP.configObj.gameFiles.debug1){
+                for(let rec of _APP.configObj.gameFiles.debug1){ await _APP.utility.addFile( rec, relPath); }
+            }
+
+            // DOWNLOAD IN SEQUENCE THESE FILES ONLY IF DEBUG IS ACTIVE.
+            if(_APP.debugActive && _APP.configObj.gameFiles.debug2){
+                for(let rec of _APP.configObj.gameFiles.debug2){ await _APP.utility.addFile( rec, relPath); }
+            }
             
-            await _APP.utility.addFile( {f:"js/gs_PLAYING2.js", t:"js" }, relPath), // GAME
-
             resolve();
         });
     },
