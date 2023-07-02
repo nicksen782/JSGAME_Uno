@@ -452,7 +452,7 @@ var _GFX = {
                     _GFX.REMOVALS[layerKey].add(mapKey); 
                 }
 
-                // Remove all tilemaps. 
+                // Remove all tilemaps.
                 for(let layerObjKey in _GFX.currentData[layerKey].tilemaps){
                     // console.log("CLEAR ALL LAYERS:", layerKey, layerObjKey, _GFX.currentData[layerKey].tilemaps[layerObjKey]);
                     // _GFX.layerObjs.removeOneAllGamestates(layerObjKey);
@@ -947,7 +947,7 @@ _GFX.init = async function(){
 
         // Send the init request with the config data. Await the response.
         await _WEBW_V.SEND("initConfigAndGraphics", {data: { configObj: _APP.configObj, defaultSettings: _GFX.defaultSettings } }, true, true);
-        
+
         // Generate canvas layers and attach to the DOM.
         let outputDiv = document.getElementById("output");
         outputDiv.style['width']  = (2 * _APP.configObj.dimensions.tileWidth * _APP.configObj.dimensions.cols) + "px";
@@ -1275,6 +1275,10 @@ class PrintText extends LayerObject{
     set text(value){ if( this._text !== value){ this._text = value; this._changed = true; } }
 
     static genMultipleLines(config){
+        // Set any missing defaults.
+        if(!config.tilesetKey){ config.tilesetKey = "combined1"; }
+        if(!config.layerKey)  { config.layerKey = "L4";}
+
         let line;
         let settings;
         let padLines = config.padLines ?? false;
@@ -1314,8 +1318,8 @@ class PrintText extends LayerObject{
                     x: x, 
                     y: y,
                     layerObjKey: layerObjectKey, 
-                    layerKey   : config.layerKey   ?? "L4", 
-                    tilesetKey : config.tilesetKey ?? "combined1", 
+                    layerKey   : config.layerKey  ,
+                    tilesetKey : config.tilesetKey,
                     xyByGrid   : true, 
                     settings   : settings,
                     hidden: config.hidden ?? false,
@@ -1332,6 +1336,10 @@ class PrintText extends LayerObject{
     };
 
     constructor(config){
+        // Set any missing defaults.
+        if(!config.tilesetKey){ config.tilesetKey = "combined1"; }
+        if(!config.layerKey)  { config.layerKey = "L4";}
+
         super(config);
         this.className = this.constructor.name;
 
@@ -1341,12 +1349,10 @@ class PrintText extends LayerObject{
         this.removeHashOnRemoval = config.removeHashOnRemoval ?? true;
         this.noResort = config.noResort ?? true;
 
-        if(!this.layerKey)  { this.layerKey = "L4";}
-        if(!this.tilesetKey){ this.tilesetKey = "combined1"; }
 
         // This part should be handled already by _GFX.funcs.layerObjs.createOne.
         // TODO: This could result in a very large name.
-        if(!config.layerObjKey){ config.layerObjKey = config.text; }
+        // if(!config.layerObjKey){ config.layerObjKey = config.text; }
 
         this._changed = true;
     }
