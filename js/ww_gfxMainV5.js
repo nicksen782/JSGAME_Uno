@@ -1135,10 +1135,7 @@ var gfxMainV5 = {
                             console.log(`NO MAP??`, layerKey, allMapKeys[i], map);
                             return; 
                         }
-                        // else{
-                            // console.log(`to imgDataCache: ${layerKey} ${allMapKeys[i]} ${map.relatedMapKey}`);
-                        // }
-    
+
                         // Skip the drawing of any maps that have their hidden flag set.
                         if(map.hidden){ 
                             // console.log("Skipping hidden map:", allMapKeys[i]);
@@ -1152,15 +1149,15 @@ var gfxMainV5 = {
                             continue; 
                         }
 
-                        // If the noResort flag is set then push to the flicker array.
-                        if(!map.noResort){ part1.push( allMapKeys[i] ); }
+                        // If the allowResort flag is set then push to the flicker array.
+                        if(map.allowResort){ part1.push( allMapKeys[i] ); }
                         
-                        //Otherwise, add to the non-flicker array.
-                        else             { part2.push( allMapKeys[i] ); }
+                        // Otherwise, add to the non-flicker array.
+                        else               { part2.push( allMapKeys[i] ); }
                     }
     
                     // "Flicker" via resorting of the map keys.
-                    if(layerData.useFlicker){
+                    if(layerData.useFlicker && part1.length){
                         // Generate the flickerFlag key.
                         let key = "flickerFlag_" + layerKey
     
@@ -1191,36 +1188,17 @@ var gfxMainV5 = {
     
                 // STEP 2: Draw the overlaps second.
                 if(overlappedRegions){
-                    // if(Object.keys(overlappedRegions).indexOf("winRound_largeCardBg") != -1){
-                    //     console.log(overlappedRegions);
-                    //     debugger;
-                    // }
-                    
-                    // // Check for the restore of removed or hidden maps.
-                    // let keys = Object.keys(overlappedRegions);
-                    // for(let key of keys){
-                    //     let map = _GFX.currentData[layerKey].tilemaps[key];
-                    //     if(layerData.REMOVALS_ONLY.indexOf(key) != -1){ 
-                    //         console.log("This map should not be drawn because it is in REMOVALS_ONLY."); 
-                    //         continue; 
-                    //     }
-                    //     if(map.hidden){ 
-                    //         console.log("This map should not be drawn because it has hidden."); 
-                    //         continue; 
-                    //     }
-                    // }
-
                     // Replace the overlapped regions with their original data.
                     gfxMainV5.gfx.DRAW.restoreOverlapsToMapKey(layerKey, overlappedRegions);
                 }
     
-                // STEP 3: Draw the images that do not have noResort set.
+                // STEP 3: Draw the images that do not have allowResort set.
                 // The map key order may have been reversed by flicker.
                 if(part1.length){
                     gfxMainV5.gfx.DRAW.drawImgDataCacheFromDataCache(layerKey, part1);
                 }
                 
-                // STEP 4: Draw the images that do have have noResort set.
+                // STEP 4: Draw the images that do have have allowResort set.
                 // Drawn in the order that they were added.
                 if(part2.length){
                     gfxMainV5.gfx.DRAW.drawImgDataCacheFromDataCache(layerKey, part2);
@@ -1369,7 +1347,14 @@ var gfxMainV5 = {
     
         // Save the configObj.
         let tsDataSave = performance.now();
-        _GFX.configObj = messageData.configObj;
+        _GFX.configObj = {
+            generateCoreImageDataAssets: messageData.configObj.generateCoreImageDataAssets,
+            disableCache               : messageData.configObj.disableCache,
+            tilesetFiles               : messageData.configObj.tilesetFiles,
+            dimensions                 : messageData.configObj.dimensions,
+            layers                     : messageData.configObj.layers,
+            endianness                 : messageData.configObj.endianness,
+        }
         tsDataSave = performance.now() - tsDataSave;
     
         // Save the default settings.
@@ -1379,7 +1364,7 @@ var gfxMainV5 = {
         debugActive = messageData.debugActive ?? false;
         
         // Convert the graphics assets.
-        let results = await gfxCoreV5.process(_GFX.configObj.tilesetFiles);
+        let results = await gfxCoreV5.process(_GFX.configObj.tilesetFiles, messageData.appRootPath);
     
         // Save the converted tilesets.
         _GFX.tilesets = results.finishedTilesets;
@@ -1577,7 +1562,7 @@ var gfxMainV5 = {
         switch(mode){
             // ONE-TIME REQUESTS.
             case "initConfigAndGraphics": { 
-                // console.log("initConfigAndGraphics");
+                // console.log("initConfigAndGraphics", data);
                 if(!flags.dataRequest){              await gfxMainV5.initConfigAndGraphics(data); }
                 else                  { returnData = await gfxMainV5.initConfigAndGraphics(data); }
                 break;

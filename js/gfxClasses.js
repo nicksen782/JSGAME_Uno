@@ -696,7 +696,7 @@ class Border extends LayerObject{
                 y          : tilemaps[key].y, 
                 xyByGrid: config.xyByGrid ?? false,
                 settings: config.settings,
-                removeHashOnRemoval: true, noResort: false,
+                removeHashOnRemoval: true, allowResort: false,
             });
         }
 
@@ -788,7 +788,7 @@ class Border extends LayerObject{
             xyByGrid: config.xyByGrid, 
             settings: config.settings,
             removeHashOnRemoval: true, 
-            noResort: false,
+            allowResort: false,
         });
     };
     
@@ -848,7 +848,7 @@ class Fill extends LayerObject{
             xyByGrid   : xyByGrid, 
             settings   : settings,
             removeHashOnRemoval: true, 
-            noResort           : false,
+            allowResort           : false,
         });
 
         // Clear variables.
@@ -1520,7 +1520,7 @@ class ColorChanger{
                 xyByGrid: true, 
                 settings: {},
                 removeHashOnRemoval: true, 
-                noResort: false,
+                allowResort: false,
             });
         }
 
@@ -2013,7 +2013,7 @@ class Gameboard{
             layerKey   : "L1", 
             tilesetKey : "combined1", 
             xyByGrid: true, settings: {},
-            removeHashOnRemoval: true, noResort: false,
+            removeHashOnRemoval: true, allowResort: false,
             x: pos["P1"].x, y: pos["P1"].y,
             tmap: pointersSize == 8 
                 ? new Uint8Array( [ pos["P1"].w, pos["P1"].h ].concat(Array.from({ length: ((pos["P1"].w) * (pos["P1"].h)) }, () => fillTile)) )

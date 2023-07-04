@@ -39,6 +39,9 @@ _APP.configObj = {
     tilesetFiles: [
         "../UAM/JSON/combined1.json",
     ],
+    // This tileset is used as the default if one is not specified (may be incorrect!)
+    defaultTileset: "combined1",
+    defaultFontTileset: "combined1",
 
     // Files for the game.
     gameFiles: {
@@ -781,7 +784,7 @@ _APP.loader = {
 
                 // Change these settings for debug mode.
                 if(_APP.debugActive){
-                    _APP.configObj.awaitDraw = true;
+                    // _APP.configObj.awaitDraw = true;
                     // _APP.configObj.awaitDraw = false;
                     // _APP.configObj.disableCache = true;
                     // _APP.configObj.disableCache = false;

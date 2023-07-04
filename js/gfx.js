@@ -16,7 +16,7 @@ var _GFX = {
                 currFade: null,
                 prevFade: null,
             },
-            useFlicker: false
+            useFlicker: true
         },
         "L2":{
             canvas: null,
@@ -27,7 +27,7 @@ var _GFX = {
                 currFade: null,
                 prevFade: null,
             },
-            useFlicker: false
+            useFlicker: true
         },
         "L3":{
             canvas: null,
@@ -49,7 +49,7 @@ var _GFX = {
                 currFade: null,
                 prevFade: null,
             },
-            useFlicker: false,
+            useFlicker: true,
         },
     },
 
@@ -561,7 +561,7 @@ var _GFX = {
                             
                             text : tilemap.text,
                             removeHashOnRemoval: tilemap.removeHashOnRemoval ?? true,
-                            noResort           : tilemap.noResort ?? false,
+                            allowResort         : tilemap.allowResort ?? false,
                         };
 
                         // Set the changes flag for this layer since there were changes.
@@ -890,7 +890,7 @@ var _GFX = {
                     // }
                 }
 
-                // If debug is active and awaitDraw is active then run the debugTasks.
+                // If debug is active is active then run the debugTasks.
                 if(_APP.debugActive){
                     // Save these timings.
                     _DEBUG.savePrevGfxTimings(data);
@@ -946,8 +946,10 @@ _GFX.init = async function(){
         };
 
         // Send the init request with the config data. Await the response.
-        await _WEBW_V.SEND("initConfigAndGraphics", {data: { configObj: _APP.configObj, defaultSettings: _GFX.defaultSettings } }, true, true);
-
+        let currentPageUrl = new URL(window.location.href);
+        let appRootPath = currentPageUrl.pathname.substring(0, currentPageUrl.pathname.lastIndexOf(currentPageUrl.pathname.includes('.') ? '/' : '') + 1);
+        await _WEBW_V.SEND("initConfigAndGraphics", {data: { configObj: _APP.configObj, defaultSettings: _GFX.defaultSettings, appRootPath: appRootPath } }, true, true);
+        
         // Generate canvas layers and attach to the DOM.
         let outputDiv = document.getElementById("output");
         outputDiv.style['width']  = (2 * _APP.configObj.dimensions.tileWidth * _APP.configObj.dimensions.cols) + "px";
@@ -1072,10 +1074,12 @@ class LayerObject {
         
         // Get the tileWidth and tileHeight from the tileset config. 
         if(this.tilesetKey){
+            // console.log("this.tilesetKey:", this.tilesetKey);
             // console.log(this._tilesetKey, _GFX.tilesets[this._tilesetKey]);
             this.tw = _GFX.tilesets[this._tilesetKey].config.tileWidth ;
             this.th = _GFX.tilesets[this._tilesetKey].config.tileHeight;
         }
+
         // Get the tileWidth and tileHeight from the configObj.dimensions config.
         else{
             this.tw = _APP.configObj.dimensions.tileWidth ;
@@ -1106,7 +1110,7 @@ class LayerObject {
         this.layerKey    = config.layerKey;
         this.tilesetKey  = config.tilesetKey ?? "combined1";
         this.removeHashOnRemoval = config.removeHashOnRemoval ?? true;
-        this.noResort = config.noResort ?? false;
+        this.allowResort = config.allowResort ?? false;
 
         // Tilemap. (It is possible that a tilemap is not provided/required.)
         this.tmap = config.tmap; 
@@ -1194,9 +1198,10 @@ class LayerObject {
             settings: this.settings, 
             tmap    : this.tmap,
             removeHashOnRemoval: this.removeHashOnRemoval,
-            noResort           : this.noResort,
+            allowResort           : this.allowResort,
         });
         layerObjectData[this.layerObjKey].hidden = this.hidden;
+        layerObjectData[this.layerObjKey].allowResort = this.allowResort;
 
         if(onlyReturnLayerObjData){ 
             layerObjectData[this.layerObjKey].layerKey = this.layerKey;
@@ -1276,7 +1281,7 @@ class PrintText extends LayerObject{
 
     static genMultipleLines(config){
         // Set any missing defaults.
-        if(!config.tilesetKey){ config.tilesetKey = "combined1"; }
+        if(!config.tilesetKey){ config.tilesetKey = _APP.configObj.defaultFontTileset; }
         if(!config.layerKey)  { config.layerKey = "L4";}
 
         let line;
@@ -1337,7 +1342,7 @@ class PrintText extends LayerObject{
 
     constructor(config){
         // Set any missing defaults.
-        if(!config.tilesetKey){ config.tilesetKey = "combined1"; }
+        if(!config.tilesetKey){ config.tilesetKey = _APP.configObj.defaultFontTileset; }
         if(!config.layerKey)  { config.layerKey = "L4";}
 
         super(config);
@@ -1347,7 +1352,7 @@ class PrintText extends LayerObject{
         
         this.text = config.text ?? ""
         this.removeHashOnRemoval = config.removeHashOnRemoval ?? true;
-        this.noResort = config.noResort ?? true;
+        this.allowResort = config.allowResort ?? true;
 
 
         // This part should be handled already by _GFX.funcs.layerObjs.createOne.
@@ -1388,9 +1393,10 @@ class PrintText extends LayerObject{
             tmap    : this.tmap,
             text    : this.text, 
             removeHashOnRemoval: this.removeHashOnRemoval,
-            noResort           : this.noResort,
+            allowResort           : this.allowResort,
         });
         layerObjectData[this.layerObjKey].hidden = this.hidden;
+        layerObjectData[this.layerObjKey].allowResort = this.allowResort;
         this.tmap = layerObjectData[this.layerObjKey].tmap;
 
         // Clamp x and y to the acceptable range on screen.

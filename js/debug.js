@@ -1803,10 +1803,10 @@ var _DEBUG = {
             }
             settings = activeSettingsArray.join(", ");
 
-            if(data.frameKeys){
-                // console.log(data);
-                console.log(data.frameKeys[data.framesIndex], data.frameKeys);
-            }
+            // if(data.frameKeys){
+            //     // console.log(data);
+            //     console.log(data.frameKeys[data.framesIndex], data.frameKeys);
+            // }
 
             // Add the texts to the entry container.
             div_container.innerText = `` +
@@ -2153,37 +2153,38 @@ var _DEBUG = {
             let testText = `AVG: ${new_average}, MS: ${new_avgMsPerFrame}, DELTA: ${msDiff}`;
             _DEBUG.updateIfChanged2(this.DOM.fpsDisplay, "_DEBUG.vault.frameCounters.fpsDisplay", testText);
 
-            if(!newData.ALLTIMINGS || !Object.keys(newData.ALLTIMINGS).length){
-                console.log("MISSING: newData.ALLTIMINGS");
+            if( newData && ("ALLTIMINGS" in newData) ){
+                // Last draw: Individual timings.
+                _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_L1,  '_DEBUG.vault.ALLTIMINGS.L1___TOTAL'            , newData.ALLTIMINGS["L1___TOTAL"]            .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_A_L1,      '_DEBUG.vault.ALLTIMINGS.L1_A_clearLayer'       , newData.ALLTIMINGS["L1_A_clearLayer"]       .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_B_L1,      '_DEBUG.vault.ALLTIMINGS.L1_B_clearRemovedData' , newData.ALLTIMINGS["L1_B_clearRemovedData"] .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_C_L1,      '_DEBUG.vault.ALLTIMINGS.L1_C_createTilemaps'   , newData.ALLTIMINGS["L1_C_createTilemaps"]   .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_D_L1,      '_DEBUG.vault.ALLTIMINGS.L1_D_drawFromDataCache', newData.ALLTIMINGS["L1_D_drawFromDataCache"].toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_E_L1,      '_DEBUG.vault.ALLTIMINGS.L1_E_drawImgDataCache' , newData.ALLTIMINGS["L1_E_drawImgDataCache"] .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_L2,  '_DEBUG.vault.ALLTIMINGS.L2___TOTAL'            , newData.ALLTIMINGS["L2___TOTAL"]            .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_A_L2,      '_DEBUG.vault.ALLTIMINGS.L2_A_clearLayer'       , newData.ALLTIMINGS["L2_A_clearLayer"]       .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_B_L2,      '_DEBUG.vault.ALLTIMINGS.L2_B_clearRemovedData' , newData.ALLTIMINGS["L2_B_clearRemovedData"] .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_C_L2,      '_DEBUG.vault.ALLTIMINGS.L2_C_createTilemaps'   , newData.ALLTIMINGS["L2_C_createTilemaps"]   .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_D_L2,      '_DEBUG.vault.ALLTIMINGS.L2_D_drawFromDataCache', newData.ALLTIMINGS["L2_D_drawFromDataCache"].toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_E_L2,      '_DEBUG.vault.ALLTIMINGS.L2_E_drawImgDataCache' , newData.ALLTIMINGS["L2_E_drawImgDataCache"] .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_L3,  '_DEBUG.vault.ALLTIMINGS.L3___TOTAL'            , newData.ALLTIMINGS["L3___TOTAL"]            .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_A_L3,      '_DEBUG.vault.ALLTIMINGS.L3_A_clearLayer'       , newData.ALLTIMINGS["L3_A_clearLayer"]       .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_B_L3,      '_DEBUG.vault.ALLTIMINGS.L3_B_clearRemovedData' , newData.ALLTIMINGS["L3_B_clearRemovedData"] .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_C_L3,      '_DEBUG.vault.ALLTIMINGS.L3_C_createTilemaps'   , newData.ALLTIMINGS["L3_C_createTilemaps"]   .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_D_L3,      '_DEBUG.vault.ALLTIMINGS.L3_D_drawFromDataCache', newData.ALLTIMINGS["L3_D_drawFromDataCache"].toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_E_L3,      '_DEBUG.vault.ALLTIMINGS.L3_E_drawImgDataCache' , newData.ALLTIMINGS["L3_E_drawImgDataCache"] .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_L4,  '_DEBUG.vault.ALLTIMINGS.L4___TOTAL'            , newData.ALLTIMINGS["L4___TOTAL"]            .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_A_L4,      '_DEBUG.vault.ALLTIMINGS.L4_A_clearLayer'       , newData.ALLTIMINGS["L4_A_clearLayer"]       .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_B_L4,      '_DEBUG.vault.ALLTIMINGS.L4_B_clearRemovedData' , newData.ALLTIMINGS["L4_B_clearRemovedData"] .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_C_L4,      '_DEBUG.vault.ALLTIMINGS.L4_C_createTilemaps'   , newData.ALLTIMINGS["L4_C_createTilemaps"]   .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_D_L4,      '_DEBUG.vault.ALLTIMINGS.L4_D_drawFromDataCache', newData.ALLTIMINGS["L4_D_drawFromDataCache"].toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_E_L4,      '_DEBUG.vault.ALLTIMINGS.L4_E_drawImgDataCache' , newData.ALLTIMINGS["L4_E_drawImgDataCache"] .toFixed(1)+"");
+                _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_ALL, '_DEBUG.vault.ALLTIMINGS.gfx'                   , newData.ALLTIMINGS["gfx"].toFixed(1)+" ms");
+            }
+            else{
+                // console.log("MISSING: newData.ALLTIMINGS", newData);
                 return;
             }
-
-            // Last draw: Individual timings.
-            _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_L1,  '_DEBUG.vault.ALLTIMINGS.L1___TOTAL'            , newData.ALLTIMINGS["L1___TOTAL"]            .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_A_L1,      '_DEBUG.vault.ALLTIMINGS.L1_A_clearLayer'       , newData.ALLTIMINGS["L1_A_clearLayer"]       .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_B_L1,      '_DEBUG.vault.ALLTIMINGS.L1_B_clearRemovedData' , newData.ALLTIMINGS["L1_B_clearRemovedData"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_C_L1,      '_DEBUG.vault.ALLTIMINGS.L1_C_createTilemaps'   , newData.ALLTIMINGS["L1_C_createTilemaps"]   .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_D_L1,      '_DEBUG.vault.ALLTIMINGS.L1_D_drawFromDataCache', newData.ALLTIMINGS["L1_D_drawFromDataCache"].toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_E_L1,      '_DEBUG.vault.ALLTIMINGS.L1_E_drawImgDataCache' , newData.ALLTIMINGS["L1_E_drawImgDataCache"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_L2,  '_DEBUG.vault.ALLTIMINGS.L2___TOTAL'            , newData.ALLTIMINGS["L2___TOTAL"]            .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_A_L2,      '_DEBUG.vault.ALLTIMINGS.L2_A_clearLayer'       , newData.ALLTIMINGS["L2_A_clearLayer"]       .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_B_L2,      '_DEBUG.vault.ALLTIMINGS.L2_B_clearRemovedData' , newData.ALLTIMINGS["L2_B_clearRemovedData"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_C_L2,      '_DEBUG.vault.ALLTIMINGS.L2_C_createTilemaps'   , newData.ALLTIMINGS["L2_C_createTilemaps"]   .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_D_L2,      '_DEBUG.vault.ALLTIMINGS.L2_D_drawFromDataCache', newData.ALLTIMINGS["L2_D_drawFromDataCache"].toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_E_L2,      '_DEBUG.vault.ALLTIMINGS.L2_E_drawImgDataCache' , newData.ALLTIMINGS["L2_E_drawImgDataCache"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_L3,  '_DEBUG.vault.ALLTIMINGS.L3___TOTAL'            , newData.ALLTIMINGS["L3___TOTAL"]            .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_A_L3,      '_DEBUG.vault.ALLTIMINGS.L3_A_clearLayer'       , newData.ALLTIMINGS["L3_A_clearLayer"]       .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_B_L3,      '_DEBUG.vault.ALLTIMINGS.L3_B_clearRemovedData' , newData.ALLTIMINGS["L3_B_clearRemovedData"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_C_L3,      '_DEBUG.vault.ALLTIMINGS.L3_C_createTilemaps'   , newData.ALLTIMINGS["L3_C_createTilemaps"]   .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_D_L3,      '_DEBUG.vault.ALLTIMINGS.L3_D_drawFromDataCache', newData.ALLTIMINGS["L3_D_drawFromDataCache"].toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_E_L3,      '_DEBUG.vault.ALLTIMINGS.L3_E_drawImgDataCache' , newData.ALLTIMINGS["L3_E_drawImgDataCache"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_L4,  '_DEBUG.vault.ALLTIMINGS.L4___TOTAL'            , newData.ALLTIMINGS["L4___TOTAL"]            .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_A_L4,      '_DEBUG.vault.ALLTIMINGS.L4_A_clearLayer'       , newData.ALLTIMINGS["L4_A_clearLayer"]       .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_B_L4,      '_DEBUG.vault.ALLTIMINGS.L4_B_clearRemovedData' , newData.ALLTIMINGS["L4_B_clearRemovedData"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_C_L4,      '_DEBUG.vault.ALLTIMINGS.L4_C_createTilemaps'   , newData.ALLTIMINGS["L4_C_createTilemaps"]   .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_D_L4,      '_DEBUG.vault.ALLTIMINGS.L4_D_drawFromDataCache', newData.ALLTIMINGS["L4_D_drawFromDataCache"].toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_E_L4,      '_DEBUG.vault.ALLTIMINGS.L4_E_drawImgDataCache' , newData.ALLTIMINGS["L4_E_drawImgDataCache"] .toFixed(1)+"");
-            _DEBUG.updateIfChanged2(this.DOM.timings_TOTAL_ALL, '_DEBUG.vault.ALLTIMINGS.gfx'                   , newData.ALLTIMINGS["gfx"].toFixed(1)+" ms");
         },
     },
 
@@ -2589,6 +2590,8 @@ var _DEBUG = {
             }
             else if(barKey == "GfxBar")  {
                 // data = _APP.utility.timeIt("draw_total", "get");
+                if( !(newData && ("ALLTIMINGS" in newData)) ){ return; }
+
                 data = newData.ALLTIMINGS.gfx; 
                 percent = this.calcPercentOfFrameTime( data );
                 ms = data;
@@ -2601,8 +2604,8 @@ var _DEBUG = {
             this.updateOneBar(barKey, percent, ms);
         },
         display: function(newData){
-            if(!newData.ALLTIMINGS || !Object.keys(newData.ALLTIMINGS).length){
-                console.log("MISSING: newData.ALLTIMINGS");
+            if( !(newData && ("ALLTIMINGS" in newData)) ){ 
+                // console.log("MISSING: newData.ALLTIMINGS");
                 return;
             }
 
@@ -2626,7 +2629,11 @@ var _DEBUG = {
     },
     reducePrevGfxTimings: function(){
         // Get the keys to operate on.
-        let keys = Object.keys(this.prevGfxTimings.ALLTIMINGS);
+        let keys;
+        if(this.prevGfxTimings && this.prevGfxTimings.ALLTIMINGS){
+            keys = Object.keys(this.prevGfxTimings.ALLTIMINGS);
+        }
+        else{ return; }
     
         // For each key, reduce the value by one-tenth of the original value.
         let reducedTimings = {};
@@ -2902,7 +2909,7 @@ var _DEBUG = {
         // Set the output scaling (only in debug mode.)
         let scaleSlider = document.getElementById("scaleSlider");
         // scaleSlider.value = "2.5";
-        scaleSlider.value = "3.25";
+        scaleSlider.value = "2.5";
         scaleSlider.dispatchEvent(new Event("input"));
 
         // Load the grid canvas.
