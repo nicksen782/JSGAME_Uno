@@ -4,53 +4,24 @@ var _GFX = {
     // Cache of tileset settings, tiles (optional), and tilemaps.
     tilesets:{},
 
+    // LayerKeys (Used as a lookup instead of Object.keys().)
+    layerKeys: new Set(),
+
     // Holds the graphics data that will be sent to the WebWorker.
     currentData : {
-        "L1":{
-            canvas: null,
-            bgColorRgba: [0,0,0,255],
-            tilemaps   : {},
-            changes    : false,
-            fade:{
-                fade    : false,
-                currFade: null,
-                prevFade: null,
-            },
-            useFlicker: true
-        },
-        "L2":{
-            canvas: null,
-            tilemaps  : {},
-            changes   : false,
-            fade:{
-                fade    : false,
-                currFade: null,
-                prevFade: null,
-            },
-            useFlicker: true
-        },
-        "L3":{
-            canvas: null,
-            tilemaps  : {},
-            changes   : false,
-            fade:{
-                fade    : false,
-                currFade: null,
-                prevFade: null,
-            },
-            useFlicker: true,
-        },
-        "L4":{
-            canvas: null,
-            tilemaps  : {},
-            changes   : false,
-            fade:{
-                fade    : false,
-                currFade: null,
-                prevFade: null,
-            },
-            useFlicker: true,
-        },
+        // Each layer will be key here containing a Set() similar to this:
+        // "MyLayerName":{
+        //     canvas: null,
+        //     bgColorRgba: [0,0,0,255],
+        //     tilemaps   : {},
+        //     changes    : false,
+        //     fade:{
+        //         fade    : false,
+        //         currFade: null,
+        //         prevFade: null,
+        //     },
+        //     useFlicker: true
+        // },
     },
 
     // Default values for settings.
@@ -66,11 +37,9 @@ var _GFX = {
     ALLCLEAR: true,         //
     DRAWNEEDED: false,      //
     REMOVALS: {
-        L1: new Set(),
-        L2: new Set(),
-        L3: new Set(),
-        L4: new Set(),
-    },      //
+        // Each layer will be key here containing a Set() similar to this:
+        // MyLayerName: new Set(),
+    },
     
     GFX_UPDATE_DATA: {
         gs1: "",
@@ -79,31 +48,14 @@ var _GFX = {
         ALLCLEAR: false,
         hasChanges: false,
 
-        L1: { 
-            REMOVALS_ONLY: [],
-            CHANGES: {}, 
-            fade       : {}, 
-            changes    : false, 
-            bgColorRgba: [0,0,0,0]
-        }, 
-        L2: { 
-            REMOVALS_ONLY: [],
-            CHANGES: {}, 
-            fade       : {}, 
-            changes    : false, 
-        }, 
-        L3: { 
-            REMOVALS_ONLY: [],
-            CHANGES: {}, 
-            fade       : {}, 
-            changes    : false, 
-        }, 
-        L4: { 
-            REMOVALS_ONLY: [],
-            CHANGES: {}, 
-            fade       : {}, 
-            changes    : false, 
-        }, 
+        // Each layer will be a key here containing an object similar to this:
+        // MyLayerName: { 
+        //     REMOVALS_ONLY: [],
+        //     CHANGES: {}, 
+        //     fade       : {}, 
+        //     changes    : false, 
+        //     bgColorRgba: [0,0,0,0]
+        // }, 
     },
     create_GFX_UPDATE_DATA: function(){
         let DATA = this.GFX_UPDATE_DATA;
@@ -112,16 +64,20 @@ var _GFX = {
         DATA.ALLCLEAR   = _GFX.ALLCLEAR;
         DATA.hasChanges = _GFX.DRAWNEEDED;
 
-        for(let layerKey in _GFX.currentData){ 
+        for(let layerKey of _GFX.layerKeys){
             let layerData = _GFX.currentData[layerKey];
+            if(layerKey == _GFX.L1_layerKey){
+                if( !LayerObject.areArraysEqual(DATA[layerKey].bgColorRgba, layerData.bgColorRgba) ){
+                    // console.log("Setting bgColorRgba on the first layer:", layerKey, DATA[layerKey].bgColorRgba, layerData.bgColorRgba);
+                    DATA[layerKey].bgColorRgba = layerData.bgColorRgba;
+                }
+            }
+            
             DATA[layerKey].CHANGES       = {};
             DATA[layerKey].REMOVALS_ONLY = [];
             DATA[layerKey].fade          = layerData.fade;
             DATA[layerKey].changes       = layerData.changes;
             DATA[layerKey].useFlicker    = layerData.useFlicker;
-            if(layerKey == "L1"){
-                DATA[layerKey].bgColorRgba   = layerData.bgColorRgba;
-            }
 
             // Process what has changed.
             let tilemap;
@@ -199,7 +155,7 @@ var _GFX = {
             // NOTE: The last argument, gamestate is technically optional and defaults to the current gamestate 1.
 
             _GFX.layerObjs.createOne(LayerObject, {
-                    layerObjKey: "demo_board", layerKey: "L1", tilesetKey: "bg_tiles",
+                    layerObjKey: "demo_board", layerKey: "MyLayerName", tilesetKey: "bg_tiles",
                     tmap: _GFX.funcs.getTilemap("bg_tiles", "board_28x28"),
                     x: 0, y: 0, xyByGrid: true,
                     settings : {
@@ -321,12 +277,8 @@ var _GFX = {
             // Create the gamestate key in objs if it does not exist.
             if(this.objs[gamestate] == undefined){ this.objs[gamestate] = {}; }
 
-            let layerObjects = {
-                "L1": {},
-                "L2": {},
-                "L3": {},
-                "L4": {},
-            };
+            let layerObjects = {};
+            [..._GFX.layerKeys].map(d=>layerObjects[d] = {} );
             
             // Get all the layer objects. 
             let temp;
@@ -339,18 +291,30 @@ var _GFX = {
                 
                 // Render the layer objects if it contains the render function.
                 if(obj.render){ 
+                    // Run the object's render function. Pass true for "onlyReturnLayerObjData".
                     temp = obj.render(true); 
+
+                    // Data should have been returned. If not then skip.
                     if(!temp){ continue; }
+
+                    // Store the returned layerObjectData into the object: layerObjects.
                     layerObjects[temp.layerKey][key] = temp;
+
+                    // Increment the count.
                     cnt += 1;
                 }
+
+                // A LayerObject should always have a render function (either inherited or custom to an extended class.)
+                // else{
+                    // console.log("_GFX.layerObjs.render: Missing render function for object.");
+                // }
             }
 
-            // Render the layer object datas.
+            // Render the layer object data records if there were any.
             if(cnt){ 
-                // console.log(cnt); 
-
-                // Send the layer objects to updateLayer all at once instead of one at a time.
+                // console.log(`Number of changed objects for for all layerKeys: ${cnt}`);
+                
+                // Send to updateLayer the layer objects for each individual layer (One layer at a time.)
                 for(let layerKey in layerObjects){ 
                     _GFX.funcs.updateLayer(layerKey, layerObjects[layerKey]);
                 }
@@ -416,13 +380,14 @@ var _GFX = {
 
         // Determines if a draw is needed and updates _GFX.DRAWNEEDED.
         isDrawNeeded: function(){
+            let layerChanges = false;
+            for(let layerKey of _GFX.layerKeys){
+                if(_GFX.currentData[layerKey].changes){ layerChanges = true; break; }
+            }
             if(
                 ! (
-                    _GFX.ALLCLEAR                   ||
-                    _GFX.currentData["L1"].changes ||
-                    _GFX.currentData["L2"].changes ||
-                    _GFX.currentData["L3"].changes ||
-                    _GFX.currentData["L4"].changes ||
+                    _GFX.ALLCLEAR                  ||
+                    layerChanges                   ||
                     _GFX.DRAWNEEDED
                 )
             )   { _GFX.DRAWNEEDED = false; }
@@ -461,7 +426,7 @@ var _GFX = {
                 // _GFX.currentData[layerKey].tilemaps = {};
 
                 // Keep the background color for L1?
-                if(layerKey == "L1" && !keepBg1BgColor){
+                if(layerKey == _GFX.L1_layerKey && !keepBg1BgColor){
                     _GFX.currentData[layerKey].bgColorRgba = [0,0,0,0];
                 }
 
@@ -484,27 +449,31 @@ var _GFX = {
         // Updates the background color for L1.
         updateL1BgColorRgba: function(bgColorRgba=[0,0,0,255]){
             // _GFX.funcs.updateL1BgColorRgba([0,0,255,255]);
-            let layer = "L1";
+            let layerKey = _GFX.L1_layerKey;
 
             if(Array.isArray(bgColorRgba) && bgColorRgba.length){
-                _GFX.currentData[layer].bgColorRgba = bgColorRgba;
+                _GFX.currentData[layerKey].bgColorRgba = bgColorRgba;
             }
             else{
-                _GFX.currentData[layer].bgColorRgba = [0,0,0,0];
+                _GFX.currentData[layerKey].bgColorRgba = [0,0,0,0];
             }
 
             //
-            _GFX.currentData[layer].changes = true;
+            _GFX.currentData[layerKey].changes = true;
         },
 
-        // Updates the specified layer (locally.) Can accept multiple tilemaps.
+        // Updates the specified layer (main thread.) Can accept multiple tilemaps.
         // Creates/Updates an entry in _GFX.currentData[layer].tilemaps[tilemapKey].
+        // Only updates if the data has changed. (Uses a hash.)
+        // Accepts data created by funcs.createLayerObjData or createPrintLayerObjData.
         updateLayer: function(layer, tilemaps={}){
-            // Only accept these layerKeys:
-            if(layer == "L1" || layer == "L2" || layer == "L3" || layer == "L4"){
+            // Only accept real layerKeys.
+            if(_GFX.layerKeys.has(layer)){
                 let tilemap, exists, oldHash, newHash;
                 let tw ;
                 let th ;
+
+                // Go through each tilemap in the list.
                 for(let tilemapKey in tilemaps){
                     // Get the tilemap from the provided list.
                     tilemap = tilemaps[tilemapKey];
@@ -529,10 +498,13 @@ var _GFX = {
 
                     // If it exists then get it's existing hash.
                     if(exists){ oldHash = _GFX.currentData[layer].tilemaps[tilemapKey].hash ?? 0; }
+                    
+                    // Does not exist. Make sure to reset the previous oldHash to avoid using it again.
+                    else{ oldHash = null; }
 
                     // Generate a new hash for THIS layerObject. 
                     newHash = _GFX.utilities.djb2Hash( JSON.stringify([
-                        // Location.
+                        // Location/visibility
                         tilemap.x, 
                         tilemap.y, 
                         tilemap.hidden ?? false, 
@@ -545,23 +517,24 @@ var _GFX = {
 
                     // Is this a changed object?
                     if(oldHash != newHash){
-                        // Update the layerObject.
+                        // A value used by the hash was different. This map has changes.
+
+                        // Update the layerObject (main thread.)
                         _GFX.currentData[layer].tilemaps[tilemapKey] = {
-                            hash    : newHash, // Newly generated hash.
-                            hashPrev: oldHash ?? 0, // Previous hash or 0 if there wasn't one.
-                            ts       : tilemap.ts,
-                            tmap     : tilemap.tmap,
-                            x        : tilemap.x,
-                            y        : tilemap.y,
-                            w        : tilemap.w,
-                            h        : tilemap.h,
-                            hidden   : tilemap.hidden ?? false,
-                            settings : tilemap.settings,
-                            mapKey   : tilemapKey,
-                            
-                            text : tilemap.text,
-                            removeHashOnRemoval: tilemap.removeHashOnRemoval ?? true,
-                            allowResort         : tilemap.allowResort ?? false,
+                            hash    : newHash,                                        // Newly generated hash.
+                            hashPrev: oldHash ?? null,                                // Previous hash.
+                            ts       : tilemap.ts,                                    // Tileset name.
+                            tmap     : tilemap.tmap,                                  // Tilemap array.
+                            x        : tilemap.x,                                     // Coordinate: x (Relative to the pixel, not a grid tile.)
+                            y        : tilemap.y,                                     // Coordinate: y (Relative to the pixel, not a grid tile.)
+                            w        : tilemap.w,                                     // Dimension : w (Relative to the pixel, not a grid tile.)
+                            h        : tilemap.h,                                     // Dimension : h (Relative to the pixel, not a grid tile.)
+                            hidden   : tilemap.hidden ?? false,                       // Visibility.
+                            settings : tilemap.settings,                              // Transform settings.
+                            mapKey   : tilemapKey,                                    // Name used by the LayerObject.
+                            text     : tilemap.text ?? null,                          // Text using it exists.
+                            removeHashOnRemoval: tilemap.removeHashOnRemoval ?? true, // When removed also remove from the Hashcache.
+                            allowResort        : tilemap.allowResort ?? false,        // All the draw order to be reversed every-other frame when changed.)
                         };
 
                         // Set the changes flag for this layer since there were changes.
@@ -580,7 +553,7 @@ var _GFX = {
             // EXAMPLE USAGE:
             // _GFX.funcs.setFade("ALL", 5);
             // NOTES: 
-            // layer can be one of: [ "L1", "L2", "L3", "TXT1", "ALL" ].
+            // layer can be one of: [ "L1", "L2", "L3", "TXT1", "ALL" ]. (Or any valid layerKey name.)
             // level can be one of: [ null, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ]
             // level for null can alternatively be: [ "off" ]
             // level for 10 and 11 can alternatively be one of: [ "black", "clear" ]
@@ -738,19 +711,18 @@ var _GFX = {
             if(undefined == obj.y)      { console.log(obj); throw `createLayerObjData: Missing y: ${JSON.stringify(obj)}`; }
             obj.settings = this.correctSettings(obj.settings); // Make sure that settings is an object.
 
+            let tw = _GFX.tilesets[obj.ts].config.tileWidth;
+            let th = _GFX.tilesets[obj.ts].config.tileHeight;
+
             // Create the layerObject.
             let newObj = { 
-                [obj.mapKey]: { 
-                    ts      : obj.ts,
-                    x       : obj.x,
-                    y       : obj.y,
-                    w       : obj.tmap[0] * _APP.configObj.dimensions.tileWidth,
-                    h       : obj.tmap[1] * _APP.configObj.dimensions.tileHeight,
-                    tmap    : obj.tmap,
-                    settings: obj.settings,
-                    text    : false,
-                } 
-            };
+                [obj.mapKey]: {
+                    ...obj,
+                    w       : obj.tmap[0] * tw,
+                    h       : obj.tmap[1] * th,
+                    // text    : false,
+                }
+             };
 
             // Adjust width and height if there is a rotation that would require the change.
             newObj[obj.mapKey].w = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].w : newObj[obj.mapKey].h;
@@ -772,6 +744,9 @@ var _GFX = {
             if(undefined == obj.x)      { console.log(obj); throw `createPrintLayerObjData: Missing x: ${JSON.stringify(obj)}`; }
             if(undefined == obj.y)      { console.log(obj); throw `createPrintLayerObjData: Missing y: ${JSON.stringify(obj)}`; }
             obj.settings = this.correctSettings(obj.settings); // Make sure that settings is an object.
+
+            let tw = _GFX.tilesets[obj.ts].config.tileWidth;
+            let th = _GFX.tilesets[obj.ts].config.tileHeight;
 
             let fontObj = _APP.configObj.fontObj ;
             let fontMap = _GFX.funcs.getTilemap(fontObj.ts, fontObj.tmap);
@@ -841,17 +816,14 @@ var _GFX = {
 
             // Create the layerObject.
             let newObj = { 
-                [obj.mapKey]: { 
-                    ts      : obj.ts,
-                    x       : obj.x,
-                    y       : obj.y,
-                    w       : newTilemap[0] * _APP.configObj.dimensions.tileWidth,
-                    h       : newTilemap[1] * _APP.configObj.dimensions.tileHeight,
+                [obj.mapKey]: {
+                    ...obj,
                     tmap    : newTilemap,
-                    settings: obj.settings,
-                    text    : obj.text,
-                } 
-            };
+                    w       : newTilemap[0] * tw,
+                    h       : newTilemap[1] * th,
+                    // text    : obj.text,
+                }
+             };
 
             // Adjust width and height if there is a rotation that would require the change.
             newObj[obj.mapKey].w = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].w : newObj[obj.mapKey].h;
@@ -873,7 +845,7 @@ var _GFX = {
                     a = ( ( (a/255) * 100 ) |0 ) / 100;
     
                     // Create strings for comparison
-                    let currentString = _GFX.currentData.L1.canvas.style['background-color'];
+                    let currentString = _GFX.currentData[_GFX.L1_layerKey].canvas.style['background-color'];
                     let newString;
     
                     // If the alpha is fully opaque then the browser will set to rgb, otherwise rgba. 
@@ -882,7 +854,7 @@ var _GFX = {
                     
                     // Apply the new bgColorRgba if the currentString and newString do not match.
                     if(currentString!=newString){
-                        _GFX.currentData.L1.canvas.style['background-color'] = newString;
+                        _GFX.currentData[_GFX.L1_layerKey].canvas.style['background-color'] = newString;
                         // console.log(`Changed from: ${currentString} to ${newString}`, r,b,g,a);
                     }
                     // else{
@@ -962,9 +934,40 @@ _GFX.init = async function(){
             outputDiv.append(layer.canvasElem);
             layer.canvas = layer.canvasElem.transferControlToOffscreen();
             
-            // Save the canvas element to currentData.
-            _GFX.currentData[rec.name].canvas = layer.canvasElem;
-            
+            // Save data to _GFX.currentData.
+            _GFX.currentData[rec.name] = {
+                canvas: layer.canvasElem,
+                tilemaps   : {},
+                changes    : false,
+                fade:{
+                    fade    : false,
+                    currFade: null,
+                    prevFade: null,
+                },
+                useFlicker: rec.useFlicker
+            }
+
+            // Save the layerKey (name) to _GFX.layerKeys.
+            _GFX.layerKeys.add(rec.name);
+
+            // Add a new set in _GFX.REMOVALS.
+            _GFX.REMOVALS[rec.name] = new Set();
+
+            // Configure _GFX.GFX_UPDATE_DATA for this layer.
+            _GFX.GFX_UPDATE_DATA[rec.name] = {
+                REMOVALS_ONLY: [],
+                CHANGES: {}, 
+                fade       : {}, 
+                changes    : false, 
+            };
+
+            // Add keys/values that are specific for the first layer.
+            if(l==0){ 
+                _GFX.currentData[rec.name].bgColorRgba = [0,0,0,255]; 
+                _GFX.GFX_UPDATE_DATA[rec.name].bgColorRgba = [0,0,0,0]; 
+                _GFX.L1_layerKey = rec.name; 
+            }
+
             layers.push({
                 canvas        : layer.canvas,
                 canvasOptions : rec.canvasOptions,
@@ -1143,12 +1146,10 @@ class LayerObject {
         return this.orgConfig;
     };
 
-    // Force x and y values to be within the acceptable range.
-    _clampXandY(x, y, w, h){
+    // Force x and y values to be within the acceptable range of the screen dimensions.
+    _clampXandY(x, y, w, h, ts){
         let maxX = _APP.configObj.dimensions.cols * _APP.configObj.dimensions.tileWidth;
         let maxY = _APP.configObj.dimensions.rows * _APP.configObj.dimensions.tileHeight;
-        
-        // console.log(x,y,w,h, this);
         
         // Min/Max x.
         x = Math.max(
@@ -1185,23 +1186,25 @@ class LayerObject {
         // Clamp x and y to the acceptable range on screen.
         let w = this.tmap[0] * _APP.configObj.dimensions.tileWidth;
         let h = this.tmap[1] * _APP.configObj.dimensions.tileHeight;
-        ({x,y} = this._clampXandY(x,y, w, h));
+        ({x,y} = this._clampXandY(x,y, w, h, this.tilesetKey));
 
         //
         let layerObjectData;
         
         layerObjectData = _GFX.funcs.createLayerObjData({ 
             mapKey  : this.layerObjKey, 
+            ts      : this.tilesetKey, 
             x       : x, 
             y       : y, 
-            ts      : this.tilesetKey, 
-            settings: this.settings, 
             tmap    : this.tmap,
+            settings: this.settings, 
+
             removeHashOnRemoval: this.removeHashOnRemoval,
-            allowResort           : this.allowResort,
+            allowResort        : this.allowResort,
+            hidden             : this.hidden,
         });
-        layerObjectData[this.layerObjKey].hidden = this.hidden;
-        layerObjectData[this.layerObjKey].allowResort = this.allowResort;
+        // layerObjectData[this.layerObjKey].hidden      = this.hidden;
+        // layerObjectData[this.layerObjKey].allowResort = this.allowResort;
 
         if(onlyReturnLayerObjData){ 
             layerObjectData[this.layerObjKey].layerKey = this.layerKey;
@@ -1209,13 +1212,15 @@ class LayerObject {
             return layerObjectData[this.layerObjKey]; 
         }
         else{
-            //
-            _GFX.funcs.updateLayer(this.layerKey, 
-                {
-                    ...layerObjectData,
-                }
-            );
-            this._changed = false;
+            console.log("Old way: Skipping");
+            
+            // //
+            // _GFX.funcs.updateLayer(this.layerKey, 
+            //     {
+            //         ...layerObjectData,
+            //     }
+            // );
+            // this._changed = false;
         }
     };
 }
@@ -1386,24 +1391,25 @@ class PrintText extends LayerObject{
         let layerObjectData;
         layerObjectData = _GFX.funcs.createPrintLayerObjData({ 
             mapKey  : this.layerObjKey, 
+            ts      : this.tilesetKey, 
             x       : x, 
             y       : y, 
-            ts      : this.tilesetKey, 
-            settings: this.settings, 
             tmap    : this.tmap,
+            settings: this.settings, 
             text    : this.text, 
+
             removeHashOnRemoval: this.removeHashOnRemoval,
-            allowResort           : this.allowResort,
+            allowResort        : this.allowResort,
+            hidden             : this.hidden,
         });
-        layerObjectData[this.layerObjKey].hidden = this.hidden;
-        layerObjectData[this.layerObjKey].allowResort = this.allowResort;
+        // layerObjectData[this.layerObjKey].hidden = this.hidden;
+        // layerObjectData[this.layerObjKey].allowResort = this.allowResort;
         this.tmap = layerObjectData[this.layerObjKey].tmap;
 
         // Clamp x and y to the acceptable range on screen.
         let w = this.tmap[0];
         let h = this.tmap[1];
-        ({x:layerObjectData[this.layerObjKey].x ,y: layerObjectData[this.layerObjKey].y} = this._clampXandY(x,y, w, h));
-        // this.text
+        ({x:layerObjectData[this.layerObjKey].x ,y: layerObjectData[this.layerObjKey].y} = this._clampXandY(x,y, w, h, this.tilesetKey));
 
         if(onlyReturnLayerObjData){ 
             layerObjectData[this.layerObjKey].layerKey = this.layerKey;
@@ -1411,14 +1417,15 @@ class PrintText extends LayerObject{
             return layerObjectData[this.layerObjKey]; 
         }
         else{
+            console.log("Old way: Skipping");
             
-            //
-            _GFX.funcs.updateLayer(this.layerKey, 
-                {
-                    ...layerObjectData,
-                }
-            );
-            this._changed = false;
+            // //
+            // _GFX.funcs.updateLayer(this.layerKey, 
+            //     {
+            //         ...layerObjectData,
+            //     }
+            // );
+            // this._changed = false;
         }
     };
 

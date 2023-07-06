@@ -10,9 +10,9 @@ _APP.configObj = {
     appName: "JSGAME_Uno",
 
     // First gamestates.
-    firstGamestate1:"gs_JSG",
+    // firstGamestate1:"gs_JSG",
     // firstGamestate1:"gs_N782",
-    // firstGamestate1:"gs_TITLE",
+    firstGamestate1:"gs_TITLE",
     // firstGamestate1:"gs_RULES",
     // firstGamestate1:"gs_CREDITS",
     // firstGamestate1:"gs_OPTIONS",
@@ -89,10 +89,11 @@ _APP.configObj = {
     },
 
     layers:[
-        { "name": "L1", "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"105"}, {k:"background-color", v:"#181818"} ] },
-        { "name": "L2", "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"110"} ] },
-        { "name": "L3", "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"115"} ] },
-        { "name": "L4", "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"120"} ] },
+        { "name": "L1", "useFlicker": true, "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"105"}, {k:"background-color", v:"#181818"} ] },
+        { "name": "L2", "useFlicker": true, "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"110"} ] },
+        { "name": "L3", "useFlicker": true, "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"115"} ] },
+        { "name": "L4", "useFlicker": true, "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"120"} ] },
+        // { "name": "L5", "useFlicker": true, "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"125"} ] },
     ],
     
     inputConfig :{

@@ -287,7 +287,7 @@ _APP.game = {
                             _APP.game.gamestates[_APP.game.gs1].main();
                             
                             // -- RENDER --
-                            // Render using the _GFX.layerObjs.render function.
+                            // Render using the _GFX.layerObjs.render function if the current gamestate does not have a separate render function.
                             if( !_APP.game.gamestates[_APP.game.gs1].render){ _GFX.layerObjs.render(_APP.game.gs1); }
                             
                             // Render using the gamestate's render function.

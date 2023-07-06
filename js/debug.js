@@ -1669,6 +1669,7 @@ var _DEBUG = {
         createChildNodeClone: function(srcs=[]){
             let arr = [];
             for(let src of srcs){
+                if(!src){ continue; }
                 let frag = document.createDocumentFragment();
                 let children = src.childNodes;
                 for (let child of children) { frag.appendChild(child.cloneNode(true)); }
@@ -1887,6 +1888,9 @@ var _DEBUG = {
            for(let layerKey of layerKeys){ 
                // Only operate on layers that had changes.
                if(!_DEBUG.layerObjs.changes[layerKey]){ continue; }
+
+               // If the srcDOM[layerKey] is invalid then continue.
+               if(!this.srcDOM[layerKey]){ continue; }
 
                // Set the hasChanges flag.
                if(!hasChanges){ hasChanges = true; }
@@ -2293,6 +2297,8 @@ var _DEBUG = {
                 }
             },
             init: async function(){
+                if(!('_SND' in window)){ return; }
+
                 // Save DOM.
                 for(let key in this.DOM){ 
                     for(let elemKey in this.DOM[key]){ this.DOM[key][elemKey] = document.getElementById(this.DOM[key][elemKey]);}

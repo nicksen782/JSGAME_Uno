@@ -7,10 +7,10 @@ var debugActive = false;
 const messageFuncs = {
     timings: {
         gfx: {
-            'L1'                  : {},
-            'L2'                  : {},
-            'L3'                  : {},
-            'L4'                  : {},
+            // The layerKeys will be objects here.
+            // Each layer will have a key here containing an object similar to this:
+            // 'MyLayerName'                  : {},
+
             'gfx'                 : 0,
             'gs1'                 : "",
             'gs2'                 : "",
@@ -96,24 +96,15 @@ const _GFX = {
     layers: {},
     defaultSettings: {},
     currentData: {
-        "L1":{
-            bgColorRgba: [0,0,0,0],
-            bgColor32bit: 0, // Used as a check to avoid repeatly changing to the same color.
-            tilemaps : {},
-            fade     : {},
-        },
-        "L2":{
-            tilemaps : {},
-            fade     : {},
-        },
-        "L3":{
-            tilemaps : {},
-            fade     : {},
-        },
-        "L4":{
-            tilemaps : {},
-            fade     : {},
-        },
+        // The layerKeys will be objects here.
+        // Note: only the first layer shoud have bgColorRgba and bgColor32bit.
+        // Each layer will have a key here containing an object similar to this:
+        // 'MyLayerName'                  : {
+        //     bgColorRgba: [0,0,0,0],
+        //     bgColor32bit: 0, // Used as a check to avoid repeatly changing to the same color.
+        //     tilemaps : {},
+        //     fade     : {},
+        // },
     },
     utilities: {
         // Look through a tileset for a map record that contains a match for the provided tilemap.

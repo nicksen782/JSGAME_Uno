@@ -28,7 +28,26 @@ var gfxMainV5 = {
         this.layerKeys = Object.keys(_GFX.layers);
 
         for(let i=0, len=this.layerKeys.length; i<len; i+=1){
+            // Clear the timing values for this layerKey.
             this.clearTimingsValues(this.layerKeys[i]);
+
+            // Create the flickerFlags based on the layerKey names.
+            this.gfx.DRAW[`flickerFlag_${this.layerKeys[i]}`] = _GFX.configObj.layers[i].useFlicker;
+
+            // Add the layerKeys as objects to messageFuncs.timings.gfx.
+            messageFuncs.timings.gfx[this.layerKeys[i]] = {};
+            
+            // Add the layerKeys as objects to _GFX.currentData.
+            _GFX.currentData[this.layerKeys[i]] = {
+                tilemaps : {},
+                fade     : {},
+            };
+
+            // If this layer is the first layer then also include these keys/values.
+            if(this.layerKeys[i] == this.layerKeys[0]){
+                _GFX.currentData[this.layerKeys[i]].bgColorRgba = [0,0,0,0];
+                _GFX.currentData[this.layerKeys[i]].bgColor32bit = 0;
+            }
         }
     },
 
@@ -264,7 +283,7 @@ var gfxMainV5 = {
         }
         timeIt(layerKey+"_C_createTilemaps"       , "stop");
         
-        // ** SET THE BACKGROUND COLOR (L1) **
+        // ** SET THE BACKGROUND COLOR (First layerKey) **
         // ***********************************
 
         canContinue = gfxMainV5.gfx.SETBG.setBackgroundColor(layerKey, layerData, forceLayerRedraw);
@@ -309,9 +328,9 @@ var gfxMainV5 = {
             // Clears the graphics cache for all layers and removes from hashCache if the map's hash removal flag is set. 
             gfxCoreV5.removeAllHashCacheKeys();
 
-            // Reset the background color for L1.
-            _GFX.currentData["L1"].bgColorRgba = [0,0,0,0];
-            _GFX.currentData["L1"].bgColor32bit = 0;
+            // Reset the background color for the first layerKey.
+            _GFX.currentData[ this.layerKeys[0] ].bgColorRgba = [0,0,0,0];
+            _GFX.currentData[ this.layerKeys[0] ].bgColor32bit = 0;
         }
 
         let layerKey;
@@ -743,10 +762,8 @@ var gfxMainV5 = {
         // Drawing functions.
         DRAW : {
             // Per-layer flicker flags.
-            flickerFlag_L1: 0,
-            flickerFlag_L2: 0,
-            flickerFlag_L3: 0,
-            flickerFlag_L4: 0,
+            // Each layer will have a key here representing a flag similar to this:
+            // flickerFlag_MyLayerName: 0,
     
             // Restores removed regions with replacement partial images. Will apply fade if needed.
             restoreOverlapsToMapKey: function(layerKey, regions){
@@ -1310,8 +1327,13 @@ var gfxMainV5 = {
         SETBG: {
             // TODO: Unfinished.
             setBackgroundColor            : function(layerKey, layerData, forceLayerRedraw){
-                if(layerKey != "L1"){ return true; }
+                // Skip this function on any layer that is not the first layer.
+                if(layerKey != gfxMainV5.layerKeys[0]){ return true; }
+
+                // Skip this function if the bgColorRgba value is NOT an array.
                 if(!Array.isArray(layerData.bgColorRgba)){ return true; }
+                
+                // Skip this function if the bgColorRgba value is NOT an array of length 4.
                 if(!layerData.bgColorRgba.length == 4){ return true; }
 
                 // Determine the new bg color based on the fade level.
