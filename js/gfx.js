@@ -7,8 +7,10 @@ var _GFX = {
     // LayerKeys (Used as a lookup instead of Object.keys().)
     layerKeys: new Set(),
 
+    // TODO: remove "tilemaps". These will be stored in _GFX.layerObjs.objs instead.
     // Holds the graphics data that will be sent to the WebWorker.
     currentData : {
+        // NOTE: Only the first layer will have: bgColorRgba.
         // Each layer will be key here containing a Set() similar to this:
         // "MyLayerName":{
         //     canvas: null,
@@ -84,14 +86,22 @@ var _GFX = {
             for(let mapKey in layerData.tilemaps){ 
                 tilemap = layerData.tilemaps[mapKey];
 
-                // ADD or CHANGED
-                if(
-                    tilemap.hashPrev == 0 ||
-                    tilemap.hashPrev != tilemap.hash
-                ){ 
+                // Find this value in _GFX.layerObjs.objs
+                let tilemap2 = _GFX.layerObjs.objs[_APP.game.gs1][mapKey];
+
+                // This value is likely added or changed. Check the actual LayerObject for _changedDrawNeeded to be sure.
+                if(tilemap2 && tilemap2._changedDrawNeeded){
+                    // console.log("needs update:", mapKey, tilemap2);
+
                     DATA[layerKey]["CHANGES"][mapKey] = tilemap; 
                     DATA.hasChanges = true; 
                     DATA[layerKey].changes = true; 
+
+                    tilemap2._changedDrawNeeded = false;
+                }
+                else{
+                    // console.log("does NOT need an update.", mapKey, tilemap2);
+                    continue;
                 }
             }
             
@@ -311,6 +321,7 @@ var _GFX = {
             }
 
             // Render the layer object data records if there were any.
+            // console.log(`Number of changed objects for for all layerKeys: ${cnt}`);
             if(cnt){ 
                 // console.log(`Number of changed objects for for all layerKeys: ${cnt}`);
                 
@@ -333,18 +344,11 @@ var _GFX = {
             _GFX.ALLCLEAR = false;
             _GFX.DRAWNEEDED = false;
     
-            // Clear the changes flags and update hashPrev.
+            // Clear the changes flags.
             // NOTE: _GFX.currentData and _GFX.REMOVALS have the same layerKeys.
             for(let layerKey in _GFX.currentData){ 
                 // Get a handle to this layer.
                 let layer = _GFX.currentData[layerKey];
-                
-                //. Update the hashPrev for all layer objects.
-                for(let mapKey in layer.tilemaps){ 
-                    if(layer.tilemaps[mapKey].hashPrev != layer.tilemaps[mapKey].hash){
-                        layer.tilemaps[mapKey].hashPrev = layer.tilemaps[mapKey].hash;
-                    }
-                }
 
                 // Save the layerChange if debug mode is on (for _DEBUG.layerObjs.)
                 if(_APP.debugActive){
@@ -452,9 +456,15 @@ var _GFX = {
             let layerKey = _GFX.L1_layerKey;
 
             if(Array.isArray(bgColorRgba) && bgColorRgba.length){
+                // TODO: Needed?
+                _GFX.GFX_UPDATE_DATA[layerKey].bgColorRgba = bgColorRgba;
+                
                 _GFX.currentData[layerKey].bgColorRgba = bgColorRgba;
             }
             else{
+                // TODO: Needed?
+                _GFX.GFX_UPDATE_DATA[layerKey].bgColorRgba = [0,0,0,0];
+
                 _GFX.currentData[layerKey].bgColorRgba = [0,0,0,0];
             }
 
@@ -466,10 +476,11 @@ var _GFX = {
         // Creates/Updates an entry in _GFX.currentData[layer].tilemaps[tilemapKey].
         // Only updates if the data has changed. (Uses a hash.)
         // Accepts data created by funcs.createLayerObjData or createPrintLayerObjData.
+        // Called by _GFX.layerObjs.render.
         updateLayer: function(layer, tilemaps={}){
             // Only accept real layerKeys.
             if(_GFX.layerKeys.has(layer)){
-                let tilemap, exists, oldHash, newHash;
+                let tilemap;
                 let tw ;
                 let th ;
 
@@ -487,59 +498,32 @@ var _GFX = {
                     tilemap.x = tilemap.x | 0;
                     tilemap.y = tilemap.y | 0;
 
-                    // Does this tilemapKey already exist?
-                    exists = _GFX.currentData[layer].tilemaps[tilemapKey] ? true : false;
-
                     // If useGlobalOffsets is defined use them to offset x and y.
                     if(_APP.configObj.useGlobalOffsets){
                         tilemap.x += ( (_APP.configObj.globalOffsets_x ?? 0) * tw);
                         tilemap.y += ( (_APP.configObj.globalOffsets_y ?? 0) * th);
                     }
 
-                    // If it exists then get it's existing hash.
-                    if(exists){ oldHash = _GFX.currentData[layer].tilemaps[tilemapKey].hash ?? 0; }
-                    
-                    // Does not exist. Make sure to reset the previous oldHash to avoid using it again.
-                    else{ oldHash = null; }
+                    // Accept the changed object and store to _GFX.currentData.
 
-                    // Generate a new hash for THIS layerObject. 
-                    newHash = _GFX.utilities.djb2Hash( JSON.stringify([
-                        // Location/visibility
-                        tilemap.x, 
-                        tilemap.y, 
-                        tilemap.hidden ?? false, 
+                    // Update the layerObject (main thread.)
+                    _GFX.currentData[layer].tilemaps[tilemapKey] = {
+                        ts       : tilemap.ts,                                    // Tileset name.
+                        tmap     : tilemap.tmap,                                  // Tilemap array.
+                        x        : tilemap.x,                                     // Coordinate: x (Relative to the pixel, not a grid tile.)
+                        y        : tilemap.y,                                     // Coordinate: y (Relative to the pixel, not a grid tile.)
+                        w        : tilemap.w,                                     // Dimension : w (Relative to the pixel, not a grid tile.)
+                        h        : tilemap.h,                                     // Dimension : h (Relative to the pixel, not a grid tile.)
+                        hidden   : tilemap.hidden ?? false,                       // Visibility.
+                        settings : tilemap.settings,                              // Transform settings.
+                        mapKey   : tilemapKey,                                    // Name used by the LayerObject.
+                        text     : tilemap.text ?? null,                          // Text using it exists.
+                        removeHashOnRemoval: tilemap.removeHashOnRemoval ?? true, // When removed also remove from the Hashcache.
+                        allowResort        : tilemap.allowResort ?? false,        // All the draw order to be reversed every-other frame when changed.)
+                    };
 
-                        // Uniqueness of this tilemap.
-                        tilemap.ts,                       // Tileset
-                        JSON.stringify(tilemap.settings), // Settings
-                        Array.from(tilemap.tmap),         // Tmap
-                    ]));
-
-                    // Is this a changed object?
-                    if(oldHash != newHash){
-                        // A value used by the hash was different. This map has changes.
-
-                        // Update the layerObject (main thread.)
-                        _GFX.currentData[layer].tilemaps[tilemapKey] = {
-                            hash    : newHash,                                        // Newly generated hash.
-                            hashPrev: oldHash ?? null,                                // Previous hash.
-                            ts       : tilemap.ts,                                    // Tileset name.
-                            tmap     : tilemap.tmap,                                  // Tilemap array.
-                            x        : tilemap.x,                                     // Coordinate: x (Relative to the pixel, not a grid tile.)
-                            y        : tilemap.y,                                     // Coordinate: y (Relative to the pixel, not a grid tile.)
-                            w        : tilemap.w,                                     // Dimension : w (Relative to the pixel, not a grid tile.)
-                            h        : tilemap.h,                                     // Dimension : h (Relative to the pixel, not a grid tile.)
-                            hidden   : tilemap.hidden ?? false,                       // Visibility.
-                            settings : tilemap.settings,                              // Transform settings.
-                            mapKey   : tilemapKey,                                    // Name used by the LayerObject.
-                            text     : tilemap.text ?? null,                          // Text using it exists.
-                            removeHashOnRemoval: tilemap.removeHashOnRemoval ?? true, // When removed also remove from the Hashcache.
-                            allowResort        : tilemap.allowResort ?? false,        // All the draw order to be reversed every-other frame when changed.)
-                        };
-
-                        // Set the changes flag for this layer since there were changes.
-                        _GFX.currentData[layer].changes = true;
-                    }
+                    // Set the changes flag for this layer since there were changes.
+                    _GFX.currentData[layer].changes = true;
                 }
             }
             else{
@@ -1183,6 +1167,7 @@ class LayerObject {
         x = x | 0;
         y = y | 0;
         
+        // TODO: This might not work with certain rotations since it is based on the tilemap dimensions.
         // Clamp x and y to the acceptable range on screen.
         let w = this.tmap[0] * _APP.configObj.dimensions.tileWidth;
         let h = this.tmap[1] * _APP.configObj.dimensions.tileHeight;
@@ -1205,10 +1190,14 @@ class LayerObject {
         });
         // layerObjectData[this.layerObjKey].hidden      = this.hidden;
         // layerObjectData[this.layerObjKey].allowResort = this.allowResort;
+        // this.tmap = layerObjectData[this.layerObjKey].tmap;
+        this.w = layerObjectData[this.layerObjKey].w;
+        this.h = layerObjectData[this.layerObjKey].h;
 
         if(onlyReturnLayerObjData){ 
             layerObjectData[this.layerObjKey].layerKey = this.layerKey;
             this._changed = false;
+            this._changedDrawNeeded = true;
             return layerObjectData[this.layerObjKey]; 
         }
         else{
@@ -1405,6 +1394,8 @@ class PrintText extends LayerObject{
         // layerObjectData[this.layerObjKey].hidden = this.hidden;
         // layerObjectData[this.layerObjKey].allowResort = this.allowResort;
         this.tmap = layerObjectData[this.layerObjKey].tmap;
+        this.w = layerObjectData[this.layerObjKey].w;
+        this.h = layerObjectData[this.layerObjKey].h;
 
         // Clamp x and y to the acceptable range on screen.
         let w = this.tmap[0];
@@ -1414,6 +1405,7 @@ class PrintText extends LayerObject{
         if(onlyReturnLayerObjData){ 
             layerObjectData[this.layerObjKey].layerKey = this.layerKey;
             this._changed = false;
+            this._changedDrawNeeded = true;
             return layerObjectData[this.layerObjKey]; 
         }
         else{

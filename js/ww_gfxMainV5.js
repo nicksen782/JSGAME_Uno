@@ -903,8 +903,6 @@ var gfxMainV5 = {
                     _GFX.currentData[layerKey].tilemaps[newMapKey].y        = newMap.y;
                     _GFX.currentData[layerKey].tilemaps[newMapKey].tmap     = newMap.tmap;
                     _GFX.currentData[layerKey].tilemaps[newMapKey].settings = newMap.settings;
-                    _GFX.currentData[layerKey].tilemaps[newMapKey].hash     = newMap.hash;
-                    _GFX.currentData[layerKey].tilemaps[newMapKey].hashPrev = newMap.hashPrev;
                     _GFX.currentData[layerKey].tilemaps[newMapKey].hidden   = newMap.hidden;
                     _GFX.currentData[layerKey].tilemaps[newMapKey].hiddenTransition = newMap.hiddenTransition;
                 }
