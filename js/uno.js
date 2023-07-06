@@ -750,8 +750,12 @@ _APP.utility = {
 _APP.loader = {
     // If debug is requested this function makes sure that it is allowed.
     debugAuthCheck: function(params){
+        // let skipAuthCheck = false;
+        let skipAuthCheck = true;
+        
         let debugActive = ("debug" in params && params.debug === '1') ? true : false;
-        if (debugActive && window.location.hostname !== 'localhost') {
+
+        if (debugActive && window.location.hostname !== 'localhost' && !skipAuthCheck) {
             _APP.debugActive = false;
             _APP.debug2Active = false;
 
