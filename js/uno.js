@@ -10,9 +10,9 @@ _APP.configObj = {
     appName: "JSGAME_Uno",
 
     // First gamestates.
-    // firstGamestate1:"gs_JSG",
+    firstGamestate1:"gs_JSG",
     // firstGamestate1:"gs_N782",
-    firstGamestate1:"gs_TITLE",
+    // firstGamestate1:"gs_TITLE",
     // firstGamestate1:"gs_RULES",
     // firstGamestate1:"gs_CREDITS",
     // firstGamestate1:"gs_OPTIONS",

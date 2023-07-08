@@ -66,6 +66,8 @@ var _GFX = {
         DATA.ALLCLEAR   = _GFX.ALLCLEAR;
         DATA.hasChanges = _GFX.DRAWNEEDED;
 
+        let tilemapsThatHadChanges = [];
+
         for(let layerKey of _GFX.layerKeys){
             let layerData = _GFX.currentData[layerKey];
             if(layerKey == _GFX.L1_layerKey){
@@ -83,7 +85,8 @@ var _GFX = {
 
             // Process what has changed.
             let tilemap;
-            for(let mapKey in layerData.tilemaps){ 
+            
+            for(let mapKey in layerData.tilemaps){
                 tilemap = layerData.tilemaps[mapKey];
 
                 // Find this value in _GFX.layerObjs.objs
@@ -97,34 +100,37 @@ var _GFX = {
                     DATA.hasChanges = true; 
                     DATA[layerKey].changes = true; 
 
-                    tilemap2._changedDrawNeeded = false;
+                    tilemapsThatHadChanges.push(mapKey);
                 }
                 else{
                     // console.log("does NOT need an update.", mapKey, tilemap2);
-                    continue;
+                    // continue;
                 }
             }
             
             // REMOVALS_ONLY 
             // Compare the keys of changes against the keys of removals. 
             // Any key that is in changes should NOT be in removals.
-            let changesKeys = new Set( Object.keys(DATA[layerKey].CHANGES) );
             for(let key of _GFX.REMOVALS[layerKey]){
-                if(!changesKeys.has(key)){ 
-                    // console.log(`Adding '${key}' to removals because it is NOT in changes`);
+                if(!(key in DATA[layerKey].CHANGES)){ 
                     DATA[layerKey]["REMOVALS_ONLY"].push(key); 
-                }
-                else{
-                    // console.log(`NOT adding '${key}' to removals because it is also in changes`);
                 }
             }
             
             // If there is a removal on this layer then then the layer should be flagged for changes. 
             if(DATA[layerKey]["REMOVALS_ONLY"].length){
                 DATA.hasChanges = true; 
+
                 DATA[layerKey].changes = true;
             }
-            // DATA[layerKey]["REMOVALS_ONLY"] = [ ... _GFX.REMOVALS[layerKey] ];
+        }
+
+        // Clear the _changedDrawNeeded flags on all maps that had it set previously.
+        if(tilemapsThatHadChanges.length){
+            for(let mapKey of tilemapsThatHadChanges){
+                let tilemap2 = _GFX.layerObjs.objs[_APP.game.gs1][mapKey];
+                tilemap2._changedDrawNeeded = false;
+            }
         }
     },
 
@@ -985,7 +991,7 @@ class LayerObject {
         // LayerObject.areArraysEqual(tmap1, tmap2);
 
         // Ensure that the inputs are defined.
-        if (undefined == array1 || undefined == array2) { 
+        if (undefined === array1 || undefined === array2) { 
             console.error("areArraysEqual: Inputs must be arrays.", array1, array2);
             return false; 
         }
@@ -1028,7 +1034,7 @@ class LayerObject {
     set x(value)          { if( this._x          !== value){ this._x          = value; this._changed = true; } }
     set y(value)          { if( this._y          !== value){ this._y          = value; this._changed = true; } }
     set tmap(value)       { 
-        if(!this._tmap || !LayerObject.areArraysEqual(this._tmap, value) ){
+        if(undefined === this._tmap || !LayerObject.areArraysEqual(this._tmap, value) ){
             this._tmap = value; this._changed = true; 
         } 
     }
@@ -1088,30 +1094,30 @@ class LayerObject {
         this.className = this.constructor.name;
         
         // Settings.
-        this.settings = config.settings ?? _GFX.funcs.correctSettings(null);
+        this.settings = config.settings ?? _GFX.funcs.correctSettings(null); // Needs the setter to properly initialize.
 
         this.orgConfig  = config;
 
         // layerObjKey (MapKey), layerKey, and tilesetKey.
         this.layerObjKey = config.layerObjKey;
-        this.layerKey    = config.layerKey;
-        this.tilesetKey  = config.tilesetKey ?? "combined1";
+        this._layerKey    = config.layerKey;
+        this._tilesetKey  = config.tilesetKey ?? "combined1";
         this.removeHashOnRemoval = config.removeHashOnRemoval ?? true;
         this.allowResort = config.allowResort ?? false;
 
         // Tilemap. (It is possible that a tilemap is not provided/required.)
-        this.tmap = config.tmap; 
+        this._tmap = config.tmap; 
 
         // X position.
-        this.x = config.x ?? 0;
+        this._x = config.x ?? 0;
         
         // Y position.
-        this.y = config.y ?? 0;
+        this._y = config.y ?? 0;
 
         // x,y positioning (grid or pixel based.)
-        this.xyByGrid = config.xyByGrid ?? false;
+        this.xyByGrid = config.xyByGrid ?? false; // Needs the setter to properly initialize.
         
-        this.hidden = config.hidden ?? false;
+        this._hidden = config.hidden ?? false;
 
         // Change detection.
         this._changed = true;
@@ -1171,7 +1177,7 @@ class LayerObject {
         // Clamp x and y to the acceptable range on screen.
         let w = this.tmap[0] * _APP.configObj.dimensions.tileWidth;
         let h = this.tmap[1] * _APP.configObj.dimensions.tileHeight;
-        ({x,y} = this._clampXandY(x,y, w, h, this.tilesetKey));
+        ({x,y} = this._clampXandY(x,y, w, h, this._tilesetKey));
 
         //
         let layerObjectData;
@@ -1188,8 +1194,6 @@ class LayerObject {
             allowResort        : this.allowResort,
             hidden             : this.hidden,
         });
-        // layerObjectData[this.layerObjKey].hidden      = this.hidden;
-        // layerObjectData[this.layerObjKey].allowResort = this.allowResort;
         // this.tmap = layerObjectData[this.layerObjKey].tmap;
         this.w = layerObjectData[this.layerObjKey].w;
         this.h = layerObjectData[this.layerObjKey].h;
@@ -1344,10 +1348,9 @@ class PrintText extends LayerObject{
 
         // mapKey  : this.layerObjKey, 
         
-        this.text = config.text ?? ""
+        this._text = config.text ?? ""
         this.removeHashOnRemoval = config.removeHashOnRemoval ?? true;
         this.allowResort = config.allowResort ?? true;
-
 
         // This part should be handled already by _GFX.funcs.layerObjs.createOne.
         // TODO: This could result in a very large name.
@@ -1365,8 +1368,8 @@ class PrintText extends LayerObject{
         if(!this.text.length){ this.text = ""; }
 
         // Draw by grid or by pixel?
-        let x = this.x; 
-        let y = this.y;
+        let x = this._x; 
+        let y = this._y;
         if(this.xyByGrid && this.tilesetKey){ 
             x = x * this.tw; 
             y = y * this.th;
@@ -1380,27 +1383,27 @@ class PrintText extends LayerObject{
         let layerObjectData;
         layerObjectData = _GFX.funcs.createPrintLayerObjData({ 
             mapKey  : this.layerObjKey, 
-            ts      : this.tilesetKey, 
+            ts      : this._tilesetKey, 
             x       : x, 
             y       : y, 
-            tmap    : this.tmap,
-            settings: this.settings, 
-            text    : this.text, 
+            tmap    : this._tmap,
+            settings: this._settings, 
+            text    : this._text, 
 
             removeHashOnRemoval: this.removeHashOnRemoval,
             allowResort        : this.allowResort,
-            hidden             : this.hidden,
+            hidden             : this._hidden,
         });
         // layerObjectData[this.layerObjKey].hidden = this.hidden;
         // layerObjectData[this.layerObjKey].allowResort = this.allowResort;
-        this.tmap = layerObjectData[this.layerObjKey].tmap;
+        this._tmap = layerObjectData[this.layerObjKey].tmap;
         this.w = layerObjectData[this.layerObjKey].w;
         this.h = layerObjectData[this.layerObjKey].h;
 
         // Clamp x and y to the acceptable range on screen.
-        let w = this.tmap[0];
-        let h = this.tmap[1];
-        ({x:layerObjectData[this.layerObjKey].x ,y: layerObjectData[this.layerObjKey].y} = this._clampXandY(x,y, w, h, this.tilesetKey));
+        let w = this._tmap[0];
+        let h = this._tmap[1];
+        ({x:layerObjectData[this.layerObjKey].x ,y: layerObjectData[this.layerObjKey].y} = this._clampXandY(x,y, w, h, this._tilesetKey));
 
         if(onlyReturnLayerObjData){ 
             layerObjectData[this.layerObjKey].layerKey = this.layerKey;

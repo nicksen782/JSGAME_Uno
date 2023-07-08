@@ -178,6 +178,12 @@ const _GFX = {
 
         // Checks if arrays are equal. (May use recursion.)
         areArraysEqual: function(array1, array2) {
+            // Ensure that the inputs are defined.
+            if (undefined === array1 || undefined === array2) { 
+                console.error("areArraysEqual: Inputs must be arrays.", array1, array2);
+                return false; 
+            }
+
             // Check if the arrays are the same length. If they are then there is nothing more that needs to be checked.
             if (array1.length !== array2.length) { return false; }
         
