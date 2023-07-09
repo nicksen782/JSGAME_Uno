@@ -757,6 +757,9 @@
                             playerKey  : this.gameBoard.currentPlayer  , 
                             layerObjKey: layerObjKey ,
                             movementSpeed: _APP.game.gamestates.gs_PLAYING.movementSpeeds.selectCard,
+
+                            // When the movement finishes, display playCancel message.
+                            finish: ()=>{ this.gameBoard.displayMessage("playCancel"  , this.gameBoard.currentPlayer, false); },
                     });
                     
                     // Clear flag: this.flags.playerTurn.card_select
@@ -766,8 +769,9 @@
                     this.flags.playerTurn.card_selected = true;
                     
                     // INIT FOR THE NEXT PART.
+
                     // Display play/pass message.
-                    this.gameBoard.displayMessage("playCancel"  , this.gameBoard.currentPlayer, false);
+                    // this.gameBoard.displayMessage("playCancel"  , this.gameBoard.currentPlayer, false);
                 }
 
                 // Pass this round?
