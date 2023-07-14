@@ -1500,11 +1500,11 @@ var _DEBUG = {
 
             // Draw a highlight marker to clearly identify the tile that is being hovered over.
             // Square (fits in the grid square.)
-            this.highlightCanvasCtx.fillStyle="rgba(248, 200, 200, 1)";
+            this.highlightCanvasCtx.fillStyle="rgba(244, 67, 54, 0.40)";
             this.highlightCanvasCtx.fillRect( x, y, w, h );
             
             // Square (fits in the above square.)
-            this.highlightCanvasCtx.fillStyle="rgba(244, 67, 54, 0.60)";
+            this.highlightCanvasCtx.fillStyle="rgba(200, 200, 248, 0.40)";
             this.highlightCanvasCtx.fillRect( x+1, y+1, w-2, h-2 );
 
         },
@@ -1770,26 +1770,15 @@ var _DEBUG = {
             }
 
             // Generate the dimensions text.
-            let type = _GFX.tilesets[data.tilesetKey].config.type ?? 1;
-            let w, h;
-            if(type == 1){
-                w = data.tmap[0];
-                h = data.tmap[1];
-            }
-            else if(type == 2){
-                w = data.tmap.tmap[0];
-                h = data.tmap.tmap[1];
-            }
-
-            // let w = data.tmap[0];
-            // let h = data.tmap[1];
+            let w = data.w;
+            let h = data.h;
             let x = data.x;
             let y = data.y;
             let dims       = `` + 
                 `x: ${data.xyByGrid ? x * _APP.configObj.dimensions.tileWidth  : x}, ` +
                 `y: ${data.xyByGrid ? y * _APP.configObj.dimensions.tileHeight : y}, ` +
-                `w: ${data.xyByGrid ? w * _APP.configObj.dimensions.tileWidth  : w}, ` +
-                `h: ${data.xyByGrid ? h * _APP.configObj.dimensions.tileHeight : h}`;
+                `w: ${w}, ` +
+                `h: ${h}`;
 
             // Generate the className and name text.
             let className  = `${data.className.padEnd(12, " ")}`;
@@ -1805,13 +1794,15 @@ var _DEBUG = {
             settings = activeSettingsArray.join(", ");
 
             // if(data.frameKeys){
-            //     // console.log(data);
-            //     console.log(data.frameKeys[data.framesIndex], data.frameKeys);
+                // console.log(data);
+                // console.log(data.frameKeys[data.framesIndex], data.frameKeys);
             // }
 
             // Add the texts to the entry container.
             div_container.innerText = `` +
-            `C: ${className} : K: ${name}` + `${hidden ? " " + hidden : ""}` +
+            `C: ${className} : K: ${name} R: ${data.allowResort ? "YES": "NO"}` + `${hidden ? " " + hidden : ""}` +
+            `, TS: ${data._tilesetKey}` +
+            `, GRID: ${data._xyByGrid}` +
             `\n  D: ${dims}` +
             `\n  S: ${settings}` + 
             `\n  T: ${data.text ? ("(TEXT): '" + data.text).slice(0, 42) + "'" : ""}` +
@@ -1828,41 +1819,33 @@ var _DEBUG = {
                 return; 
             }
 
-            if(e.type == "click")      {
+            if(e.type == "mouseenter") {
+                let layerObjKey = elem.getAttribute("layerObjKey");
+                let data = _GFX.layerObjs.objs[_APP.game.gs1][layerObjKey];
+                let w = data.w;
+                let h = data.h;
+                let x = data.x;
+                let y = data.y;
+                
+                _DEBUG.layerObjs.highlightOnHover(
+                    ( data.xyByGrid ? x * data.tw : x), 
+                    ( data.xyByGrid ? y * data.th : y), 
+                    w,
+                    h,
+                    data.settings.rotation
+                );
+            }
+            else if(e.type == "mouseleave") { _DEBUG.layerObjs.highlightOnHover(0, 0, 0, 0, 0); }
+            else if(e.type == "click")      {
                 let layerObjKey = elem.getAttribute("layerObjKey");
                 let data = _GFX.layerObjs.objs[_APP.game.gs1][layerObjKey];
                 _DEBUG.layerObjs.displayLayerObject_console(_APP.game.gs1, data.layerObjKey);
             }
-            if(e.type == "contextmenu"){
+            else if(e.type == "contextmenu"){
                 e.preventDefault(); 
                 let layerObjKey = elem.getAttribute("layerObjKey");
                 _DEBUG.layerObjs.contextMenu1_open( e, _APP.game.gs1, layerObjKey );
             }
-            if(e.type == "mouseenter") {
-                let layerObjKey = elem.getAttribute("layerObjKey");
-                let data = _GFX.layerObjs.objs[_APP.game.gs1][layerObjKey];
-                let w;
-                let h;
-                let type = _GFX.tilesets[data.tilesetKey].config.type ?? 1;
-                if(type == 1){
-                    w = data.tmap[0];
-                    h = data.tmap[1];
-                }
-                else if(type == 2){
-                    w = data.tmap.tmap[0];
-                    h = data.tmap.tmap[1];
-                }
-                let x = data.x;
-                let y = data.y;
-                _DEBUG.layerObjs.highlightOnHover(
-                    ( data.xyByGrid ? x * _APP.configObj.dimensions.tileWidth  : x ), 
-                    ( data.xyByGrid ? y * _APP.configObj.dimensions.tileHeight : y ), 
-                    ( data.xyByGrid ? w * _APP.configObj.dimensions.tileWidth  : w ), 
-                    ( data.xyByGrid ? h * _APP.configObj.dimensions.tileHeight : h ), 
-                    data.settings.rotation
-                );
-            }
-            if(e.type == "mouseleave") { _DEBUG.layerObjs.highlightOnHover(0, 0, 0, 0, 0); }
         },
         displayLayerObjects: function(){
             // If the gamestate key is not in layerObjs then return.

@@ -405,18 +405,6 @@ var _GFX = {
             return _GFX.DRAWNEEDED;
         },
 
-        // Ensures that settings is an object with at least the default values within it.
-        correctSettings: function(settings){
-            // Check if settings is a valid object. Make it an object if it is not already.
-            if (settings === null || typeof settings !== 'object' || Array.isArray(settings)) {
-                settings = {};
-            }
-
-            // Merge the default settings with the provided settings.
-            // Already existing settings will remain and missing settings will be added from the default settings.
-            return Object.assign({}, _GFX.defaultSettings, settings);
-        },
-
         // This requests that all output canvases be cleared. 
         // Also removes all tilemap object data locally and in the WebWorker.
         clearAllLayers: async function(keepBg1BgColor=true){
@@ -498,7 +486,7 @@ var _GFX = {
                     th = _GFX.tilesets[tilemap.ts].config.tileHeight;
 
                     // Make sure that settings is an object and is correct.
-                    tilemap.settings = this.correctSettings(tilemap.settings);
+                    tilemap.settings = LayerObject.correctSettings(tilemap.settings);
 
                     // Ensure that x and y are integers.
                     tilemap.x = tilemap.x | 0;
@@ -688,140 +676,6 @@ var _GFX = {
             // Set changes to true so that the canvas output updates.
             _GFX.currentData[layerKey].changes = true;
         }, 
-
-        // Creates a layer object from a tilemap.
-        // NOTE: Output is used with updateLayer.
-        createLayerObjData: function(obj={}){
-            // Correct any missing data in the object.
-            if(undefined == obj)        { console.log(obj); throw `createLayerObjData: Missing obj: ${JSON.stringify(obj)}`; }
-            if(undefined == obj.mapKey) { console.log(obj); throw `createLayerObjData: Missing mapKey: ${JSON.stringify(obj)}`; }
-            if(undefined == obj.tmap)   { console.log(obj); throw `createLayerObjData: Missing tmap: ${JSON.stringify(obj)}`; }
-            if(undefined == obj.ts)     { console.log(obj); throw `createLayerObjData: Missing ts: ${JSON.stringify(obj)}`; }
-            if(undefined == obj.x)      { console.log(obj); throw `createLayerObjData: Missing x: ${JSON.stringify(obj)}`; }
-            if(undefined == obj.y)      { console.log(obj); throw `createLayerObjData: Missing y: ${JSON.stringify(obj)}`; }
-            obj.settings = this.correctSettings(obj.settings); // Make sure that settings is an object.
-
-            let tw = _GFX.tilesets[obj.ts].config.tileWidth;
-            let th = _GFX.tilesets[obj.ts].config.tileHeight;
-
-            // Create the layerObject.
-            let newObj = { 
-                [obj.mapKey]: {
-                    ...obj,
-                    w       : obj.tmap[0] * tw,
-                    h       : obj.tmap[1] * th,
-                    // text    : false,
-                }
-             };
-
-            // Adjust width and height if there is a rotation that would require the change.
-            newObj[obj.mapKey].w = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].w : newObj[obj.mapKey].h;
-            newObj[obj.mapKey].h = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].h : newObj[obj.mapKey].w;
-
-            // Return the layerObject.
-            return newObj;
-        },
-
-        // Creates a layer object from a tilemap based on text string(s).
-        // NOTE: Output is used with updateLayer.
-        // NOTE: If using an array of strings each line will have the same length as the longest line (padded with spaces.)
-        createPrintLayerObjData: function(obj={}){
-            // Correct any missing data in the object.
-            if(undefined == obj)        { console.log(obj); throw `createPrintLayerObjData: Missing obj: ${JSON.stringify(obj)}`; }
-            if(undefined == obj.mapKey) { console.log(obj); throw `createPrintLayerObjData: Missing mapKey: ${JSON.stringify(obj)}`; }
-            if(undefined == obj.ts)     { console.log(obj); throw `createPrintLayerObjData: Missing ts: ${JSON.stringify(obj)}`; }
-            if(undefined == obj.text)   { console.log(obj); throw `createPrintLayerObjData: Missing text: ${JSON.stringify(obj)}`; }
-            if(undefined == obj.x)      { console.log(obj); throw `createPrintLayerObjData: Missing x: ${JSON.stringify(obj)}`; }
-            if(undefined == obj.y)      { console.log(obj); throw `createPrintLayerObjData: Missing y: ${JSON.stringify(obj)}`; }
-            obj.settings = this.correctSettings(obj.settings); // Make sure that settings is an object.
-
-            let tw = _GFX.tilesets[obj.ts].config.tileWidth;
-            let th = _GFX.tilesets[obj.ts].config.tileHeight;
-
-            let fontObj = _APP.configObj.fontObj ;
-            let fontMap = _GFX.funcs.getTilemap(fontObj.ts, fontObj.tmap);
-
-            // Get the highest tile. (For handling font tilesets that only have capital letters.)
-            let maxTileId = fontMap.length -3; // Subtract for dimensions, and 1 more for max id.
-
-            // Convert string to array of that string.
-            if(!Array.isArray(obj.text)){ obj.text = [ obj.text ]; }
-            
-            // Determine the longest line. 
-            let mapWidth = obj.text.reduce((longestLength, current) => {
-                return current.length > longestLength ? current.length : longestLength;
-            }, 0);
-            let mapHeight = obj.text.length;
-            
-            // Start the new tilemap.
-            let newTilemap;
-            let pointersSize = _GFX.tilesets[obj.ts].config.pointersSize;
-            newTilemap = pointersSize == 8 
-                ? new Uint8Array( 2 + (mapWidth * mapHeight) )
-                : new Uint16Array( 2 + (mapWidth * mapHeight) );
-            
-            newTilemap[0] = mapWidth;
-            newTilemap[1] = mapHeight;
-
-            // Go through each line.
-            let index = 2;
-            let line, chars, tileId, charCode, c, len;
-            for(let l=0; l<obj.text.length; l+=1){
-                // Get the line.
-                line = obj.text[l];
-
-                // Convert numbers to string.
-                if(typeof line == "number"){ line = line.toString(); }
-
-                // Convert the string to upper case (indicated by the fontObj config.)
-                if(fontObj.forceUpperCase){ line = line.toUpperCase(); }
-
-                // Pad the end of the line with spaces.
-                line = line.padEnd(mapWidth, " ");
-
-                // Create a tilemap of the characters in the string.
-                chars = Array.from(line); 
-                
-                // Convert the ASCII values to tileIds.
-                for(c=0, len=chars.length; c<len; c+=1){
-                    // Get the char code (ASCII) of the charactor.
-                    charCode = chars[c].charCodeAt(0);
-                    
-                    // Remove 32 to get a tileId index.
-                    tileId = charCode - 32;
-                    
-                    // Ensure that the tileId index is no greater than maxTileId.
-                    tileId = Math.min(tileId, maxTileId);
-                    
-                    // Use the tileId index to get the tileId based on the fontMap. (+2 to handle dimension bytes.)
-                    tileId = fontMap[tileId+2];
-                    
-                    // Add the tileId to the newTilemap.
-                    newTilemap[index] = tileId;
-
-                    // Increment the next newTilemap index.
-                    index +=1 ;
-                }
-            }
-
-            // Create the layerObject.
-            let newObj = { 
-                [obj.mapKey]: {
-                    ...obj,
-                    tmap    : newTilemap,
-                    w       : newTilemap[0] * tw,
-                    h       : newTilemap[1] * th,
-                    // text    : obj.text,
-                }
-             };
-
-            // Adjust width and height if there is a rotation that would require the change.
-            newObj[obj.mapKey].w = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].w : newObj[obj.mapKey].h;
-            newObj[obj.mapKey].h = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].h : newObj[obj.mapKey].w;
-
-            // Return the layerObject.
-            return newObj;
-        },
 
         // This is called after each draw completes.
         afterDraw: function(data={}, forceGraphicsDataUsed=false){
@@ -1020,7 +874,91 @@ class LayerObject {
         return true;
     };
     
-    // // Getters and setters:
+    // Ensures that settings is an object with at least the default values within it.
+    static correctSettings(settings){
+        // Check if settings is a valid object. Make it an object if it is not already.
+        if (settings === null || typeof settings !== 'object' || Array.isArray(settings)) {
+            settings = {};
+        }
+
+        // Merge the default settings with the provided settings.
+        // Already existing settings will remain and missing settings will be added from the default settings.
+        return Object.assign({}, _GFX.defaultSettings, settings);
+    };
+
+
+    // Force x and y values to be within the acceptable range of the screen dimensions.
+    static _clampXandY(x, y, w, h, ts){
+        let maxX = _APP.configObj.dimensions.cols * _APP.configObj.dimensions.tileWidth;
+        let maxY = _APP.configObj.dimensions.rows * _APP.configObj.dimensions.tileHeight;
+        
+        // Min/Max x.
+        x = Math.max(
+            0-w, 
+            Math.min(x, maxX+w)
+        );
+
+        // Min/Max y.
+        y = Math.max(
+            0-h, 
+            Math.min(y, maxY+h)
+        );
+
+        return { x:x, y:y };
+    };
+
+    static xy_toPixelType(x, y, tw, th, ts, xyByGrid){
+        // Draw by grid or by pixel?
+        if(xyByGrid && ts){ 
+            x = x * tw; 
+            y = y * th;
+        }
+
+        // Ensure that x and y are integers.
+        x = x | 0;
+        y = y | 0;
+
+        // Return the x and y values.
+        return {
+            x: x,
+            y: y,
+        };
+    };
+
+    // Creates a layer object from a tilemap.
+    // NOTE: Output is used with updateLayer.
+    static createLayerObjData(obj){
+        // Correct any missing data in the object.
+        if(undefined == obj)        { console.log(obj); throw `createLayerObjData: Missing obj: ${JSON.stringify(obj)}`; }
+        if(undefined == obj.mapKey) { console.log(obj); throw `createLayerObjData: Missing mapKey: ${JSON.stringify(obj)}`; }
+        if(undefined == obj.ts)     { console.log(obj); throw `createLayerObjData: Missing ts: ${JSON.stringify(obj)}`; }
+        if(undefined == obj.tmap)   { console.log(obj); throw `createLayerObjData: Missing tmap: ${JSON.stringify(obj)}`; }
+        // if(undefined == obj.x)      { console.log(obj); throw `createLayerObjData: Missing x: ${JSON.stringify(obj)}`; }
+        // if(undefined == obj.y)      { console.log(obj); throw `createLayerObjData: Missing y: ${JSON.stringify(obj)}`; }
+        obj.settings = LayerObject.correctSettings(obj.settings); // Make sure that settings is an object.
+
+        let tw = _GFX.tilesets[obj.ts].config.tileWidth;
+        let th = _GFX.tilesets[obj.ts].config.tileHeight;
+
+        // Create the layerObject.
+        let newObj = { 
+            [obj.mapKey]: {
+                ...obj,
+                w       : obj.tmap[0] * tw,
+                h       : obj.tmap[1] * th,
+                // text    : false,
+            }
+        };
+
+        // Adjust width and height if there is a rotation that would require the change.
+        newObj[obj.mapKey].w = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].w : newObj[obj.mapKey].h;
+        newObj[obj.mapKey].h = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].h : newObj[obj.mapKey].w;
+
+        // Return the layerObject.
+        return newObj;
+    };
+
+    // Getters and setters:
     get x()          { return this._x; } 
     get y()          { return this._y; } 
     get tmap()       { return this._tmap; } 
@@ -1060,6 +998,7 @@ class LayerObject {
         this._changed = true; 
     }
     // TODO: FIX. Works find with gridxy to pixelxy. Need fix for pixelxy to gridxy.
+    // IS THIS NEEDED?
     set xyByGrid(value)   { 
         if(this._xyByGrid == value) { return; }
 
@@ -1094,7 +1033,7 @@ class LayerObject {
         this.className = this.constructor.name;
         
         // Settings.
-        this.settings = config.settings ?? _GFX.funcs.correctSettings(null); // Needs the setter to properly initialize.
+        this.settings = config.settings ?? LayerObject.correctSettings(null); // Needs the setter to properly initialize.
 
         this.orgConfig  = config;
 
@@ -1115,7 +1054,9 @@ class LayerObject {
         this._y = config.y ?? 0;
 
         // x,y positioning (grid or pixel based.)
-        this.xyByGrid = config.xyByGrid ?? false; // Needs the setter to properly initialize.
+        this._xyByGrid = config.xyByGrid ?? false;
+        this.tw = _GFX.tilesets[this._tilesetKey].config.tileWidth ;
+        this.th = _GFX.tilesets[this._tilesetKey].config.tileHeight;
         
         this._hidden = config.hidden ?? false;
 
@@ -1136,57 +1077,19 @@ class LayerObject {
         return this.orgConfig;
     };
 
-    // Force x and y values to be within the acceptable range of the screen dimensions.
-    _clampXandY(x, y, w, h, ts){
-        let maxX = _APP.configObj.dimensions.cols * _APP.configObj.dimensions.tileWidth;
-        let maxY = _APP.configObj.dimensions.rows * _APP.configObj.dimensions.tileHeight;
-        
-        // Min/Max x.
-        x = Math.max(
-            0-w, 
-            Math.min(x, maxX+w)
-        );
-
-        // Min/Max y.
-        y = Math.max(
-            0-h, 
-            Math.min(y, maxY+h)
-        );
-
-        return { x:x, y:y };
-    };
-
     // Render function.
     render(onlyReturnLayerObjData=false){
         // Do not render unchanged LayerObjects.
         if(!this._changed){ return; }
 
-        // Draw by grid or by pixel?
-        let x = this.x; 
-        let y = this.y;
-        if(this.xyByGrid && this.tilesetKey){ 
-            x = x * this.tw; 
-            y = y * this.th;
-        }
-
-        // Ensure that x and y are integers.
-        x = x | 0;
-        y = y | 0;
+        // Convert x,y to pixel coordinates.
+        let {x,y} = LayerObject.xy_toPixelType(this.x, this.y, this.tw, this.th, this._tilesetKey, this._xyByGrid);
         
-        // TODO: This might not work with certain rotations since it is based on the tilemap dimensions.
-        // Clamp x and y to the acceptable range on screen.
-        let w = this.tmap[0] * _APP.configObj.dimensions.tileWidth;
-        let h = this.tmap[1] * _APP.configObj.dimensions.tileHeight;
-        ({x,y} = this._clampXandY(x,y, w, h, this._tilesetKey));
-
-        //
+        // Create the layer object data.
         let layerObjectData;
-        
-        layerObjectData = _GFX.funcs.createLayerObjData({ 
+        layerObjectData = LayerObject.createLayerObjData({ 
             mapKey  : this.layerObjKey, 
             ts      : this.tilesetKey, 
-            x       : x, 
-            y       : y, 
             tmap    : this.tmap,
             settings: this.settings, 
 
@@ -1194,26 +1097,23 @@ class LayerObject {
             allowResort        : this.allowResort,
             hidden             : this.hidden,
         });
+
+        // Save some of the returned values.
+        this.w    = layerObjectData[this.layerObjKey].w;
+        this.h    = layerObjectData[this.layerObjKey].h;
         // this.tmap = layerObjectData[this.layerObjKey].tmap;
-        this.w = layerObjectData[this.layerObjKey].w;
-        this.h = layerObjectData[this.layerObjKey].h;
+
+        // TODO: This might not work with certain rotations since it is based on the tilemap dimensions.
+        // Clamp x and y to the acceptable range on screen.
+        let w = this._tmap[0];
+        let h = this._tmap[1];
+        ({x:layerObjectData[this.layerObjKey].x ,y: layerObjectData[this.layerObjKey].y} = LayerObject._clampXandY(x,y, w, h, this._tilesetKey));
 
         if(onlyReturnLayerObjData){ 
             layerObjectData[this.layerObjKey].layerKey = this.layerKey;
             this._changed = false;
             this._changedDrawNeeded = true;
             return layerObjectData[this.layerObjKey]; 
-        }
-        else{
-            console.log("Old way: Skipping");
-            
-            // //
-            // _GFX.funcs.updateLayer(this.layerKey, 
-            //     {
-            //         ...layerObjectData,
-            //     }
-            // );
-            // this._changed = false;
         }
     };
 }
@@ -1274,6 +1174,7 @@ class PrintText extends LayerObject{
     }
     */
 
+    // Getters and setters:
     get text()   { return this._text; } 
     set text(value){ if( this._text !== value){ this._text = value; this._changed = true; } }
 
@@ -1338,6 +1239,106 @@ class PrintText extends LayerObject{
         return layerObjectKeys;
     };
 
+    // Creates a layer object from a tilemap based on text string(s).
+    // NOTE: Output is used with updateLayer.
+    // NOTE: If using an array of strings each line will have the same length as the longest line (padded with spaces.)
+    static createPrintLayerObjData(obj){
+        // Correct any missing data in the object.
+        if(undefined == obj)        { console.log(obj); throw `createPrintLayerObjData: Missing obj: ${JSON.stringify(obj)}`; }
+        if(undefined == obj.mapKey) { console.log(obj); throw `createPrintLayerObjData: Missing mapKey: ${JSON.stringify(obj)}`; }
+        if(undefined == obj.ts)     { console.log(obj); throw `createPrintLayerObjData: Missing ts: ${JSON.stringify(obj)}`; }
+        if(undefined == obj.text)   { console.log(obj); throw `createPrintLayerObjData: Missing text: ${JSON.stringify(obj)}`; }
+        // if(undefined == obj.x)      { console.log(obj); throw `createPrintLayerObjData: Missing x: ${JSON.stringify(obj)}`; }
+        // if(undefined == obj.y)      { console.log(obj); throw `createPrintLayerObjData: Missing y: ${JSON.stringify(obj)}`; }
+        obj.settings = LayerObject.correctSettings(obj.settings); // Make sure that settings is an object.
+
+        let tw = _GFX.tilesets[obj.ts].config.tileWidth;
+        let th = _GFX.tilesets[obj.ts].config.tileHeight;
+
+        let fontObj = _APP.configObj.fontObj ;
+        let fontMap = _GFX.funcs.getTilemap(fontObj.ts, fontObj.tmap);
+
+        // Get the highest tile. (For handling font tilesets that only have capital letters.)
+        let maxTileId = fontMap.length -3; // Subtract for dimensions, and 1 more for max id.
+
+        // Convert string to array of that string.
+        if(!Array.isArray(obj.text)){ obj.text = [ obj.text ]; }
+        
+        // Determine the longest line. 
+        let mapWidth = obj.text.reduce((longestLength, current) => {
+            return current.length > longestLength ? current.length : longestLength;
+        }, 0);
+        let mapHeight = obj.text.length;
+        
+        // Start the new tilemap.
+        let newTilemap;
+        let pointersSize = _GFX.tilesets[obj.ts].config.pointersSize;
+        newTilemap = pointersSize == 8 
+            ? new Uint8Array( 2 + (mapWidth * mapHeight) )
+            : new Uint16Array( 2 + (mapWidth * mapHeight) );
+        
+        newTilemap[0] = mapWidth;
+        newTilemap[1] = mapHeight;
+
+        // Go through each line.
+        let index = 2;
+        let line, chars, tileId, charCode, c, len;
+        for(let l=0; l<obj.text.length; l+=1){
+            // Get the line.
+            line = obj.text[l];
+
+            // Convert numbers to string.
+            if(typeof line == "number"){ line = line.toString(); }
+
+            // Convert the string to upper case (indicated by the fontObj config.)
+            if(fontObj.forceUpperCase){ line = line.toUpperCase(); }
+
+            // Pad the end of the line with spaces.
+            line = line.padEnd(mapWidth, " ");
+
+            // Create a tilemap of the characters in the string.
+            chars = Array.from(line); 
+            
+            // Convert the ASCII values to tileIds.
+            for(c=0, len=chars.length; c<len; c+=1){
+                // Get the char code (ASCII) of the charactor.
+                charCode = chars[c].charCodeAt(0);
+                
+                // Remove 32 to get a tileId index.
+                tileId = charCode - 32;
+                
+                // Ensure that the tileId index is no greater than maxTileId.
+                tileId = Math.min(tileId, maxTileId);
+                
+                // Use the tileId index to get the tileId based on the fontMap. (+2 to handle dimension bytes.)
+                tileId = fontMap[tileId+2];
+                
+                // Add the tileId to the newTilemap.
+                newTilemap[index] = tileId;
+
+                // Increment the next newTilemap index.
+                index +=1 ;
+            }
+        }
+
+        // Create the layerObject.
+        let newObj = { 
+            [obj.mapKey]: {
+                ...obj,
+                tmap    : newTilemap,
+                w       : newTilemap[0] * tw,
+                h       : newTilemap[1] * th,
+            }
+        };
+
+        // Adjust width and height if there is a rotation that would require the change.
+        newObj[obj.mapKey].w = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].w : newObj[obj.mapKey].h;
+        newObj[obj.mapKey].h = (obj.settings.rotation % 180 === 0) ? newObj[obj.mapKey].h : newObj[obj.mapKey].w;
+
+        // Return the layerObject.
+        return newObj;
+    };
+
     constructor(config){
         // Set any missing defaults.
         if(!config.tilesetKey){ config.tilesetKey = _APP.configObj.defaultFontTileset; }
@@ -1357,7 +1358,7 @@ class PrintText extends LayerObject{
         // if(!config.layerObjKey){ config.layerObjKey = config.text; }
 
         this._changed = true;
-    }
+    };
 
     // Render function.
     render(onlyReturnLayerObjData=false){
@@ -1367,43 +1368,32 @@ class PrintText extends LayerObject{
         // Text with no length? 
         if(!this.text.length){ this.text = ""; }
 
-        // Draw by grid or by pixel?
-        let x = this._x; 
-        let y = this._y;
-        if(this.xyByGrid && this.tilesetKey){ 
-            x = x * this.tw; 
-            y = y * this.th;
-        }
+        // Convert x,y to pixel coordinates.
+        let {x,y} = LayerObject.xy_toPixelType(this.x, this.y, this.tw, this.th, this._tilesetKey, this._xyByGrid);
 
-        // Ensure that x and y are integers.
-        x = x | 0;
-        y = y | 0;
-
-        //
+        // Create the layer object data.
         let layerObjectData;
-        layerObjectData = _GFX.funcs.createPrintLayerObjData({ 
+        layerObjectData = PrintText.createPrintLayerObjData({ 
             mapKey  : this.layerObjKey, 
             ts      : this._tilesetKey, 
-            x       : x, 
-            y       : y, 
-            tmap    : this._tmap,
-            settings: this._settings, 
             text    : this._text, 
+            settings: this._settings, 
 
             removeHashOnRemoval: this.removeHashOnRemoval,
             allowResort        : this.allowResort,
             hidden             : this._hidden,
         });
-        // layerObjectData[this.layerObjKey].hidden = this.hidden;
-        // layerObjectData[this.layerObjKey].allowResort = this.allowResort;
-        this._tmap = layerObjectData[this.layerObjKey].tmap;
-        this.w = layerObjectData[this.layerObjKey].w;
-        this.h = layerObjectData[this.layerObjKey].h;
 
+        // Save some of the returned values.
+        this.w     = layerObjectData[this.layerObjKey].w;
+        this.h     = layerObjectData[this.layerObjKey].h;
+        this._tmap = layerObjectData[this.layerObjKey].tmap;
+
+        // TODO: This might not work with certain rotations since it is based on the tilemap dimensions.
         // Clamp x and y to the acceptable range on screen.
         let w = this._tmap[0];
         let h = this._tmap[1];
-        ({x:layerObjectData[this.layerObjKey].x ,y: layerObjectData[this.layerObjKey].y} = this._clampXandY(x,y, w, h, this._tilesetKey));
+        ({x:layerObjectData[this.layerObjKey].x ,y: layerObjectData[this.layerObjKey].y} = LayerObject._clampXandY(x,y, w, h, this._tilesetKey));
 
         if(onlyReturnLayerObjData){ 
             layerObjectData[this.layerObjKey].layerKey = this.layerKey;
@@ -1411,17 +1401,5 @@ class PrintText extends LayerObject{
             this._changedDrawNeeded = true;
             return layerObjectData[this.layerObjKey]; 
         }
-        else{
-            console.log("Old way: Skipping");
-            
-            // //
-            // _GFX.funcs.updateLayer(this.layerKey, 
-            //     {
-            //         ...layerObjectData,
-            //     }
-            // );
-            // this._changed = false;
-        }
     };
-
 };
