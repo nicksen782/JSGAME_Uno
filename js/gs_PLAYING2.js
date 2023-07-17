@@ -1137,6 +1137,9 @@
 
                     // Update the card's rotation.
                     activeCard.setSetting("rotation", 0);
+                    
+                    // Update the card's layer.
+                    activeCard.layerKey = "L3";
 
                     // Update the card's size.
                     activeCard.size = "lg";
@@ -1176,6 +1179,9 @@
                                 // Restore the correct card rotation.
                                 activeCard.size = "sm";
                                 activeCard.setSetting("rotation", Deck.playerCardRotations[playerKey]);
+
+                                // Update the card's layer.
+                                activeCard.layerKey = "L2";
                                 
                                 // Set the card LayerObject to hidden.
                                 let cardObj = this.card;
@@ -1298,22 +1304,23 @@
                 _APP.shared.genTimer.create("genWaitTimer1", this.timerDelays.winsRound, _APP.game.gs1, ()=>{
                     // Clear the message.
                     this.gameBoard.displayMessage("none", this.gameBoard.currentPlayer, false);
+                    
+                    // Get out of gs2: winner.
+                    _APP.game.changeGs2("init");
 
                     // Wait and then reset the game. 
-                    _APP.shared.genTimer.create("genWaitTimer1", 40, _APP.game.gs1, ()=>{
+                    _APP.shared.genTimer.create("genWaitTimer2", 40, _APP.game.gs1, ()=>{
                         // Remove the black background.
                         this.gameBoard.winRound_end_part2();
 
                         this.resetFlags();
                         this.inited = false;
-                        _APP.game.changeGs2("init");
-
-                        return;
                     });
                 });
             }
             else{ 
-                console.log("winsRound: INVALID FLAGS"); 
+                console.log("winsRound: INVALID FLAGS", _APP.game.gs1, _APP.game.gs2, this.inited, this.flags.winsRound); 
+                // debugger;
                 _APP.shared.genTimer.create("genWaitTimer1", 40, _APP.game.gs1, ()=>{});
             }
         },
