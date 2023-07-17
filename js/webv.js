@@ -13,6 +13,7 @@ var _WEBW_V = {
         "requestHashCacheEntry",
         "_DEBUG.toggleCacheFlag",
         "_DEBUG.updateDebugTimings",
+        "_DEBUG.setClearType",
     ],
     
     // Allowed RECEIVE "modes."
@@ -28,6 +29,7 @@ var _WEBW_V = {
         "requestHashCacheEntry",
         "_DEBUG.toggleCacheFlag",
         "_DEBUG.updateDebugTimings",
+        "_DEBUG.setClearType",
     ],
     
     // Differed promises allow the system to wait for a response from the WebWorker.

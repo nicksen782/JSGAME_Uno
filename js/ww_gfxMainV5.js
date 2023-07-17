@@ -258,7 +258,6 @@ var gfxMainV5 = {
         // ** CREATE/REUSE IMAGEDATA TILEMAPS **
         // *************************************
         
-        // console.log("**");
         timeIt(layerKey+"_C_createTilemaps"       , "start");
         // Get the mapKeys for the changes.
         let newMapKeys = [ ...Object.keys(layerData["CHANGES"]) ];
@@ -284,7 +283,7 @@ var gfxMainV5 = {
         timeIt(layerKey+"_C_createTilemaps"       , "stop");
         
         // ** SET THE BACKGROUND COLOR (First layerKey) **
-        // ***********************************
+        // ***********************************************
 
         canContinue = gfxMainV5.gfx.SETBG.setBackgroundColor(layerKey, layerData, forceLayerRedraw);
         if(!canContinue){ 
@@ -299,6 +298,94 @@ var gfxMainV5 = {
         gfxMainV5.gfx.DRAW.drawToImgDataCache(layerKey, layerData, forceLayerRedraw, toClear, overlappedRegions);
         timeIt(layerKey+"_D_drawFromDataCache"       , "stop");
         
+        // ** DRAW FROM IMGDATACACHE TO OUTPUT CANVAS **
+        // *********************************************
+        
+        timeIt(layerKey+"_E_drawImgDataCache"       , "start");
+        gfxMainV5.gfx.DRAW.drawImgDataCacheToCanvas(layerKey);
+        timeIt(layerKey+"_E_drawImgDataCache"       , "stop");
+
+        timeIt(layerKey+"___TOTAL"       , "stop");
+    },
+
+    //
+    UPDATE_LAYER2: function(layerKey, messageData, forceLayerRedraw){
+        // Reset timers.
+        timeIt(layerKey+"___TOTAL"            , "reset");
+        timeIt(layerKey+"_A_clearLayer"       , "reset"); 
+        timeIt(layerKey+"_B_clearRemovedData" , "reset"); 
+        timeIt(layerKey+"_C_createTilemaps"   , "reset"); 
+        timeIt(layerKey+"_D_drawFromDataCache", "reset"); 
+        timeIt(layerKey+"_E_drawImgDataCache" , "reset"); 
+        timeIt(layerKey+"___TOTAL"       , "start");
+
+        timeIt(layerKey+"___TOTAL"       , "start");
+
+        let layerData = messageData[layerKey];
+        let overlappedRegions;
+        let toClear;
+        let canContinue;
+
+        // ** CLEAR LAYER **
+        // *****************
+
+        // Clear the imgDataCache for this layer. 
+        timeIt(layerKey+"_A_clearLayer"       , "start");
+        gfxMainV5.gfx.CLEAR.oneLayerGfx(layerKey);
+        timeIt(layerKey+"_A_clearLayer"       , "stop");
+
+
+        // ** CLEAR REMOVED GRAPHICS DATA **
+        // *********************************
+
+        timeIt(layerKey+"_B_clearRemovedData"       , "start");
+        if(!messageData.ALLCLEAR){
+            gfxCoreV5.removeHashCacheKeys(layerKey, layerData["REMOVALS_ONLY"]);
+        }
+        timeIt(layerKey+"_B_clearRemovedData"       , "stop");
+
+
+        // ** CREATE/REUSE IMAGEDATA TILEMAPS **
+        // *************************************
+
+        timeIt(layerKey+"_C_createTilemaps"       , "start");
+        // Update the local active graphics cache as needed.
+        let newMapKeys = [ ...Object.keys(layerData["CHANGES"]) ];
+        let newMapData = { ...layerData["CHANGES"] };
+        ({newMapKeys, newMapData} = gfxMainV5.gfx.DRAW.canImageDataTilemapBeReused(layerKey, newMapKeys, newMapData, layerData));
+
+        // Apply the fadeBeforeDraw flag as needed.
+        // Changes need to be faded individually (Later in drawImgDataCacheFromDataCache.)
+        // for (let mapKey1 in _GFX.currentData[layerKey].tilemaps) {
+        //     _GFX.currentData[layerKey].tilemaps[mapKey1].fadeBeforeDraw = layerData.fade.currFade != null;
+        // }
+
+        // Update the local active graphics cache if needed.
+        if(newMapKeys.length){
+            gfxMainV5.gfx.DRAW.createImageDataFromTilemapsAndUpdateGraphicsCache( layerKey, newMapKeys, newMapData, true );
+        }
+        timeIt(layerKey+"_C_createTilemaps"       , "stop");
+
+
+        // ** SET THE BACKGROUND COLOR (First layerKey) **
+        // ***********************************************
+
+        canContinue = gfxMainV5.gfx.SETBG.setBackgroundColor(layerKey, layerData, forceLayerRedraw);
+        if(!canContinue){ 
+            timeIt(layerKey+"___TOTAL"            , "stop");
+            return; 
+        }
+
+
+        // ** DRAW TO IMGDATACACHE **
+        // **************************
+
+        // Draw all active graphics to the imgDataCache.
+        timeIt(layerKey+"_D_drawFromDataCache"       , "start");
+        gfxMainV5.gfx.DRAW.drawToImgDataCache(layerKey, layerData, 1, {}, {}); // ForceLayerRedraw, no toClear or overlappedRegions.
+        timeIt(layerKey+"_D_drawFromDataCache"       , "stop");
+
+
         // ** DRAW FROM IMGDATACACHE TO OUTPUT CANVAS **
         // *********************************************
         
@@ -333,6 +420,7 @@ var gfxMainV5 = {
             _GFX.currentData[ this.layerKeys[0] ].bgColor32bit = 0;
         }
 
+        let clearType = _GFX.configObj.clearType;
         let layerKey;
         let forceLayerRedraw;
         let fade;
@@ -354,7 +442,12 @@ var gfxMainV5 = {
                 messageData[layerKey].changes ||
                 forceLayerRedraw
             ){
-                this.UPDATE_LAYER( layerKey, messageData, forceLayerRedraw );
+                // OLD
+                // this.UPDATE_LAYER( layerKey, messageData, forceLayerRedraw );
+
+                // NEW
+                if     (clearType == "smart" ){ this.UPDATE_LAYER ( layerKey, messageData, forceLayerRedraw ); }
+                else if(clearType == "simple"){ this.UPDATE_LAYER2( layerKey, messageData, forceLayerRedraw ); }
             }
             else{
                 this.clearTimingsValues(layerKey);
@@ -481,101 +574,7 @@ var gfxMainV5 = {
                 }
             },
 
-            // 
             // Returns a list of specific regions that were overlapped by removed images on the same layer.
-            OLDgetRegionsUsedByMapKeys: function(layerKey, mapKeys, layerData) {
-                // Go through the supplied mapKeys...
-                let regionsToClear = {};
-                let overlappedRegions = {}; // These would be cleared when the map they are on top of is cleared.
-                let hasOverlaps = false;
-                let changedMapKeys = new Set(Object.keys(layerData["CHANGES"]));
-                let additionalCHANGES_toRestore = [];
-            
-                for(let mapKey of mapKeys){
-                    // Get the map from the graphics cache.
-                    let map = _GFX.currentData[layerKey].tilemaps[mapKey]; 
-            
-                    // If it was not found then skip.
-                    if(!map){ continue; }
-            
-                    // Store rectangle dimensions for the region occupied by the old map.
-                    regionsToClear[mapKey] = { x:map.x, y:map.y, w:map.w, h:map.h };
-                }
-                
-                let tilemaps = _GFX.currentData[layerKey].tilemaps;
-                let regionsToClear_keys = Object.keys(regionsToClear);
-                let overlap;
-                let rect1;
-                let rect2;
-
-                // Go through each of the regionsToClear...
-                for (let mapKey1 of regionsToClear_keys) {
-                    // Create rectangle dimensions for the map.
-                    rect1 = regionsToClear[mapKey1];
-            
-                    // Changes need to be faded individually (Later in drawImgDataCacheFromDataCache.)
-                    if(layerData["CHANGES"][mapKey1] && layerData.fade.currFade != null){
-                        layerData["CHANGES"][mapKey1].fadeBeforeDraw = true;
-                    }
-            
-                    // Go through each mapKey of currentMapKeys...
-                    for(let mapKey2 of Object.keys(tilemaps)){
-                        // Don't check an entry against itself.
-                        // If this map is already in CHANGES then it would be redrawn anyway. Skip it.
-                        if(changedMapKeys.has(mapKey2)){ continue; }
-
-                        if(mapKey1 == mapKey2) { continue; }
-            
-                        // Get the map from the current graphics cache.
-                        let map = tilemaps[mapKey2];
-            
-                        // Make sure the map exists.
-                        if(!map){ continue; }
-            
-                        // Do not restore the region if the overlapped tilemap is hidden.
-                        if(map.hidden){ continue; }
-            
-                        // Create rectangle dimensions for the map.
-                        rect2 = { x:map.x, y:map.y, w:map.w, h:map.h };
-            
-                        // Determine if this map overlaps with rect. 
-                        overlap = _GFX.utilities.aabb_collisionDetection(rect1, rect2);
-            
-                        // If overlapped and the overlapped mapKey is not in changes...
-                        if(overlap.collision){ 
-                            // Create the key if it doesn't exist yet. 
-                            if(!overlappedRegions[mapKey2]){ overlappedRegions[mapKey2] = []; }
-            
-                            // Add the data for the overlap. 
-                            overlappedRegions[mapKey2].push( {
-                                src_img: { 
-                                    x: (overlap.x - map.x), w: overlap.w, 
-                                    y: (overlap.y - map.y), h: overlap.h,
-                                    imgData: map.imgData,
-                                    hasTransparency: map.hasTransparency,
-                                    settings: map.settings
-                                },
-                                dest_layer: { 
-                                    x: overlap.x, w: overlap.w, 
-                                    y: overlap.y, h: overlap.h 
-                                },
-                            });
-            
-                            // Set the hasOverlaps flag.
-                            hasOverlaps = true;
-                        }
-                    }
-                }
-            
-                return {
-                    // These need to be cleared.
-                    toClear: Object.keys(regionsToClear).length ? regionsToClear : false,
-
-                    // These need to be restored after the clear.
-                    overlappedRegions: hasOverlaps ? overlappedRegions : false,
-                };
-            },
-            
             // Used for REMOVALS_ONLY and CHANGES.
             getRegionsUsedByMapKeys: function(layerKey, mapKeys, layerData) {
                 // Go through the supplied mapKeys...
@@ -836,7 +835,89 @@ var gfxMainV5 = {
     
             // Determine if a graphics cache object can be reused.
             // Updates _GFX.currentData.
-            canImageDataTilemapBeReused: function(layerKey, newMapKeys, newMapData){
+            canImageDataTilemapBeReused: function(layerKey, newMapKeys, newMapData, layerData) {
+                let filtered_newMapKeys = [];
+                let filtered_newMapData = {};
+                
+                for (let i = 0, len = newMapKeys.length; i < len; i += 1) {
+                    let newMapKey = newMapKeys[i];
+                    let newMap = newMapData[newMapKey];
+                    let curr_map = _GFX.currentData[layerKey].tilemaps[newMapKey];
+                    let mapHasChanged = false;
+                
+                    if (!_GFX.currentData[layerKey].tilemaps[newMapKey]) {
+                        filtered_newMapKeys.push(newMapKey);
+                        filtered_newMapData[newMapKey] = newMap;
+                        continue;
+                    } 
+                    else {
+                        // Has the hidden flag on the map changed?
+                        // if (curr_map.hidden && !newMap.hidden) {
+                        if(curr_map.hidden != newMap.hidden){
+                            filtered_newMapKeys.push(newMapKey);
+                            filtered_newMapData[newMapKey] = newMap;
+                            mapHasChanged = true;
+                        } 
+
+                        // Has either x and or y changed?
+                        else if (curr_map.x !== newMap.x || curr_map.y !== newMap.y) {
+                            filtered_newMapKeys.push(newMapKey);
+                            filtered_newMapData[newMapKey] = newMap;
+                            mapHasChanged = true;
+                        }
+
+                        // Have the settings changed?
+                        else if (!_GFX.utilities.areSettingsObjectsEqual(curr_map.settings, newMap.settings)) {
+                            filtered_newMapKeys.push(newMapKey);
+                            filtered_newMapData[newMapKey] = newMap;
+                            mapHasChanged = true;
+                        } 
+
+                        // Has the tilemap changed?
+                        else if (!_GFX.utilities.areArraysEqual(curr_map.tmap, newMap.tmap)) {
+                            filtered_newMapKeys.push(newMapKey);
+                            filtered_newMapData[newMapKey] = newMap;
+                            mapHasChanged = true;
+                        } 
+
+                        // Has the tileset changed?
+                        else if (curr_map.ts !== newMap.ts) {
+                            filtered_newMapKeys.push(newMapKey);
+                            filtered_newMapData[newMapKey] = newMap;
+                            mapHasChanged = true;
+                        } 
+
+                        // Has the global fade changed?
+                        else if (layerData.fade.prevFade !== layerData.fade.currFade) {
+                            filtered_newMapKeys.push(newMapKey);
+                            filtered_newMapData[newMapKey] = newMap;
+                            mapHasChanged = true;
+                        } 
+
+                        // Update.
+                        if (mapHasChanged) {
+                            // _GFX.currentData[layerKey].tilemaps[newMapKey].x        = newMap.x; 
+                            // _GFX.currentData[layerKey].tilemaps[newMapKey].y        = newMap.y; 
+                            // _GFX.currentData[layerKey].tilemaps[newMapKey].hidden   = newMap.hidden;
+                            // _GFX.currentData[layerKey].tilemaps[newMapKey].settings = newMap.settings;
+                            // _GFX.currentData[layerKey].tilemaps[newMapKey].tmap     = newMap.tmap;
+                            // _GFX.currentData[layerKey].tilemaps[newMapKey].ts       = newMap.ts;
+                            // _GFX.currentData[layerKey].tilemaps[newMapKey].hiddenTransition = newMap.hiddenTransition; // Set elsewhere (used with clearType "smart.")
+
+                            _GFX.currentData[layerKey].tilemaps[newMapKey] = { ...newMap, hiddenTransition: newMap.hiddenTransition };
+                        }
+                    }
+                }
+                
+                return {
+                    newMapKeys: filtered_newMapKeys,
+                    newMapData: filtered_newMapData,
+                };
+            },
+
+            // Determine if a graphics cache object can be reused.
+            // Updates _GFX.currentData.
+            OLDcanImageDataTilemapBeReused: function(layerKey, newMapKeys, newMapData){
                 // The contents of these will determine what maps get new ImageData.
                 let filtered_newMapKeys = [];
                 let filtered_newMapData = {};
@@ -845,8 +926,8 @@ var gfxMainV5 = {
                 // If only x or y changed then the ImageData can be reused.
                 for(let i=0, len=newMapKeys.length; i<len; i+=1){
                     let newMapKey = newMapKeys[i];
-                    let newMap = newMapData[newMapKey];
-                    let curr_map = _GFX.currentData[layerKey].tilemaps[newMapKey];
+                    let newMap    = newMapData[newMapKey];
+                    let curr_map  = _GFX.currentData[layerKey].tilemaps[newMapKey];
     
                     // If this is a new map then currentData won't have it. Add it.
                     if(!_GFX.currentData[layerKey].tilemaps[newMapKey]){
@@ -858,8 +939,16 @@ var gfxMainV5 = {
 
                     // This is an existing mapKey. Check if it has any changes.
                     else{
+                        // if(newMap.mapKey == "cBorder_fill" || newMapKey == "cBorder_fill"){
+                        //     console.log("newMapKey:", newMapKey);
+                        //     console.log("curr_map :", curr_map);
+                        //     console.log("newMap   :", newMap);
+                        //     debugger;
+                        // }
+                        
                         // Was the image previously hidden but is now visible?
-                        if(curr_map.hidden && !newMap.hidden){
+                        // if(curr_map.hidden && !newMap.hidden){
+                        if(curr_map.hidden != newMap.hidden){
                             filtered_newMapKeys.push(newMapKey);
                             filtered_newMapData[newMapKey] = newMap;
 
@@ -946,22 +1035,12 @@ var gfxMainV5 = {
                     // If the cache is on...
                     if(_GFX.configObj.disableCache == false){
                         // Create hashes for this tilemap object.
-                        map.hashCacheHash_BASE = _GFX.utilities._djb2Hash( JSON.stringify(
-                            {
-                                ts      : map.ts,
-                                settings: JSON.stringify(_GFX.defaultSettings),
-                                tmap    : Array.from(map.tmap),
-                            }
-                        ));
-    
+                        // Create hashes for this tilemap object.
                         // Create a unique hash for the tilemap data including full settings.
-                        map.hashCacheHash = _GFX.utilities._djb2Hash( JSON.stringify(
-                            {
-                                ts      : map.ts,
-                                settings: JSON.stringify( Object.assign({}, _GFX.defaultSettings, map.settings ?? {}) ),
-                                tmap    : Array.from(map.tmap),
-                            }
-                        ));
+                        ({
+                            baseMapHash: map.hashCacheHash_BASE, 
+                            mapHash: map.hashCacheHash
+                        } = gfxCoreV5.generateHashCacheHashes(map, "createImageDataFromTilemapsAndUpdateGraphicsCache"));
     
                         base_found     = gfxCoreV5.hashCache.has(map.hashCacheHash_BASE);
                         modified_found = gfxCoreV5.hashCache.has(map.hashCacheHash);
@@ -1124,7 +1203,8 @@ var gfxMainV5 = {
 
                 // If this is a forcedLayerRedraw then use ALL mapKeys. 
                 if(forceLayerRedraw){
-                    allMapKeys = Object.keys(_GFX.currentData[layerKey].tilemaps);
+                    // allMapKeys     = Object.keys(_GFX.currentData[layerKey].tilemaps);
+                    allMapKeys     = [...currentMapKeys];
                 }
     
                 // Otherwise use only the CHANGES keys. 
@@ -1201,6 +1281,11 @@ var gfxMainV5 = {
                     }
                 }
     
+                // if( !(undefined == toClear || undefined == overlappedRegions) ){
+                //     // console.log(layerKey, layerData, forceLayerRedraw, toClear, overlappedRegions);
+                //     console.log(layerKey, forceLayerRedraw, toClear, overlappedRegions);
+                // }
+
                 // STEP 2: Draw the overlaps second.
                 if(overlappedRegions){
                     // Replace the overlapped regions with their original data.
@@ -1227,11 +1312,18 @@ var gfxMainV5 = {
                     let imgDataCache = _GFX.layers[layerKey].imgDataCache;
                     let imgData;
                     let copyUsed = false;
-                    
+
                     // If there is no need for fading just use use the existing ImageData.
                     if( 
-                        !(layer.fade.prevFade != layer.fade.currFade || map.fadeBeforeDraw) &&
-                        map.settings.fade == null
+                        _GFX.configObj.clearType == "smart" &&  (
+                            layer.fade.currFade == null && map.settings.fade == null 
+                            // !(layer.fade.prevFade != layer.fade.currFade || map.fadeBeforeDraw) 
+                            // && map.settings.fade == null
+                        )
+                        ||
+                        _GFX.configObj.clearType == "simple" && ( 
+                            layer.fade.currFade == null && map.settings.fade == null 
+                        )
                     ){
                         imgData = map.imgData;
                     }
@@ -1374,6 +1466,7 @@ var gfxMainV5 = {
             dimensions                 : messageData.configObj.dimensions,
             layers                     : messageData.configObj.layers,
             endianness                 : messageData.configObj.endianness,
+            clearType                  : messageData.configObj.clearType,
         }
         tsDataSave = performance.now() - tsDataSave;
     
@@ -1418,22 +1511,12 @@ var gfxMainV5 = {
                 map.genTime = performance.now();
                 
                 // Create hashes for this tilemap object.
-                map.hashCacheHash_BASE = _GFX.utilities._djb2Hash( JSON.stringify(
-                    {
-                        ts      : map.ts,
-                        settings: JSON.stringify(_GFX.defaultSettings),
-                        tmap    : Array.from(map.tmap),
-                    }
-                ));
-    
+                // Create hashes for this tilemap object.
                 // Create a unique hash for the tilemap data including full settings.
-                map.hashCacheHash = _GFX.utilities._djb2Hash( JSON.stringify(
-                    {
-                        ts      : map.ts,
-                        settings: JSON.stringify( Object.assign({}, _GFX.defaultSettings, map.settings ?? {}) ),
-                        tmap    : Array.from(map.tmap),
-                    }
-                ));
+                ({
+                    baseMapHash: map.hashCacheHash_BASE, 
+                    mapHash: map.hashCacheHash
+                } = gfxCoreV5.generateHashCacheHashes(map, "initConfigAndGraphics"));
     
                 cacheObj = gfxCoreV5.createImageDataFromTilemap(map);
                 map.imgData = cacheObj.imgData;
@@ -1465,6 +1548,7 @@ var gfxMainV5 = {
             }
         }
         ts_createBasetilemapImagesAndHashes = performance.now() - ts_createBasetilemapImagesAndHashes;
+        
         // if(debugActive && _GFX.configObj.disableCache == false){
         //     console.log(
         //         // `V5: _createGraphicsAssets: tileset: '${tilesetName.padEnd(13, " ")}': ` +
@@ -1643,6 +1727,12 @@ var gfxMainV5 = {
             case "_DEBUG.toggleCacheFlag"          : { 
                 // console.log("_DEBUG.toggleCacheFlag: ");
                 _GFX.configObj.disableCache = data.disableCache ?? false;
+                break; 
+            }
+            
+            case "_DEBUG.setClearType"          : { 
+                // console.log(`_DEBUG.setClearType: FROM: ${_GFX.configObj.clearType}, TO: ${data.clearType}`);
+                _GFX.configObj.clearType = data.clearType ?? "smart";
                 break; 
             }
     

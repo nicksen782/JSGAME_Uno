@@ -37,7 +37,7 @@ _APP.configObj = {
 
     // Relative paths need to be correctly relative to whatever loads this file (the web page or the web worker.)
     tilesetFiles: [
-        "../UAM/JSON/combined1.json",
+        "UAM/JSON/combined1.json",
     ],
     // This tileset is used as the default if one is not specified (may be incorrect!)
     defaultTileset: "combined1",
@@ -95,6 +95,9 @@ _APP.configObj = {
         { "name": "L4", "useFlicker": true, "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"120"} ] },
         // { "name": "L5", "useFlicker": true, "canvasOptions": { "willReadFrequently": false, "alpha": true }, css:[ {k:"z-index", v:"125"} ] },
     ],
+    
+    // clearType: "smart",
+    clearType: "simple",
     
     inputConfig :{
         "useKeyboard"   : true, 

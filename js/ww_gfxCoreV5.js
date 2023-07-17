@@ -100,6 +100,51 @@ var gfxCoreV5 = {
             }
         }
     },
+    //
+    defaultSettingsString: "",
+    generateHashCacheHashes: function(map, text){
+        // gfxCoreV5.generateHashCacheHashes(mapObj);
+        // console.log(text, "mapKey:", map.mapKey ?? "<NONE>", ", relatedMapKey:", map.relatedMapKey ?? "<NONE>", ", text:", map.text ?? "<NONE>");
+
+        // Convert map.tmap to array once
+        let tmapArray = Array.from(map.tmap);
+
+        // Convert _GFX.defaultSettings to string if needed. (one-time.)
+        if(!this.defaultSettingsString){
+            this.defaultSettingsString = JSON.stringify(_GFX.defaultSettings);
+        }
+
+        // Merge _GFX.defaultSettings and map.settings into a new object.
+        // This ensures that the settings object contains the default settings but can override them.
+        let settings = Object.assign({}, _GFX.defaultSettings, map.settings ?? {});
+
+        // Convert the merged settings to string
+        let settingsString = JSON.stringify(settings);
+
+        // Create a unique hash for the tilemap data including the default settings.
+        let hashCacheHash_BASE = _GFX.utilities._djb2Hash( JSON.stringify(
+            {
+                ts      : map.ts,
+                settings: this.defaultSettingsString,
+                tmap    : tmapArray,
+            }
+        ));
+
+        // Create a unique hash for the tilemap data including full settings.
+        let hashCacheHash = _GFX.utilities._djb2Hash( JSON.stringify(
+            {
+                ts      : map.ts,
+                settings: settingsString,
+                tmap    : tmapArray,
+            }
+        ));
+
+        // Return the new hash values.
+        return {
+            baseMapHash: hashCacheHash_BASE,
+            mapHash    : hashCacheHash,
+        };
+    },
 
     // ** FADING AND TRANSFORMS **
     // ***************************
@@ -187,7 +232,7 @@ var gfxCoreV5 = {
             if(bgColorRgba)     { this.setImageDataBgColorRgba(imageData, [0,0,0,0], bgColorRgba); }
     
             // Handle per image fades (by reference.)
-            if(fade != null)    { console.log("YO"); this.applyFadeToImageDataArray(imageData.data, fade); }
+            if(fade != null)    { console.log("applyFadeToImageDataArray"); this.applyFadeToImageDataArray(imageData.data, fade); }
     
             // Handle rotation (Uses temp copy then updates the ImageData by reference.)
             // Will return new width and height values for the image data (useful for rotation of non-square images.)
@@ -463,22 +508,22 @@ var gfxCoreV5 = {
         // Add the entries.
         for(let mapKey in mapObjs){
             let map = mapObjs[mapKey];
-            let hashCacheHash_BASE = _GFX.utilities._djb2Hash( JSON.stringify(
-                {
-                    ts      : map.ts,
-                    settings: JSON.stringify(_GFX.defaultSettings),
-                    tmap    : Array.from(map.tmap),
-                }
-            ));
 
-            // Create a unique hash for the tilemap data including full settings.
-            let hashCacheHash = _GFX.utilities._djb2Hash( JSON.stringify(
-                {
-                    ts      : map.ts,
-                    settings: JSON.stringify( Object.assign({}, _GFX.defaultSettings, map.settings ?? {}) ),
-                    tmap    : Array.from(map.tmap),
-                }
-            ));
+            // NOTE: the map object should have already set the values for hashCacheHash_BASE and hashCacheHash.
+            // The potential for recreation of those properties is only here for completeness.
+            // Create hashes for this tilemap object.
+            // If needed.
+            let hashCacheHash_BASE;
+            let hashCacheHash;
+            if(map.hashCacheHash_BASE && map.hashCacheHash) {
+                // console.log("** addTilemapImagesToHashCache: Using existing properties of the map");
+                [hashCacheHash, hashCacheHash_BASE] = [map.hashCacheHash, map.hashCacheHash_BASE];
+            }
+            // Should not trigger.
+            else {
+                console.log("-- addTilemapImagesToHashCache: Generating new properties.");
+                ({baseMapHash: hashCacheHash_BASE, mapHash: hashCacheHash} = gfxCoreV5.generateHashCacheHashes(map, "addTilemapImagesToHashCache"));
+            }
 
             // Get the number of bytes for the new hashCache entry (approximate.)
             let hashCacheDataLength = JSON.stringify({
@@ -536,7 +581,7 @@ var gfxCoreV5 = {
     // *********************
 
     // Retrieve the tileset JSON files and parse.
-    _getAndParseGraphicsData: function(tilesetFiles){
+    _getAndParseGraphicsData: function(tilesetFiles, appRootPath){
         let rgb332_tilesets = {};
         return new Promise(async(resolve,reject)=>{
             // Download each JSON file and JSON.parse portions of it into modified data.
@@ -544,7 +589,8 @@ var gfxCoreV5 = {
             for(let f=0; f<tilesetFiles.length; f+=1){
                 proms1.push(
                     new Promise( async(res,rej) => { 
-                        let file = await fetch( tilesetFiles[f] ); 
+                        let filePath = appRootPath + tilesetFiles[f];
+                        let file = await fetch( filePath ); 
                         file = await file.json();
 
                         let tileset = {
@@ -703,11 +749,11 @@ var gfxCoreV5 = {
         });
     },
     // Process the tilesets. Convert from RGB332.
-    process: async function(tilesetFiles){
+    process: async function(tilesetFiles, appRootPath){
         return new Promise(async(resolve,reject)=>{
             // Get and parse the tileset data.
             let ts1 = performance.now();
-            let rgb332_tilesets = await this._getAndParseGraphicsData(tilesetFiles);
+            let rgb332_tilesets = await this._getAndParseGraphicsData(tilesetFiles, appRootPath);
             let ts1e = performance.now() - ts1;
 
             // Convert the tileset tilemaps to images and add to the hashCache.
@@ -842,8 +888,24 @@ var gfxCoreV5 = {
 
         return tmiObj;
     },
-    // CLEAR a region of the source image (represented as a Uint8Array).
-    clearRegion: function(source, srcWidth, dx, dy, w, h) {
+    
+    // Same boundary checks:
+    // clearRegion
+    // copyRegion
+    boundaryCheck1: function(source, srcWidth, dx, dy, w, h, adjustSizeForCopy){
+        // EXAMPLE USAGE:
+        // For clearRegion
+        // let newDims = gfxCoreV5.boundaryCheck1(source, srcWidth, dx, dy, w, h, false);
+        // if(!newDims){ return; }
+        // let {maxY, x_start, x_end, y_start, y_end } = newDims;
+        
+        // EXAMPLE USAGE:
+        // For copyRegion
+        // let newDims = gfxCoreV5.boundaryCheck1(source, srcWidth, dx, dy, w, h, true);
+        // if(!newDims){ return new Uint8Array(0); }
+        // let {maxY, x_start, x_end, y_start, y_end } = newDims;
+        // ({w, h} = newDims);
+
         // Calculate the maximum X (width) and Y (height) based on the given source and source width
         let maxY = source.length / srcWidth;
 
@@ -859,8 +921,85 @@ var gfxCoreV5 = {
         // If the entire destination region outside the valid source area, exit the function early.
         // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
         if (x_start == srcWidth || y_start == maxY || x_end == 0 || y_end == 0) {
-            return;
+            return false;
         }
+
+        // FOR: copyRegion.
+        if(adjustSizeForCopy){
+            // If the region to be copied starts outside the actual source data,
+            // the size of the region is adjusted accordingly.
+            if (dx < 0) w += dx;
+            if (dy < 0) h += dy;
+        }
+
+        return {
+            maxY   : maxY, 
+            x_start: x_start, 
+            x_end  : x_end, 
+            y_start: y_start, 
+            y_end  : y_end, 
+            w      : w, 
+            h      : h, 
+        };
+    },
+
+    // Same boundary checks:
+    // updateRegion_replace
+    // updateRegion_blit
+    // updateRegion_reverseBlit
+    boundaryCheck2: function(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h){
+        // EXAMPLE USAGE:
+        // let newDims = gfxCoreV5.boundaryCheck2(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h);
+        // if(!newDims){ return; }
+        // let {x_start, x_end, y_start, y_end } = newDims;
+
+        // Determine the start and end of the destination region in both dimensions.
+        // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
+        let x_start = dx < 0              ? 0          : dx;
+        let y_start = dy < 0              ? 0          : dy;
+
+        // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
+        let x_end   = dx + w > destWidth  ? destWidth  : dx + w;
+        let y_end   = dy + h > destHeight ? destHeight : dy + h;
+
+        // If the entire destination region outside the valid source area, exit the function early.
+        // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
+        if (x_start >= destWidth || y_start >= destHeight || x_end <= 0 || y_end <= 0) {
+            return false;
+        }
+
+        return {
+            x_start: x_start, 
+            x_end  : x_end, 
+            y_start: y_start, 
+            y_end  : y_end, 
+        };
+    },
+
+    // CLEAR a region of the source image (represented as a Uint8Array).
+    clearRegion: function(source, srcWidth, dx, dy, w, h) {
+        // Boundary check.
+        let newDims = gfxCoreV5.boundaryCheck1(source, srcWidth, dx, dy, w, h, false);
+        if(!newDims){ return; }
+        let {maxY, x_start, x_end, y_start, y_end } = newDims;
+
+        // // Calculate the maximum X (width) and Y (height) based on the given source and source width
+        // let maxY = source.length / srcWidth;
+
+        // // Determine the start and end of the destination region in both dimensions.
+        // // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
+        // let x_start = dx < 0            ? 0    : dx;
+        // let x_end   = dx + w > srcWidth ? srcWidth : dx + w;
+
+        // // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
+        // let y_start = dy < 0            ? 0    : dy;
+        // let y_end   = dy + h > maxY     ? maxY : dy + h;
+
+        // // If the entire destination region outside the valid source area, exit the function early.
+        // // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
+        // if (x_start == srcWidth || y_start == maxY || x_end == 0 || y_end == 0) {
+        //     return;
+        // }
 
         // Iterate through the region defined by x_start to x_end and y_start to y_end.
         let start; 
@@ -876,34 +1015,40 @@ var gfxCoreV5 = {
     },
     // COPY a region of the source to a new Uint8Array.
     copyRegion: function(source, srcWidth, dx, dy, w, h) {
-        // Calculate the maximum X (width) and Y (height) based on the given source and source width
-        let maxY = source.length / srcWidth;
+        // Boundary check.
+        let newDims = gfxCoreV5.boundaryCheck1(source, srcWidth, dx, dy, w, h, true);
+        if(!newDims){ return new Uint8Array(0); }
+        let {maxY, x_start, x_end, y_start, y_end } = newDims;
+        ({w, h} = newDims);
 
-        // Determine the start and end of the destination region in both dimensions.
-        // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
-        let x_start = dx < 0            ? 0    : dx;
-        let x_end   = dx + w > srcWidth ? srcWidth : dx + w;
+        // // Calculate the maximum X (width) and Y (height) based on the given source and source width
+        // let maxY = source.length / srcWidth;
 
-        // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
-        let y_start = dy < 0            ? 0    : dy;
-        let y_end   = dy + h > maxY     ? maxY : dy + h;
+        // // Determine the start and end of the destination region in both dimensions.
+        // // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
+        // let x_start = dx < 0            ? 0    : dx;
+        // let x_end   = dx + w > srcWidth ? srcWidth : dx + w;
 
-        // If the entire destination region outside the valid source area, exit the function early.
-        // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
-        if (x_start == srcWidth || y_start == maxY || x_end == 0 || y_end == 0) {
-            return;
-        }
+        // // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
+        // let y_start = dy < 0            ? 0    : dy;
+        // let y_end   = dy + h > maxY     ? maxY : dy + h;
 
-        // If the region to be copied starts outside the actual source data,
-        // the size of the region is adjusted accordingly.
-        if (dx < 0) w += dx;
-        if (dy < 0) h += dy;
+        // // If the entire destination region outside the valid source area, exit the function early.
+        // // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
+        // if (x_start == srcWidth || y_start == maxY || x_end == 0 || y_end == 0) {
+        //     return;
+        // }
 
-        // If the entire destination region outside the valid source area, exit the function early and return an empty array.
-        // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
-        if (x_start >= srcWidth || y_start >= maxY || x_end <= 0 || y_end <= 0 || w <= 0 || h <= 0) {
-            return new Uint8Array(0);
-        }
+        // // If the region to be copied starts outside the actual source data,
+        // // the size of the region is adjusted accordingly.
+        // if (dx < 0) w += dx;
+        // if (dy < 0) h += dy;
+
+        // // If the entire destination region outside the valid source area, exit the function early and return an empty array.
+        // // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
+        // if (x_start >= srcWidth || y_start >= maxY || x_end <= 0 || y_end <= 0 || w <= 0 || h <= 0) {
+        //     return new Uint8Array(0);
+        // }
 
         // Prepare the result array.
         let resultData = new Uint8Array(w * h * 4);
@@ -927,20 +1072,10 @@ var gfxCoreV5 = {
     },
     // REPLACE a region in the destination with the source data (no blit support) (source is Uint8Array.)
     updateRegion_replace: function(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
-        // Determine the start and end of the destination region in both dimensions.
-        // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
-        let x_start = dx < 0              ? 0          : dx;
-        let y_start = dy < 0              ? 0          : dy;
-
-        // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
-        let x_end   = dx + w > destWidth  ? destWidth  : dx + w;
-        let y_end   = dy + h > destHeight ? destHeight : dy + h;
-
-        // If the entire destination region outside the valid source area, exit the function early.
-        // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
-        if (x_start >= destWidth || y_start >= destHeight || x_end <= 0 || y_end <= 0) {
-            return;
-        }
+        // Boundary check.
+        let newDims = gfxCoreV5.boundaryCheck2(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h);
+        if(!newDims){ return; }
+        let {x_start, x_end, y_start, y_end } = newDims;
 
         // Iterate through the region defined by x_start to x_end and y_start to y_end.
         for (let y = y_start; y < y_end; y++) {
@@ -961,20 +1096,10 @@ var gfxCoreV5 = {
     // Source is Uint8Array.
     // Only writes non-transparent pixels to the destination.
     updateRegion_blit: function(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
-        // Determine the start and end of the destination region in both dimensions.
-        // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
-        let x_start = dx < 0              ? 0          : dx;
-        let y_start = dy < 0              ? 0          : dy;
-
-        // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
-        let x_end   = dx + w > destWidth  ? destWidth  : dx + w;
-        let y_end   = dy + h > destHeight ? destHeight : dy + h;
-
-        // If the entire destination region outside the valid source area, exit the function early.
-        // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
-        if (x_start >= destWidth || y_start >= destHeight || x_end <= 0 || y_end <= 0) {
-            return;
-        }
+        // Boundary check.
+        let newDims = gfxCoreV5.boundaryCheck2(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h);
+        if(!newDims){ return; }
+        let {x_start, x_end, y_start, y_end } = newDims;
 
         // This will work row by row with a normal array.
         // let maxRowLength = Math.max(w, destWidth) << 2;
@@ -1049,21 +1174,11 @@ var gfxCoreV5 = {
     // This only writes to transparent pixels at the destination.
     // Can be used to draw an image "behind" another image on the same layer.
     updateRegion_reverseBlit: function(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h) {
-        // Determine the start and end of the destination region in both dimensions.
-        // If dx or dy are negative (indicating a region starting outside the actual source data), they're clamped to 0.
-        let x_start = dx < 0              ? 0          : dx;
-        let y_start = dy < 0              ? 0          : dy;
+        // Boundary check.
+        let newDims = gfxCoreV5.boundaryCheck2(source, srcWidth, destination, destWidth, destHeight, dx, dy, w, h);
+        if(!newDims){ return; }
+        let {x_start, x_end, y_start, y_end } = newDims;
 
-        // Similarly, if the destination extends beyond the source data, the end of the region is clamped.
-        let x_end   = dx + w > destWidth  ? destWidth  : dx + w;
-        let y_end   = dy + h > destHeight ? destHeight : dy + h;
-
-        // If the entire destination region outside the valid source area, exit the function early.
-        // This could occur if dx,dy and dx+w,dy+h both point outside the valid source area.
-        if (x_start >= destWidth || y_start >= destHeight || x_end <= 0 || y_end <= 0) {
-            return;
-        }
-    
         // This will work row by row with a normal array.
         // let maxRowLength = Math.max(w, destWidth) << 2;
         let maxRowLength = w << 2;

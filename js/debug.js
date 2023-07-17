@@ -452,6 +452,21 @@ var _DEBUG = {
 
             // Set initial toggle button states.
             this.setCurrentStates();
+
+            // CLEAR TYPE.
+            let debug_toggleClearType = document.getElementById("debug_toggleClearType");
+            debug_toggleClearType.innerText = `Clearing: ${_APP.configObj.clearType}`;
+
+            if(_APP.configObj.clearType == "smart"){
+                debug_toggleClearType.innerText = `Clearing: ${_APP.configObj.clearType}`;
+                debug_toggleClearType.classList.remove("debug_bgColor_off");
+                debug_toggleClearType.classList.add("debug_bgColor_on");
+            }
+            else if(_APP.configObj.clearType == "simple"){
+                debug_toggleClearType.innerText = `Clearing: ${_APP.configObj.clearType}`;
+                debug_toggleClearType.classList.remove("debug_bgColor_on");
+                debug_toggleClearType.classList.add("debug_bgColor_off");
+            }
         },
     },
     // Color finder: hover to see the tile and the RGBA colors for each pixel of that tile.
@@ -2094,6 +2109,8 @@ var _DEBUG = {
             this.DOM.L2_tms            = document.getElementById("debug_L2_tms");
             this.DOM.L3_tms            = document.getElementById("debug_L3_tms");
             this.DOM.L4_tms            = document.getElementById("debug_L4_tms");
+            this.DOM.clearType         = document.getElementById("debug_clearType");
+
             this.DOM.timings_A_L1      = document.getElementById("debug_timings_A_L1");
             this.DOM.timings_A_L2      = document.getElementById("debug_timings_A_L2");
             this.DOM.timings_A_L3      = document.getElementById("debug_timings_A_L3");
@@ -2131,6 +2148,9 @@ var _DEBUG = {
             _DEBUG.updateIfChanged2(this.DOM.L2_tms, "_DEBUG.vault.tilemapCounters.L2_tilemaps", Object.keys(_GFX.currentData["L2"].tilemaps).length.toString() );
             _DEBUG.updateIfChanged2(this.DOM.L3_tms, "_DEBUG.vault.tilemapCounters.L3_tilemaps", Object.keys(_GFX.currentData["L3"].tilemaps).length.toString() );
             _DEBUG.updateIfChanged2(this.DOM.L4_tms, "_DEBUG.vault.tilemapCounters.L4_tilemaps", Object.keys(_GFX.currentData["L4"].tilemaps).length.toString() );
+
+            // clearType.
+            _DEBUG.updateIfChanged2(this.DOM.clearType, "_DEBUG.vault.frameCounters.clearType", _APP.configObj.clearType );
 
             // Current FPS.
             // Show average FPS, average ms per frame, how much off is the average ms per frame.
@@ -2667,6 +2687,7 @@ var _DEBUG = {
             "frameDrawCounter"      : 0,
             "doDummyDrawCountTOTAL" : 0,
             "fpsDisplay": "",
+            "clearType": "",
         },
         tilemapCounters:{
             "L1_tilemaps": 0,
@@ -2760,7 +2781,7 @@ var _DEBUG = {
     // ***********************
 
     // runDebug_waitFrames: 15,  // Number of frames to wait between debug runs.
-    runDebug_waitFrames: 0,  // Number of frames to wait between debug runs.
+    runDebug_waitFrames: 20,  // Number of frames to wait between debug runs.
     runDebug_wait: 1000    ,  // Overridden in init with (_APP.game.gameLoop.msFrame * this.runDebug_waitFrames);
     runDebug_last: 0       ,  // The timestamp for the last debug run.
     runDebug_lastDuration: 0,

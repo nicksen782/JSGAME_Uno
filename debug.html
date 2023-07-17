@@ -124,6 +124,7 @@
             <tr> <td class="debug_td_header">Frames :      </td> <td class="debug_td_short"> <div class="debugLive" id="debug_frameCounter">0</div> </td> </tr>
             <tr> <td class="debug_td_header">Drawn frames :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_frameDrawCounter">0</div> </td> </tr>
             <tr> <td class="debug_td_header">Dummy frames :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_frameDrawCounterDummy">0</div> </td> </tr>
+            <tr> <td class="debug_td_header">clearType    :</td> <td class="debug_td_short"> <div class="debugLive" id="debug_clearType"></div> </td> </tr>
         </table>
         <br>
         <br>
@@ -751,8 +752,29 @@
                 <td> 
                     <button id="debug_test_restartGS1">Restart GS1</button>
                 </td> 
-                <td class=""> <div class="" id="debug_GS1Text"></div>
-                <td class=""> <div class="" id="debug_GS2Text"></div>
+                <td class=""> <div class="" id="debug_GS1Text"></div></td>
+                <td class=""> <div class="" id="debug_GS2Text"></div></td>
+                <td class=""> <div>
+                    <button id="debug_toggleClearType" onclick='
+                        if(_APP.configObj.clearType == "smart"){
+                            _APP.configObj.clearType = "simple";
+                            this.innerText = `Clearing: ${_APP.configObj.clearType}`;
+                            this.classList.remove("debug_bgColor_on");
+                            this.classList.add("debug_bgColor_off");
+                        }
+                        else if(_APP.configObj.clearType == "simple"){
+                            _APP.configObj.clearType = "smart";
+                            this.innerText = `Clearing: ${_APP.configObj.clearType}`;
+                            this.classList.remove("debug_bgColor_off");
+                            this.classList.add("debug_bgColor_on");
+                        }
+                        
+                        _WEBW_V.SEND("_DEBUG.setClearType", { 
+                            data: { clearType: _APP.configObj.clearType }, 
+                            refs:[]
+                        }, false, false);
+                    '>Clearing: smart</button>
+                </div></td>
             </tr>
         </table>
         <br>
