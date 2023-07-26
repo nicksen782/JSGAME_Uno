@@ -5,6 +5,7 @@
         "checkJs": false
     },
     "include": [
-        "js/**/*.js"
+        "GAME/*.js",
+        "GAME/gamestates/*.js"
     ]
 }

@@ -1,0 +1,147 @@
+<?xml version="1.0" ?>
+<gfx-xform version="SINGLE_TS">
+ <input file="/JSG_GAMES/JSGAME_Uno/UAM/IMG/ALL_tiles.png" type="png" tile-width="8" tile-height="8" />
+ <output file="UAM/JSON/combined1.json">
+ <tiles var-name="combined1" tilesetOutputTo="PROGMEM" removeDupeTiles="1" outputAsJson="1" translucent_color="9" />
+
+ <maps pointers-size="4">
+  <map var-name="ALL" left="2" top="65" width="49" height="9" mapOutputTo="NOWHERE" /> 
+  <map var-name="blackTile" left="10" top="73" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="transparentTile" left="3" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="letter_uno_fill" left="5" top="67" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_uno_back" left="6" top="91" width="2" height="2" mapOutputTo="SKIPMAP" /> 
+  <map var-name="letter_uno_u" left="30" top="79" width="8" height="8" mapOutputTo="PROGMEM" /> 
+  <map var-name="letter_uno_n" left="41" top="79" width="8" height="8" mapOutputTo="PROGMEM" /> 
+  <map var-name="letter_uno_o" left="52" top="79" width="8" height="8" mapOutputTo="PROGMEM" /> 
+  <map var-name="letter_uno2_u" left="2" top="102" width="6" height="6" mapOutputTo="PROGMEM" /> 
+  <map var-name="letter_uno2_n" left="9" top="102" width="6" height="6" mapOutputTo="PROGMEM" /> 
+  <map var-name="letter_uno2_o" left="16" top="102" width="6" height="6" mapOutputTo="PROGMEM" /> 
+  <map var-name="border1_tl" left="31" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border1_tr" left="33" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border1_bl" left="31" top="67" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border1_br" left="33" top="67" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border1_col" left="32" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border1_row" left="31" top="66" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border2_tl" left="23" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border2_tr" left="25" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border2_bl" left="23" top="67" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border2_br" left="25" top="67" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border2_col" left="24" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border2_row" left="23" top="66" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border2_fill" left="24" top="66" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border3_tl" left="27" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border3_tr" left="29" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border3_bl" left="27" top="67" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border3_br" left="29" top="67" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border3_col" left="28" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="border3_row" left="27" top="66" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_back" left="6" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_0" left="10" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_1" left="14" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_2" left="18" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_3" left="22" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_4" left="26" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_5" left="30" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_6" left="34" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_7" left="38" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_8" left="42" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_9" left="46" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_draw2" left="50" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_skip" left="54" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_reverse" left="58" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_wild" left="62" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_sm_wildDraw4" left="66" top="91" width="2" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_back" left="6" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_0" left="10" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_1" left="14" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_2" left="18" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_3" left="22" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_4" left="26" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_5" left="30" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_6" left="34" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_7" left="38" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_8" left="42" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_9" left="46" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_draw2" left="50" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_skip" left="54" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_reverse" left="58" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_wild" left="62" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="card_lg_wildDraw4" left="66" top="97" width="3" height="4" mapOutputTo="PROGMEM" /> 
+  <map var-name="wood1" left="2" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="wood2" left="2" top="67" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="directionF_tl" left="2" top="81" width="3" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="directionF_tr" left="6" top="81" width="3" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="directionF_bl" left="2" top="85" width="3" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="directionF_br" left="6" top="85" width="3" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="directionR_tl" left="12" top="81" width="3" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="directionR_tr" left="16" top="81" width="3" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="directionR_bl" left="12" top="85" width="3" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="directionR_br" left="16" top="85" width="3" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="colorFill1_black" left="14" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="colorFill1_yellow" left="5" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="colorFill1_blue" left="7" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="colorFill1_red" left="9" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="colorFill1_green" left="11" top="65" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="colorFill2_black" left="14" top="67" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="colorFill2_yellow" left="5" top="67" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="colorFill2_blue" left="7" top="67" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="colorFill2_red" left="9" top="67" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="colorFill2_green" left="11" top="67" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="underPileL0" left="2" top="77" width="3" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="underPileL1" left="7" top="77" width="3" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="underPileL2" left="12" top="77" width="3" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="underPileL3" left="17" top="77" width="3" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="underPileL4" left="22" top="77" width="3" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="solid_yellow" left="2" top="73" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="solid_blue" left="4" top="73" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="solid_red" left="6" top="73" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="solid_green" left="8" top="73" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="solid_black" left="10" top="73" width="1" height="1" mapOutputTo="PROGMEM" /> 
+
+  <map var-name="blackTile" left="10" top="73" width="1" height="1" mapOutputTo="NOWHERE" /> 
+  <map var-name="offBlackTile" left="1" top="0" width="1" height="1" mapOutputTo="SKIPMAP" /> 
+  <map var-name="N782_FACE1_F1" left="32" top="25" width="7" height="5" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_FACE1_F2" left="32" top="31" width="7" height="5" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_FACE1_F3" left="32" top="37" width="7" height="5" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_FACE1_F4" left="32" top="43" width="7" height="5" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_FACE1_F5" left="32" top="49" width="7" height="5" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_TEXT1_F1" left="40" top="25" width="7" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_TEXT1_F2" left="40" top="29" width="7" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_TEXT1_F3" left="40" top="33" width="7" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_TEXT1_F4" left="40" top="37" width="7" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_TEXT1_F5" left="40" top="41" width="7" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_TEXT1_F6" left="40" top="45" width="7" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_TEXT1_F7" left="40" top="49" width="7" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_TEXT1_F8" left="40" top="53" width="7" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_FACE1_F1b" left="2" top="25" width="8" height="6" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_FACE1_F2b" left="2" top="32" width="8" height="6" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_FACE1_F3b" left="2" top="39" width="8" height="6" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_FACE1_F4b" left="2" top="46" width="8" height="6" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_FACE1_F5b" left="2" top="53" width="8" height="6" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_TEXT" left="50" top="25" width="5" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_STAR" left="58" top="25" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="N782_TEXTb" left="12" top="26" width="6" height="2" mapOutputTo="PROGMEM" /> 
+
+  <map var-name="BASIC_TILES" left="54" top="2" width="16" height="16" mapOutputTo="PROGMEM" /> 
+  <map var-name="JSGAME_LOGO" left="49" top="28" width="24" height="20" mapOutputTo="PROGMEM" /> 
+
+  <map var-name="fontsetAllCase" left="3" top="3" width="16" height="10" mapOutputTo="SKIPMAP" /> 
+  <map var-name="fontset_part1_UC" left="22" top="12" width="16" height="4" mapOutputTo="PROGMEM" /> 
+
+  <map var-name="cursor1_f1" left="2" top="113" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="cursor1_f2" left="6" top="113" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="cursor2_f1" left="2" top="117" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="cursor2_f2" left="6" top="117" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="cursor3_f1" left="22" top="113" width="2" height="2" mapOutputTo="PROGMEM" /> 
+  <map var-name="cursor3_f2" left="27" top="113" width="2" height="2" mapOutputTo="PROGMEM" /> 
+  <map var-name="cursor3_f3" left="32" top="113" width="2" height="2" mapOutputTo="PROGMEM" /> 
+  <map var-name="cursor_rows_down" left="10" top="113" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="cursor_rows_up" left="14" top="113" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="cursor_rows_none" left="18" top="113" width="1" height="1" mapOutputTo="PROGMEM" /> 
+  <map var-name="rowIndicator_none" left="10" top="116" width="1" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="rowIndicator_downOnly" left="12" top="116" width="1" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="rowIndicator_upOnly" left="14" top="116" width="1" height="3" mapOutputTo="PROGMEM" /> 
+  <map var-name="rowIndicator_both" left="16" top="116" width="1" height="3" mapOutputTo="PROGMEM" /> 
+ </maps> 
+ </output> 
+</gfx-xform> 

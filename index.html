@@ -1,24 +1,29 @@
-<!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNO v2</title>
+    <meta charset="UTF-8" />
+    <title>JSGAME_Uno</title>
+
+    <!-- Use's the game's base files. -->
+    <!-- <link   href="BASE/css/ui.css" rel="stylesheet"/> -->
+    <!-- <script src ="BASE/js/ui.js" defer></script> -->
+    <!-- <script src ="BASE/js/gameloop.js" defer></script> -->
+    
+    <!-- Use's JSGAME's base files. -->
+    <link   href="/SHARED/BASEUI_A/css/ui.css" rel="stylesheet"/>
+    <script src ="/SHARED/BASEUI_A/js/ui.js" defer></script>
+    <script src ="/SHARED/BASEUI_A/js/gameloop.js" defer></script>
 </head>
 
-<body style="background-color: #181818; margin:5px;">
-<!-- <body style="background-color: #181818; padding: 5px;"> -->
+<body style="background-color: #181818;">
     <!-- Stand-Alone loading indicator. -->
-    <div id="loading">
+    <div id="loading" style="position:fixed; top:5px; left:5px;">
         LOADING
         <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
     </div>
 
     <!-- The main HTML. -->
     <div id="wrapper">
-
         <!-- NEEDS USER INPUT FOR AUDIO -->
         <div id="audio_userInputNeeded_container" style="display:none;">
             <div id="audio_userInputNeeded">
@@ -27,7 +32,7 @@
             </div>
         </div>
 
-        <!-- The error display -->
+        <!-- ERROR DISPLAY -->
         <div id="error_display" style="display:none;">
             <div id="error_display_title">
                 APPLICATION ERROR
@@ -39,187 +44,37 @@
             </div>
         </div>
 
-        <div id="game_uno">
-            <div id="aux">
-                <div id="controls">
-                    <div id="controls_navBarTabs1">
-                        <div id="controls_navBar1_tab_controls" class="controls_navBarTabs ">CONTROLS</div>
-                    </div>
+        <!-- Tabs can be added dynamically before _APP.navBarMAIN.init -->
+        <nav id="mainNavMenu" class="navMenu1">
+            <ul id="mainNavMenu_ul">
+                <!-- <li id="navTab_MENUBUTTON" onclick="this.classList.toggle('change');"> -->
+                <li id="navTab_MENUBUTTON">
+                    <div class="bar1"></div>
+                    <div class="bar2"></div>
+                    <div class="bar3"></div>
+                </li>
 
-                    <div id="controls_navBarViews">
-                        <!-- CONTROLS -->
-                        <div id="controls_navBar1_view_controls" class="controls_navBarViews">
-                            <!-- OUTPUT SCALING -->
-                            <div class="controls_border">
-                                <label class="controls_title">SCALE</label>
-                                <input type="range" id="scaleSlider" min="1" max="4" step="0.25" value="3.0">
-                                <input type="text" id="scaleSliderText">
-                            </div>
-                            
-                        </div>
-                    </div>
-                </div>
+                <li id="navTab_gameName">GAME</li>
+                <!-- <li id="navTab_info">Info</li> -->
+            </ul>
+        </nav>
+
+        <div id="main">
+
+            <!-- Views can be added dynamically before _APP.navBarMAIN.init -->
+            <div id="mainNavMenuViews">
+                <!-- <div id="navView_info"    class="navView"> -->
+                    <!-- navView_info<br> -->
+                <!-- </div> -->
             </div>
-            <div id="outputContainer">
-                <div id="output" tabindex="0"></div>
+
+            <!-- Contains the canvas layers for the game. -->
+            <div id="gameView" tabindex="0">
+                <!-- <canvas class="canvasLayer" width="224" height="224"></canvas> -->
             </div>
+
         </div>
     </div>
-
-    <!-- JavaScript for loading the Stand-Alone version. -->
-    <script>
-        "use strict";
-        // If you already have _APP and _JSG then you are running through JSGAME.
-        // JSGAME should have used uno.js _APP.init (instead of _APP.init_standAlone.)
-        // JSGAME _APP.init only includes the #wrapper div. 
-        // Only the standAlone instance will see this script.
-        if( ! (
-            typeof _APP !== "undefined" &&
-            typeof _JSG !== "undefined" &&
-            typeof _JSG.appStart_timestamp !== "undefined" 
-        ) ){
-            // Running as stand-alone.
-            var _JSG = {}; 
-            var _APP = {
-                standAlone : true,
-                usingJSGAME: false,
-                usingJSGAME_INPUT: false,
-            }; 
-
-            let loading = document.getElementById("loading");
-            let wrapper = document.getElementById("wrapper");
-            wrapper.style.display = "none";
-
-            // Get the uno.js file and run it's init function.
-            let ts1S = performance.now();
-            new Promise(async (res,rej)=>{
-                let url = "js/uno.js";
-                let script = document.createElement('script');
-                script.setAttribute("name", url); 
-                script.defer=true;
-                script.onload = async function () { 
-                    script.onload = null; 
-                    await _APP.init_standAlone(); 
-                    // loading.style.display = "none";
-                    // wrapper.style.display = "";
-                    let ts1E = performance.now() - ts1S;
-                    console.log(`${_APP.configObj.appName} (Stand-Alone version) load time: ${ts1E.toFixed(2)}ms`);
-                    // alert(`${_APP.configObj.appName} (Stand-Alone version) load time: ${ts1E.toFixed(2)}ms`);
-
-                    // Start the game loop.
-                    setTimeout(()=>{ 
-                        loading.style.display = "none";
-                        wrapper.style.display = "";
-                        _APP.game.gameLoop.loop_start(); 
-                        if(_APP.debugActive){_DEBUG.toggleButtons1.setCurrentStates(); }
-                    }, 250);
-
-                    res(); 
-                };
-                script.onerror = function (err) { 
-                    script.onload = null; 
-                    console.log("index addFile: js: FAILURE:", url);
-                    rej(err); 
-                };
-                document.head.appendChild(script);
-                script.src = url;
-            });
-        }
-    </script>
-
-    <!-- Styles for Stand-Alone loading indicator. -->
-    <style>
-        #loading{
-            border: 1px solid gold;
-            color: gold;
-            background-color: mediumblue;
-            display: inline-block;
-            padding: 10px;
-            border-radius: 10px;
-            font-weight: bold;
-            font-size: 42px;
-            position:fixed;
-        }
-        .lds-spinner {
-            /* color: black; */
-            display: inline-block;
-            position: relative;
-            top:5px;
-            width: 40px;
-            height: 40px;
-        }
-        .lds-spinner div {
-            transform-origin: 20px 20px; 
-            animation: lds-spinner 1.2s linear infinite;
-        }
-        .lds-spinner div:after {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 3.5px; 
-            left: 18.5px; 
-            width: 3px; 
-            height: 9px; 
-            border-radius: 20%;
-            background: #fff;
-        }
-        .lds-spinner div:nth-child(1) {
-            transform: rotate(0deg);
-            animation-delay: -1.1s;
-        }
-        .lds-spinner div:nth-child(2) {
-            transform: rotate(30deg);
-            animation-delay: -1s;
-        }
-        .lds-spinner div:nth-child(3) {
-            transform: rotate(60deg);
-            animation-delay: -0.9s;
-        }
-        .lds-spinner div:nth-child(4) {
-            transform: rotate(90deg);
-            animation-delay: -0.8s;
-        }
-        .lds-spinner div:nth-child(5) {
-            transform: rotate(120deg);
-            animation-delay: -0.7s;
-        }
-        .lds-spinner div:nth-child(6) {
-            transform: rotate(150deg);
-            animation-delay: -0.6s;
-        }
-        .lds-spinner div:nth-child(7) {
-            transform: rotate(180deg);
-            animation-delay: -0.5s;
-        }
-        .lds-spinner div:nth-child(8) {
-            transform: rotate(210deg);
-            animation-delay: -0.4s;
-        }
-        .lds-spinner div:nth-child(9) {
-            transform: rotate(240deg);
-            animation-delay: -0.3s;
-        }
-        .lds-spinner div:nth-child(10) {
-            transform: rotate(270deg);
-            animation-delay: -0.2s;
-        }
-        .lds-spinner div:nth-child(11) {
-            transform: rotate(300deg);
-            animation-delay: -0.1s;
-        }
-        .lds-spinner div:nth-child(12) {
-            transform: rotate(330deg);
-            animation-delay: 0s;
-        }
-        @keyframes lds-spinner {
-            0% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-            }
-        }
-    </style>
 </body>
 
 </html>

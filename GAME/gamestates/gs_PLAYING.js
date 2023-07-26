@@ -180,8 +180,8 @@ _APP.game.gamestates["gs_PLAYING"] = {
         this.winningPlayerKey = "";
 
         // Run the debug2 init.
-        if(_APP.debugActive && _DEBUG2){ 
-            _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); 
+        if(_APP.debugActive && _APP.configObj.gameConfig.debug && 'DEBUG' in _APP.game){ 
+            // _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); 
         }
 
         // Unset the debug flags if the game was not started in debug mode.
@@ -261,7 +261,9 @@ _APP.game.gamestates["gs_PLAYING"] = {
     // Should be called by the game loop.
     // Calls debug functions specific to this gamestate.
     debug: function(){
-        if(_APP.debugActive && _DEBUG2){ _DEBUG2.debugGamestate.run(_APP.game.gs1, _APP.game.gs2)}
+        if(_APP.debugActive && _APP.configObj.gameConfig.debug && 'DEBUG' in _APP.game){
+            // _DEBUG2.debugGamestate.run(_APP.game.gs1, _APP.game.gs2);
+        }
     },
 
     // State of card movements.

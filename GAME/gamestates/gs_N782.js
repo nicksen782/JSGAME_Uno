@@ -23,9 +23,9 @@ _APP.game.gamestates["gs_N782"] = {
         // Fade directly to black.
         // _GFX.funcs.setFade("ALL", 10);
 
-         // Run the debug2 init.
-         if(_APP.debugActive && _DEBUG2){ 
-            _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); 
+        // Run the debug2 init.
+        if(_APP.debugActive && _APP.configObj.gameConfig.debug && 'DEBUG' in _APP.game){
+            // _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); 
         }
 
         _GFX.layerObjs.createOne(N782_face_anim, { xyByGrid: true, layerObjKey: "N782_face_anim", layerKey: "L1", hidden: false });
@@ -140,7 +140,9 @@ _APP.game.gamestates["gs_N782"] = {
     // Should be called by the game loop.
     // Calls debug functions specific to this gamestate.
     debug: function(){
-        if(_APP.debugActive && _DEBUG2){ _DEBUG2.debugGamestate.run(_APP.game.gs1, _APP.game.gs2)}
+        if(_APP.debugActive && _APP.configObj.gameConfig.debug && 'DEBUG' in _APP.game){
+            _DEBUG2.debugGamestate.run(_APP.game.gs1, _APP.game.gs2);
+        }
     },
 
 };

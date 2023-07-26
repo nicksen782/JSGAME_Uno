@@ -5,7 +5,9 @@ SCRIPT_PATH=$(dirname "$(realpath "$0")")
 FULLPATH="$SCRIPT_PATH/$(basename $0)"
 cd $SCRIPT_PATH
 
-echo "Adding the faded tilesets"
+# echo "DISABLED"
+
+# echo "Adding the faded tilesets"
 node c2bin_runit.js
 
 echo -_-_-_-

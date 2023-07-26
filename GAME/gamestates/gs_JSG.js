@@ -40,8 +40,8 @@ _APP.game.gamestates["gs_JSG"] = {
         // _GFX.funcs.setFade("ALL", 10);
 
         // Run the debug2 init.
-        if(_APP.debugActive && _DEBUG2){ 
-            _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); 
+        if(_APP.debugActive && _APP.configObj.gameConfig.debug && 'DEBUG' in _APP.game){
+            // _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); 
         }
         this.blinkCount = 0;
         this.logo_palettes = [
@@ -81,7 +81,9 @@ _APP.game.gamestates["gs_JSG"] = {
     // Should be called by the game loop.
     // Calls debug functions specific to this gamestate.
     debug: function(){
-        if(_APP.debugActive && _DEBUG2){ _DEBUG2.debugGamestate.run(_APP.game.gs1, _APP.game.gs2)}
+        if(_APP.debugActive && _APP.configObj.gameConfig.debug && 'DEBUG' in _APP.game){
+            // _DEBUG2.debugGamestate.run(_APP.game.gs1, _APP.game.gs2);
+        }
     },
 
     // Main function of this game state. Calls other functions/handles logic, etc.

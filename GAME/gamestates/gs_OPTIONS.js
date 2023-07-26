@@ -279,7 +279,9 @@ _APP.game.gamestates["gs_OPTIONS"] = {
         this.genSection("noPlayableCard");
 
         // Run the debug init.
-        if(_APP.debugActive && _DEBUG2){ _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); }
+        if(_APP.debugActive && _APP.configObj.gameConfig.debug && 'DEBUG' in _APP.game){
+            // _DEBUG2.debugGamestate.uninit(_APP.game.gs1, _APP.game.gs2_new); 
+        }
 
         this.changeSection("players");
 
@@ -392,6 +394,8 @@ _APP.game.gamestates["gs_OPTIONS"] = {
     // Calls debug functions specific to this gamestate.
     debug: function(){
         // console.log("DEBUG");
-        if(_APP.debugActive && _DEBUG2){ _DEBUG2.debugGamestate.run(_APP.game.gs1, _APP.game.gs2)}
+        if(_APP.debugActive && _APP.configObj.gameConfig.debug && 'DEBUG' in _APP.game){
+            _DEBUG2.debugGamestate.run(_APP.game.gs1, _APP.game.gs2);
+        }
     },
 };

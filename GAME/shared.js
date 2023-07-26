@@ -183,14 +183,16 @@ _APP.shared = {
 
     // A queue of functions intended to be run once each and sequentially.
     // NOTES: 
-    // runNext: The next func does not wait for the prev func to finish. 
+    // runNext: The next func does not wait for the prev func to finish. Await is NOT used by runNext.
     // For example, when queuing a reverse and a skip then the skip would nearly immediately override the reverse.
     // If you need to run functions sequentially then you can nest genTimers instead. The callback function runs AFTER the timer completes.
+    // Functions are expected to be tied to a gamestate1. If changing gamestates old functions can remain so they should be cleared at the start of a gamestate1.
     funcQueue: {
         // Contains the functions. Each key in the object should be a gamestate1 and is an array of functions.
         funcs: {}, 
 
-        // Adds a new function the the funcQueue.
+        // Adds a new function to the funcQueue. (funcs)
+        add: function(name, gamestate, funcObj){ this.create(name, gamestate, funcObj); },
         create: function(name, gamestate, funcObj){
             // EXAMPLE USAGE:
             // _APP.shared.funcQueue.create("timer1", null, ()=>{});
@@ -198,7 +200,7 @@ _APP.shared = {
 
             // Make sure that a function was specified.
             if(!funcObj.func){ 
-                console.error("ERROR: funcQueue:get: A function was not specified.", `name: '${name}', gamestate: '${gamestate}'`);
+                console.error("ERROR: funcQueue:create: A function was not specified.", `name: '${name}', gamestate: '${gamestate}'`);
                 return; 
             }
 
@@ -213,6 +215,7 @@ _APP.shared = {
                 bind: funcObj.bind
             };
             this.funcs[gamestate].push(newEntry);
+
             return newEntry;
         },
         
@@ -228,7 +231,7 @@ _APP.shared = {
             // Don't run if there are not any queued functions.
             if(!this.funcs[gamestate].length){ return true; }
 
-            // Remove the first funcObj.
+            // Run the funcObj using the binding provided.
             let funcObj = this.funcs[gamestate].shift();
 
             // Run the funcObj.
@@ -254,6 +257,8 @@ _APP.shared = {
 
     // Utility function to retrieve gamestates for P1 and P2.
     getAllGamepadStates: function(){
+        if(!_APP.configObj.inputConfig.enabled){ return {}; }
+
         // ANY is a combination of P1 and P2 states.
         // ANY_bool is simply a true/false for the combination of P1 and P2 states.
         // The button states are "held", "press", "release".
