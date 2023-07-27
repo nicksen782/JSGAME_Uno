@@ -157,8 +157,8 @@
                 { f: "/SHARED/INPUT_A/inputModeA_web.html"      , t:"html", type:"webConfig" },
             ],
             debugFiles:[
-                // { f: "INPUT_A/debug.js" , t:"js"  },
-                // { f: "INPUT_A/debug.css", t:"css" },
+                // { f: "/SHARED/INPUT_A/debug.js" , t:"js"  },
+                // { f: "/SHARED/INPUT_A/debug.css", t:"css" },
             ],
             debugFiles2:[
             ],
