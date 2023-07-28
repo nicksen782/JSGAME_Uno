@@ -15,6 +15,12 @@
             }
         },
 
+        // CONFIG: Full screen.
+        fullScreenConfig: {
+            listenOnId        : "gameView",
+            idToMakeFullscreen: "wrapper",
+        },
+        
         // CONFIG: _APP.game
         gameConfig: {
             enabled: true,
@@ -24,7 +30,7 @@
             appRelPath: "JSGAME_Uno", 
 
             // Used for display.
-            appNameText: "Uno", 
+            appNameText: "JSGAME: Uno", 
 
             files:[
                 { f:"GAME/game.css"      , t:"css" },
@@ -98,10 +104,6 @@
                 outputDiv   : false,
                 canvasLayers: false,
             },
-    
-            // Element id to make full screen.
-            // fullScreenElemId: "gameView",
-            fullScreenElemId: "wrapper",
     
             // Controls if the loop will wait for the graphics draw to finish before continuing.
             // awaitDraw: true,
